@@ -65,7 +65,7 @@ a query string.  The empty string is considered to be a valid URI fragment.
 sub validate_local_abs_uri_frag {
   my ($self, $frag) = @_;
 
-  $frag =~ m< ^ ( (?: /  [\w\-.!~*'(|);/\@+\$,%#]*   )?
+  $frag =~ m< ^ ( (?: /  [\w\-.!~*'(|);/\@+\$,%#&=]* )?
                   (?: \? [\w\-.!~*'(|);/\@+\$,%#&=]* )?
                 )
               $
