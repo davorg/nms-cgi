@@ -137,6 +137,7 @@ foreach my $lib (grep m#^lib/#, @files) {
 
 .pkg/$lib: .pkg ../../$lib
 	(cd ../.. && tar cf - '$lib') | (cd .pkg && tar xf -)
+	touch \$\@
 END
 }
 
