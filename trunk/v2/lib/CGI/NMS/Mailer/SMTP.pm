@@ -60,14 +60,14 @@ sub newmail {
   $self->{Sock} = IO::Socket::INET->new($self->{Mailhost});
   defined $self->{Sock} or die "connect to [$self->{Mailhost}]: $!";
 
-  my $banner = $self->_smtp_getline;
+  my $banner = $self->_smtp_response;
   $banner =~ /^2/ or die "bad SMTP banner [$banner] from [$self->{Mailhost}]";
 
   my $helohost = ($ENV{SERVER_NAME} =~ /^([\w\-\.]+)$/ ? $1 : '.');
   $self->_smtp_command("HELO $helohost");
-  $self->_smtp_command("MAIL FROM: <$sender>");
+  $self->_smtp_command("MAIL FROM:<$sender>");
   foreach my $r (@recipients) {
-    $self->_smtp_command("RCPT TO: <$r>");
+    $self->_smtp_command("RCPT TO:<$r>");
   }
   $self->_smtp_command("DATA", '3');
 
@@ -114,8 +114,8 @@ These methods should be called from within this module only.
 
 =item _smtp_getline ()
 
-Reads a line from the SMTP socket, and returns it without the
-newline sequence.
+Reads a line from the SMTP socket, and returns it as a string,
+including the terminating newline sequence.
 
 =cut
 
@@ -125,9 +125,28 @@ sub _smtp_getline {
   my $sock = $self->{Sock};
   my $line = <$sock>;
   defined $line or die "read from SMTP server: $!";
-  $line =~ tr#\012\015##d;
 
   return $line;
+}
+
+=itme _smtp_response ()
+
+Reads a command response from the SMTP socket, and returns it as
+a single string.  A multiline responses is returned as a multiline
+string, and the terminating newline sequence is always included.
+
+=cut
+
+sub _smtp_response {
+  my ($self) = @_;
+
+  my $line = $self->_smtp_getline;
+  my $resp = $line;
+  while ($line =~ /^\d\d\d\-/) {
+    $line = $self->_smtp_getline;
+    $resp .= $line;
+  }
+  return $resp;
 }
 
 =item _smtp_command ( COMMAND [,EXPECT] )
@@ -145,7 +164,7 @@ sub _smtp_command {
   $self->{Sock}->print("$command\015\012") or die
     "write [$command] to SMTP server: $!";
   
-  my $resp = $self->_smtp_getline();
+  my $resp = $self->_smtp_response;
   unless (substr($resp, 0, 1) eq $expect) {
     die "SMTP command [$command] gave response [$resp]";
   }
