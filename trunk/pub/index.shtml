@@ -10,7 +10,7 @@
   <body>
     <div class="menu">
       <p>Home</p>
-      <a href="nms_faq.html">FAQ</a>
+      <a href="faq_nms.html">FAQ</a>
       <a href="scripts.shtml">The Scripts</a>
       <a href="support.html">Support</a>
       <a href="isp.html">ISPs</a>
