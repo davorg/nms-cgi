@@ -1,0 +1,71 @@
+
+
+
+
+<nmsboard name="Default">
+    <MessID Id="10">
+        <subject>NMS scripts are great!</subject>
+        <user>The Professor</user>
+        <email>fred&#64;fsck.com</email>
+        <date>20/01/03</date>
+        <moderate>0</moderate>
+		<ipaddress>127.0.0.1</ipaddress>
+        <MessID Id="17">
+            <subject>Re: NMS scripts are great!</subject>
+            <user>The Wizard</user>
+            <email>dev&#64;null.com</email>
+            <date>22/01/03</date>
+            <moderate>0</moderate>
+			<ipaddress>127.0.0.1</ipaddress>
+		    <linkURL>http://www.BostonHot.com/</linkURL>
+			<linkTitle>BostonHot.com</linkTitle>
+			<imageURL>http://www.bostonhot.com/images/logo.jpg</imageURL>
+			<MessID Id="19">
+				<subject>Re: NMS scripts are great!</subject>
+				<user>WeinerBoy</user>
+				<email>devnull&#64;null.com</email>
+				<date>22/01/03</date>
+				<moderate>0</moderate>
+				<ipaddress>127.0.0.1</ipaddress>
+				<linkURL>http://www.BostonHot.com/</linkURL>
+				<linkTitle>BostonHot.com</linkTitle>
+				<imageURL>http://www.bostonhot.com/images/logo.jpg</imageURL>
+			</MessID>
+        </MessID>
+		<MessID Id="22">
+			<subject>Re: NMS scripts are great!</subject>
+			<user>Fred</user>
+			<email>fred&#64;null.com</email>
+			<date>22/01/03</date>
+			<moderate>0</moderate>
+			<ipaddress>127.0.0.1</ipaddress>
+			<linkURL>http://www.BostonHot.com/</linkURL>
+			<linkTitle>BostonHot.com</linkTitle>
+			<imageURL>http://www.bostonhot.com/images/logo.jpg</imageURL>
+		</MessID>
+    </MessID>
+	<MessID Id="29">
+		<subject>I like IceCream!</subject>
+		<user>Fred</user>
+		<email>fred&#64;null.com</email>
+		<date>22/01/03</date>
+		<moderate>0</moderate>
+		<ipaddress>127.0.0.1</ipaddress>
+		<linkURL>http://www.BostonHot.com/</linkURL>
+		<linkTitle>BostonHot.com</linkTitle>
+		<imageURL>http://www.bostonhot.com/images/logo.jpg</imageURL>
+		<MessID Id="30">
+			<subject>Re: I like IceCream!</subject>
+			<user>Tom &amp; Jerry</user>
+			<email>tomjerry&#64;null.com</email>
+			<date>22/01/03</date>
+			<moderate>0</moderate>
+			<ipaddress>127.0.0.1</ipaddress>
+			<linkURL>http://www.BostonHot.com/</linkURL>
+			<linkTitle>BostonHot.com</linkTitle>
+			<imageURL>http://www.bostonhot.com/images/logo.jpg</imageURL>
+		</MessID>
+	</MessID>
+</nmsboard>
+
+
