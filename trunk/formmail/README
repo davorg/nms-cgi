@@ -56,14 +56,14 @@ $secure             - When this variable is set to a true value (e.g. 1)
 $allow_empty_ref    - Some web proxies and office firewalls may strip
                       certain headers from the HTTP request that is sent
                       by a browser.  Among these is the HTTP_REFERER that
-                      the program uses as an additional check of the 
+                      the program uses as an additional check of the
                       requests validity - this will cause the program to
                       fail with a 'bad referer' message even though the
                       configuration seems fine.  In these cases setting
-                      this variable to 1 will stop the program from 
+                      this variable to 1 will stop the program from
                       complaining about requests where no referer header
                       was sent while leaving the rest of the security
-                      features intact.  
+                      features intact.
 
 $max_recipients     - The maximum number of e-mail addresses that any
                       single form should be allowed to send copies of the
@@ -71,7 +71,7 @@ $max_recipients     - The maximum number of e-mail addresses that any
                       than one recipient, then we recommend that you
                       improve the security of FormMail by reducing this
                       value to 1.  Setting this variable to 0 removes all
-                      limits on the number of recipients of each e-mail.  
+                      limits on the number of recipients of each e-mail.
 
 $mailprog           - The system command that the script should invoke to
                       send an outgoing email. This should be the full path
@@ -81,6 +81,22 @@ $mailprog           - The system command that the script should invoke to
                       requires should be provided here. Your hosting
                       provider or system administrator should be able to
                       tell you what to set this variable to.
+
+                      A $mailprog setting that works for many UNIX-like
+                      hosts is:
+
+                        $mailprog = '/usr/lib/sendmail -oi -t';
+
+                      Some other UNIX-like hosts need:
+
+                        $mailprog = '/usr/sbin/sendmail -oi -t';
+
+                      For hosts that lack a suitable sendmail binary
+                      (such as most Windows systems) we have a Perl
+                      script which does the job of the sendmail binary,
+                      in the nms_sendmail package at
+                      <http://nms-cgi.sourceforge.net/>.  See the README
+                      file in the nms_sendmail package for instructions.
 
 @referers           - A list of referring hosts. This should be a list of
                       the names or IP addresses of all the systems that
@@ -132,7 +148,7 @@ $mailprog           - The system command that the script should invoke to
                       address and you want to keep the addresses hidden.
                       You might set up %recipient_alias like this:
 
-                      %recipient_alias = ( 
+                      %recipient_alias = (
                         '1' => 'one@your.domain',
                         '2' => 'two@your.domain',
                         '3' => 'three@your.domain',
@@ -174,7 +190,7 @@ $style              - This is the URL of a CSS stylesheet which will be
                       want's to be the same as the one that you use for all
                       the other pages.  This should be a local absolute URI
                       fragment.  Set $style to '0' or the emtpy string if
-		      you don't want to use style sheets.
+                      you don't want to use style sheets.
 
 $send_confirmation_mail - If this flag is set to 1 then an additional email
                           will be sent to the person who submitted the
@@ -409,7 +425,7 @@ the default mail program to sendmail with this code:
 This is actually two different pieces of information; the
 location of the sendmail binary (/usr/lib/sendmail) and
 the command line switches that must be passed to it in order
-for it to read the list of message recipients from the 
+for it to read the list of message recipients from the
 message header (-oi -t).
 
 If your hosting provider or system administrator tells you that

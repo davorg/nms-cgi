@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.73 2002-04-09 20:22:36 nickjc Exp $
+# $Id: FormMail.pl,v 1.74 2002-04-13 11:26:42 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.73 $
+# FormMail.pl $Revision: 1.74 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -65,7 +65,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.73 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.74 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -855,7 +855,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.73 $
+FormMail $Revision: 1.74 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -970,6 +970,22 @@ message headers. Any switches that the program
 requires should be provided here. Your hosting
 provider or system administrator should be able to
 tell you what to set this variable to.
+
+A $mailprog setting that works for many UNIX-like
+hosts is:
+
+  $mailprog = '/usr/lib/sendmail -oi -t';
+
+Some other UNIX-like hosts need: 
+
+  $mailprog = '/usr/sbin/sendmail -oi -t';
+
+For hosts that lack a suitable sendmail binary (such
+as most Windows systems) we have a Perl script which
+does the job of the sendmail binary, in the nms_sendmail
+package at E<lt>http://nms-cgi.sourceforge.net/E<gt>.
+See the README file in the nms_sendmail package for
+instructions.
 
 =item @referers
 
