@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail_config.pl,v 1.1 2002-11-04 09:14:47 nickjc Exp $
+# $Id: TFmail_config.pl,v 1.2 2002-11-11 13:15:23 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -11,6 +11,8 @@ use constant DEBUGGING      => 1;
 use constant LIBDIR         => '.';
 use constant CONFIG_ROOT    => '.';
 use constant CONFIG_EXT     => '.trc';
+use constant LOGFILE_ROOT   => '';
+use constant LOGFILE_EXT    => '.log';
 use constant CHARSET        => 'iso-8859-1';
 
 # The file that the script should use as a lock file and a
@@ -46,11 +48,12 @@ use Fcntl ':flock';
 use lib LIBDIR;
 use NMSCharset;
 use CGI;
+use IO::File;
 
 BEGIN
 {
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.1 $, 10, -1;
+   $VERSION = substr q$Revision: 1.2 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -116,10 +119,11 @@ END
       exit;
    }
     
-   open LOCK, '>>'.LOCKFILE or die "open >>@{[ LOCKFILE ]}: $!";
-   flock LOCK, LOCK_EX or die "flock @{[ LOCKFILE ]}: $!";
+   my $flock = IO::File->new('>>'.LOCKFILE);
+   defined $flock or die "open >>@{[ LOCKFILE ]}: $!";
+   flock $flock, LOCK_EX or die "flock @{[ LOCKFILE ]}: $!";
 
-   if (-s LOCK > 5)
+   if (-s LOCKFILE > 5)
    {
        print <<END;
 Content-type: text/html; charset=@{[ CHARSET ]}
@@ -174,6 +178,22 @@ END
 
    truncate LOCK, 0;
    
+   my $viewlog = $cgi->param('viewlog') || '';
+   my $getlog  = $cgi->param('getlog')  || '';
+
+   if (length $viewlog)
+   {
+      $viewlog =~ /^([\w\-]{1,100})$/ or die "bad log name [$viewlog]";
+      send_log($1, 0);
+      return;
+   }
+   elsif (length $getlog)
+   {
+      $getlog =~ /^([\w\-]{1,100})$/ or die "bad log name [$getlog]";
+      send_log($1, 1);
+      return;
+   }
+      
    my $name = strip_nonprint( $cgi->param('config_name') || 'default' );
    $name =~ /^([a-z0-9_]{2,80})$/ or die "bad config name [$name]";
    $name = $1;
@@ -187,7 +207,40 @@ END
       show_config($name, $cgi);
    }
 }
-   
+
+sub send_log
+{
+   my ($log, $is_download) = @_;
+
+   my $file = LOGFILE_ROOT . "/$log" . LOGFILE_EXT;
+   my $fh = IO::File->new("<$file");
+   defined $fh or die "open logfile [$log]: $!";
+   my $size = -s $file;
+
+   my $buf;
+   $fh->read($buf, $size) or die "read logfile [$log]: $!";
+   $fh->close;
+
+   if ($is_download)
+   {
+      print <<END;
+Content-type: application/octet-stream
+Content-Disposition: attachment; filename="$log.log"
+Content-Length: $size
+
+END
+   }
+   else
+   {
+      print <<END;
+Content-type: text/plain
+
+END
+   }
+
+   print $buf;
+}
+
 sub save_config
 {
    my ($name, $cgi) = @_;
@@ -456,11 +509,13 @@ Content-type: text/html; charset=@{[ CHARSET ]}
   <h2>$title</h2>
   <form method="post">
    <input type="hidden" name="password" value="@{[ $cs->escape(PASSWORD) ]}" />
-   <b>Config:</b> 
 END
 
    $done_headers = 1;
 
+   show_log_files();
+
+   print "<b>Config:</b>\n";
    foreach my $config ('default', @config)
    {
       if ($config eq $this_config)
@@ -486,6 +541,28 @@ END
   <form method="post">
    <input type="hidden" name="password" value="@{[ $cs->escape(PASSWORD) ]}" />
 END
+}
+
+sub show_log_files
+{
+   opendir D, LOGFILE_ROOT or return;
+   my @logs = map { /([\w\-]+)\Q@{[ LOGFILE_EXT ]}\E$/ ? ($1) : () } readdir D;
+   closedir D;
+
+   if (scalar @logs)
+   {
+      print "<p>View log file:\n";
+      foreach my $log (@logs)
+      {
+         print qq{<input type="submit" name="viewlog" value="$log" />\n};
+      }
+      print "</p>\nDownload log file:\n";
+      foreach my $log (@logs)
+      {
+         print qq{<input type="submit" name="getlog" value="$log" />\n};
+      }
+      print "</p>\n<hr />\n";
+   }
 }
 
 sub error_page
