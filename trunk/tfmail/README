@@ -46,6 +46,7 @@ missing.trt    - The template file that controls the layout of the page
 email.trt      - The template file that controls the layout of the email
                  body
 README         - This file. Instructions on how to install and use TFmail
+EXAMPLES       - Some examples of the use of TFmail
 ChangeLog      - The change history of these files
 MANIFEST       - List of files
 
