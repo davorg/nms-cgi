@@ -24,11 +24,13 @@ In this distribution, you will find three files:
 
 FormMail.pl    - The main Perl script
 README         - This file. Instructions on how to install and use formmail
+EXAMPLES       - Some worked examples of ways to set up formmail
+ChangeLog      - The change history of these files
 MANIFEST       - List of files
 
 CONFIGURATION
 
-There are a number of variables that you can change in formmail.pl which
+There are a number of variables that you can change in FormMail.pl which
 alter the way that the program works.
 
 $DEBUGGING          - This should be set to 1 whilst you are installing
