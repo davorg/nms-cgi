@@ -100,20 +100,23 @@ time you need to pass a variable into the script as described below.
 If you've set the @from_date in the script, then you can simply link to
 the script like this:
 
-<a href="http://your.domain/cgi-bin/countdown.pl">Countdown to my birthday</a>
+     <a href="http://your.domain/cgi-bin/countdown.pl">
+         Countdown to my birthday
+     </a>
 
 If you pass in a value then this will override whatever is in @from_date
 
-<a href="http://your.domain/cgi-bin/countdown.pl?2002,9,7,0,0,0">Countdown
-to my birthday</a>
+     <a href="http://your.domain/cgi-bin/countdown.pl?2002,9,7,0,0,0">
+         Countdown to my birthday
+     </a>
 
 You can even prompt the user to input their own date with an HTML form:
 
-<form action="http://your.domain/cgi-bin/countdown.pl">
-  <input type="text" name="date"/><br />
-  Enter your date in the format yyyy,mm,dd,hh,mm,ss<br />
-  <input type="submit" />
-</form>
+    <form action="http://your.domain/cgi-bin/countdown.pl">
+      <input type="text" name="date"/><br />
+      Enter your date in the format yyyy,mm,dd,hh,mm,ss<br />
+      <input type="submit" />
+    </form>
 
 SUPPORT
 
