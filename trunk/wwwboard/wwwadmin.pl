@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwadmin.pl,v 1.24 2003-05-18 10:35:44 nickjc Exp $
+# $Id: wwwadmin.pl,v 1.25 2003-12-28 19:45:42 nickjc Exp $
 #
 
 use strict;
@@ -12,11 +12,11 @@ use vars qw(
   $basedir $baseurl $cgi_url $mesgdir $datafile $mesgfile
   $passwd_file $ext $title $style $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.24 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.25 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.24 $
+# wwwadmin.pl $Revision: 1.25 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -461,7 +461,7 @@ sub parse_message_list {
 
   open MESG_IN, "<$filename" or die "open $filename: $!";
   while(<MESG_IN>) {
-    if (m#<!--top: (\d+)-->(?:</li>)?<li><a href="[^"]+">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>#) {
+    if (m#<!--top: (\d+)-->(?:</li>)?<li><a href="[^"]+">(.*)</a> - <b>(.*)</b>\s+<i>(.*)</i>#) {
       my $msg = { id => $1, subject => $2, author => $3, date => $4 };
       push @messages, $msg;
     }

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.51 2003-04-16 17:01:09 nickjc Exp $
+# $Id: wwwboard.pl,v 1.52 2003-12-28 19:45:42 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.51 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.52 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.51 $
+# wwwboard.pl $Revision: 1.52 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -270,6 +270,7 @@ sub parse_form {
      my $val = param($param);
      defined $val or $val = '';
      $Form{$param} = &{ $cs->strip_nonprint_coderef }($val);
+     $Form{$param} =~ s/[\r\n\0]/ /g unless $param eq 'body';
   }
 
   if ($enforce_max_len) {
