@@ -4,7 +4,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 use CGI::NMS::Charset;
 
@@ -37,7 +37,7 @@ CGI::NMS::HTMLFilter - whitelist based HTML filter
    my $filter = CGI::NMS::HTMLFilter->new(
       charset        => $charset,
       deny_tags      => ['hr'],
-      allow_img      => 1,
+      allow_src      => 1,
       allow_href     => 1,
       allow_a_mailto => 1,
    );
@@ -94,7 +94,7 @@ tags.  These tags will be disallowed by the filter even if they
 would normally be allowed because they present no cross site
 scripting hazard.
 
-=item C<allow_img>
+=item C<allow_src>
 
 By default, the filter won't allow constructs that cause 
 the browser to fetch things automatically, such as C<E<lt>imgE<gt>>
@@ -412,12 +412,12 @@ replaced with the characters they represent.
 
 use vars qw(%_unescape_map);
 %_unescape_map = ( 
-                   ( map { ("\&\#$_\;" => ord($_)) } (1..255) ),
-                   'amp'  => '&',
-                   'lt'   => '<',
-                   'gt'   => '>',
-                   'quot' => '"',
-                   'apos' => "'",
+                   ( map { ("\&\#$_\;" => chr($_)) } (1..255) ),
+                   '&amp;'  => '&',
+                   '&lt;'   => '<',
+                   '&gt;'   => '>',
+                   '&quot;' => '"',
+                   '&apos;' => "'",
                  );
 
 sub _unescape_html
