@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.0 2002-06-22 06:57:09 gellyfish Exp $
+# $Id: FormMail.pl,v 2.1 2002-07-01 09:15:51 gellyfish Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.0 $
+# FormMail.pl $Revision: 2.1 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -67,7 +67,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.0 $, 10, -1;
+  $VERSION = substr q$Revision: 2.1 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -481,12 +481,14 @@ sub send_mail {
   if ( $secure and defined (my $addr = remote_addr()) ) {
     $addr =~ /^\[?([\d\.]+)\]?$/ or die "bad remote addr [$addr]";
 
+    $addr = $1;
+
     # The actual name of the program could be useful if there is
     # more than one FormMail on the machine with different names.
 
     my ( $realagent ) = $0 =~ m%([\d\w.]+)$%;
     $realagent = defined $realagent ? "($realagent)" : '';
-    $xheader .= "X-HTTP-Client: [$1]\n"
+    $xheader .= "X-HTTP-Client: [$addr]\n"
              . "X-Generated-By: NMS FormMail.pl $realagent v$VERSION\n";
   }
 
@@ -916,7 +918,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.0 $
+FormMail $Revision: 2.1 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
