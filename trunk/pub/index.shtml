@@ -21,6 +21,26 @@
 
     <h2>Latest News</h2>
 
+    <h2><span class="nms">nms</span> as recommended by Matt Wright</h2>
+
+    <p>Matt Wright has given the <a href="http://www.scriptarchive.com/">MSA 
+      web site</a> a major redesign. He's included a 
+      <a href="http://www.scriptarchive.com/nms.html">page</a> about 
+      <a href="http://nms.sf.net/"><i>nms</i></a>. Here are a couple of 
+      extracts.</p>
+    <blockquote><i>While the free code found at my web site has not evolved 
+      much in recent years, the general programming practices and standards 
+      of CGI programs have. nms is an attempt by very active programmers in 
+      the Perl community to bring the quality of code for these types of 
+      programs up to date and eliminate some of the bad programming practices 
+      and bugs found in the existing Matt's Script Archive 
+      code.</i></blockquote>
+    <blockquote><i>I would highly recommend downloading the nms versions if 
+      you wish to learn CGI programming. The code you find at Matt's Script 
+      Archive is not representative of how even I would code these 
+      days.</i></blockquote>
+    <p>I call that a good result :)</p>
+
     <h3><span class="nms">nms</span> included in Debian Linux</h3>
 
     <p><a href="http://www.debian.org">Debian</a> is one of the best-known
@@ -53,7 +73,7 @@
 
       <li><a href="http://webhuset.no/kundesenter/hjelp/nms-formmail.shtml">Webhuset Datasenter AS</a> (article in Norwegian)</li>
 
-      <li><a href="http://faq.puretec.de/skripte/perl/7.html">1&1</a> (article in German - incidently their UK branch still has <a href="http://faq.oneandone.co.uk/homepage/3.html">pointers to Matt's site</a>)</li>
+      <li><a href="http://faq.oneandone.co.uk/homepage/3.html">1&1</a> (also on their <a href="http://faq.puretec.de/skripte/perl/7.html">main site</a> in German)</li>
 
       <li><a href="http://www.whizhost.com/faq.html#cgi">Whiz Host</a></li>
     </ul>
@@ -285,7 +305,7 @@
             Cross</a></address>
 <!-- Created: Sat Aug 11 16:11:48 BST 2001 -->
 <!-- hhmts start -->
-Last modified: Wed May  1 16:26:43 BST 2002
+Last modified: Tue May 21 09:25:23 BST 2002
 <!-- hhmts end --><br />
 <a href="http://validator.w3.org/check/referer"><img
         src="http://www.w3.org/Icons/valid-xhtml10"
