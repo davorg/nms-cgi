@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.41 2002-09-01 07:16:58 nickjc Exp $
+# $Id: wwwboard.pl,v 1.42 2002-09-01 14:12:59 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.41 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.42 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.41 $
+# wwwboard.pl $Revision: 1.42 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -577,7 +577,7 @@ END_HTML
 <!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
 (<!--responses: $E{$id}-->0)
 <ul><!--insert: $E{$id}-->
-</ul><!--end: $E{$id}-->
+</ul><!--end: $E{$id}--></li>
 END_HTML
       } elsif (/\(<!--responses: (\d+?)-->(\d+?)\)/) {
         my $response_num = $1;
@@ -638,7 +638,7 @@ sub thread_pages {
 <!--top: $E{$id}--><li><a href="$E{"$id\.$ext"}">$E{$subject}</a> <b>$E{$name}</b> <i>$E{$date}</i>
 (<!--responses: $E{$id}-->0)
 <ul><!--insert: $E{$id}-->
-</ul><!--end: $E{$id}-->
+</ul><!--end: $E{$id}--></li>
 END_HTML
       } elsif (/\(<!--responses: (\d+?)-->(\d+?)\)/) {
         my $response_num = $1;
@@ -1227,7 +1227,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$revision: 1.4 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$revision: 1.5 $ =~ /(\d+)\.(\d+)/);
 
 use CGI::NMS::Charset;
 
@@ -1260,7 +1260,7 @@ CGI::NMS::HTMLFilter - whitelist based HTML filter
    my $filter = CGI::NMS::HTMLFilter->new(
       charset        => $charset,
       deny_tags      => ['hr'],
-      allow_img      => 1,
+      allow_src      => 1,
       allow_href     => 1,
       allow_a_mailto => 1,
    );
@@ -1317,7 +1317,7 @@ tags.  These tags will be disallowed by the filter even if they
 would normally be allowed because they present no cross site
 scripting hazard.
 
-=item C<allow_img>
+=item C<allow_src>
 
 By default, the filter won't allow constructs that cause 
 the browser to fetch things automatically, such as C<E<lt>imgE<gt>>
@@ -1635,12 +1635,12 @@ replaced with the characters they represent.
 
 use vars qw(%_unescape_map);
 %_unescape_map = ( 
-                   ( map { ("\&\#$_\;" => ord($_)) } (1..255) ),
-                   'amp'  => '&',
-                   'lt'   => '<',
-                   'gt'   => '>',
-                   'quot' => '"',
-                   'apos' => "'",
+                   ( map { ("\&\#$_\;" => chr($_)) } (1..255) ),
+                   '&amp;'  => '&',
+                   '&lt;'   => '<',
+                   '&gt;'   => '>',
+                   '&quot;' => '"',
+                   '&apos;' => "'",
                  );
 
 sub _unescape_html
