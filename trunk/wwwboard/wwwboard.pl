@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.36 2002-08-26 08:54:12 nickjc Exp $
+# $Id: wwwboard.pl,v 1.37 2002-08-28 22:03:15 nickjc Exp $
 #
 
 use strict;
@@ -8,7 +8,7 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_headers);
-my $VERSION = substr q$Revision: 1.36 $, 10, -1;
+my $VERSION = substr q$Revision: 1.37 $, 10, -1;
 
 BEGIN
 { 
@@ -161,7 +161,6 @@ my $html_style = $style ?
 if ( $use_time ) {
    $date_fmt = "$time_fmt $date_fmt";
 }
-
 
 my $Form = parse_form();
 
@@ -828,14 +827,19 @@ sub strip_html
 
 ###################################################################
 
-BEGIN { # START OF INLINED use CGI::NMS::Charset
+BEGIN {
+  eval 'local $SIG{__DIE__} ; require CGI::NMS::Charset';
+  $@ and $INC{'CGI/NMS/Charset.pm'} = 1;
+  $@ and eval <<'END_CGI_NMS_CHARSET' || die $@;
+
+## BEGIN INLINED CGI::NMS::Charset
 package CGI::NMS::Charset;
 use strict;
 
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.36 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 =head1 NAME
 
@@ -1191,5 +1195,7 @@ and/or modify it under the same terms as Perl itself.
 
 1;
 
-} # END OF INLINED use CGI::NMS::Charset
+## END INLINED CGI::NMS::Charset
+END_CGI_NMS_CHARSET
+}
 
