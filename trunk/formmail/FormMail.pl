@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.47 2002-02-28 08:51:05 nickjc Exp $
+# $Id: FormMail.pl,v 1.48 2002-02-28 21:14:10 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.47  2002/02/28 08:51:05  nickjc
+# Allowed pathless URLs with query strings in check_url_valid
+#
 # Revision 1.46  2002/02/27 17:51:20  davorg
 # typo
 #
@@ -560,7 +563,7 @@ EOHTML
     }
 
     foreach (@sorted_fields) {
-      if ($Config{print_blank_fields} || $Form{$_}) {
+      if ($Config{print_blank_fields} || $Form{$_} !~ /^\s*$/) {
         print '<p><b>', escape_html($_), ':</b> ',
                         escape_html($Form{$_}), "</p>\n";
       }
@@ -667,7 +670,7 @@ EOMAIL
   }
 
   foreach (@sorted_keys) {
-    if ($Config{'print_blank_fields'} || defined $Form{$_}) {
+    if ($Config{'print_blank_fields'} || $Form{$_} !~ /^\s*$/) {
       print MAIL "$_: ", (ref $Form{$_} ? "@{$Form{$_}}" : $Form{$_}),"\n\n";
     }
   }
@@ -769,6 +772,7 @@ sub check_url_valid {
 
 sub strip_nonprintable {
   my $text = shift;
+  return '' unless defined $text;
   $text=~ tr#\011\012\040-\176\200-\377##dc;
   return $text;
 }
