@@ -4,7 +4,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.5 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.6 $ =~ /(\d+)\.(\d+)/);
 
 use CGI::NMS::Charset;
 
@@ -551,8 +551,6 @@ my %table = (
   'colgroup' => 'colgroup',
   'col'      => 'EMPTY',
   'tr'       => 'th_td',
-  'th'       => 'Flow',
-  'td'       => 'Flow',
 );
 
 %_Context = (

@@ -162,6 +162,10 @@ END
   [ 'no tr in pre',      q{<pre>x<tr>y</tr></pre>}, q{<pre>x y </pre>} ],
   [ 'deinterleave pre',  q{<pre>hello<i>there</pre>foo</i>}, q{<pre>hello<i>there</i></pre>foo } ],
   
+  [ 'no bare td',   q{<table><td>foo},     q{<table>  </table>} ],
+  [ 'no bare th',   q{<table><th>foo},     q{<table>  </table>} ],
+  [ 'td in tr',     q{<table><tr><td>foo}, q{<table><tr><td>foo</td></tr></table>} ],
+  [ 'th in tr',     q{<table><tr><th>foo}, q{<table><tr><th>foo</th></tr></table>} ],
 );
 
 }
