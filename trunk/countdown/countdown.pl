@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.8 2002-01-14 09:31:48 gellyfish Exp $
+# $Id: countdown.pl,v 1.9 2002-01-25 15:55:13 davorg Exp $
 #
 # Revision 1.6  2001/12/01 19:45:21  gellyfish
 # * Tested everything with 5.004.04
@@ -49,7 +49,7 @@ my $delimiter = "<br />";
 my $date_fmt = '%H:%M:%S %d/%b/%Y';
 
 # $style is the URL of a CSS stylesheet which will be used for script
-# generated messages.  This probably want's to be the same as the one
+# generated messages.  This probably wants to be the same as the one
 # that you use for all the other pages.  This should be a local absolute
 # URI fragment.
 
@@ -69,28 +69,24 @@ my $EMULATE_MATTS_CODE = 1;
 
 BEGIN
 {
-   sub fatalsToBrowser
-   {
-      my ( $message ) = @_;
+  sub fatalsToBrowser {
+    my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
-      {
-         $message =~ s/</&lt;/g;
-         $message =~ s/>/&gt;/g;
-      }
-      else
-      {
-         $message = '';
-      }
+    if ( $main::DEBUGGING ) {
+      $message =~ s/</&lt;/g;
+      $message =~ s/>/&gt;/g;
+    } else {
+      $message = '';
+    }
 
-      my ( $pack, $file, $line, $sub ) = caller(1);
-      my ($id ) = $file =~ m%([^/]+)$%;
+    my ( $pack, $file, $line, $sub ) = caller(1);
+    my ($id ) = $file =~ m%([^/]+)$%;
 
-      return undef if $file =~ /^\(eval/;
+    return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+    print "Content-Type: text/html\n\n";
 
-      print <<EOERR;
+    print <<EOERR;
 <html>
   <head>
     <title>Error</title>
@@ -106,10 +102,10 @@ BEGIN
   </body>
 </html>
 EOERR
-     die @_;
-   };
+    die @_;
+  };
 
-   $SIG{__DIE__} = \&fatalsToBrowser;
+  $SIG{__DIE__} = \&fatalsToBrowser;
 }
 
 my @diffs = ('X', 12, 'X', 24, 60, 60);
@@ -124,23 +120,22 @@ my @diffs = ('X', 12, 'X', 24, 60, 60);
 my @query_string = split(/,/, length param("date") > 0 ? 
                                    param("date") : param("keywords"));
 
+my @now = reverse((localtime)[0 .. 5]);
 
 # The appropriate days for each month.
 
 my @days = (31, (is_leap($now[0]+1900) ? 29 : 28), 31, 30, 31, 30, 31,
 	 31, 30, 31, 30, 31);
 
-if ( @query_string == 6 )
-{
+if ( @query_string == 6 ) {
 
-   if ( ($from_date[1] < 13 and $from_date > 0) and 
-        ($from_date[2] <= $days[$from_date[1] - 1 ]) and
-        ($from_date[3] >= 0 and $from_date[3] < 24 ) and
-        ($from_date[4] >= 0 and $from_date[4] < 60 ) and
-        ($from_date[5] >= 0 and $from_date[5] < 60 ))
-   {
-      @from_date = @query_string;
-   }
+  if ( ($from_date[1] < 13 and $from_date[0] > 0) and
+       ($from_date[2] <= $days[$from_date[1] - 1 ]) and
+       ($from_date[3] >= 0 and $from_date[3] < 24 ) and
+       ($from_date[4] >= 0 and $from_date[4] < 60 ) and
+       ($from_date[5] >= 0 and $from_date[5] < 60 )) {
+    @from_date = @query_string;
+  }
 }
 
 # format the date so that calculations can be more easily done
@@ -148,8 +143,6 @@ if ( @query_string == 6 )
 
 $from_date[0] -= 1900;
 $from_date[1]--;
-
-my @now = reverse((localtime)[0 .. 5]);
 
 my $from_date = strftime($date_fmt, reverse @from_date);
 my $now = strftime($date_fmt, reverse @now);
@@ -183,13 +176,10 @@ foreach (reverse 0 .. $#from_date) {
   if ($diff[$_] < 0) {
     if ($_ == 0) {
       die "$!";
-    }
-    elsif ($_ == 2)
-    {
+    } elsif ($_ == 2) {
       $diff[$_] += $days[$now[1]];
       $now[$_ - 1]++;
-    }
-    else {
+    } else {
       $diff[$_] += $diffs[$_];
       $now[$_ - 1]++;
     }
@@ -200,8 +190,9 @@ foreach (reverse 0 .. $#from_date) {
 
 my @units = qw(Year Month Day Hour Minute Second);
 
+my $diff;
 
-for my $diff_ index(0 .. $#diff) {
+for my $diff_index (0 .. $#diff) {
   if ($diff[$diff_index] == 0 and !$EMULATE_MATTS_CODE) {
     $skip[$diff_index] = 1;
   }
