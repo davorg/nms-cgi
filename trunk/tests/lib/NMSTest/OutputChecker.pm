@@ -15,11 +15,13 @@ correctness checks to be applied to it.
 
 use NMSTest::CheckerXHTML;
 use NMSTest::CheckerNoDie;
+use NMSTest::CheckerSubTests;
 use NMSTest::CheckerMail;
 
 use vars qw(@ISA);
 @ISA = qw(NMSTest::CheckerXHTML
           NMSTest::CheckerNoDie
+          NMSTest::CheckerSubTests
           NMSTest::CheckerMail
          );
 

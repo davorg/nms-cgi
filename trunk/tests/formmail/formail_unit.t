@@ -13,13 +13,13 @@ NMSTest::ScriptUnderTest->new(
   SCRIPT       => 'formmail/FormMail.pl',
   REWRITERS    => [ \&install_tests ],
   TEST_ID      => "formmail unit tests",
-  CHECKS       => 'nodie',
+  CHECKS       => 'nodie subtests',
 
 )->run_test;
 
 sub install_tests
 {
-   s#^check_url\(\);#unitTest\(\);#;
+   s#^check_url\(\);#unitTest\(\);#m;
    s#\z#$tests#;
 }
 
@@ -29,6 +29,7 @@ sub unitTest
 {
     recipientTests();
     refererTests();
+    print "All subtests ran\n";
     exit(0);
 }
 
