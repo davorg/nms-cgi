@@ -27,7 +27,7 @@ $line =~ /^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d)\s/ or
    die "bad changelog first line: [$line] in [$cl]";
 my $version = "$1-$2-$2-$4$5";
 
-open VERSION, ">$ver" or die "open >$ver: $!";
+open VER, ">$ver" or die "open >$ver: $!";
 print VER "$version\n" or die "write to $ver: $!";
 close VER or die "close $ver: $!";
 
