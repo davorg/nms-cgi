@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.4 2001-11-13 20:35:14 gellyfish Exp $
+#  $Id: ffa.pl,v 1.5 2001-11-15 09:11:04 gellyfish Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.4  2001/11/13 20:35:14  gellyfish
+#  Added the CGI::Carp workaround
+#
 #  Revision 1.3  2001/11/12 21:24:37  gellyfish
 #  * Captured newer version from elsewhere
 #  * Made links.html an XHTML file
@@ -92,9 +95,11 @@ my $mailer = '/usr/lib/sendmail -t -oi -oem';
 my $mail_address = 'gellyfish@localhost';
 
 # $style is the URL of a CSS stylesheet which will be used for script
-# generated messages.
+# generated messages.  This probably want's to be the same as the one
+# that you use for all the other pages.  This should be a local absolute
+# URI fragment.
 
-my $style = '';
+my $style = '/css/nms.css';
 
 #
 
@@ -127,7 +132,6 @@ BEGIN
 {
    my $error_message = sub {
                              my ($message ) = @_;
-                             print "Content-Type: text/html\n\n";
                              print "<h1>It's all gone horribly wrong</h1>";
                              print $message if $DEBUGGING;
                             };
@@ -180,11 +184,13 @@ foreach my $line (@lines)
        print FILE $line;
    }
 
+   SECTION:
    foreach my $tag ( keys %sections) 
    { 
       if (($section eq $sections{$tag}) && ($line =~ /<!--$tag-->/)) 
       {
          print FILE qq%<li><a href="$url">$title</a></li>\n%; 
+         last SECTION;
       }
    }
 }
@@ -259,19 +265,23 @@ sub no_url
    print header, 
          start_html(-title   => 'ERROR: No URL',
                     -BGCOLOR => '#FFFFFF',
-                    -style   => $style );
+                    -style => { src  => $style } );
    print <<EIEIO;
 <h1>No URL</h1>
-You forgot to enter a url you wanted added to the Free for 
-all link page.  Another possible problem was that your link was invalid.<p>
-<form method=POST action="$linkscgi">
-<input type=hidden name="title" value="$title">
-<input type=hidden name="section" value="$section">
-URL: <input type=text name="url" size=50><p>
-<input type=submit> * <input type=reset>
-<hr>
+<p>
+You either forgot to enter the url you wanted added to the Free for 
+all link page or you entered one which was invalid.</p>
+<p>
+   <form method=POST action="$linkscgi">
+      <input type=hidden name="title" value="$title" />
+      <input type=hidden name="section" value="$section" />
+      URL: <input type=text name="url" size=50 />
+      <br />
+      <input name="submit" value="OK" type=submit /> * 
+      <input name="reset" value="Clear" type=reset />
+<hr />
 <a href="$linksurl">$linkstitle</a>
-</form></body></html>
+</form></p></body></html>
 EIEIO
 
   exit;
@@ -282,20 +292,24 @@ sub no_title
    print header, 
          start_html(-title   => 'ERROR: No Title',
                     -BGCOLOR => '#FFFFFF',
-                    -style   => $style );
+                    -style => { src  => $style } );
    print <<EIEIO;
 <h1>No Title</h1>
-You forgot to enter a title you wanted added to the Free for
-all link page.  Another possible problem is that the title contained illegal 
-characters.<p>
+<p>
+You either forgot to enter the title you wanted for your link or the title
+you did enter contained characters that can't be displayed.
+</p>
+<p>
 <form method=POST action="$linkscgi">
-<input type=hidden name="url" value="$url"> 
-<input type=hidden name="section" value="$section">
-TITLE: <input type=text name="title" size=50><p>
-<input type=submit> * <input type=reset>
-<hr>
-<a href="$linksurl">$linkstitle</a>
-</form></body></html>
+   <input type=hidden name="url" value="$url" /> 
+   <input type=hidden name="section" value="$section" />
+   TITLE: <input type=text name="title" size=50 />
+   <br />
+   <input name="submit" value="OK" type=submit /> * 
+   <input type=reset name="reset" value="clear">
+   <hr />
+   <a href="$linksurl">$linkstitle</a>
+</form></p></body></html>
 EIEIO
 
    exit;
@@ -306,12 +320,15 @@ sub repeat_url
    print header, 
          start_html(-title   => 'ERROR: Repeat URL',
                     -BGCOLOR => '#FFFFFF',
-                    -style   => $style );
+                    -style => { src  => $style } );
    print <<EIEIO;
 <h1>Repeat URL</h1>
-Sorry, this URL is already in the Free For All Link Page
-You cannot add this URL to it again. <p>
+<p>
+Sorry, this link is already in the Free For All Link Page
+You cannot add this URL to it again. </p>
+<p>
 <a href="$linksurl">$linkstitle</a>
+</p>
 </body></html>\n";
 EIEIO
 
