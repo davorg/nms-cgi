@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.87 2002-05-23 20:47:35 nickjc Exp $
+# $Id: FormMail.pl,v 1.88 2002-05-25 23:01:02 nickjc Exp $
 #
 
 use strict;
@@ -12,12 +12,12 @@ use vars qw(
   $allow_empty_ref $max_recipients $mailprog @referers
   @allow_mail_to @recipients %recipient_alias
   @valid_ENV $date_fmt $style $send_confirmation_mail
-  $confirmation_text $locale
+  $confirmation_text $locale $charset
 );
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.87 $
+# FormMail.pl $Revision: 1.88 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -50,6 +50,7 @@ BEGIN
   %recipient_alias   = ();
   @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
   $locale            = '';
+  $charset           = 'iso-8859-1';
   $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
   $style             = '/css/nms.css';
   $send_confirmation_mail = 0;
@@ -66,7 +67,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.87 $, 10, -1;
+  $VERSION = substr q$Revision: 1.88 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -116,10 +117,10 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html; charset=iso-8859-1\n\n" unless $done_headers;
+      print "Content-Type: text/html; charset=$charset\n\n" unless $done_headers;
 
       print <<EOERR;
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -376,7 +377,7 @@ sub return_html {
   if ($Config{'redirect'}) {
     print redirect $Config{'redirect'};
   } else {
-    print "Content-Type: text/html; charset=iso-8859-1\n\n";
+    print "Content-Type: text/html; charset=$charset\n\n";
     $done_headers++;
 
     my $title = escape_html( $Config{'title'} || 'Thank You' );
@@ -385,7 +386,7 @@ sub return_html {
     my $attr = body_attributes(); # surely this should be done with CSS
 
     print <<EOHTML;
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -652,7 +653,23 @@ sub check_url_valid {
 sub strip_nonprintable {
   my $text = shift;
   return '' unless defined $text;
-  $text=~ tr#\t\n\040-\176\241-\377# #cs;
+  if ($charset =~ /^iso-8859/i)
+  {
+    # None of the the iso-8859-* charsets have printable
+    # characters between \200 and \241.  See
+    # http://czyborra.com/charsets/iso8859.html
+    $text=~ tr#\t\n\040-\176\241-\377# #cs;
+  }
+  elsif ($charset =~ /^utf-8$/i)
+  {
+    # The bytes 0xFE and 0xFF are illegal in UTF-8, see
+    # http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8
+    $text=~ tr#\t\n\040-\176\200-\375# #cs;
+  }
+  else
+  {
+    $text=~ tr#\t\n\040-\176\200-\377# #cs;
+  }
   return $text;
 }
 
@@ -893,7 +910,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.87 $
+FormMail $Revision: 1.88 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE

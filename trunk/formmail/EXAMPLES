@@ -27,6 +27,8 @@ script looks like:
     @recipients        = ();
     %recipient_alias   = ();
     @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
+    $locale            = '';
+    $charset           = 'iso-8859-1';
     $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
     $style             = '/css/nms.css';
     $send_confirmation_mail = 0;
@@ -95,6 +97,8 @@ So the configuration section should now look like:
     @recipients        = ();
     %recipient_alias   = ();
     @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
+    $locale            = '';
+    $charset           = 'iso-8859-1';
     $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
     $style             = '/css/nms.css';
     $send_confirmation_mail = 0;
@@ -251,6 +255,8 @@ collect target email addresses from web sites.
        'animals' => 'your-name@your.domain,your-name@somewhere-else.domain',
     );
     @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
+    $locale            = '';
+    $charset           = 'iso-8859-1';
     $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
     $style             = '/css/nms.css';
     $send_confirmation_mail = 0;
@@ -359,6 +365,8 @@ script is now:
        'plants'  => 'foo@your.domain',
     );
     @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
+    $locale            = '';
+    $charset           = 'iso-8859-1';
     $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
     $style             = '/css/nms.css';
     $send_confirmation_mail = 0;
