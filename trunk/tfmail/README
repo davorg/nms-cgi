@@ -378,7 +378,7 @@ example, if you added the line:
 
   <input type="hidden" name="_config" value="foo" />
 
-to one of your HTML forms, then TFmail would use foo.tfc in the
+to one of your HTML forms, then TFmail would use foo.trc in the
 CONFIG_ROOT directory as its configuration file when processing
 that form.
 
