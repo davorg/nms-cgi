@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.16 2002-06-25 20:53:17 nickjc Exp $
+# $Id: wwwadmin.pl,v 1.17 2002-07-23 20:44:51 nickjc Exp $
 #
 
 use strict;
@@ -12,7 +12,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.16 $ (part of wwwboard)
+# wwwadmin.pl $Revision: 1.17 $ (part of wwwboard)
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -63,7 +63,7 @@ BEGIN
    {
       my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
+      if ( $DEBUGGING )
       {
          $message =~ s/</&lt;/g;
          $message =~ s/>/&gt;/g;

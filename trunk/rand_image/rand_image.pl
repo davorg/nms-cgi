@@ -1,6 +1,6 @@
 #! /usr/bin/perl -wT
 #
-# $Id: rand_image.pl,v 1.8 2002-07-04 08:22:48 gellyfish Exp $
+# $Id: rand_image.pl,v 1.9 2002-07-23 20:44:50 nickjc Exp $
 #
 
 use strict;
@@ -66,7 +66,7 @@ BEGIN
    {
       my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
+      if ( $DEBUGGING )
       {
          $message =~ s/</&lt;/g;
          $message =~ s/>/&gt;/g;

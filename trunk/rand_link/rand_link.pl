@@ -1,6 +1,6 @@
 #! /usr/bin/perl -Tw
 #
-# $Id: rand_link.pl,v 1.10 2002-06-01 09:16:50 nickjc Exp $
+# $Id: rand_link.pl,v 1.11 2002-07-23 20:44:50 nickjc Exp $
 #
 
 use strict;
@@ -67,7 +67,7 @@ BEGIN
    {
       my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
+      if ( $DEBUGGING )
       {
          $message =~ s/</&lt;/g;
          $message =~ s/>/&gt;/g;

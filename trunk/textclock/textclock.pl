@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: textclock.pl,v 1.9 2002-05-01 08:09:55 gellyfish Exp $
+# $Id: textclock.pl,v 1.10 2002-07-23 20:44:51 nickjc Exp $
 #
 
 use strict;
@@ -42,7 +42,7 @@ BEGIN
    {
       my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
+      if ( $DEBUGGING )
       {
          $message =~ s/</&lt;/g;
          $message =~ s/>/&gt;/g;

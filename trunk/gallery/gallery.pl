@@ -1,8 +1,16 @@
 #!/usr/bin/perl -wT
 
-# $Id: gallery.pl,v 1.2 2002-02-27 09:04:29 gellyfish Exp $
+# $Id: gallery.pl,v 1.3 2002-07-23 20:44:50 nickjc Exp $
 
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2002/02/27 09:04:29  gellyfish
+# * Added question about simple search and PDF to FAQ
+# * Suppressed output of headers in fatalsToBrowser if $done_headers
+# * Suppressed output of '<link rel...' if not $style
+# * DOCTYPE in fatalsToBrowser
+# * moved redirects until after possible cause of failure
+# * some small XHTML fixes
+#
 # Revision 1.1.1.1  2002/01/22 20:37:41  gellyfish
 # * Checked in for discussion purposes
 #
@@ -44,7 +52,7 @@ BEGIN
    {
       my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
+      if ( $DEBUGGING )
       {
          $message =~ s/</&lt;/g;
          $message =~ s/>/&gt;/g;

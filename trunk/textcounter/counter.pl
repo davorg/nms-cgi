@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.17 2002-07-23 20:23:13 nickjc Exp $
+# $Id: counter.pl,v 1.18 2002-07-23 20:44:51 nickjc Exp $
 #
 
 use strict;
@@ -71,7 +71,7 @@ BEGIN
    {
       my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
+      if ( $DEBUGGING )
       {
          $message =~ s/</&lt;/g;
          $message =~ s/>/&gt;/g;

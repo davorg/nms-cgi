@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.15 2002-05-01 08:09:54 gellyfish Exp $
+# $Id: countdown.pl,v 1.16 2002-07-23 20:44:50 nickjc Exp $
 #
 
 use strict;
@@ -50,7 +50,7 @@ BEGIN
   sub fatalsToBrowser {
     my ( $message ) = @_;
 
-    if ( $main::DEBUGGING ) {
+    if ( $DEBUGGING ) {
       $message =~ s/</&lt;/g;
       $message =~ s/>/&gt;/g;
     } else {

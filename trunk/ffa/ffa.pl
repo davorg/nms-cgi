@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.18 2002-07-23 20:38:33 nickjc Exp $
+#  $Id: ffa.pl,v 1.19 2002-07-23 20:44:50 nickjc Exp $
 #
 
 use strict;
@@ -138,7 +138,7 @@ BEGIN
    {
       my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
+      if ( $DEBUGGING )
       {
          $message =~ s/</&lt;/g;
          $message =~ s/>/&gt;/g;
