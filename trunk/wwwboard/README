@@ -1,26 +1,31 @@
 COPYRIGHT:
 ----------
+
 wwwboard.pl Version 1.00
-Copyright 2001 London Perl Mongers, All rights reserved
+Copyright 2001,2002 London Perl Mongers, All rights reserved
 
 LICENSE:
 --------
+
 This script is free software; you are free to redistribute it
 and/or modify it under the same terms as Perl itself.
 
 URL:
 ----
+
 The most up to date version of this script is available from the nms
 script archive at  <http://nms-cgi.sourceforge.net/>
 
 SUMMARY:
 --------
+
 wwwboard is a script which allows you to create and maintain a discussion
 forum on the web. On the forum, people will be able to post and reply to
 posts.
 
 FILES:
 ------
+
 In this distribution, you will find these files:
   README        - Configuration and installation instructions. This file
   wwwboard.pl   - Script containing the config and making everything work
@@ -30,271 +35,221 @@ In this distribution, you will find these files:
   messages/     - Where the discussion messages will be created and stored
   wwwadmin.pl   - An administration tool to delete messages
   passwd.txt    - The encoded password and username for wwwadmin
-  ADMIN_README  - wwwadmin README file.
+  ADMIN_README  - wwwadmin config and install instruction.
 
-CONFIGURATION:
---------------
-There are a number of variables that you can change in formmail.pl which
-alter the way that the program works.
-___________________________________________________________________________
+CONFIGURATION and INSTALLATION:
+-------------------------------
 
-				WWWBOARD.PL
-				===========
+There are a number of files to configure in order to get the wwwboard working.
+During the following you will be guided through the configuration and installation of all the files and settings in order to have a working wwwboard.
 
-This file must be placed in your server's cgi-bin, or if your server has 
-.cgi extensions allowed, you can simply rename this file to wwwboard.cgi, 
-changing the $cgi_url variable below to reflect this.  The file must also 
-be chmoded 755. Ask your system administrator for more information on 
-either the cgi-bin or chmod command.
+* wwwboard.pl
+   Settings:
 
-This is the most complicated file you will need to modify.  It comes with 
-a lot of variables and many options.  Below is a summary of how to 
-configure all of the variables and what the options do:
+      $DEBUGGING          - This should be set to 1 whilst you are installing
+                            and testing the script. Once the script is live you
+			    should change it to 0. When set to 1, errors will be
+			    output to the browser. This is a security risk and
+			    should not be used when the script is live.
 
-###########################################################################
-# Define Variables
+      $emulate_matts_code - This determines whether the program should behave
+                            exactly like the original wwwboard program from Matt
+			    Wright Script Archive.  It should be set to 1 if you
+			    want to emulate the original program - this is
+			    recommended if you are replacing an existing
+			    installation with this program.  If it is set to 0
+			    then potentially it will not work with files
+			    produced by the original version - this is
+			    recommended for people installing this for the first
+			    time. It is also more secure to set it to 0 as the
+			    original script had many flaws which don't show up
+			    when not using emulation.
 
-$basedir = "/path/to/wwwboard";
-	This variable should contain the absolute system path to your 	
-        wwwboard directory.  So if you keep all of your files in 	
-        /home/yourname/public_html and you make a directory under there
-        called 'wwwboard', then $basedir would be set to: 
-        /home/yourname/public_html/wwwboard.
+      $basedir            - This is the directory from / on the server's
+                            filesystem. It is not the directory that appears in
+			    the web address, although part of it may be. Neither
+			    is it the cgi-bin directory where you put the
+			    wwwboard.pl file. This is where you upload the
+			    wwwboard by ftp. If you are not running your own
+			    server and aren't sure what this value should be,
+			    contact your system administrator to make sure you
+			    have the right value.
 
-$baseurl = "http://your.host.xxx/wwwboard";
-        This is the base URL to the directory where wwwboard is kept.  So
- 	staying with the example above, if your main directory is called 
-        by: http://your.host.xxx/~yourname/, the $baseurl would be set to: 
-        http://your.host.xxx/~yourname/wwwboard/.
+      $baseurl            - This is the full website address (URL) to the
+                            directory containing the wwwboard files. This this
+			    the directory that'll contain messages/, data.txt,
+			    wwwboard.html and faq.html. It's the web equivalent
+			    of $basedir.
 
-$cgi_url = "http://your.host.xxx/cgi-bin/wwwboard.pl";
-	This is the URL that points to wwwboard.pl.  This will be used in 
-        followup form responses, so this must be correct.
+      $cgi_url            - This is the full website address (URL) to the
+                            wwwboard.pl file which will run the wwwboard.
 
-$mesgdir = "messages";
-	This is the name of your messages directory which will be appended
- 	to $basedir.  All of the messages for wwwboard will be created and
- 	held in this directory.
+      $mesdir             - This is the directory, in $basedir, where the
+                            wwwboard messages will be stored.
 
-$datafile = "data.txt";
-	This is the name of the data file which will also be appended to 
-        $basedir.  It will hold the current filename count, and the script 
-        will read this in and determine the message filename from this 	file.
+      $datafile           - This is the name of the file, in $basedir, where
+                            important information for the wwwboard to function
+			    will be stored.
 
-$mesgfile = "wwwboard.html";
-	This is the name of the wwwboard.html file, which you might want to
- 	rename to index.html for the sake of a shorter URL.  It will be 
-        appended to both $basedir and $baseurl to determine the URL and the 
-        absolute path to this file, both for URL references by the script 
-        and for editing of this file by the script.
+      $mesgfile           - This is the name of the HTML file, in $basedir,
+                            which will make your wwwboard.
 
-$faqfile = "faq.html";
-	This is the path to the faq.html file which will be appended to 
-        $baseurl so users can find their way to the Frequently Asked
- 	Questions file about WWWBoard.
+      $faqfile            - This is the name of the Frequently Asked Question
+                            (FAQ) file, in $basedir, which will be used to
+			    answer wwwboard users' questions.
 
-$ext = "html";
-	This is the ext with which all individual files will be created 
-        with.  Most of the time it should be left as html, but on the 
-	occasion when you may be suing this on a dos based platform you can
- 	switch it to 'htm'.
+      $ext                - This is the extension that will be given to various
+                            web documents created by wwwboard. You should leave
+			    it as 'html' for most purposes, although you might
+			    want to change it to 'htm' if using MS-DOS.
 
-$date_command = "/bin/date";
-	This needs to be the path to your 'date' command.  This script uses
- 	the date command to time stamp the messages individually with along
- 	date and to place a short 'added' date on the wwwboard.html page.
+      $title              - This is the title that will be displayed on the
+                            program generated pages.
 
-$title = "WWWBoard Version 2.0 Test";
-	This is the title of your WWWBoard, which will be used on the 
-        individual message pages.  Call your message board whatever you 
-        like, but I do recommend changing the above to something a little 
-        more catchy. :-)
+      $style              - This is the web address (URL) of a CSS stylesheet
+                            which will be used for script generated messages.
+			    This probably want's to be the same as the one that
+			    you use for all the other pages.  This should be a
+			    local absolute URI fragment.
 
-# Done
-###########################################################################
+      $show_faq           - If $show_faq is set to 1 then the link for the
+                            wwwboard FAQ will be shown on the generated pages.
 
-There are also several options you will need to configure:
+      $allow_html         - If $allow_html is set to 1 then HTML will not be
+                            removed from the body of the message.  Be warned
+			    however that setting this is a possible security
+			    risk allowing malicious defacement of the page and
+			    possible cross page scripting attacks on this or
+			    other site.
 
-###########################################################################
-# Configure Options
+      $quote_text         - If $quote_text is set to 1 then the text of the
+                            original message will be placed in the
+			    "Post Followup" text box.
 
-$show_faq = 1;          # 1 - YES; 0 = NO
-	This option allows you to choose whether or not you want to display
- 	a link to the FAQ on every individual message page or not.  It
- 	defaults to 1 and the link will be put in at the top of the message
- 	along with links to Followups, Post Followup and Back to $title.
-  	Setting this to 0 will turn it off, and keeping it at 1 will keep
- 	the link.
+      $quote_char         - This is the string that will be prepended to each
+                            quoted line if $quote_text described above is set
+			    to 1.
 
-$allow_html = 1;        # 1 = YES; 0 = NO
-	This option lets you choose whether or not you want to allow HTML 
-	mark-up in your posts.  If you do not want to allow it, then
- 	everything that a user submits that has <>'s around it will be cut 
-	out of the message.  Setting this option to '1' will allow HTML in 
-	the posts and you can turn this option off by setting it to '0'.
+      $quote_html         - If $quote_html is set to 1 then if $quote_text is
+                            set to 1 above the original HTML in the post will
+			    be retained in the followup - otherwise it will be
+			    removed.
 
-$quote_text = 1;        # 1 = YES; 0 = NO
-	By keeping this option set to 1, the previous message will be 
-	quoted in the followup text input box.  The quoted text will have a 
-	':' placed in front of it so you can distinguish what had been said 
-	in the previous posts from what the current poster is trying to get 
-	across.  Setting this option to '0' will leave the followup text 
-	box empty for the new poster.
+      $subject_line       - When set to 0, the subject will be quoted and
+                            editable. When set to 1, the subject will be
+			    quoted but uneditable. When set to 2, the subject
+			    will not be quoted but will be editable.
 
-$subject_line = 0;      # 0 = Quote Subject Editable; 1 = Quote Subject
-                        #   UnEditable; 2 = Don't Quote Subject, Editable.
-	There are three options for the way that you can display the 
-	subject line for the user posting a followup.  Leaving this option 
-	at '0' which is the default value, will put the previous subject 
-	line into the followup form and allow users to edit the subject 
-	however they like.  Setting this option to '1', however, will quote 
-	the subject, but simply display it to the user, not allowing him or 
-	her to edit the subject line.  The third and final option can be 
-	achieved by setting the $subject_line variable to '2'.  If it is 
-	set to '2' the subject will not be quoted and instead the user will 
-	be prompted with an empty subject block in their followup subject 
-	line.
+      $use_time           - If $use_time is set to 1 then the dates will be
+                            displayed as "$time_fmt $date_fmt" - see note below
+			    about date formats.
 
-$use_time = 1;		# 1 = YES; 0 = NO
-	This option allows you to choose whether or not you want to use the
- 	hour:minute:second time with the day/month/year time on the main 
-	page.  Day/Month/Year will automatically be placed on the main 
-	wwwboard.html page when a new entry is added, but if you leave this 
-	variable at '1' the hour:minute:second time will also be put there. 
-	This is very useful for message boards that get a lot of posts, 
-	but if you would like to save space on your main page, you can set 
-	this to '0' causing the hour:minute:second display not to be added.
+      $date_fmt
+      $time_fmt           - $date_fmt and $time_fmt describe the format of the
+                            dates that will output - the replacement parameters
+			    you can use here are:
+               %A - the full name of the weekday according to the current local
+	       %B - the full name of the month according to the current local
+	       %m - the month as a number
+	       %d - the day of the month as a number
+	       %D - the date in the form %m/%d/%y (i.e. the US format )
+	       %y - the year as a number without the century
+	       %Y - the year as a number including the century
+	       %H - the hour as number in the 24 hour clock
+	       %M - the minute as a number
+	       %S - the seconds as a number
+	       %T - the time in 24 hour format (%H:%M:%S)
+	       %Z - the time zone (full name or abbreviation)
 
-$show_poster_ip = 1;    # 1 = Show the IP of every poster; 0 = Don't
-	If this option is turned on (set to 1), the IP of the user who
-        posted the message will be shown after the name on each post.
+      $show_poster_ip     - Set to 1, the client IP address of the poster is
+                            displayed in the message. Otherwise it won't.
 
-$enforce_max_len = 0;   # 2 = YES, error; 1 = YES, truncate; 0 = NO
-	This feature allows you to enforce a maximum length on the fields
-	in the post form.  If you wish to have it produce an error when
-	the lengths are surpassed, then set it to 2, if you wish for the
-	data to be truncated instead of an error accurring, set it to 1
-	and only the max length of data will be posted. Setting this to
-	0 will not restrict the size of messages.  The max size of each 
-	field can be configured with %max_len.
+      $enforce_max_len    - Set to 2, this will force the max length settings
+                            listed below by giving an error. Set to 1, this will
+			    force by truncating too long text. Set to 0, it will
+			    ignore the max length settings.
 
-%max_len = ('name', 50, 	This sets the maximum length of each field
-            'email', 70, 	in terms of the maximum number of characters.
-            'subject', 80, 	So as default, the name can have a max size 
-            'url', 150, 	of 50 charactersm the mail address 70, and so
-            'url_title', 80,	on. The part in quotes corresponds to the 
-            'img', 150,		field name in the post form, and the number
-            'body', 3000,	corresponds to the max size of the field.
-            'origsubject', 80,
-            'origname', 50,
-            'origemail', 70,
-            'origdate', 50);
+      %max_len            - Contains the maximum lengths of the data allowed in
+                            the various fields - they must be supplied if
+			    $enforce_max_len is not 0.
 
+      $strict_image       - If set to 1 will require that an image url if
+                            supplied must end in one of the common suffixes as
+			    defined in @image_suffixes.
 
-# Done
-###########################################################################
+      $image_suffixes     - This is a list of the extensions that the image URL
+                            must end with if $strict_image above is set to 1 -
+			    this is to minimize a potential for the entry of
+			    entry of a malicious URL that may be used to attack
+			    another host or disfigure this web page.
 
-WOW!  You made it through all that.  That was the hardest file to edit.
+   Installation:
+      You must upload this file to your server's cgi-bin or in a directory where
+      CGI execution is allowed. Make sure the directory and path match the
+      $cgi_url put in the settings. You must also give the file the right
+      permissions. In order to do so, the file must be chmoded to 755 using the
+      following command:
+         chmod 755 wwwboard.pl
 
-___________________________________________________________________________
+* wwwboard.html
+   Settings:
+      <form method="post" action="/cgi-bin/wwwboard.pl">
+                          - This is the only setting to modify in this file. The
+			    only thing you got to make sure of is the action=""
+			    path which has to be the same as the $cgi_url. No
+			    need to put the http://www.yourpage.com, but it
+			    won't hurt if you do.
 
-			   WWWBOARD.HTML
-			   =============
+      Other               - Please feel free to change the <title>, headers and
+                            layout of this page. The only things that need to
+			    remain intact are the <form>, <input> and
+			    <textarea> tags.
 
-wwwboard.html must be placed in the directory that you defined in 
-$basedir of your wwwboard.pl file.  It must be chmoded 777 so that your 
-web server's uid (User ID) has permission to write to this file.
+   Installation:
+      This is fairly simple. Just put it in your $basedir so that people
+      visiting $baseurl/wwwboard.html will see it. You also have to chmod the
+      file to 777 using the following command:
+         chmod 777 wwwboard.html
 
-This file needs much less editing than the wwwboard.pl script.  There are 
-three things that you will want to edit in this file.  The first two are 
-simply the title of your WWWBoard.  Currently the two lines look like:
+* faq.html
+   Settings:
+      This file does not need to be edited. However feel free to change anything
+      you want in it. Just make sure that the links to wwwboard.html work.
 
-<title>WWWBoard Version 2.0!</title> and <h1>WWWBoard Version 2.0!</h1>
+   Installation:
+      This is fairly simple. Just put it in your $basedir so that people
+      visiting $baseurl/wwwboard.html will see it. Normally, you should not need
+      to chmod it. However, it should be chmoded to 644.
 
-You will want to change the title and header "WWWBoard Version 2.0!" to 
-whatever you want to call your WWWBoard.  This should probably be the 
-same as the variable $title that you defined in wwwboard.pl.
+* messages/
+   Settings:
+      None.
 
-The third line in this file that you will need to edit is the one that 
-looks like:
+   Installation:
+      This is fairly simple. Just put it in your $basedir. You also have to
+      chmod the directory to 777 using the following command:
+         chmod 777 messages/
 
-<form method=POST action="http://your.host.xxx/cgi-bin/wwwboard.pl">
+* data.txt
+   Settings:
+      None.
 
-You need to change the URL that is in action="" to the same URL that you 
-defined in wwwboard.pl as $cgi_url.
+   Installation:
+      Simply upload this file to $basedir, as mentionned in wwwboard.pl. You
+      also have to chmod the file to 666 (no, we are not the devil) using the
+      following command:
+         chmod 666 data.txt
 
-Once you have made these changes you can exit this file and save it.
+* Administration files (wwwadmin.pl, passwd.txt, ADMIN_README)
+   The administrative files are not necessary to run the boards. That is, if you
+   do not wish to set them up or use them, you can still have a working
+   wwwboard. They are simply a useful tool for the wwwboard administrator to
+   delete messages and perform other administrative tasks. Their settings and
+   installation procedure is discussed in ADMIN_README.
 
-___________________________________________________________________________
+SUPPORT:
+--------
 
-			 	FAQ.HTML
-			 	========
-
-This file does not need to be edited, unless you want to change the 
-heading or title or add a link back to your wwwboard page.
-
-It should be placed in the $basedir directory and its name should reflect 
-that of the $faq_file variable defined in wwwboard.pl
-
-It should be chmoded 744, so that it is readable by all.
-
-___________________________________________________________________________
-
-			       MESSAGES/
-			       =========
-
-This is a directory that should also be placed in $basedir as defined in 
-wwwboard.pl.  This directory must be chmoded 777 so that messages can be 
-written into it by the server's UID.
-
-___________________________________________________________________________
-
-				DATA.TXT
-				========
-
-Simply place this file into $basedir as defined in wwwboard.pl and chmod 
-it 777 so that the web server can write an incremented number to it.  
-This is where the file name number will be kept.
-
-___________________________________________________________________________
-
-				 README
-				 ======
-
-		    This is the easiest.  Just READ it!
-
-___________________________________________________________________________
-
-Version 2.0 Improvements Over 1.0:
-
-* HTML does not mess up postings like the last version did.
-* There are many more options to allow flexibility in design.
-* One CGI program instead of three.  Makes everything smoother and
-  more efficient.
-* File names are derived from an incremented number up to 99999 so that
-  messages won't overlap, like they could have with the old pid numbers that
-  were used.
-* Many more things I can't even begin to list.
-
-___________________________________________________________________________
-
-Version History:
-
-Version 2.0:            Complete Re-Write of Version 1.0
-  A1    11/4      -     ALPHA 1 Version Released because many people were 
-                        writing asking if they could get a copy of it.
-        12/27/99  -     Fixed small Y2K date problem.
-  A2.1  01/07/00  -     Patched up a couple of security holes relating to
-                        followup messages and the trashing of boards. In
-                        specific, it weeds out non-numbers and duplicates
-                        from the list of possible followups.
-                  -     Added ability to limit field sizes of posts.
-                  -     Added option to show poster's IP address.
-___________________________________________________________________________
-
-SUPPORT
-
-For support of this script please email:
+For support of this script please suscribe to and email:
 
   <nms-cgi-support@lists.sourceforge.net>
-
