@@ -1,0 +1,7 @@
+src    = in
+lib    = lib
+dest   = out
+accept = (html|css)$
+copy   = (png)$
+verbose
+recurse

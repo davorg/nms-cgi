@@ -9,7 +9,7 @@
 [% link('home', '/', 'Home') %]
 [% link('programs', 'scripts.shtml', 'Programs') %]
 [% link('support', 'support.html', 'Support') %]
-[% link('faqs', 'faqs_nms.html', 'FAQs') %]
+[% link('faqs', 'faq_nms.html', 'FAQs') %]
 [% link('about', 'about.html', 'About') %]
 [% link('news', 'news.html', 'News') %]
 [% link('usage', 'usage.html', 'Usage') %]
