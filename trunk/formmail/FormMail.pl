@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.7 2001-11-23 13:57:36 nickjc Exp $
+# $Id: FormMail.pl,v 1.8 2001-11-24 11:59:58 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/11/23 13:57:36  nickjc
+# * added -T switch
+# * Escape metachars in input variables when outputing HTML
+#
 # Revision 1.6  2001/11/20 17:39:20  nickjc
 # * Fixed a problem with %Config initialisation
 # * Reduced the scope for SPAM relaying
@@ -24,7 +28,7 @@
 #
 
 use strict;
-use POSIX 'strftime';
+use POSIX qw(strftime);
 use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser set_message);
@@ -60,9 +64,9 @@ my $secure = 1;
 
 # the mailer that should be used to send the mail message.
 # this should be the full path to a program that will read a message
-# from STDIN
+# from STDIN.  Any switches that the program requires should be provided here
 
-my $mailprog = '/usr/lib/sendmail';
+my $mailprog = '/usr/lib/sendmail -oi -t';
 
 # a list of referring hosts.  If $secure is set then if these are IP numbers
 # the IP of the referring host will be determined and checked against this
@@ -75,13 +79,32 @@ my @recipients = (@referers);
 
 my @valid_ENV = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
 
+# $date_fmt describes the format of the date that will output - the
+# replacement parameters use here are:
+#
+# %A - the full name of the weekday according to the current locale
+# %B - the full name of the month according to the current local
+# %d - the day of the month as a number
+# %Y - the year as a number including the century
+# %H - the hour as number in the 24 hour clock
+# %M - the mimute as a number
+# %S - the seconds as a number
+#
+
 my $date_fmt = '%A, %B %d, %Y at %H:%M:%S';
+
+# $style is the URL of a CSS stylesheet which will be used for script
+# generated messages.  This probably want's to be the same as the one
+# that you use for all the other pages.  This should be a local absolute
+# URI fragment.
+
+my $style = '/css/nms.css';
 
 # End configuration
 
 if ( $emulate_matts_code )
 {
-   $secure = 0;
+   $secure = 0; # ;-}
 }
 
 BEGIN
@@ -95,6 +118,10 @@ BEGIN
   set_message($error_message);
 }   
 
+#  Empty the environment of potentially harmful variables
+#  This might cause problems if $mail_prog is a shell script :)
+
+delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
 
 $ENV{PATH} = '/bin:/usr/bin';
 
@@ -154,27 +181,27 @@ sub parse_form {
                   realname 
                   redirect 
                   bgcolor
-		  background 
+                  background 
                   link_color 
                   vlink_color 
                   text_color
-		  alink_color 
+                  alink_color 
                   title 
                   sort 
                   print_config 
                   required
-		  env_report 
+                  env_report 
                   return_link_title 
                   return_link_url
-		  print_blank_fields 
+                  print_blank_fields 
                   missing_fields_redirect
                  );
 
-  @Config{@fields} = ('') x @fields;
+  @Config{@fields} = () x @fields; # make it undef rather than empty string
 
   my @field_order;
 
-  foreach (param) {
+  foreach (param()) {
     if (exists $Config{$_}) {
       $Config{$_} = param($_);
     } else {
@@ -202,8 +229,8 @@ sub parse_form {
 sub check_required {
   my ($require, @error);
 
-  if ($Config{subject} =~ /(\n|\r)/m ||
-      $Config{recipient} =~ /(\n|\r)/m) {
+  if ($Config{subject} =~ /[\n\r]/m ||
+      $Config{recipient} =~ /[\n\r]/m) {
     error('no_recipient');
   }
 
@@ -255,17 +282,17 @@ sub return_html {
     my $recipient = escape_html($Config{recipient});
 
     print "  <title>$title</title>\n";
-
+    print qq%  <link rel="stylesheet" type="text/css" href="$style" />\n%;
     print " </head>\n <body";
 
-    body_attributes();
+    body_attributes(); # surely this should be done with CSS
 
     print ">\n  <center>\n";
 
     print qq(<h1 align="center">$title</h1>\n);
 
     print "<p>Below is what you submitted to $recipient on ";
-    print "$date<p><hr size=1 width=75%></p>\n";
+    print "$date<p><hr size=1 width=75% /></p>\n";
 
     my @sorted_fields;
     if ($Config{sort}) {
@@ -286,7 +313,8 @@ sub return_html {
 
     foreach (@sorted_fields) {
       if ($Config{print_blank_fields} || $Form{$_}) {
-	print '<p><b>', escape_html($_), ':</b> ', escape_html($Form{$_}), "</p>\n";
+	print '<p><b>', escape_html($_), ':</b> ', 
+                        escape_html($Form{$_}), "</p>\n";
       }
     }
 
@@ -296,12 +324,17 @@ sub return_html {
       print "<ul>\n";
       print '<li><a href="', escape_html($Config{return_link_url}),
          '">', escape_html($Config{return_link_title}), "</a>\n";
-      print "</ul>\n";
+      print "</li>\n</ul>\n";
     }
 
     print <<END_HTML_FOOTER;
-        <hr size="1" width="75%">
-        <p align="center"><font size="-1"><a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001  London Perl Mongers</font></p>
+        <hr size="1" width="75%" />
+        <p align="center">
+           <font size="-1">
+             <a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> 
+             &copy; 2001  London Perl Mongers
+           </font>
+        </p>
         </body>
        </html>
 END_HTML_FOOTER
@@ -309,11 +342,14 @@ END_HTML_FOOTER
 }
 
 sub send_mail {
+
+  my $dashes = '-' x 75;
+
   if ("$Config{recipient}$Config{email}$Config{realname}$Config{subject}" =~ /\r|\n/) {
     die 'multiline variable in mail header, unsafe to continue';
   }
 
-  open(MAIL,"|$mailprog -oi -t")
+  open(MAIL,"|$mailprog")
     || die "Can't open sendmail\n";
 
   print MAIL "To: $Config{recipient}\n";
@@ -324,7 +360,7 @@ sub send_mail {
 
   print MAIL "Below is the result of your feedback form.  It was submitted by\n";
   print MAIL "$Config{realname} ($Config{email}) on $date\n";
-  print MAIL '-' x 75 . "\n\n";
+  print MAIL "$dashes\n\n";
 
   if ($Config{print_config}) {
     foreach (@{$Config{print_config}}) {
@@ -354,7 +390,7 @@ sub send_mail {
     }
   }
 
-  print MAIL '-' x 75 . "\n\n";
+  print MAIL "$dashes\n\n";
 
   foreach (@{$Config{env_report}}) {
     print MAIL "$_: $ENV{$_}\n" if $ENV{$_};
@@ -392,12 +428,12 @@ sub check_email {
 }
 
 sub body_attributes {
-  my %attrs = (bgcolor => 'bgcolor',
-	       background => 'background',
-	       link_color => 'link',
+  my %attrs = (bgcolor     => 'bgcolor',
+	       background  => 'background',
+	       link_color  => 'link',
 	       vlink_color => 'vlink',
 	       alink_color => 'alink',
-	       text_color => 'text');
+	       text_color  => 'text');
 
   foreach (keys %attrs) {
     print qq( $attrs{$_}="), escape_html($Config{$_}), '"' if $Config{$_};
@@ -417,6 +453,7 @@ Content-type: text/html
 <html>
  <head>
   <title>Bad Referrer - Access Denied</title>
+  <link rel="stylesheet" type="text/css" href="$style" />
  </head>
  <body bgcolor="#FFFFFF" text="#000000">
    <table border="0" width="600" bgcolor="#9C9C9C" align="center">
@@ -432,7 +469,7 @@ Content-type: text/html
      README file.</p>
 
      <p>Add <tt>'$host'</tt> to your <tt><b>\@referers</b></tt> array.</p>
-     <hr size="1">
+     <hr size="1" />
      <p align="center"><font size="-1"><a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001
        London Perl Mongers</font></p>
     </td></tr>
@@ -448,6 +485,7 @@ Content-type: text/html
 <html>
  <head>
   <title>FormMail</title>
+  <link rel="stylesheet" type="text/css" href="$style" />
  </head>
  <body bgcolor="#FFFFFF" text="#000000">
    <table border="0" width="600" bgcolor="#9C9C9C" align="center">
@@ -467,6 +505,7 @@ Content-type: text/html
 <html>
  <head>
   <title>Error: Bad/No Recipient</title>
+  <link rel="stylesheet" type="text/css" href="$style" />
  </head>
  <body bgcolor="#FFFFFF" text="#000000">
    <table border="0" width="600" bgcolor="#9C9C9C" align="center">
@@ -478,7 +517,7 @@ Content-type: text/html
      <tt>recipient</tt> form field with an e-mail address that has been 
      configured in <tt>\@recipients</tt>.  More information on filling in 
      <tt>recipient</tt> form fields and variables can be found in the README 
-     file.<hr size=1>
+     file.<hr size="1" />
      The recipient was: [${\( escape_html($Config{recipient}) )}]<hr>
      <p align="center"><font size="-1">
       <a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001 London Perl Mongers<br></font></p>
@@ -503,6 +542,7 @@ Content-type: text/html
 <html>
  <head>
   <title>Error: Blank Fields</title>
+  <link rel="stylesheet" type="text/css" href="$style" />
  </head>
    <table border="0" width="600" bgcolor="#9C9C9C" align="center">
     <tr><th><font size="+2">Error: Blank Fields</font></th></tr>
@@ -517,7 +557,7 @@ $missing_field_list
      <p>These fields must be filled in before you can successfully submit 
      the form.</p>
      <p>Please use your back button to return to the form and try again.</p>
-     <hr size=1>
+     <hr size="1" />
      <p align="center"><font size="-1">
       <a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001 London Perl Mongers
      </font></p>
@@ -535,6 +575,7 @@ exit;
 }
 
 use vars qw(%escape_html_map);
+
 BEGIN
 {
    %escape_html_map = ( '&' => '&amp;',
@@ -551,5 +592,3 @@ sub escape_html {
   $str =~ s/([&<>"'])/$escape_html_map{$1}/g;
   return $str;
 }
-
-

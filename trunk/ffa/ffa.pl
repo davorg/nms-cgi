@@ -1,8 +1,14 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.5 2001-11-15 09:11:04 gellyfish Exp $
+#  $Id: ffa.pl,v 1.6 2001-11-24 11:59:58 gellyfish Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.5  2001/11/15 09:11:04  gellyfish
+#  * Fixed the -style thing in start_html
+#  * added nms.css to the links page
+#  * fixed the hard coded HTML to be nearly XHTML
+#  * fixed header in the die handler.
+#
 #  Revision 1.4  2001/11/13 20:35:14  gellyfish
 #  Added the CGI::Carp workaround
 #
@@ -23,7 +29,9 @@ use Fcntl qw(:flock);
 
 use vars qw($DEBUGGING);
 
-@ENV{qw(PATH IFS)} = ('') x 2;
+# sanitize the environment.
+
+delete @ENV{qw(ENV BASH_ENV IFS PATH)};
 
 #
 # Configurable stuff

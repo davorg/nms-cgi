@@ -1,8 +1,13 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.4 2001-11-19 09:21:44 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.5 2001-11-24 11:59:58 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/11/19 09:21:44  gellyfish
+# * added allow_html functionality
+# * fixed potential for pre lock clobbering in guestbook
+# * some XHTML toshing
+#
 # Revision 1.3  2001/11/13 20:35:14  gellyfish
 # Added the CGI::Carp workaround
 #
@@ -15,8 +20,7 @@ use strict;
 use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser set_message);
 use Fcntl qw(:DEFAULT :flock :seek);
-use POSIX 'strftime';
-#use diagnostics;
+use POSIX qw(strftime);
 
 use vars qw($DEBUGGING);
 
@@ -36,28 +40,43 @@ BEGIN
 }
    
 my $basedir = '/var/www/html/wwwboard';
-#my $basedir = '.';
 my $baseurl = 'http://tma2/wwwboard';
 my $cgi_url = 'http://tma2/cgi-bin/wwwboard.pl';
 
-my $mesgdir = 'messages';
+my $mesgdir  = 'messages';
 my $datafile = 'data.txt';
 my $mesgfile = 'wwwboard.html';
-my $faqfile = 'faq.html';
+my $faqfile  = 'faq.html';
 
 my $ext = 'html';
 
-my $title = "WWWBoard Version $VERSION";
+my $title = "NMS WWWBoard Version $VERSION";
 
-my $show_faq = 1;
-my $allow_html = 1;
-my $quote_text = 1;
+# $style is the URL of a CSS stylesheet which will be used for script
+# generated messages.  This probably want's to be the same as the one
+# that you use for all the other pages.  This should be a local absolute
+# URI fragment.
+
+my $style = '/css/nms.css';
+
+# $emulate_matts_code determines whether the program should behave exactly
+# like the original wwwboard program.  It should be set to 1 if you
+# want to emulate the original program - this is recommended if you are
+# replacing an existing installation with this program.  If it is set to 0
+# then potentially it will not work with files produced by the original
+# version - this is recommended for people installing this for the first time.
+
+my $emulate_matts_code = 1;
+
+my $show_faq     = 1;
+my $allow_html   = 1;
+my $quote_text   = 1;
 my $subject_line = 0;	# 0 = Quote Subject Editable
                         # 1 = Quote Subject UnEditable; 
                         # 2 = Don't Quote Subject, Editable.
-my $use_time = 1;
+my $use_time        = 1;
 
-my $show_poster_ip = 1;
+my $show_poster_ip  = 1;
 my $enforce_max_len = 0;   # 2 = YES, error; 1 = YES, truncate; 0 = NO
 
 my %max_len = (name        => 50,
@@ -265,9 +284,13 @@ sub new_file {
       '';
 
   print NEWFILE <<END_HTML;
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
     <title>$subject</title>
+    <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body>
     <h1 align="center">$subject</h1>
@@ -470,9 +493,13 @@ sub return_html {
     qq(<p><b>Image:</b> <img src="$message_img"></p>) : '';
 
   print <<END_HTML;
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
     <title>Message Added: $subject</title>
+    <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body>
     <h1 align="center">Message Added: $subject</h1>
@@ -507,9 +534,13 @@ sub error {
 
   if ($error eq 'no_name') {
     print <<END_HTML;
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
     <title>$title ERROR: No Name</title>
+    <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body><h1 align="center">ERROR: No Name</h1>
   <p>You forgot to fill in the 'Name' field in your posting.  Correct it 
@@ -520,9 +551,13 @@ END_HTML
     rest_of_form();
   } elsif ($error eq 'no_subject') {
     print <<END_HTML;
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
     <title>$title ERROR: No Subject</title>
+    <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body><h1 align="center">ERROR: No Subject</h1>
   <p>You forgot to fill in the 'Subject' field in your posting.  Correct it 
@@ -533,22 +568,29 @@ END_HTML
     rest_of_form();
   } elsif ($error eq 'no_body') {
     print <<END_HTML;
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-  <head>
-    <title>$title ERROR: No Message</title>
-  </head>
-  <body><align="center"><h1>ERROR: No Message</h1>
-  <p>You forgot to fill in the 'Message' field in your posting.  Correct it
-  below and re-submit.  The necessary fields are: Name, Subject and 
-  Message.</p>
-  <hr>
+<head>
+<title>$title ERROR: No Message</title>
+<link rel="stylesheet" type="text/css" href="$style" />
+</head>
+<body><align="center"><h1>ERROR: No Message</h1>
+<p>You forgot to fill in the 'Message' field in your posting.  Correct it
+below and re-submit.  The necessary fields are: Name, Subject and 
+Message.</p>
+<hr>
 END_HTML
-    rest_of_form();
-   } elsif ($error eq 'field_size') {
-     printf <<END_HTML;
+rest_of_form();
+} elsif ($error eq 'field_size') {
+printf <<END_HTML;
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
     <title>$title ERROR: Field too Long</title>
+    <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body><h1 align="center">ERROR: Field too Long</h1>
   <p>One of the form fields in the message submission was too long.  The 

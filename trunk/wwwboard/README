@@ -1,4 +1,4 @@
-WWWBoard Version 2.0 ALPHA 2.1
+NMS WWWBoard Version 1.0
 
 Copyright 2001 London Perl Mongers, All rights reserved
 
@@ -8,7 +8,7 @@ and/or modify it under the same terms as Perl itself.
 Scripts Archive at <http://nms-cgi.sourceforge.net/>
 
 
-WWWBoard is the Version 2.0 of my Bulletin Board Message System.  I think 
+WWWBoard is the Version 1.0 of my Bulletin Board Message System.  I think 
 that the name is much better, and a lot fewer characters.  Version 2.0 
 has many enhancements, which were never put into version 1.0.  MANY of 
 the bugs in version 1.0 were fixed, although I am sure you will probably 

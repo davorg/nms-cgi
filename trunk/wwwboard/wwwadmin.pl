@@ -1,8 +1,13 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.4 2001-11-19 09:21:44 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.5 2001-11-24 11:59:58 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/11/19 09:21:44  gellyfish
+# * added allow_html functionality
+# * fixed potential for pre lock clobbering in guestbook
+# * some XHTML toshing
+#
 # Revision 1.3  2001/11/13 20:35:14  gellyfish
 # Added the CGI::Carp workaround
 #
@@ -40,10 +45,27 @@ my $passwd_file = 'passwd.txt';
 
 my $ext = 'html';
 
-my $title = 'WWWBoard Version 2.0 Test';
+my $title = 'NMS WWWBoard Version 1.0';
 my $use_time = 1; # 1 = YES; 0 = NO
 
+# $emulate_matts_code determines whether the program should behave exactly
+# like the original guestbook program.  It should be set to 1 if you
+# want to emulate the original program - this is recommended if you are
+# replacing an existing installation with this program.  If it is set to 0
+# then potentially it will not work with files produced by the original
+# version - this is recommended for people installing this for the first time.
+
+my $emulate_matts_code = 1;
+
+# $style is the URL of a CSS stylesheet which will be used for script
+# generated messages.  This probably want's to be the same as the one
+# that you use for all the other pages.  This should be a local absolute
+# URI fragment.
+
+my $style = '/css/nms.css';
+
 # Done
+
 ###########################################################################
 
 BEGIN
@@ -71,11 +93,11 @@ my %HTML;
 
 print header;
 
-print CGI::Dump;
+print CGI::Dump if $DEBUGGING;
 
 my %FORM;
 my $command = $ENV{QUERY_STRING};
-&parse_form unless $command;
+parse_form() unless $command;
 
 if ($command eq 'remove') {
   my $html = $HTML{REMOVE_TOP};
@@ -231,7 +253,7 @@ if ($command eq 'remove') {
 
 } elsif ($FORM{action} eq 'remove') {
 
-   &check_passwd;
+   check_passwd();
 
    my (@all, @single);
    foreach ($FORM{'min'} .. $FORM{'max'}) {
@@ -304,11 +326,11 @@ if ($command eq 'remove') {
    print WWWBOARD @lines;
    close(WWWBOARD);
 
-   &return_html($FORM{type});
+   return_html($FORM{type});
 
 } elsif ($FORM{action} eq 'remove_by_date_or_author') {
 
-   &check_passwd;
+   check_passwd();
 
    my (@attempted, @not_removed, @no_file, @top_bot);
 
@@ -348,11 +370,11 @@ if ($command eq 'remove') {
    print WWWBOARD @lines;
    close(WWWBOARD);
 
-   &return_html($FORM{type});
+   return_html($FORM{type});
 
 } elsif ($FORM{action} eq 'change_passwd') {
 
-  open(PASSWD,"$basedir/$passwd_file") || &error('passwd_file');
+  open(PASSWD,"$basedir/$passwd_file") || error('passwd_file');
   my $passwd_line = <PASSWD>;
   chomp($passwd_line);
   close(PASSWD);
@@ -360,12 +382,12 @@ if ($command eq 'remove') {
   my ($username, $passwd) = split(/:/,$passwd_line);
 
   if (!($FORM{passwd_1} eq $FORM{passwd_2})) {
-    &error('not_same');
+    error('not_same');
   }
 
   my $test_passwd = crypt($FORM{password}, substr($passwd, 0, 2));
   if ($test_passwd eq $passwd && $FORM{username} eq $username) {
-    open(PASSWD,">$basedir/$passwd_file") || &error('no_change');
+    open(PASSWD,">$basedir/$passwd_file") || error('no_change');
     my $new_password = crypt($FORM{passwd_1}, substr($passwd, 0, 2));
     my $new_username;
     if ($FORM{new_username}) {
@@ -376,10 +398,10 @@ if ($command eq 'remove') {
     print PASSWD "$new_username:$new_password";
     close(PASSWD);
   } else {
-    &error('bad_combo');
+    error('bad_combo');
   }
 
-  &return_html('change_passwd');
+  return_html('change_passwd');
 } else {
   my $html = $HTML{DEFAULT};
   $html =~ s/(\$\w+)/$1/eeg;
@@ -447,60 +469,90 @@ href=\"$baseurl/$mesgpage\">$title</a> ]\n";
 }
 
 sub error {
-  my $error = $_[0];
+  my ($error) = @_;
+  my $args = {};
    if ($error eq 'bad_combo') {
-      print "<html><head><title>Bad Username - Password Combination</title></head>\n";
-      print "<body><center><h1>Bad Username - Password Combination</h1></center>\n";
-      print "You entered and invalid username password pair.  Please try again.<p>\n";
-      &passwd_trailer
+      $args->{Title} = 'Bad Username - Password Combination';
+      $args->{Heading} = 'Bad Username - Password Combination';
+      $args->{Body} = "You entered and invalid username password pair.  Please try again.";
    }
    elsif ($error eq 'passwd_file') {
-      print "<html><head><title>Could Not Open Password File For Reading</title></head>\n";
-      print "<body><center><h1>Could Not Open Password File For Reading</h1></center>\n";
-      print "Could not open the password file for reading!  Check permissions and try again.<p>\n";
-      &passwd_trailer
+      $args->{Title} = 'Could Not Open Password File For Reading';
+      $args->{Heading} = 'Could Not Open Password File For Reading';
+      $args->{Body} = "Could not open the password file for reading!  Check permissions and try again.";
    }
    elsif ($error eq 'not_same') {
-      print "<html><head><title>Incorrect Password Type-In</title></head>\n";
-      print "<body><center><h1>Incorrect Password Type-In</h1></center>\n";
-      print "The passwords you typed in for your new password were not the same.\n";
-      print "You may have mistyped, please try again.<p>\n";
-      &passwd_trailer
+      $args->{Title} = 'Incorrect Password Type-In';
+      $args->{Heading} = 'Incorrect Password Type-In';
+      $args->{Body} = "The passwords you typed in for your new password were not the same.\n";
+      $args->{Body} .= "You may have mistyped, please try again.\n";
    }
    elsif ($error eq 'no_change') {
-      print "<html><head><title>Could Not Open Password File For Writing</title></head>\n";
-      print "<body><center><h1>Could Not Open Password File For Writing</h1></center>\n";
-      print "Could not open the password file for writing!  Password not changed!<p>\n";
-      &passwd_trailer
+      $args->{Title} = 'Could Not Open Password File For Writing';
+      $args->{Heading} = 'Could Not Open Password File For Writing';
+      $args->{Body} = 'Could not open the password file for writing!  Password not changed!';
+   }
+   else
+   {
+     $args->{Title}   = 'Unknown Error';
+     $args->{Heading} = 'Unknown Error';
+     $args->{Body}    = 'Unknown Error';
    }
 
+   print passwd_error($args);
    exit;
 }
 
-sub passwd_trailer {
-  my $mesgpage;
-
-   print "<hr size=7 width=75%><center><font size=-1>\n";
-   print "[ <a href=\"$cgi_url\">WWWAdmin</a> ] [ <a href=\"$baseurl/$mesgpage\">$title</a> ]\n";
-   print "</font></center><hr size=7 width=75%>\n";
-   print "</body></html>\n";
+sub passwd_error
+{
+   my ( $args ) = @_;
+   return <<TUBBIES_SAY_EO;
+$HTML{HTML_DECL}
+<hr size="7" width="75%" />
+<html>
+  <head>
+    <title>$args->{Title}</title>
+    <link rel="stylesheet" type="text/css" href="$style" />
+    <body>
+     <center>
+       <h1>$args->{Heading}</a> 
+     </center>
+     <p>
+      $args->{Body}
+     </p> 
+     <center>
+       <font size="-1">
+         [ <a href="$cgi_url">NMS WWWAdmin</a> ] 
+         [ <a href="$baseurl/$mesgfile">$title</a> ]
+       </font>
+     </center>
+     <hr size="7" width="75%" />
+   </body>
+</html>
+TUBBIES_SAY_EO
 }
 
 sub check_passwd {
-   open(PASSWD,"$basedir/$passwd_file") || &error('passwd_file');
+   open(PASSWD,"$basedir/$passwd_file") || error('passwd_file');
    my $passwd_line = <PASSWD>;
-   chomp($passwd_line) if $passwd_line =~ /\n$/;
+   chomp($passwd_line);
    close(PASSWD);
 
    my ($username,$passwd) = split(/:/,$passwd_line);
 
    my $test_passwd = crypt($FORM{'password'}, substr($passwd, 0, 2));
    if (!($test_passwd eq $passwd && $FORM{'username'} eq $username)) {
-      &error('bad_combo');
+      error('bad_combo');
    }
 }
 
 __END__
+HTML_DECL
+--
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+==
 REMOVE_TOP
 --
 <html><head><title>Remove Messages From WWWBoard</title></head>

@@ -1,8 +1,13 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.8 2001-11-19 09:21:44 gellyfish Exp $
+# $Id: guestbook.pl,v 1.9 2001-11-24 11:59:58 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/11/19 09:21:44  gellyfish
+# * added allow_html functionality
+# * fixed potential for pre lock clobbering in guestbook
+# * some XHTML toshing
+#
 # Revision 1.7  2001/11/16 09:06:53  gellyfish
 # Had forgotten to declare $DEBUGGING
 #
@@ -53,6 +58,23 @@ my $guestbookreal = '/home/yourname/public_html/guestbook.html';
 my $guestlog      = '/home/yourname/public_html/guestlog.html';
 my $cgiurl        = 'http://your.host.com/cgi-bin/guestbook.pl';
 
+# $emulate_matts_code determines whether the program should behave exactly
+# like the original guestbook program.  It should be set to 1 if you
+# want to emulate the original program - this is recommended if you are
+# replacing an existing installation with this program.  If it is set to 0
+# then potentially it will not work with files produced by the original
+# version - this is recommended for people installing this for the first time.
+
+my $emulate_matts_code = 1;
+
+# $style is the URL of a CSS stylesheet which will be used for script
+# generated messages.  This probably want's to be the same as the one
+# that you use for all the other pages.  This should be a local absolute
+# URI fragment.
+
+my $style = '/css/nms.css';
+
+
 my $mail        = 0;
 my $uselog      = 1;
 my $linkmail    = 1;
@@ -63,11 +85,36 @@ my $remote_mail = 0;
 my $allow_html  = 1;
 my $line_breaks = 0;
 
-my $mailprog  = '/usr/lib/sendmail';
+# $mailprog is the program that will be used to send mail if that is 
+# required.  It should be the full path of a program that will accept
+# the message on its standard input, it should also include any required
+# switches.  If $mail is set to 0 above this can be ignores.
+
+my $mailprog  = '/usr/lib/sendmail -t -oi -oem';
+
+# $recipient is the address of the person who should be mailed if $mail is
+# set to 1 above.
+
 my $recipient = 'you@your.com';
 
+# $long_date_fmt and $short_date_fmt describe the format of the dates that 
+# will output - the replacement parameters you can use here are:
+#
+# %A - the full name of the weekday according to the current locale
+# %B - the full name of the month according to the current local
+# %m - the month as a number
+# %d - the day of the month as a number
+# %D - the date in the form %m/%d/%y (i.e. the US format )
+# %y - the year as a number without the century
+# %Y - the year as a number including the century
+# %H - the hour as number in the 24 hour clock
+# %M - the minute as a number
+# %S - the seconds as a number
+# %T - the time in 24 hour format (%H:%M:%S)
+# %Z - the time zone (full name or abbreviation)
+
 my $long_date_fmt  = '%A, %B %d, %Y at %T (%Z)';
-my $short_date_fmt = '%D %T %Z';
+my $short_date_fmt = '%d/%m/%y %T %Z';
 
 # End configuration
 
@@ -180,8 +227,9 @@ if ($uselog) {
 }
 
 if ($mail) {
-  open (MAIL, "|$mailprog $recipient") || die "Can't open $mailprog!\n";
+  open (MAIL, "|$mailprog") || die "Can't open $mailprog!\n";
 
+  print MAIL "To: $recipient\n";
   print MAIL "Reply-to: $username ($realname)\n";
   print MAIL "From: $username ($realname)\n";
   print MAIL "Subject: Entry to Guestbook\n\n";
@@ -249,9 +297,10 @@ Content-type: text/html
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>i
+<html>
   <head>
     <title>No Comments</title>
+     <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body>
     <h1>Your Comments appear to be blank</h1>
@@ -297,6 +346,7 @@ Content-type: text/html
 <html>
   <head>
     <title>No Name</title>
+     <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body>
     <h1>Your Name appears to be blank</h1>
@@ -362,6 +412,7 @@ Content-Type: text/html
 <html>
   <head>
     <title>Thank You</title>
+     <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body>
     <h1>Thank You For Signing The Guestbook</h1>
