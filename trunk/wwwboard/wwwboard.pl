@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.53 2004-07-23 21:13:17 codehelpgpg Exp $
+# $Id: wwwboard.pl,v 1.54 2004-07-23 21:37:04 codehelpgpg Exp $
 #
 use strict;
 use CGI qw(:standard);
@@ -14,11 +14,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset @bannedwords $word
 );
-BEGIN { $VERSION = substr q$Revision: 1.53 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.54 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.53 $
+# wwwboard.pl $Revision: 1.54 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -371,9 +371,9 @@ sub get_variables {
   } else {
     error('no_subject', $variables);
   }
-  if($ENV{REMOTE_ADDR} =~ m/217\.26\.240\.[0-9]{1,3}/ ) {
-	error('invalid', 0);
-  }
+#  if($ENV{REMOTE_ADDR} =~ m/217\.26\.240\.[0-9]{1,3}/ ) {
+#	error('invalid', 0);
+#  }
 
   my $url = validate_url($Form->{'url'} || '');
     $Form->{'url_title'} =~ s/&#[0-9]{1,3};//g;
