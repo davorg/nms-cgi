@@ -1,0 +1,147 @@
+#!/usr/bin/perl -w
+use strict;
+
+=head1 NAME
+
+run_tests - NMS test set main script
+
+=head1 DESCRIPTION
+
+This script runs all tests defined for a single NMS package.
+It is intended to be invoked by the F<tests/bin/nmstests>
+shell script, which defines some environment variables
+required by this script.
+
+See F<tests/README> in the nms-cgi source tree.
+
+=cut
+
+my $working_copy = $ENV{NMS_WORKING_COPY} ||
+   die "NMS_WORKING_COPY environment variable missing\n";
+
+my $put_results = $ENV{NMS_PUT_RESULTS} || "$working_copy/v2/tests/.results";
+
+my $test_perl = $ENV{NMS_TEST_PERL} || "perl";
+
+my $subdir = $ENV{NMS_TEST_SUBDIR} || 'new';
+
+my @testsets = @ARGV;
+scalar @testsets or die "usage: $0 <testset> [...]\n";
+
+foreach my $testset (@testsets)
+{
+   my $testdir = "$working_copy/v2/tests/$testset";
+   -d $testdir or die "bad test dir: $testdir";
+   
+   
+   my $cgibindir = "$put_results/.tmp/cgi-bin";
+   my $outdir    = "$put_results/.tmp/out";
+   my $datdir    = "$put_results/.tmp/data";
+   my $resdir    = "$put_results/$subdir/$testset";
+   rmdir_r($cgibindir);
+   mkdir_p($cgibindir);
+
+   rmdir_r($outdir);
+   mkdir_p($outdir);
+
+   # rmdir_r($datdir);
+   -e $datdir and system('rm','-r',$datdir) and die "rm failed";
+   mkdir_p($datdir);
+
+   rmdir_r($resdir);
+   mkdir_p($resdir);
+   
+   my $lib = "$working_copy/tests/lib";
+   $ENV{PERL5LIB} = ($ENV{PERL5LIB} ? "$ENV{PERL5LIB}:$lib" : $lib); 
+   
+   $ENV{NMSTEST_BINDIR}      = "$working_copy/tests/bin";
+   $ENV{NMSTEST_SRCDIR}      = "$working_copy/v2/src";
+   $ENV{NMSTEST_CGIBIN}      = $cgibindir;
+   $ENV{NMSTEST_OUTDIR}      = $outdir;
+   $ENV{NMSTEST_DATDIR}      = $datdir;
+   $ENV{NMSTEST_RESULTS_DIR} = $resdir;
+   $ENV{NMSTEST_LOGFILE}     = "$resdir/.log";
+   $ENV{NMSTEST_PERL}        = $test_perl;
+   
+   opendir D, $testdir or die "opendir $testdir: $!";
+   foreach my $t (sort readdir D)
+   {
+      next unless $t =~ /^([\w\-]+\.t)$/;
+      $t = $1;
+      system "$testdir/$t" and die "test set $testdir/$t croaked\n";
+   }
+}
+
+my $status = 0;
+foreach my $testset (@testsets)
+{
+   my $resdir = "$put_results/$subdir/$testset";
+   open IN, "<$resdir/.log" or die "open <$resdir/.log: $!";
+   my @lines = <IN>;
+   my $good = grep {/\.\. ok$/    } @lines;
+   my $bad  = grep {/\.\. failed$/} @lines;
+   print "$testset: $good tests passed, $bad failed.  Log is $resdir/.log\n";
+   $status = 1 if $bad > 0;
+}
+
+exit $status;
+
+=head1 INTERNAL FUNCTIONS
+
+=over 4
+
+=item mkdir_p ( DIRECTORY )
+
+Ensures that directory DIRECTORY exists, making 
+subdirectories if necessary.  Similar to C<mkdir -p>
+in the shell.
+
+=cut
+
+sub mkdir_p
+{
+   my ($dir) = @_;
+
+   my ($name,@bits) = split /\//, $dir;
+   while (scalar @bits)
+   {
+      $name .= '/' . shift @bits;
+      -d $name or mkdir $name, 0755 or die "mkdir $name: $!";
+   }
+}
+
+=item rmdir_r ( DIRECTORY )
+
+Deletes directory DIRECTORY and any non-directory files
+in contains.  Will die if DIRECTORY has subdirectories.
+
+=cut
+
+sub rmdir_r
+{
+   my ($dir) = @_;
+
+   return unless -e $dir;
+   opendir D, $dir or die "opendir $dir: $!";
+   foreach my $f (readdir D)
+   {
+      next if $f =~ /^\.\.?$/;
+      unlink "$dir/$f" or die "unlink $dir/$f: $!";
+   }
+   rmdir $dir or die "rmdir $dir: $!";
+}
+
+=back
+
+=head1 SEE ALSO
+
+L<NMSTest::ScriptUnderTest>, L<NMSTest::TestRun>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2002 The London Perl Mongers. All rights reserved.
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=cut
+
