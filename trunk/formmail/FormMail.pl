@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.10 2002-08-04 10:06:28 gellyfish Exp $
+# $Id: FormMail.pl,v 2.11 2002-08-21 22:19:27 nickjc Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.10 $
+# FormMail.pl $Revision: 2.11 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -73,7 +73,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.10 $, 10, -1;
+  $VERSION = substr q$Revision: 2.11 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -90,6 +90,9 @@ END_OF_CONFIRMATION
   $style_element = $style ?
                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
                    : '';
+
+  use vars qw(%config_include);
+  %config_include = map {$_ => 1} @config_include;
 }
 
 use vars qw($done_headers $hide_recipient $debug_warnings);
@@ -283,6 +286,10 @@ sub parse_form {
       next if /redirect$/ and not check_url_valid($val);
       next if /^return_link_url$/ and $secure and not check_url_valid($val);
       $Config{$_} = $val;
+      if ($config_include{$_}) {
+        $Form{$_} = $val;
+        push @field_order, $_;
+      }
     } else {
       my @vals = map {strip_nonprintable($_)} param($_);
       my $key = strip_nonprintable($_);
@@ -302,12 +309,6 @@ sub parse_form {
   }
 
   $Config{env_report} = [ grep { $valid_ENV{$_} } @{$Config{env_report}} ];
-
-  foreach my $config_item ( @config_include ) {
-     if ( exists $Config{$config_item} ) {
-        $Form{$config_item} = $Config{$config_item};
-     }
-  }
 
   if (defined $Config{'sort'}) {
     if ($Config{'sort'} eq 'alphabetic') {
@@ -946,7 +947,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.10 $
+FormMail $Revision: 2.11 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
