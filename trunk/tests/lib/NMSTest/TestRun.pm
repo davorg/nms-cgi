@@ -187,16 +187,15 @@ sub run
    close CGI;
    my $exit = $?;
 
-   if ($exit > 255)
-   {
-      $self->_log("script under test killed by signal, aborting\n");
-      die "script under test killed by signal, aborting\n";
-   }
-
    my @results = ( "Test ID: $self->{TEST_ID}\n",
                    "Script exit status: $exit\n",
                     $self->_grab_and_delete_output
                  );
+
+   if ( grep /^ERR\s+\*\*\*STOP\*\*\*/, @results )
+   {
+      die "***STOP***\n";
+   }
 
    if ( length $self->{RESULTS_DIR} )
    {

@@ -134,6 +134,9 @@ sub _rewrite_script
 
    s#/usr/lib/sendmail\b#$self->{SENDMAIL}#e;
 
+   my $stop_at_int = '$SIG{INT} = sub {local $SIG{__DIE__} ; die "***STOP***\\n" };';
+   s|^(#!.*\n)|$1 BEGIN {$stop_at_int} \n|;
+
    foreach my $rewriter (@{ $self->{REWRITERS} })
    {
       &{ $rewriter }();

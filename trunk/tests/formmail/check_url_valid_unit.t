@@ -29,10 +29,15 @@ sub unitTest
 {
     my @unittests = (
 
+    [ 0, '' ],
+    [ 0, ':' ],
+    [ 0, '://' ],
+    [ 0, 'http://' ],
     [ 1, 'http://www.perl.com' ],
     [ 1, 'http://www.perl.com/' ],
     [ 0, 'foo://www.perl.com' ],
     [ 0, 'foo://www.perl.com/' ],
+    [ 0, ' http://www.perl.com/' ],
     [ 1, 'https://www.perl.com/' ],
     [ 1, 'http://www.perl.domain' ],
     [ 1, 'http://www.perl.domain/' ],
@@ -46,7 +51,7 @@ sub unitTest
     [ 1, 'http://foo.x/foo/foo/foo.cgi?adsf=%82as' ],
     [ 1, 'http://foo.x/foo/foo/foo.cgi/pah?adsf=%82as' ],
     [ 0, 'http://foo.x%82foo' ],
-#    [ 1, 'http://foo.x?%82foo' ],
+    [ 1, 'http://foo.x?%82foo' ],
     [ 1, 'http://foo.x/?%82foo' ],
     [ 0, 'http://foo.<.x/' ],
     [ 1, 'http://FOO.X/foo', ],
@@ -63,10 +68,13 @@ sub unitTest
     [ 1, 'https://foo.x:8080/' ],
     [ 1, 'ftp://foo.x:8080' ],
     [ 1, 'ftp://foo.x:8080/' ],
-#    [ 1, 'http://foo.x:8080?foo=foo' ],
+    [ 1, 'http://foo.x:8080?foo=foo' ],
     [ 1, 'http://foo.x:8080/?foo=foo' ],
     [ 1, 'http://foo.x:8080/foo.cgi?foo=foo' ],
 
+    [ 1, '/html/foo.htm' ],
+    [ 1, '/' ],
+    [ 1, '../html/foo.html' ],
     );
 
     foreach my $t (@unittests)
