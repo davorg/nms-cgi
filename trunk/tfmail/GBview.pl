@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: GBview.pl,v 1.3 2002-11-17 09:33:50 nickjc Exp $
+# $Id: GBview.pl,v 1.4 2003-01-04 14:37:36 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -38,13 +38,14 @@ F<README> file for more details.
 =cut
 
 use Fcntl ':flock';
+use CGI;
 use lib LIBDIR;
 use NMStreq;
 
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.3 $, 10, -1;
+  $VERSION = substr q$Revision: 1.4 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -211,7 +212,7 @@ sub error_page
 
    unless ( $done_headers )
    {
-      html_header()
+      html_header();
       print <<EOERR;
 <?xml version="1.0" encoding="@{[ CHARSET ]}"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -256,12 +257,12 @@ Outputs the CGI header using a content-type of text/html.
 sub html_header {
     if ($CGI::VERSION >= 2.57) {
         # This is the correct way to set the charset
-        print header('-type'=>'text/html', '-charset'=>CHARSET);
+        print CGI::header('-type'=>'text/html', '-charset'=>CHARSET);
     }
     else {
         # However CGI.pm older than version 2.57 doesn't have the
         # -charset option so we cheat:
-        print header('-type' => "text/html; charset=@{[ CHARSET ]}");
+        print CGI::header('-type' => "text/html; charset=@{[ CHARSET ]}");
     }
 }
 
