@@ -1,8 +1,16 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.45 2002-02-27 09:04:28 gellyfish Exp $
+# $Id: FormMail.pl,v 1.46 2002-02-27 17:51:20 davorg Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.45  2002/02/27 09:04:28  gellyfish
+# * Added question about simple search and PDF to FAQ
+# * Suppressed output of headers in fatalsToBrowser if $done_headers
+# * Suppressed output of '<link rel...' if not $style
+# * DOCTYPE in fatalsToBrowser
+# * moved redirects until after possible cause of failure
+# * some small XHTML fixes
+#
 # Revision 1.44  2002/02/26 22:30:49  proub
 # Updated no-recipients-defined error message -- we now suggest both
 # @allow_mail_to and @recipients as places to add valid emails.
@@ -220,7 +228,7 @@ my $confirmation_text = <<'END_OF_CONFIRMATION';
 From: you@your.com
 Subject: form submission
 
-Thankyou for your form submission.
+Thank you for your form submission.
 
 END_OF_CONFIRMATION
 #
