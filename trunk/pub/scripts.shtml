@@ -83,7 +83,8 @@
 	<td><a href="nms_sendmail.tar.gz">nms_sendmail.tar.gz</a></td>
 	<td><a href="nms_sendmail.zip">nms_sendmail.zip</a></td>
  	<td><!--#flastmod file="nms_sendmail.tar.gz"--></td>
-     </tr>
+      </tr>
+<!--
       <tr>
 	<td>Perl Diver</td>
 	<td>Display information about your Perl installation</td>
@@ -91,6 +92,7 @@
 	<td><a href="perldiver.zip">perldiver.zip</a></td>
 	<td><!--#flastmod file="perldiver.tar.gz"--></td>
       </tr>
+-->
       <tr>
 	<td>Random Image</td>
 	<td>Display a random image</td>
