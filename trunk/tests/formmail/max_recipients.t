@@ -2,7 +2,6 @@
 use strict;
 
 use NMSTest::ScriptUnderTest;
-@LocalChecks::ISA = qw(NMSTest::OutputChecker);
 
 use vars qw($max_recipients);
 
