@@ -1,102 +1,102 @@
-SSI Random Images Version 1.00
+COPYRIGHT
+
+SSI Random Image Displayer Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
+
+LICENSE
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at <http://nms-cgi.sourceforge.net/>
+URL
 
-This script is provided to allow you to have a random image appear on your 
-page every time it is reloaded.  The server side includes version offers you 
-link flexibility as well as coinciding random alt text and other variables 
-which make it slightly more advanced than the Basic Random Image Displayer.
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>.
 
-There are two files included with this script.
-        1) README - This file, which explains installation
-        2) ssi_rand_image.pl - The perl script which chooses the random image.
+SUMMARY
 
-Below is a list of the changes that must be made to the ssi_rand_image.pl file 
-in order for it to choose your random images correctly:
+ssi_rand_image chooses a random image from a set of predefined images and
+displays it on a webpage. It is intended to be used as a Server Side
+Include program.
 
-Inside the script you will see a list of variables, which must be defined in 
-order for your script to work.  Below is a description of how to define each 
-one:
+FILES
 
-$basedir = "http://your.host.xxx/path/to/images/";
+In this distribution, you will find three files:
 
-    The standard portion of my url for each image.  This is the base 
-    location of each image that is referenced in the next array @images. 
-    The random image name chosen out of @images will be appended later on 
-    in the script to form a complete url.
+ssi_rand_image.pl - The main perl script.
+README            - This file. Instructions on how to install and use 
+                    ssi_rand_image.
+MANIFESTO         - List of files
 
-@images = ({ file => 'first_image.gif',
-             url => 'http://url_linked/to/first_image',
-             alt => 'First WWW Page' },
-          { file => 'second_image.jpg',
-            url => 'http://url_linked/to/second_image',
-            alt => 'Second WWW Page' },
-          { file => 'third_image.gif',
-            url => 'http://url_linked/to/third_image',
-            alt => 'Third WWW Page' });
+CONFIGURATION
 
-    This is the description of each image. Each description has three
-    parts, the name of the image file, the url that the image should
-    link to and the alt text for the image. If you don't want you image
-    to be a link then just set the url to an empty string.
+There are a number of variables that you can change in rand_image.pl which
+alter the way that the program works.
 
----
+$DEBUGGING    - This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
 
-There are also a number of options that you will need to define and decide 
-whether to use.  They are located directly below the variables in the 
-ssi_rand_image.pl script.
+@images       - The list of images that the random image is chosen from.
+                Each image has three parts to its definition:
 
-$uselog = "1";            # 1 = YES; 0 = NO
+                file - the URL of the image file
+                alt  - some brief text to describe the image
+                url  - An optional link URL (see $link_image below)
 
-    At this point you must decide whether or not you want to use the 
-logging feature.  for most practical purposes this will not be used, but some 
-people may find it helpful either for keeping stats or seeing which images get 
-picked the most.  All the logging feature will record is the image, date, and 
-remote host that saw the image.  Should you choose to turn this option on, you 
-will need to define two more variables:
+$uselog       - Set this value to 1 to log which image is returned each time
+                the program runs.
 
-$logfile = "/home/mattw/public_html/links/ssi_image";
+$logfile      - The path to the logfile, only needed if $uselog = 1. This file
+                must be writable by the webserver. For example, 
 
-    The location of the log file.  This must be in a 
-readable/writable directory and given read/write permissions for all 
-users so that the server's uid may edit the log file.
+                    $logfile = "/tmp/randimages.log";
 
-$link_image = "1";        # 1 = YES; 0 = NO
+$date_fmt     - The format that the date will be logged in. The default
+                format (%c) presents the date in this format:
 
-    If you turn this variable off you do not need to worry about what is 
-in the @urls variable.  It simply won't link any of your images.
+                    Sun Jan 27 17:20:56 GMT 2002
 
-$align = "left";
+                which is probably adequate for most purposes.
 
-    This is the way in which you want your image aligned.  Valid choices 
-for Netscape include: left, right, middle, absmiddle, bottom, and absbottom.
+$link_image   - If this value is true (i.e. 1) and the chosen image has
+                a 'url' component, then the image will be displayed as a
+                link to the given URL.
 
-$border = "2";
+$align        - The alignment to use when displaying the image.
 
-    This is the size you want your border to be.  Mainly occurs when you 
-have images linked the border turns blue, and in Netscape you can control the 
-size.  Setting this to zero causes there to be no border.
+$border       - The border width (in pixels) to use when displaying the
+                image.
 
-_____________________________________________________________________________
+INSTALLATION
 
-Server Side Includes
+ssi_rand_image is installed simply by copying the file ssi_rand_image.pl.pl 
+into your cgi-bin directory. If you don't know where your cgi-bin directory 
+is, then please ask your system administrator
 
-I hope that you already know how to accomplish a Server Side Includes, and 
-therefore I am not going to go into detail about how.  Two things you can 
-check for are:
+You may need to rename ssi_rand_image.pl to ssi_rand_image.cgi. Again, your
+system administrator will know if this is the case.
 
-1) Ask your sysadmin if you have access to server side includes and what you 
-need to change about your file to make them work.  This often involves 
-changing your .html files to .shtml.
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x ssi_rand_image.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
 
-2) If you really don't know anything about Server Side Includes, you can 
-check out a great tutorial that NCSA has developed;  located at:
+Then, edit your HTML files and change all the images that you want to
+be randomized to:
 
-    http://hoohoo.ncsa.uiuc.edu/docs/tutorials/includes.html
+<!--#exec cgi="http://your.host.com/cgi-bin/ssi_rand_image.pl"-->
+
+This is just an example, so be sure to insert the correct URL of your
+ssi_rand_image.pl installation.
+
+Note: As this is a "Server Side Include" you will need to ensure that your
+web server has been configured to support SSI. Also, it's possible that you
+may need to rename any files that include SSI calls to give them a different
+extension. A common choice is .shtml. Your system administrator will be able
+to help you with these details.
 
 SUPPORT
 

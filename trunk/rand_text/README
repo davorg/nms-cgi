@@ -1,71 +1,83 @@
-Random Text Version 1.00
+COPYRIGHT
+
+Random Text Displayer Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
+
+LICENSE
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at <http://nms-cgi.sourceforge.net/>
+URL
 
-Random Text is a program which takes a plain text file, which contains a 
-series of phrases, quotes, lines of text, etc... and a delimiter (the 
-character(s) which separate each entry) and will randomly choose one of the
-phrases and display it on your web page.  This requires the use of Server
-Side Includes, which you can read more about at the FAQ URL listed above.
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>.
 
-There are three files included with this script:
+SUMMARY
 
-   1) README       - This file; includes detailed installation 
-		     instructions.
-   2) rand_text.pl - The Perl script which generates the random phrase
-                     and siaplys it on your web page.
-   3) random.txt   - a sample random text file
+rand_text chooses a random image from a set of predefined images and
+displays it on a webpage. It is intended to be used as a Server Side
+Include program.
 
-The rand_text.pl file has two variables which must be modified.  You then 
-must place this file in a special executable directory (usually called 
-cgi-bin) or rename it to end with a .cgi extension if your server is set up 
-that way.
+FILES
 
-RAND_TEXT.PL -
+In this distribution, you will find four files:
 
-There are two variables in this program which must be modified:
+rand_text.pl      - The main perl script.
+random.txt        - A sample text database
+README            - This file. Instructions on how to install and use 
+                    rand_text.
+MANIFESTO         - List of files
 
-    $random_file = "/path/to/random.txt";
-        This variable points to the location of the file which 
-        contains the phrases which you wish to have randomly 
-        displayed.  This should be a system path and not a URL.
+CONFIGURATION
 
-    $delimiter = "%%\n";
-        This specifies what separates each record.  If you leave it
-        as the default, your $random_file database should look like:
+There are a number of variables that you can change in rand_image.pl which
+alter the way that the program works.
 
------------begin sample random database file--------------
-Phrase one would go here.
-As much white space or formatting as you want.
-%%
-Second Phrase would go here.
-%%
-And the next
-Second line of the next.
-%%
-Etc...
------------end sample random database file----------------
+$DEBUGGING    - This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
 
-        If you set $delimiter = "\n";, then the script would assume
-        that every line is a separate phrase and randomize the 
-        file based on that.
+$random_file  - The path to the file containing the text to choose from. The
+                file random.txt in this distribution is an example.
 
-##############################################################################
+$delimiter    - The character sequence that separates different pieces of text
+                in your text file. The default value ("\n%%\n") means that
+                text is separated by two percent signs on a line by themself.
+                This simulates the behaviour of the popular Unix program
+                "fortune". To have a each line in the file as a new piece of
+                text, set $delimiter to "\n".
 
-How to Implement This In Your Web Pages.
 
-This script must be called as a Server Side Include, or it can also be called
-on a page by itself (however that is not as nice looking.)  Below are some 
-examples of how to call this program:
+INSTALLATION
 
-    <!--#exec cgi="/url/path/to/rand_text.cgi"-->
+rand_text is installed simply by copying the file rand_text.pl.pl 
+into your cgi-bin directory. If you don't know where your cgi-bin directory 
+is, then please ask your system administrator
 
-That would simply call the program from a Server Side Include and the Random 
-Text would appear in that location on your web page.
+You may need to rename rand_text.pl to rand_text.cgi. Again, your
+system administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x rand_text.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+
+Then, edit your HTML files and wherever you want random text to appear put
+the following code:
+
+<!--#exec cgi="http://your.host.com/cgi-bin/rand_text.pl"-->
+
+This is just an example, so be sure to insert the correct URL of your
+rand_text.pl installation.
+
+Note: As this is a "Server Side Include" you will need to ensure that your
+web server has been configured to support SSI. Also, it's possible that you
+may need to rename any files that include SSI calls to give them a different
+extension. A common choice is .shtml. Your system administrator will be able
+to help you with these details.
 
 SUPPORT
 
