@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.5 $, 10, -1;
+$VERSION = substr q$Revision: 1.6 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -1115,43 +1115,80 @@ Outputs the form fields to the email body.
 sub send_main_email_fields {
   my ($self) = @_;
 
-  my $nl = ($self->{CFG}{double_spacing} ? "\n\n" : "\n");
-
   foreach my $f (@{ $self->{Field_Order} }) {
     my $val = (defined $self->{Form}{$f} ? $self->{Form}{$f} : '');
 
-    my $field_name = "$f: ";
-    if ( $self->{CFG}{wrap_text} and length("$field_name$val") > 72 ) {
-      $self->mailer->print( $self->wrap_field_for_email($f, $val) . $nl );
-    }
-    else {
-      $self->mailer->print("$field_name$val$nl");
-    }
+    $self->send_main_email_field($f, $val);
   }
 }
 
-=item wrap_field_for_email ( NAME, VALUE )
+=item send_main_email_field ( NAME, VALUE )
 
-Takes the name and value of a field as arguments, and returns them as
-a text wraped paragraph suitable for inclusion in the main email.
+Outputs a single form field to the email body.
+
+=cut
+
+sub send_main_email_field {
+  my ($self, $name, $value) = @_;
+  
+  my ($prefix, $line) = $self->build_main_email_field($name, $value);
+
+  my $nl = ($self->{CFG}{double_spacing} ? "\n\n" : "\n");
+
+  if ($self->{CFG}{wrap_text} and length("$prefix$line") > $self->email_wrap_columns) {
+    $self->mailer->print( $self->wrap_field_for_email($prefix, $line) . $nl );
+  }
+  else {
+    $self->mailer->print("$prefix$line$nl");
+  }
+}
+
+=item build_main_email_field ( NAME, VALUE )
+
+Generates the email body text for a single form input, and returns
+it as a two element list of prefix and remainder of line.  The return
+value is split into a prefix and remainder of line because the text
+wrapping code may need to indent the wrapped line to the length of the
+prefix.
+
+=cut
+
+sub build_main_email_field {
+  my ($self, $name, $value) = @_;
+
+  return ("$name: ", $value);
+}
+
+=item wrap_field_for_email ( PREFIX, LINE )
+
+Takes the prefix and rest of line of a field as arguments, and returns them
+as a text wrapped paragraph suitable for inclusion in the main email.
 
 =cut
 
 sub wrap_field_for_email {
-  my ($self, $name, $value) = @_;
+  my ($self, $prefix, $value) = @_;
 
-  my $prefix = "$name: ";
   my $subs_indent = '';
   $subs_indent = ' ' x length($prefix) if $self->{CFG}{wrap_style} == 1;
 
-  $Text::Wrap::columns = 72;
+  local $Text::Wrap::columns = $self->email_wrap_columns;
 
   # Some early versions of Text::Wrap will die on very long words, if that
-  # happpens we fall back to no wraping.
-  my $wraped;
-  eval { local $SIG{__DIE__} ; $wraped = wrap($prefix,$subs_indent,$value) };
-  return ($@ ? "$prefix$value" : $wraped);
+  # happpens we fall back to no wrapping.
+  my $wrapped;
+  eval { local $SIG{__DIE__} ; $wrapped = wrap($prefix,$subs_indent,$value) };
+  return ($@ ? "$prefix$value" : $wrapped);
 }
+
+=item email_wrap_columns ()
+
+Returns the number of columns to which the email should be wrapped if the
+text wrapping option is in use.
+
+=cut
+
+sub email_wrap_columns { 72; }
 
 =item send_main_email_footer ()
 
@@ -1250,7 +1287,7 @@ END
 
 =item success_page_fields ()
 
-Produces success page HTML output for each input field.
+Outputs success page HTML output for each input field.
 
 =cut
 
@@ -1259,9 +1296,21 @@ sub success_page_fields {
 
   foreach my $f (@{ $self->{Field_Order} }) {
     my $val = (defined $self->{Form}{$f} ? $self->{Form}{$f} : '');
-    print '<p><b>', $self->escape_html($f), ':</b> ',
-                    $self->escape_html($val), "</p>\n";
+    $self->success_page_field( $self->escape_html($f), $self->escape_html($val) );
   }
+}
+
+=item success_page_field ( NAME, VALUE ) {
+
+Outputs success page HTML for a single input field.  NAME and VALUE
+are the HTML escaped field name and value.
+
+=cut
+
+sub success_page_field {
+  my ($self, $name, $value) = @_;
+
+  print "<p><b>$name:</b> $value</p>\n";
 }
 
 =item success_page_footer ()
