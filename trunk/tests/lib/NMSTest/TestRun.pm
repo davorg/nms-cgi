@@ -391,6 +391,8 @@ sub _substitute_generated_header
    {
       $r =~ s[^(MAIL\d *X-Generated-By: NMS \w+\.pl) v\d+\.\d+]
              [$1 v1.01]g;
+      $r =~ s[^(MAIL\d *X-Generated-By: NMS \w+) v\d+\.\d+ \(NMStreq \d+\.\d+\)]
+             [$1 v1.01 (NMStreq 1.01)]g;
    }
 }
 
