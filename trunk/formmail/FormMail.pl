@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.49 2002-03-06 14:48:53 proub Exp $
+# $Id: FormMail.pl,v 1.50 2002-03-07 23:00:05 nickjc Exp $
 #
 
 use strict;
@@ -915,7 +915,7 @@ EOMAIL
   print MAIL "$dashes\n\n";
 
   foreach (@{$Config{env_report}}) {
-    print MAIL "$_: $ENV{$_}\n" if $ENV{$_};
+    print MAIL "$_: ", strip_nonprintable($ENV{$_}), "\n" if $ENV{$_};
   }
 
   close (MAIL) || die $!;
@@ -1228,6 +1228,10 @@ sub escape_html {
 
 
 # $Log: not supported by cvs2svn $
+# Revision 1.49  2002/03/06 14:48:53  proub
+# Inserted README text, in POD format.
+# Moved Log messages to the end of the file.
+#
 # Revision 1.48  2002/02/28 21:14:10  nickjc
 # * warning fix
 # * fixed print_blank_fields bug

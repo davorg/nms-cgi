@@ -59,6 +59,11 @@ format.
 The value to be set for the HTTP_REFERER environment
 variable seen by the script under test.
 
+=item HTTP_USER_AGENT
+
+The value to be set for the HTTP_USER_AGENT environment
+variable seen by the script under test.
+
 =item REQUEST_METHOD
 
 The request method for the simulated request, "GET" or
@@ -116,6 +121,7 @@ sub new
      LOGFILE         => '',
      CGI_ARGS        => [],
      HTTP_REFERER    => 'http://localhost/foo.html',
+     HTTP_USER_AGENT => 'Foo 0.001',
      REQUEST_METHOD  => 'POST',
      REMOTE_ADDR     => '3.254.17.8',
      PERL            => '[[BINDIR]]/perl',
@@ -154,6 +160,7 @@ sub run
        SERVER_NAME          => 'www.foo.domain',
        DOCUMENT_ROOT        => '/usr/local/apache/htdocs',
        HTTP_REFERER         => $self->{HTTP_REFERER},
+       HTTP_USER_AGENT      => $self->{HTTP_USER_AGENT},
        FAKE_SENDMAIL_OUTPUT => $self->{OUTDIR},
        REMOTE_ADDR          => $self->{REMOTE_ADDR},
        DOCUMENT_URI         => $self->{DOCUMENT_URI},
