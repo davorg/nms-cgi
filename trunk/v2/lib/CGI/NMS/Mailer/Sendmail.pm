@@ -28,7 +28,7 @@ uses a piped open to the UNIX sendmail program to send the email.
 
 =item new ( MAILPROG )
 
-MAILPROG msut be the shell command to which a pipe is opened, including
+MAILPROG must be the shell command to which a pipe is opened, including
 all nessessary switches to cause the sendmail program to read the email
 recipients from the header of the email.
 
