@@ -1,29 +1,10 @@
 #!/usr/bin/perl -wT
-#******************************************************************************
-#*           
-#*                             GELLYFISH SOFTWARE           
-#*                                                       
-#*
-#******************************************************************************
-#*
-#*          PROGRAM      :   mwffa.pl
-#*
-#*          AUTHOR       :   JNS
-#*
-#*          DESCRIPTION  :   Free For All Links program
-#*
-#*****************************************************************************
-#*
-#*          $Log: not supported by cvs2svn $
-#*          Revision 1.1.1.1  2001/11/12 15:17:46  gellyfish
-#*          * Import rough cut of FFA
-#*
-#*          Revision 1.1  2000/08/22 07:02:15  gellyfish
-#*          Initial revision
-#*
-#*
-#*
-#*****************************************************************************/ 
+#
+#  $Id: ffa.pl,v 1.2 2001-11-12 16:52:36 gellyfish Exp $
+#
+#  $Log: not supported by cvs2svn $
+#
+# 
 
 use strict;
 use CGI qw(:standard);
