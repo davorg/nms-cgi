@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: ssi_rand_image.pl,v 1.6 2001-12-01 19:45:22 gellyfish Exp $
+# $Id: ssi_rand_image.pl,v 1.7 2002-01-27 17:25:48 davorg Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/12/01 19:45:22  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.5  2001/11/25 11:39:39  gellyfish
 # * add missing use vars qw($DEBUGGING) from most of the files
 # * sundry other compilation failures
@@ -39,8 +43,6 @@ BEGIN
    $DEBUGGING = 1;
 }
    
-my $basedir = 'http://your.host.xxx/path/to/images/';
-
 my @images = ({ file => 'first_image.gif',
 		url => 'http://url_linked/to/first_image',
 		alt => 'First WWW Page' },
