@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.20 2002-01-01 01:22:27 nickjc Exp $
+# $Id: FormMail.pl,v 1.21 2002-01-02 21:21:45 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2002/01/01 01:22:27  nickjc
+# error message fix from Paul Sharpe
+#
 # Revision 1.19  2001/12/15 22:42:00  nickjc
 # * Added a validity check on the redirect URLs
 # * Moved the nonprintable character striping code to a sub
@@ -563,7 +566,7 @@ sub check_email {
 sub check_url_valid {
   my $url = shift;
 
-  $url =~ m< ^ (?:ftp|http|https):// [\w\-\.]+
+  $url =~ m< ^ (?:ftp|http|https):// [\w\-\.]+ (?:\:\d+)?
                [\w\-.!~*'(|);/?\@&=+\$,%#]*
              $
            >x ? 1 : 0;
