@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.37 2002-02-14 01:33:20 proub Exp $
+# $Id: FormMail.pl,v 1.38 2002-02-14 08:45:04 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.37  2002/02/14 01:33:20  proub
+# Updated unit tests to reflect new check_email behavior (specifically,
+#   disallowing % in names when emulate_matts_code is in effect)
+#
 # Revision 1.36  2002/02/13 23:36:46  nickjc
 # (This is the log message for the previous checkin)
 # * reworked check_email
@@ -673,8 +677,12 @@ sub check_email {
       return 0;
     }
 
+    if (length $host > 100) {
+      warn_bad_email($email, "hostname too long");
+      return 0;
+    }
     return 1 if $host =~ /^\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\]$/;
-    return 1 if $host =~ /^[a-z0-9\-\.]{1,100}$/i;
+    return 1 if $host =~ /^[a-z0-9\-\.]+$/i;
 
     warn_bad_email($email, "invalid hostname $host");
     return 0;
@@ -729,9 +737,11 @@ sub body_attributes {
   foreach (keys %attrs) {
     next unless $Config{$_};
     if (/color$/) {
-      /^#[0-9a-z]{6}$/i or /^[\w\-]{2,50}$/ or next;
+      next unless $Config{$_} =~ /^(?:#[0-9a-z]{6}|[\w\-]{2,50})$/i;
+    } elsif ($_ eq 'background') {
+      next unless check_url_valid($Config{$_});
     } else {
-      check_url_valid($_) or next;
+      die "no check defined for body attribute [$_]";
     }
     $attr .= qq( $attrs{$_}=") . escape_html($Config{$_}) . '"' if $Config{$_};
   }
