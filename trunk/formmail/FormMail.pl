@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.55 2002-03-12 23:58:57 nickjc Exp $
+# $Id: FormMail.pl,v 1.56 2002-03-13 00:49:36 nickjc Exp $
 #
 
 use strict;
@@ -11,7 +11,7 @@ use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.55 $
+# FormMail.pl $Revision: 1.56 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -53,6 +53,7 @@ END_OF_CONFIRMATION
 # ----------------------------
 # (no user serviceable parts beyond here)
 
+my $VERSION = ('$Revision: 1.56 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We don't need file uploads or very large POST requests.
 # Annoying locution to shut up 'used only once' warning in older perl
@@ -428,7 +429,8 @@ sub send_mail {
   my $xheader = '';
   if ( $secure and defined (my $addr = remote_addr()) ) {
     $addr =~ /^([\d\.]+)$/ or die "bad remote addr [$addr]";
-    $xheader = "X-HTTP-Client: [$1]\n";
+    $xheader = "X-HTTP-Client: [$1]\n"
+             . "X-Generated-By: NMS FormMail.pl v$VERSION\n";
   }
 
   if ( $send_confirmation_mail ) {
@@ -821,7 +823,7 @@ __END__
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.55 $
+FormMail $Revision: 1.56 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1245,6 +1247,9 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.55  2002/03/12 23:58:57  nickjc
+ minor POD tweak for its new context
+
  Revision 1.54  2002/03/12 23:46:17  nickjc
  * moved the POD to the end, and put the changelog inside the POD
 
