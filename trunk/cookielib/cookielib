@@ -1,3 +1,9 @@
+#
+# $Id: cookielib,v 1.2 2002-01-27 12:47:58 gellyfish Exp $
+# 
+# $Log: not supported by cvs2svn $
+#
+
 use strict;
 use vars qw(%cookie_config);
 use CGI;
