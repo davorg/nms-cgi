@@ -1,6 +1,5 @@
-MANIFEST
-README
-database.txt
-ffa.pl
-ffa.pod
-links.html
+ffa/MANIFEST
+ffa/README
+ffa/database.txt
+ffa/ffa.pl
+ffa/links.html
