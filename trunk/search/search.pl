@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.16 2002-02-02 13:57:54 nickjc Exp $
+# $Id: search.pl,v 1.17 2002-02-03 22:06:29 dragonoe Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2002/02/02 13:57:54  nickjc
+# match the empty string as a valid directory name
+#
 # Revision 1.15  2002/02/01 22:50:28  nickjc
 # * Took out some remains of the old tainted chdir botch
 #
@@ -55,61 +58,48 @@
 
 use strict;
 use CGI qw(header param);
-
-# the "use subs 'File::Find::chdir'" is necessary here so that the
-# over-riding of the core chdir() works - see the note above the
-# File::Find::chdir subroutine
-
-use subs 'File::Find::chdir';
+use subs 'File::Find::chdir';# see note above the File::Find::chdir subroutine
 use vars qw($DEBUGGING);
 use File::Find;
+$ENV{PATH} = '/bin:/usr/bin';# sanitize the environment
+delete @ENV{qw(ENV BASH_ENV IFS)};# ditto
 
-# sanitize the environment
-
-$ENV{PATH} = '/bin:/usr/bin';
-
-delete @ENV{qw(ENV BASH_ENV IFS)};
-
-
-# Configuration
-
+# PROGRAM INFORMATION
+# -------------------
+# search.pl v1.17
 #
-# $DEBUGGING must be set in a BEGIN block in order to have it be set before
-# the program is fully compiled.
-# This should almost certainly be set to 0 when the program is 'live'
+# This program is licensed in the same way as Perl
+# itself. You are free to choose between the GNU Public
+# License <http://www.gnu.org/licenses/gpl.html>  or
+# the Artistic License
+# <http://www.perl.com/pub/a/language/misc/Artistic.html>
 #
+# For a list of changes see CHANGELOG
+# 
+# For help on configuration or installation see README
+#
+# USER CONFIGURATION SECTION
+# --------------------------
+# Modify these to your own settings. You might have to
+# contact your system administrator if you do not run
+# your own web server. If the purpose of these
+# parameters seems unclear, please see the README file.
+#
+BEGIN { $DEBUGGING      = 1; }
+my $basedir             = '/indigo/html';
+my $baseurl             = '/indigo/html';
+my @files               = ('*.txt','*.html','*.dat', 'src');
+my $title               = "NMS Search Program";
+my $title_url           = 'http://cgi-nms.sourceforge.net';
+my $search_url          = 'http://localhost/search.html';
+my @blocked             = ();
+my $emulate_matts_code  = 1;
+my $style               = '';
+#
+# USER CONFIGURATION << END >>
+# ----------------------------
+# (no user serviceable parts beyond here)
 
-BEGIN
-{
-   $DEBUGGING = 1;
-}
-
-
-my $basedir = '/indigo/html';
-my $baseurl = '/indigo/html';
-my @files = ('*.txt','*.html','*.dat', 'src');
-my $title = "NMS Search Program";
-my $title_url = 'http://cgi-nms.sourceforge.net';
-my $search_url = 'http://localhost/search.html';
-my @blocked = ();
-
-# $emulate_matts_code determines whether the program should behave exactly
-# like the original guestbook program.  It should be set to 1 if you
-# want to emulate the original program - this is recommended if you are
-# replacing an existing installation with this program.  If it is set to 0
-# then potentially it will not work with files produced by the original
-# version - this is recommended for people installing this for the first time.
-
-my $emulate_matts_code = 1;
-
-# $style is the URL of a CSS stylesheet which will be used for script
-# generated messages.  This probably want's to be the same as the one
-# that you use for all the other pages.  This should be a local absolute
-# URI fragment.  Set to '' if there will be no style sheet used.
-
-my $style = '';
-
-# end config
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
