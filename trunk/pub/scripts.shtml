@@ -98,13 +98,6 @@
 	<td><!--#include file="ffa.VER"--></td>
 	<td><!--#flastmod file="ffa.tar.gz"--></td>
       </tr>
-        <td>Formmail</td>
-	<td>Send emails from web forms</td>
-        <td><a href="formmail_compat-<!--#include file="formmail_compat.VERSION"-->.tar.gz">formmail.tar.gz</a></td>
-	<td><a href="formmail_compat-<!--#include file="formmail_compat.VERSION"-->.zip">formmail.zip</a></td>
-	<td><!--#include file="formmail_compat.VERSION"--></td>
-	<td><!--#include file="formmail_compat.LASTMOD"--></td>
-      </tr>
       <tr>
 	<td>Guestbook</td>
 	<td>A simple guest book script</td>
@@ -121,6 +114,7 @@
 	<td><!--#include file="imagecounter.VER"--></td>
  	<td><!--#flastmod file="imagecounter.tar.gz"--></td>
       </tr>
+<!--
       <tr>
 	<td><span class="nms">nms</span> sendmail</td>
 	<td>"sendmail" replacement</td>
@@ -129,6 +123,7 @@
 	<td><!--#include file="nms_sendmail.VER"--></td>
  	<td><!--#flastmod file="nms_sendmail.tar.gz"--></td>
       </tr>
+-->
 <!--
       <tr>
 	<td>Perl Diver</td>
@@ -202,6 +197,14 @@
 	<td><a href="tfmail.zip">tfmail.zip</a></td>
 	<td><!--#include file="tfmail.VER"--></td>
 	<td><!--#flastmod file="tfmail.tar.gz"--></td>
+      </tr>
+      <tr>
+	<td>TFMail Autoinstall</td>
+    <td>Experimental autoinstall script for TFMail</td>
+	<td><a href="tfmail_ai.tar.gz">tfmail_ai.tar.gz</a></td>
+	<td><a href="tfmail_ai.zip">tfmail_ai.zip</a></td>
+	<td><!--#include file="tfmail_ai.VER"--></td>
+	<td><!--#flastmod file="tfmail_ai.tar.gz"--></td>
       </tr>
       <tr>
 	<td>wwwboard</td>
