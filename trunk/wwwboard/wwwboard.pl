@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.34 2002-08-25 20:52:01 nickjc Exp $
+# $Id: wwwboard.pl,v 1.35 2002-08-26 07:35:29 nickjc Exp $
 #
 
 use strict;
@@ -8,7 +8,7 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_headers);
-my $VERSION = substr q$Revision: 1.34 $, 10, -1;
+my $VERSION = substr q$Revision: 1.35 $, 10, -1;
 
 BEGIN
 { 
@@ -154,9 +154,9 @@ EOERR
 }   
 
 
-my $style_element = $style ?
-                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
-                  : '';
+my $html_style = $style ?
+                 qq%<link rel="stylesheet" type="text/css" href="$style" />%
+               : '';
 
 if ( $use_time ) {
    $date_fmt = "$time_fmt $date_fmt";
@@ -364,35 +364,35 @@ sub new_file {
   flock(NEWFILE,LOCK_EX)
     || die "Flock: $! [$basedir/$mesgdir/$variables->{id}.$ext]";
 
-  my $faq = $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
-  my $print_name = $variables->{email} ? 
+  my $html_faq = $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
+  my $html_print_name = $variables->{email} ? 
             qq(<a href="$E{"mailto:$variables->{email}"}">$E{$variables->{name}}</a> ) : 
             $E{$variables->{name}};
   my $ip = $show_poster_ip ? "($ENV{REMOTE_ADDR})" : '';
 
-  my $pr_follow = '';
+  my $html_pr_follow = '';
 
   if ( $variables->{followup} )
   {
-     $pr_follow = 
+     $html_pr_follow = 
     qq(<p>In Reply to:
        <a href="$E{"$variables->{last_message}.$ext"}">$E{$variables->{origsubject}}</a> posted by ); 
 
       if ( $variables->{origemail} )
       {
-        $pr_follow .=  
+        $html_pr_follow .=  
          qq(<a href="$E{$variables->{origemail}}">$E{$variables->{origname}}</a>) ;
       }
       else
       {
-        $pr_follow .= $E{$variables->{origname}};
+        $html_pr_follow .= $E{$variables->{origname}};
       }
-      $pr_follow .= '</p>';
+      $html_pr_follow .= '</p>';
   }
 
-  my $img = $variables->{message_img} ?
-    qq(<p align="center"><img src="$E{$variables->{message_img}}"></p>\n) : '';
-  my $url = $variables->{message_url} ? 
+  my $html_img = $variables->{message_img} ?
+    qq(<p align="center"><img src="$E{$variables->{message_img}}" /></p>\n) : '';
+  my $html_url = $variables->{message_url} ? 
     qq(<ul><li><a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></li></ul><br />) :
       '';
 
@@ -403,7 +403,7 @@ sub new_file {
 <html>
   <head>
     <title>$E{$variables->{subject}}</title>
-    $style_element
+    $html_style
   </head>
   <body>
     <h1 align="center">$E{$variables->{subject}}</h1>
@@ -412,17 +412,17 @@ sub new_file {
       [ <a href="#followups">Follow Ups</a> ]
       [ <a href="#postfp">Post Followup</a> ]
       [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ]
-      $faq
+      $html_faq
     </p>
 
   <hr />
-  <p>Posted by $print_name $E{$ip} on $E{$variables->{date}}</p>
+  <p>Posted by $html_print_name $E{$ip} on $E{$variables->{date}}</p>
 
-  $pr_follow 
+  $html_pr_follow 
 
-  $img
+  $html_img
 
-  $variables->{'body'}<br />$url
+  $variables->{'body'}<br />$html_url
 
   <hr />
   <p><a id="followups" name="followups">Follow Ups:</a></p>
@@ -475,7 +475,7 @@ END_HTML
   print NEWFILE "<tr><td>Comments:</td>\n";
   print NEWFILE qq(<td><textarea name="body" cols="50" rows="10">\n);
   if ($quote_text) {
-    print NEWFILE map { "$quote_char " . strip_html($_) . "\n" } 
+    print NEWFILE map { "$E{$quote_char} " . strip_html($_) . "\n" } 
                   split /\n/, $variables->{hidden_body};
     print NEWFILE "\n";
   }
@@ -504,7 +504,7 @@ END_HTML
    [ <a href="#followups">Follow Ups</a> ] 
    [ <a href="#postfp">Post Followup</a> ] 
    [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ] 
-   $faq
+   $html_faq
 </p>
 </body>
 </html>
@@ -543,7 +543,7 @@ sub main_page {
       if (/<!--begin-->/) {
         print MAIN_OUT <<END_HTML;
 <!--begin-->
-<!--top: $id--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
+<!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
 (<!--responses: $E{$id}-->0)
 <ul><!--insert: $E{$id}-->
 </ul><!--end: $E{$id}-->
@@ -669,10 +669,10 @@ sub return_html {
   print header;
   $done_headers++;
 
-  my $url = $variables->{message_url} ? 
+  my $html_url = $variables->{message_url} ? 
     qq(<p><b>Link:</b> <a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></p>) : '';
-  my $img = $variables->{message_img} ? 
-    qq(<p><b>Image:</b> <img src="$E{$variables->{message_img}}"></p>) : '';
+  my $html_img = $variables->{message_img} ? 
+    qq(<p><b>Image:</b> <img src="$E{$variables->{message_img}}" /></p>) : '';
 
   print <<END_HTML;
 <?xml version="1.0" encoding="$charset"?>
@@ -681,7 +681,7 @@ sub return_html {
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Message Added: $E{$variables->{subject}}</title>
-    $style_element
+    $html_style
   </head>
   <body>
     <h1 align="center">Message Added: $E{$variables->{subject}}</h1>
@@ -692,8 +692,8 @@ sub return_html {
       <b>Subject:</b> $E{$variables->{subject}}<br />
       <b>Body of Message:</b></p>
       <p>$variables->{'body'}</p>
-    $url
-    $img
+    $html_url
+    $html_img
 
     <p><b>Added on Date:</b> $E{$variables->{date}}</p>
     <hr />
@@ -712,31 +712,31 @@ sub error {
   print header;
   $done_headers++;
 
-  my ($error_message, $error_title);
+  my ($html_error_message, $error_title);
   if ($error eq 'no_name') {
     $error_title = 'No Name';
-    $error_message =<<EOMESS;
+    $html_error_message =<<EOMESS;
   <p>You forgot to fill in the 'Name' field in your posting.  Correct it 
     below and re-submit.  The necessary fields are: Name, Subject and 
     Message.</p>
 EOMESS
   } elsif ($error eq 'no_subject') {
     $error_title = 'No Subject';
-    $error_message =<<EOMESS;
+    $html_error_message =<<EOMESS;
   <p>You forgot to fill in the 'Subject' field in your posting.  Correct it 
   below and re-submit.  The necessary fields are: Name, Subject and 
   Message.</p>
 EOMESS
   } elsif ($error eq 'no_body') {
     $error_title = 'No Message';
-    $error_message =<<EOMESS;
+    $html_error_message =<<EOMESS;
 <p>You forgot to fill in the 'Message' field in your posting.  Correct it
 below and re-submit.  The necessary fields are: Name, Subject and 
 Message.</p>
 EOMESS
    } elsif ($error eq 'field_size') {
      $error_title = 'Field too Long';
-     $error_message =<<EOMESS;
+     $html_error_message =<<EOMESS;
   <p>One of the form fields in the message submission was too long.  The 
   following are the limits on the size of each field (in characters):</p>
   <ul>
@@ -752,7 +752,7 @@ EOMESS
 EOMESS
    } else {
      $error_title = 'Application error';
-     $error_message =<<EOMESS;
+     $html_error_message =<<EOMESS;
 <p>An error has occurred while your message was being submitted
 please use your back button and try again</p>
 EOMESS
@@ -764,10 +764,10 @@ EOMESS
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>$E{"$title ERROR: $error_title"}</title>
-    $style_element
+    $html_style
   </head>
   <body><h1 align="center">ERROR: $E{$error_title}</h1>
-    $error_message
+    $html_error_message
   <hr />
 END_HTML
   rest_of_form($variables);
@@ -851,7 +851,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.34 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.35 $ =~ /(\d+)\.(\d+)/);
 
 =head1 NAME
 
