@@ -1,6 +1,8 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.11 2002-01-16 09:25:30 gellyfish Exp $
+# $Id: search.pl,v 1.12 2002-01-16 09:26:40 gellyfish Exp $
+#
+# $Log: not supported by cvs2svn $
 #
 # Revision 1.8  2001/12/01 19:45:22  gellyfish
 # * Tested everything with 5.004.04
