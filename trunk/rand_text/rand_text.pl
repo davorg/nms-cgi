@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: rand_text.pl,v 1.5 2001-11-25 11:39:38 gellyfish Exp $
+# $Id: rand_text.pl,v 1.6 2001-12-01 19:45:22 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/11/25 11:39:38  gellyfish
+# * add missing use vars qw($DEBUGGING) from most of the files
+# * sundry other compilation failures
+#
 # Revision 1.4  2001/11/13 20:35:14  gellyfish
 # Added the CGI::Carp workaround
 #
@@ -18,7 +22,6 @@
 
 use strict;
 use CGI qw(header);
-use CGI qw(fatalsToBrowser set_message);
 use vars qw($DEBUGGING);
 
 # Configuration
@@ -41,15 +44,54 @@ my $delimiter = "%%\n";
 
 # End configuration
 
+# We need finer control over what gets to the browser and the CGI::Carp
+# set_message() is not available everywhere :(
+# This is basically the same as what CGI::Carp does inside but simplified
+# for our purposes here.
 
 BEGIN
 {
-   my $error_message = sub {
-                             my ($message ) = @_;
-                             print "<h1>It's all gone horribly wrong</h1>";
-                             print $message if $DEBUGGING;
-                            };
-  set_message($error_message);
+   sub fatalsToBrowser
+   {
+      my ( $message ) = @_;
+
+      if ( $main::DEBUGGING )
+      {
+         $message =~ s/</&lt;/g;
+         $message =~ s/>/&gt;/g;
+      }
+      else
+      {
+         $message = '';
+      }
+      
+      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ($id ) = $file =~ m%([^/]+)$%;
+
+      return undef if $file =~ /^\(eval/;
+
+      print "Content-Type: text/html\n\n";
+
+      print <<EOERR;
+<html>
+  <head>
+    <title>Error</title>
+  </head>
+  <body>
+     <h1>Application Error</h1>
+     <p>
+     An error has occurred in the program
+     </p>
+     <p>
+     $message
+     </p>
+  </body>
+</html>
+EOERR
+     die @_;
+   };
+
+   $SIG{__DIE__} = \&fatalsToBrowser;
 }   
 
 open(FILE, $random_file) 

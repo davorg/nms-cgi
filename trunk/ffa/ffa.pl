@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.7 2001-11-26 13:40:05 nickjc Exp $
+#  $Id: ffa.pl,v 1.8 2001-12-01 19:45:21 gellyfish Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.7  2001/11/26 13:40:05  nickjc
+#  Added \Q \E around variables in regexps where metacharacters in the
+#  variables shouldn't be interpreted by the regex engine.
+#
 #  Revision 1.6  2001/11/24 11:59:58  gellyfish
 #  * documented strfime date formats is various places
 #  * added more %ENV cleanup
@@ -31,7 +35,6 @@
 
 use strict;
 use CGI qw(:standard);
-use CGI::Carp qw(fatalsToBrowser set_message);
 use Fcntl qw(:flock);
 
 use vars qw($DEBUGGING);
@@ -143,14 +146,54 @@ my %sections = (
 # No user maintainable parts beneath here
 #
 
+# We need finer control over what gets to the browser and the CGI::Carp
+# set_message() is not available everywhere :(
+# This is basically the same as what CGI::Carp does inside but simplified
+# for our purposes here.
+
 BEGIN
 {
-   my $error_message = sub {
-                             my ($message ) = @_;
-                             print "<h1>It's all gone horribly wrong</h1>";
-                             print $message if $DEBUGGING;
-                            };
-  set_message($error_message);
+   sub fatalsToBrowser
+   {
+      my ( $message ) = @_;
+
+      if ( $main::DEBUGGING )
+      {
+         $message =~ s/</&lt;/g;
+         $message =~ s/>/&gt;/g;
+      }
+      else
+      {
+         $message = '';
+      }
+      
+      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ($id ) = $file =~ m%([^/]+)$%;
+
+      return undef if $file =~ /^\(eval/;
+
+      print "Content-Type: text/html\n\n";
+
+      print <<EOERR;
+<html>
+  <head>
+    <title>Error</title>
+  </head>
+  <body>
+     <h1>Application Error</h1>
+     <p>
+     An error has occurred in the program
+     </p>
+     <p>
+     $message
+     </p>
+  </body>
+</html>
+EOERR
+     die @_;
+   };
+
+   $SIG{__DIE__} = \&fatalsToBrowser;
 }   
 
 my $linkscgi   = url();
@@ -278,9 +321,9 @@ sub datestamp
 sub no_url 
 {
    print header, 
-         start_html(-title   => 'ERROR: No URL',
-                    -BGCOLOR => '#FFFFFF',
-                    -style => { src  => $style } );
+         start_html('title'   => 'ERROR: No URL',
+                    'BGCOLOR' => '#FFFFFF',
+                    'style' => { src  => $style } );
    print <<EIEIO;
 <h1>No URL</h1>
 <p>
@@ -305,9 +348,9 @@ EIEIO
 sub no_title 
 {
    print header, 
-         start_html(-title   => 'ERROR: No Title',
-                    -BGCOLOR => '#FFFFFF',
-                    -style => { src  => $style } );
+         start_html('title'   => 'ERROR: No Title',
+                    'BGCOLOR' => '#FFFFFF',
+                    'style' => { src  => $style } );
    print <<EIEIO;
 <h1>No Title</h1>
 <p>
@@ -333,9 +376,9 @@ EIEIO
 sub repeat_url 
 {
    print header, 
-         start_html(-title   => 'ERROR: Repeat URL',
-                    -BGCOLOR => '#FFFFFF',
-                    -style => { src  => $style } );
+         start_html('title'   => 'ERROR: Repeat URL',
+                    'BGCOLOR' => '#FFFFFF',
+                    'style'   => { src  => $style } );
    print <<EIEIO;
 <h1>Repeat URL</h1>
 <p>

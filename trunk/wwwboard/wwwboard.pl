@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.9 2001-11-26 13:40:05 nickjc Exp $
+# $Id: wwwboard.pl,v 1.10 2001-12-01 19:45:22 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/11/26 13:40:05  nickjc
+# Added \Q \E around variables in regexps where metacharacters in the
+# variables shouldn't be interpreted by the regex engine.
+#
 # Revision 1.8  2001/11/25 11:39:40  gellyfish
 # * add missing use vars qw($DEBUGGING) from most of the files
 # * sundry other compilation failures
@@ -36,8 +40,15 @@
 
 use strict;
 use CGI qw(:standard);
-use CGI::Carp qw(fatalsToBrowser set_message);
-use Fcntl qw(:DEFAULT :flock :seek);
+use Fcntl qw(:DEFAULT :flock);
+
+# It appears that the 'SEEK_*' things arent defined everywhere
+
+BEGIN
+{
+   sub SEEK_SET() { 0;}
+};
+
 use POSIX qw(strftime);
 
 use vars qw($DEBUGGING);
@@ -154,17 +165,17 @@ my $enforce_max_len = 0;   # 2 = YES, error; 1 = YES, truncate; 0 = NO
 # These are the maximum lengths of the data allowed in the various
 # fields - they must be supplied if $enforce_max_len is not 0
 
-my %max_len = (name        => 50,
-	       email       => 70,
-	       subject     => 80,
-	       url         => 150,
-	       url_title   => 80,
-	       img         => 150,
-	       body        => 3000,
-	       origsubject => 80,
-	       origname    => 50,
-	       origemail   => 70,
-	       origdate    => 50);
+my %max_len = ('name'        => 50,
+	       'email'       => 70,
+	       'subject'     => 80,
+	       'url'         => 150,
+	       'url_title'   => 80,
+	       'img'         => 150,
+	       'body'        => 3000,
+	       'origsubject' => 80,
+	       'origname'    => 50,
+	       'origemail'   => 70,
+	       'origdate'    => 50);
 
 # $strict_image if set to 1 will require that an image url if supplied
 # must end in one of the common suffixes as defined in @image_suffixes
@@ -180,16 +191,55 @@ my @image_suffixes = qw(png jpe?g gif);
 
 # End configuration
 
+# We need finer control over what gets to the browser and the CGI::Carp
+# set_message() is not available everywhere :(
+# This is basically the same as what CGI::Carp does inside but simplified
+# for our purposes here.
+
 BEGIN
 {
-   my $error_message = sub {
-                             my ($message ) = @_;
-                             print "<h1>It's all gone horribly wrong</h1>";
-                             print $message if $DEBUGGING;
-                            };
-  set_message($error_message);
-}   
+   sub fatalsToBrowser
+   {
+      my ( $message ) = @_;
 
+      if ( $main::DEBUGGING )
+      {
+         $message =~ s/</&lt;/g;
+         $message =~ s/>/&gt;/g;
+      }
+      else
+      {
+         $message = '';
+      }
+      
+      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ($id ) = $file =~ m%([^/]+)$%;
+
+      return undef if $file =~ /^\(eval/;
+
+      print "Content-Type: text/html\n\n";
+
+      print <<EOERR;
+<html>
+  <head>
+    <title>Error</title>
+  </head>
+  <body>
+     <h1>Application Error</h1>
+     <p>
+     An error has occurred in the program
+     </p>
+     <p>
+     $message
+     </p>
+  </body>
+</html>
+EOERR
+     die @_;
+   };
+
+   $SIG{__DIE__} = \&fatalsToBrowser;
+}   
 if ( $use_time ) {
    $date_fmt = "$time_fmt $date_fmt";
 }
@@ -247,7 +297,10 @@ sub parse_form {
 
   # Are we sure this is valid syntax in 5.004.04 ?
 
-  $Form{$_} = param($_) || '' foreach keys %max_len, 'followup';
+  foreach my $param ( keys %max_len , 'followup' )
+  {
+     $Form{$param} = param($param) || '';
+  }
 
   if ($enforce_max_len) {
     foreach (keys %max_len) {
@@ -310,9 +363,9 @@ sub get_variables {
     error('no_subject');
   }
 
-  if ($Form{url} =~ /.*\:.*\..*/ && $Form{url_title}) {
-    $message_url = $Form{url};
-    $message_url_title = $Form{url_title};
+  if ($Form{'url'} =~ /.*\:.*\..*/ && $Form{'url_title'}) {
+    $message_url = $Form{'url'};
+    $message_url_title = $Form{'url_title'};
   }
 
   my $image_suffixes = '.+';
@@ -323,13 +376,13 @@ sub get_variables {
 
      $image_suffixes = "($image_suffixes)";
   }
-  if ($Form{img} =~ m%^.+tp://.*\.image_suffixes$%) {
-    $message_img = $Form{img};
+  if ($Form{'img'} =~ m%^.+tp://.*\.image_suffixes$%) {
+    $message_img = $Form{'img'};
   }
 
-  if ($Form{body}) {
-    $body = $Form{body};
-    $body = strip_html($body) unless $allow_html; 
+  if ($Form{'body'}) {
+    $body = $Form{'body'};
+    $body = strip_html($body,$allow_html);
     $body = "<p>$body</p>";
     $body =~ s/\cM//g;
     $body =~ s|\n\n|</p><p>|g;
@@ -354,7 +407,7 @@ sub get_variables {
     }
     else 
     {
-       $hidden_body = strip_html($hidden_body);
+       $hidden_body = strip_html($hidden_body,$allow_html);
     }
    
    }
@@ -701,18 +754,18 @@ printf <<END_HTML;
   <p>One of the form fields in the message submission was too long.  The 
   following are the limits on the size of each field (in characters):</p>
   <ul>
-    <li>Name: $max_len{name}</li>
-    <li>E-Mail: $max_len{email}</li>
-    <li>Subject: $max_len{subject}</li>
-    <li>Body: $max_len{body}</li>
-    <li>URL: $max_len{url}</li>
-    <li>URL Title: $max_len{url_title}</li>
-    <li>Image URL: $max_len{img}</li>
+    <li>Name: $max_len{'name'}</li>
+    <li>E-Mail: $max_len{'email'}</li>
+    <li>Subject: $max_len{'subject'}</li>
+    <li>Body: $max_len{'body'}</li>
+    <li>URL: $max_len{'url'}</li>
+    <li>URL Title: $max_len{'url_title'}</li>
+    <li>Image URL: $max_len{'img'}</li>
   </ul>
   <p>Please modify the form data and resubmit.</p>
   <hr>
 END_HTML
-     &rest_of_form;
+     rest_of_form();
    } else {
      print "<p>ERROR!  Undefined.</p>";
    }
@@ -739,16 +792,16 @@ sub rest_of_form {
     print qq(Subject: <input type="text" name="subject" value="$Form{subject}" size="50" /><p />\n);
    }
   
-  $Form{body} = escape_html($Form{body});
+  $Form{'body'} = escape_html($Form{'body'});
 
   print "Message:<br>\n";
   print qq(<textarea COLS="50" ROWS="10" name="body">\n);
 
-  print "$Form{body}\n";
+  print "$Form{'body'}\n";
   print "</textarea><p>\n";
-  print qq(Optional Link URL: <input type=text name="url" value="$Form{url}" size="45" /><br />\n);
-  print qq(Link Title: <input type="text" name="url_title" value="$Form{url_title}" size="50" /><br />\n);
-  print qq(Optional Image URL: <input type="text" name="img" value="$Form{img}" size="45" /><p />\n);
+  print qq(Optional Link URL: <input type=text name="url" value="$Form{'url'}" size="45" /><br />\n);
+  print qq(Link Title: <input type="text" name="url_title" value="$Form{'url_title'}" size="50" /><br />\n);
+  print qq(Optional Image URL: <input type="text" name="img" value="$Form{'img'}" size="45" /><p />\n);
   print qq(<input type="submit" value="Post Message" /> <input type="reset" />\n);
   print "</form>\n";
   print qq(<br /><hr size="7" width="75%" />\n);
@@ -760,15 +813,30 @@ sub rest_of_form {
   print "</body></html>\n";
 }
 
-# subroutine to remove HTML from a string.
-# Ideally one would use something like HTML::Parser but we make not have
-# that luxury.
+# subroutine to crudely strip html from a text string
+# ideally we would want to use HTML::Parser or somesuch.
+# we will also implement any selective tag replacement here
+# thus all user supplied input that will be displayed should
+# be passed through this before being displayed.
 
 sub strip_html
 {
-   my ( $text ) = @_;
-   $text =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs;
-   return $text;
+   my ( $comments,$allow_html ) = @_;
+
+   $allow_html = defined $allow_html ? $allow_html : 0;
+
+   $comments =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs unless $allow_html;
+
+   # remove any comments that could harbour an attempt at an SSI exploit
+   # suggested by Pete Sargeant
+
+   $comments =~ s/<!--.*?-->/ /gs;
+
+   # mop up any stray start or end of comment tags.
+
+   $comments = "<!-- -->$comments<!-- -->";
+
+   return $comments;
 }
 
 # subroutine to escape the necessary characters to the appropriate HTML

@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.14 2001-11-29 14:18:38 nickjc Exp $
+# $Id: FormMail.pl,v 1.15 2001-12-01 19:45:21 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2001/11/29 14:18:38  nickjc
+# * Removed CGI::Carp::set_message (doesn't work under 5.00404)
+# * Added some very minimal input filtering
+#
 # Revision 1.13  2001/11/26 17:36:43  nickjc
 # * Allow domain names without '.' so that user@localhost works.
 # * Don't overwrite $Config{recipient} with the empty string before
@@ -58,7 +62,6 @@ use strict;
 use POSIX qw(strftime);
 use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
-use CGI::Carp qw(fatalsToBrowser);
 use vars qw($DEBUGGING);
 
 # Configuration
@@ -128,6 +131,56 @@ my $date_fmt = '%A, %B %d, %Y at %H:%M:%S';
 my $style = '/css/nms.css';
 
 # End configuration
+
+# We need finer control over what gets to the browser and the CGI::Carp
+# set_message() is not available everywhere :(
+# This is basically the same as what CGI::Carp does inside but simplified
+# for our purposes here.
+
+BEGIN
+{
+   sub fatalsToBrowser
+   {
+      my ( $message ) = @_;
+
+      if ( $main::DEBUGGING )
+      {
+         $message =~ s/</&lt;/g;
+         $message =~ s/>/&gt;/g;
+      }
+      else
+      {
+         $message = '';
+      }
+      
+      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ($id ) = $file =~ m%([^/]+)$%;
+
+      return undef if $file =~ /^\(eval/;
+
+      print "Content-Type: text/html\n\n";
+
+      print <<EOERR;
+<html>
+  <head>
+    <title>Error</title>
+  </head>
+  <body>
+     <h1>Application Error</h1>
+     <p>
+     An error has occurred in the program
+     </p>
+     <p>
+     $message
+     </p>
+  </body>
+</html>
+EOERR
+     die @_;
+   };
+
+   $SIG{__DIE__} = \&fatalsToBrowser;
+}   
 
 if ( $emulate_matts_code )
 {
@@ -293,13 +346,13 @@ sub check_required {
 sub return_html {
   my ($key, $sort_order, $sorted_field);
 
-  if ($Config{redirect}) {
-    print redirect $Config{redirect};
+  if ($Config{'redirect'}) {
+    print redirect $Config{'redirect'};
   } else {
     print header;
 
-    my $title = escape_html( $Config{title} || 'Thank You' );
-    my $recipient = escape_html($Config{recipient});
+    my $title = escape_html( $Config{'title'} || 'Thank You' );
+    my $recipient = escape_html($Config{'recipient'});
     my $attr = body_attributes(); # surely this should be done with CSS
 
     print <<EOHTML;
@@ -315,10 +368,10 @@ sub return_html {
 EOHTML
 
     my @sorted_fields;
-    if ($Config{sort}) {
-      if ($Config{sort} eq 'alphabetic') {
+    if ($Config{'sort'}) {
+      if ($Config{'sort'} eq 'alphabetic') {
 	@sorted_fields = sort keys %Form;
-      } elsif ($Config{sort} =~ /^order:.*,.*/) {
+      } elsif ($Config{'sort'} =~ /^order:.*,.*/) {
 	$sort_order = $Config{'sort'};
 	$sort_order =~ s/(\s+|\n)?,(\s+|\n)?/,/g;
 	$sort_order =~ s/(\s+)?\n+(\s+)?//g;
@@ -393,14 +446,14 @@ EOMAIL
   }
 
   my @sorted_keys;
-  if ($Config{sort}) {
-    if ($Config{sort} eq 'alphabetic') {
+  if ($Config{'sort'}) {
+    if ($Config{'sort'} eq 'alphabetic') {
       @sorted_keys = sort keys %Form;
-    } elsif ($Config{sort} =~ /^order:.*,.*/) {
-      $Config{sort} =~ s/(\s+|\n)?,(\s+|\n)?/,/g;
-      $Config{sort} =~ s/(\s+)?\n+(\s+)?//g;
-      $Config{sort} =~ s/order://;
-      @sorted_keys = split(/,/, $Config{sort});
+    } elsif ($Config{'sort'} =~ /^order:.*,.*/) {
+      $Config{'sort'} =~ s/(\s+|\n)?,(\s+|\n)?/,/g;
+      $Config{'sort'} =~ s/(\s+)?\n+(\s+)?//g;
+      $Config{'sort'} =~ s/order://;
+      @sorted_keys = split(/,/, $Config{'sort'});
     } else {
       @sorted_keys = @Field_Order;
     }
