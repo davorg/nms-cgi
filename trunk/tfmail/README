@@ -572,6 +572,36 @@ date_fmt                    - The format that the date will be displayed in. Thi
 
                               Default: '%A, %B %d, %Y at %H:%M:%S'
 
+bad_method_status          - if this is set to 1 then TFmail will return the
+                             Status code for "Request Method Not Allowed"
+                             rather than an error page if the Request Method
+                             is not 'POST' (optionally 'GET' - see the items
+                             'get_redirect' and 'get_template' below) you
+                             may want to use this if your server is 
+                             configured to give custom error messages. The
+                             default value is 0 meaning the default error page
+                             will be displayed.
+
+get_redirect               - Normally TFmail will only accept a 'POST' method
+                             however if this is set to a valid URL then it
+                             will redirect to the indicated page on a 'GET'
+                             request, you could for example use this to
+                             cause a redirection to your form if someone
+                             has bookmarked the results of a previous
+                             request. See also 'get_template' below.
+
+get_template               - If this is set then it must specify a valid
+                             template that will be used when a 'GET' request
+                             is used, the template will be filled in the
+                             same was as the success page but no further
+                             action (such as sending mail or writing a log)
+                             will be taken.  This might be useful when
+                             creating a multipage form for example or if you 
+                             wanted to have a link to a partly prefilled
+                             form.  If both this and 'get_redirect' are
+                             specified then the 'get_redirect' will take
+                             precedence.
+
 INLINE TEMPLATES
 
 If you don't want to have a separate file for each template, you can

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.23 2004-04-09 04:27:53 nickjc Exp $
+# $Id: TFmail.pl,v 1.24 2004-08-10 08:10:47 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -69,7 +69,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.23 $, 10, -1;
+   $VERSION = substr q$Revision: 1.24 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -111,37 +111,124 @@ sub main
    {
       die "You must configure the POSTMASTER constant in the script\n";
    }
-   unless ( $ENV{REQUEST_METHOD} eq 'POST' )
+
+   if ( $ENV{REQUEST_METHOD} eq 'POST' )
    {
-      die 'request method must be "POST"';
+      my $recipients = check_recipients($treq);
+   
+      if ( check_required_fields($treq) )
+      {
+         setup_input_fields($treq);
+         my $confto = send_main_email($treq, $recipients);
+         if ( HTMLFILE_ROOT ne '' )
+         {
+            insert_into_html_files($treq);
+         }
+         if ( LOGFILE_ROOT ne '' )
+         {
+            log_to_file($treq);
+         }
+         send_confirmation_email($treq, $confto);
+         return_html($treq);
+      }
+      else
+      {
+          missing_html($treq);
+      }
    }
-
-   my $recipients = check_recipients($treq);
-
-   if ( check_required_fields($treq) )
+   elsif ( can_handle_get($treq))
    {
-      setup_input_fields($treq);
-      my $confto = send_main_email($treq, $recipients);
-      if ( HTMLFILE_ROOT ne '' )
+      if ( $ENV{REQUEST_METHOD} eq 'GET' )
       {
-         insert_into_html_files($treq);
+         handle_get($treq);
       }
-      if ( LOGFILE_ROOT ne '' )
+      else
       {
-         log_to_file($treq);
+         bad_method($treq,'POST or GET');
       }
-      send_confirmation_email($treq, $confto);
-      return_html($treq);
    }
    else
    {
-       missing_html($treq);
+      bad_method($treq,'POST');
    }
 }
 
 =head1 INTERNAL FUNCTIONS
 
 =over 4
+
+=item can_handle_get ( TREQ )
+
+Will return a true value if either of the configuration items 'get_redirect'
+or 'get_template' has been set, the default is to return false.
+
+=cut
+
+sub can_handle_get
+{
+   my ( $treq) = @_;
+
+   if ( $treq->config('get_redirect','') || $treq->config('get_template',''))
+   {
+      return 1;
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+=item handle_get ( TREQ )
+
+This will take the appropriate action for a GET request depending on the
+configuration.  If the 'get_redirect' configuration is set then a redirect
+will be requested to the specified URL, otherwise if the 'get_template' item
+is specified then it will attempt to use that template to present the outpur
+based on the query parameters. There is no default behaviour - the assumption
+is that can_handle_get() was checked first.
+
+=cut
+
+sub handle_get
+{
+   my ( $treq ) = @_;
+
+   my $redir = $treq->config('get_redirect');
+   if ( defined $redir )
+   {
+      print "Location: $redir\n\n";
+   }
+   else
+   {
+      setup_input_fields($treq);
+      html_page($treq, $treq->config('get_template'));
+   }
+}
+
+=item  bad_method (TREQ, MESSAGE)
+
+Performs the appropriate action as per the configuration if the request
+method is not allowed - the default behaviour is to die with an error
+noting the allowed methods supplied in MESSAGE, if the bad_method_status
+configuaration is set to a true value then it will return a Response with
+a "Request Method Not Allowed" (405) status and exit the program.
+
+=cut
+
+sub bad_method
+{
+   my ( $treq, $message ) = @_;
+
+   if ( $treq->config('bad_method_status',0))
+   {
+      print $treq->cgi()->header(-status => 405);
+      exit;
+   }
+   else
+   {
+      die "request method must be " . $message;
+   }
+}
 
 =item check_recipients ( TREQ )
 
