@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.21 2002-01-02 21:21:45 gellyfish Exp $
+# $Id: FormMail.pl,v 1.22 2002-01-04 08:55:31 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2002/01/02 21:21:45  gellyfish
+# Altered regex in check_valid_url to deal with server port number
+#
 # Revision 1.20  2002/01/01 01:22:27  nickjc
 # error message fix from Paul Sharpe
 #
@@ -567,7 +570,7 @@ sub check_url_valid {
   my $url = shift;
 
   $url =~ m< ^ (?:ftp|http|https):// [\w\-\.]+ (?:\:\d+)?
-               [\w\-.!~*'(|);/?\@&=+\$,%#]*
+               (?: / [\w\-.!~*'(|);/?\@&=+\$,%#]* )?
              $
            >x ? 1 : 0;
 }
