@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.22 2002-01-04 08:55:31 nickjc Exp $
+# $Id: FormMail.pl,v 1.23 2002-01-14 08:54:10 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2002/01/04 08:55:31  nickjc
+# tightened valid url regex
+#
 # Revision 1.21  2002/01/02 21:21:45  gellyfish
 # Altered regex in check_valid_url to deal with server port number
 #
@@ -301,7 +304,6 @@ sub parse_form {
       my $val = strip_nonprintable(param($_));
       next if /redirect$/ and not check_url_valid($val);
       $Config{$_} = $val;
-warn "<<$_>> = <<$val>>\n";
     } else {
       my @vals = map {strip_nonprintable($_)} param($_);
       my $key = strip_nonprintable($_);
