@@ -1,8 +1,20 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.36 2002-02-13 23:36:46 nickjc Exp $
+# $Id: FormMail.pl,v 1.37 2002-02-14 01:33:20 proub Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.36  2002/02/13 23:36:46  nickjc
+# (This is the log message for the previous checkin)
+# * reworked check_email
+# * made it produce debugging output when rejecting recipients
+# * sort order: doc correction
+# * doc typo
+# * added a way to keep the email address out of the form (user request)
+# * POST_MAX and DISABLE_UPLOADS stuff
+# * restricted the body attribute inputs to sane values
+# * squished a couple of warnings
+# * allowed relative URLs in check_url_valid
+#
 # Revision 1.35  2002/02/13 23:33:52  nickjc
 # *** empty log message ***
 #
@@ -271,7 +283,7 @@ my %valid_ENV;
 #  Uncomment the following line (and the Unit Tests section)
 #  to unit test URL checking functions
 #
-#  unitTest();
+# unitTest();
 
 check_url();
 
@@ -922,7 +934,7 @@ sub escape_html {
 #      refererTests();
 #      exit(0);
 #  }
-#
+#  #
 #  sub recipientTests()
 #  {
 #      recipCheck('you@your.domain', 1, 1);
@@ -933,27 +945,27 @@ sub escape_html {
 #      recipCheck('anyone@localhost', 1, 0);
 #      recipCheck('localhost', 0, 1);
 #      recipCheck('localhost', 0, 0);
-#      recipCheck('user%elsewhere.com@localhost', 1, 1);
+#      recipCheck('user%elsewhere.com@localhost', 0, 1);
 #      recipCheck('user%elsewhere.com@localhost', 0, 0);
-#
+#  #
 #      recipCheck('YOU@your.domain', 1, 1);
 #      recipCheck('YOU@your.domain', 0, 0);
 #      recipCheck('some.one.else@YOUR.domain', 1, 1);
 #      recipCheck('some.one.else@YOUR.domain', 0, 0);
 #      recipCheck('anyone@Localhost', 1, 1);
 #      recipCheck('anyone@Localhost', 0, 0);
-#
+#  #
 #      recipCheck('<user@elsewhere.com>your.domain', 0, 0);
 #      recipCheck('user@elsewhere.com(your.domain', 0, 0);
 #  }
-#
+#  #
 #  sub recipCheck
 #  {
 #      my ($recip, $shouldBeGood, $emulate) = @_;
 #     my $secureMsg;
-#
+#  #
 #     $emulate = 0 if ! defined( $emulate );
-#
+#  #
 #     if ($emulate)
 #     {
 #       $secure = 0;
@@ -966,7 +978,7 @@ sub escape_html {
 #       $emulate_matts_code = 0;
 #       $secureMsg = 'secure';
 #     }
-#
+#  #
 #     if ($shouldBeGood)
 #     {
 #         if ((! check_email($recip)) or (! check_recipient($recip)))
@@ -982,7 +994,7 @@ sub escape_html {
 #         }
 #     }
 #  }
-#
+#  #
 #  sub refererTests
 #  {
 #     refCheck('xxx.xxx.xxx', 0);
@@ -1000,14 +1012,14 @@ sub escape_html {
 #     refCheck('http://209.207.222.64', 1);
 #     refCheck('http://localhost/', 1);
 #  }
-#
+#  #
 #  sub refCheck
 #  {
 #     my ($referer, $shouldBeGood, $emulate) = @_;
 #     my $secureMsg;
-#
+#  #
 #     $emulate = 0 if ! defined( $emulate );
-#
+#  #
 #     if ($emulate)
 #     {
 #       $secure = 0;
@@ -1018,7 +1030,7 @@ sub escape_html {
 #       $secure = 1;
 #       $secureMsg = 'secure';
 #     }
-#
+#  #
 #     if ($shouldBeGood)
 #     {
 #       warn "$referer should be good ($secureMsg)" if ! check_referer($referer);
