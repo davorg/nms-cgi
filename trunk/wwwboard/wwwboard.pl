@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.48 2002-10-21 19:53:49 nickjc Exp $
+# $Id: wwwboard.pl,v 1.49 2002-10-21 20:38:47 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.48 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.49 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.48 $
+# wwwboard.pl $Revision: 1.49 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -336,22 +336,20 @@ sub get_variables {
     error('no_subject', $variables);
   }
 
-  if ($Form->{'url'} =~ m%^((?:https?|ftp)://.*\..*)%i && $Form->{'url_title'}) {
-    $variables->{message_url} = $1;
+  my $url = validate_url($Form->{'url'} || '');
+  if ($url and $Form->{'url_title'}) {
+    $variables->{message_url} = $url;
     $variables->{message_url_title} = $Form->{'url_title'};
   }
 
-  my $image_suffixes = '.+';
-
-  if ( $strict_image )
-  {
-     $image_suffixes = join '|', @image_suffixes;
-
-     $image_suffixes = "($image_suffixes)";
+  my $message_img = validate_url($Form->{'img'} || '');
+  if ( $message_img and $strict_image ) {
+    my $image_suffixes = join '|', @image_suffixes;
+    unless ($message_img =~ /($image_suffixes)$/) {
+      undef $message_img;
+    } 
   }
-  if ($Form->{'img'} =~ m%^(https?://.*\.$image_suffixes)$%) {
-    $variables->{message_img} = $1;
-  }
+  $message_img and $variables->{message_img} = $message_img;
 
   if (my $body = $Form->{'body'}) {
 
@@ -807,6 +805,19 @@ sub filter_html
                                            allow_src      => 1,
                                          );
    return $filter->filter($comments, 'Flow');
+}
+
+sub validate_url
+{
+   my ($url) = @_;
+
+   $url = "http://$url" unless $url =~ /:/;
+
+   $url =~ m<( ^ (?:ftp|http|https):// [\w\-\.]+ (?:\:\d+)?
+                (?: /  [\w\-.!~*'(|);/\@+\$,%#]*   )?
+                (?: \? [\w\-.!~*'(|);/\@&=+\$,%#]* )?
+              $
+            )>x ? $1 : undef;
 }
 
 ###############################################################
