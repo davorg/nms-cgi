@@ -1,8 +1,11 @@
 #!/usr/bin/perl -w
 #
-# $Id: FormMail.pl,v 1.4 2001-11-13 21:40:46 gellyfish Exp $
+# $Id: FormMail.pl,v 1.5 2001-11-14 09:10:11 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/11/13 21:40:46  gellyfish
+# Changed all of the sub calls to be without '&'
+#
 # Revision 1.3  2001/11/13 20:35:14  gellyfish
 # Added the CGI::Carp workaround
 #
@@ -15,8 +18,10 @@
 
 use strict;
 use POSIX 'strftime';
+use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser set_message);
+use vars qw($DEBUGGING);
 
 # Configuration
 
@@ -31,7 +36,31 @@ BEGIN
    $DEBUGGING = 1;
 }
    
+
+# 
+# Emulate as far as possible the original behaviour of the original
+# beware that turning this on will lower the level of security.
+
+my $emulate_matts_code = 0;
+
+
+# If $secure is set to 1 then a set of security checks which are potentially
+# incompatible with the original FormMail will kick in. 
+# setting $emulate_matts_code will cause this to be ignored.
+
+my $secure = 1;
+
+
+# the mailer that should be used to send the mail message.
+# this should be the full path to a program that will read a message
+# from STDIN
+
 my $mailprog = '/usr/lib/sendmail';
+
+# a list of referring hosts.  If $secure is set then if these are IP numbers
+# the IP of the referring host will be determined and checked against this
+# (this is to encourage people not to remove the check when their web host
+# might have a large number of names)
 
 my @referers = qw(dave.org.uk 209.207.222.64 localhost);
 
@@ -43,6 +72,10 @@ my $date_fmt = '%A, %B %d, %Y at %H:%M:%S';
 
 # End configuration
 
+if ( $emulate_matts_code )
+{
+   $secure = 0;
+}
 
 BEGIN
 {
@@ -78,17 +111,30 @@ return_html();
 sub check_url {
   my $check_referer;
 
-  if ($ENV{HTTP_REFERER}) {
-    foreach (@referers) {
-      if ($ENV{HTTP_REFERER} =~ m|https?://([^/]*)$_|i) {
+  if (my $referer = referer()) {
+    foreach my $test_ref (@referers) {
+      if ($referer =~ m|https?://([^/]*)$test_ref|i) {
 	$check_referer = 1;
 	last;
+      }
+      elsif ( $secure && $test_ref =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/ ) {
+        if ( $referer =~ m|https?://([^/]+)| ) {
+          if ( my $ref_host = inet_aton($1) ) {
+            $ref_host = unpack "l", $ref_host;
+            if ( my $test_ref_ip = inet_aton($test_ref) ) {
+               $test_ref_ip = unpack "l", $test_ref_ip;
+               if ( $test_ref_ip == $ref_host ) {
+                  $check_referer = 1;
+                  last;
+               }
+            }
+          }
+        }  
       }
     }
   } else {
     $check_referer = 1;
   }
-
   error('bad_referer') unless $check_referer;
 }
 
