@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.42 2002-07-20 08:21:13 gellyfish Exp $
+# $Id: guestbook.pl,v 1.43 2002-07-23 20:31:54 nickjc Exp $
 #
 
 use strict;
@@ -109,7 +109,7 @@ $locale         = '';
 # End configuration
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.42 $, 10, -1;
+$VERSION = substr q$Revision: 1.43 $, 10, -1;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -132,7 +132,7 @@ BEGIN
          $message = '';
       }
 
-      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ( $pack, $file, $line, $sub ) = caller(0);
       my ($id ) = $file =~ m%([^/]+)$%;
 
       return undef if $file =~ /^\(eval/;
@@ -536,7 +536,7 @@ EOMAIL
 sub strip_nonprintable {
   my $text = shift;
   return '' unless defined $text;
-  $text=~ tr#\t\n\040-\176\240-\377##cs;
+  $text=~ tr#\t\n\040-\176\240-\377# #cs;
   return $text;
 }
 	
@@ -551,7 +551,7 @@ sub cleanup_realname {
   return '' unless defined $realname;
 
   $realname =~ s#\s+# #g;
-  $realname =~ tr# a-zA-Z0-9_\-,./'\241-377##dc;
+  $realname =~ tr# a-zA-Z0-9_\-,./'\241-\377# #dc;
   return substr $realname, 0, 128;
 }
 
