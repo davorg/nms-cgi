@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.38 2002-08-29 22:52:07 nickjc Exp $
+# $Id: wwwboard.pl,v 1.39 2002-08-30 20:36:08 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.38 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.39 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.38 $
+# wwwboard.pl $Revision: 1.39 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -57,7 +57,7 @@ BEGIN
   $allow_html          = 1;
   $quote_text          = 1;
   $quote_char          = ':';
-  $quote_html          = 1; 
+  $quote_html          = 0; 
   $subject_line        = 0;
   $use_time            = 1;
   $date_fmt            = '%d/%m/%y';
@@ -188,12 +188,12 @@ $done_headers = 0;
 
 my $Form = parse_form();
 
+my $variables = get_variables($Form);
+
 open LOCK, ">>$basedir/.lock" or die "open >>$basedir/.lock: $!";
 flock LOCK, LOCK_EX or die "flock $basedir/.lock: $!";
 
-my $id = get_number();
-
-my $variables = get_variables($Form,$id);
+$variables->{id} = get_number();
 
 new_file($variables);
 main_page($variables);
@@ -205,28 +205,23 @@ close LOCK;
 return_html($variables);
 
 sub get_number {
-  sysopen(NUMBER, "$basedir/$datafile", O_RDWR|O_CREAT)
-    || die "Can't open number file: $!\n";
+  my $num = 0;
+  my $file = "$basedir/$datafile";
 
-  my $num = <NUMBER> || 0;
-
-  if ($num =~ /^(\d+)$/) {
+  if (open NUMBER, "<$file") {
+    $num = <NUMBER> || 0;
+    $num =~ /^(\d+)\s*$/ or die "$file bad";
     $num = $1;
-  } else {
-    $num = 0;
+    close NUMBER;
   }
 
-  if ($num == 999999 )  {
-    $num = 1;
-  } else {
-    $num++;
-  }
-
-  seek(NUMBER, SEEK_SET, 0);
-  truncate NUMBER, 0;
+  $num++;
+  $num = 1 if $num > 999999;
+  
+  open NUMBER, ">$file.tmp" or die "open >$file.tmp: $!";
   print NUMBER $num;
-
-  close NUMBER;
+  close NUMBER or die "close $file.tmp: $!";
+  rename "$file.tmp", $file or die "rename $file.tmp -> $file: $!";
 
   return $num;
 }
@@ -237,7 +232,9 @@ sub parse_form {
 
   foreach my $param ( keys %max_len , 'followup' )
   {
-     $Form{$param} = param($param) || '';
+     my $val = param($param);
+     defined $val or $val = '';
+     $Form{$param} = &{ $cs->strip_nonprint_coderef }($val);
   }
 
   if ($enforce_max_len) {
@@ -259,10 +256,9 @@ sub parse_form {
 
 sub get_variables {
 
-  my ( $Form,$id ) = @_;
+  my ( $Form ) = @_;
 
-  my $variables = {id   => $id,
-                   Form => $Form}; # Just in case ;-}
+  my $variables = { Form => $Form };
 
   my @followup_num;
 
@@ -299,12 +295,8 @@ sub get_variables {
     $variables->{followup} = $variables->{num_followups} = 0;
   }
 
-  if (my $name = $Form->{name}) {
-    $name =~ tr/"<>&/ /s;
-    $variables->{name} = $name;
-  } else {
-    error('no_name',{ Form => $Form});
-  }
+  length $Form->{name} or error('no_name', $variables);
+  $variables->{name} = $Form->{name};
 
   if ($Form->{email} =~ /(.*\@.*\..*)/) {
     $variables->{email} = $1;
@@ -316,7 +308,7 @@ sub get_variables {
   if ($Form->{subject}) {
     $variables->{subject} = $Form->{subject};
   } else {
-    error('no_subject',{ Form => $Form });
+    error('no_subject', $variables);
   }
 
   if ($Form->{'url'} =~ /(.*\:.*\..*)/ && $Form->{'url_title'}) {
@@ -346,12 +338,14 @@ sub get_variables {
     $variables->{'body'} = $body;
 
   } else {
-    error('no_body',{Form => $Form});
+    error('no_body', $variables);
   }
 
   if ($quote_text) 
   {
-    $variables->{hidden_body} = strip_html( $Form->{'body'}, $quote_html );
+    my $hidden_body = $Form->{'body'};
+    $hidden_body =~ s#(</?[a-z][^>]*>)+# #ig unless $quote_html;
+    $variables->{hidden_body} = $hidden_body;
   }
 
   eval
@@ -371,8 +365,10 @@ sub new_file {
 
   my ($variables) = @_;
 
-  open(NEWFILE,">$basedir/$mesgdir/$variables->{id}.$ext")
-    || die "Open: $! [$basedir/$mesgdir/$variables->{id}.$ext]";
+  my $file = "$basedir/$mesgdir/$variables->{id}.$ext";
+  -r $file and die "refusing to overwrite [$file]";
+
+  open(NEWFILE,">$file") || die "Open [$file]: $!";
 
   my $html_faq = $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
   my $html_print_name = $variables->{email} ? 
@@ -519,7 +515,12 @@ END_HTML
 </body>
 </html>
 END_HTML
-  close(NEWFILE);
+
+  unless (close NEWFILE) {
+    my $err = "close $file: $!";
+    unlink $file;
+    die $err;
+  }
 }
 
 ###############################
@@ -659,6 +660,7 @@ END_HTML
 sub return_html {
 
   my ( $variables ) = @_;
+  my $id = $variables->{id};
 
   print header;
   $done_headers++;
