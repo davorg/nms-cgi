@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.16 2001-12-04 08:55:03 nickjc Exp $
+# $Id: FormMail.pl,v 1.17 2001-12-05 14:28:24 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2001/12/04 08:55:03  nickjc
+# stricter check_email if $secure
+#
 # Revision 1.15  2001/12/01 19:45:21  gellyfish
 # * Tested everything with 5.004.04
 # * Replaced the CGI::Carp with local variant
@@ -334,6 +337,10 @@ sub check_required {
     }
   }
 
+  if ($secure and request_method() ne 'POST') {
+    error('bad_method');
+  }
+
   foreach (@{$Config{required}}) {
     if ($_ eq 'email' && !check_email($Config{$_})) {
       push(@error, $_);
@@ -422,22 +429,43 @@ sub send_mail {
 
   my $dashes = '-' x 75;
 
-  if ("$Config{recipient}$Config{email}$Config{realname}$Config{subject}" =~ /\r|\n/) {
-    die 'multiline variable in mail header, unsafe to continue';
+  my $realname = $Config{realname};
+  if (defined $realname) {
+    if ($secure) {
+      # A transform to eliminate some potential problem characters
+      $realname =~ tr#()\\#{}/#;
+      $realname =~ s#\s+# #g;
+    }
+    $realname = " ($realname)";
+  } else {
+    $realname = $Config{realname} = '';
   }
 
   my $subject = $Config{subject} || 'WWW Form Submission';
 
+  my $email = $Config{email};
+  unless (defined $email and check_email($email)) {
+    $email = 'nobody';
+  }
+
+  if ("$Config{recipient}$email$realname$subject" =~ /\r|\n/) {
+    die 'multiline variable in mail header, unsafe to continue';
+  }
+
   open(MAIL,"|$mailprog")
     || die "Can't open sendmail\n";
 
+  if ( $secure and defined (my $addr = remote_addr()) ) {
+    print MAIL "X-HTTP-Client: [$addr]\n";
+  }
+
   print MAIL <<EOMAIL;
 To: $Config{recipient}
-From: $Config{email} ($Config{realname})
+From: $email$realname
 Subject: $subject
 
 Below is the result of your feedback form.  It was submitted by
-$Config{realname} ($Config{email}) on $date
+$Config{realname} (${\( $Config{email}||'' )}) on $date
 $dashes
 
 
@@ -568,7 +596,27 @@ EOBODY
       $error_body = '<p><b>Badness!</b></p>';
     }
  }
- elsif ( $error eq 'no_recipient') {
+ elsif ($error eq 'bad_method') {
+   my $ref = referer();
+   if (defined $ref and $ref =~ m#^https?://#) {
+     $ref = 'at <tt>' . escape_html($ref) . '</tt>';
+   } else {
+     $ref = 'that you just filled in';
+   }
+   $error_body =<<EOBODY;
+<p>
+  The form $ref fails to specify the POST method, so it would not
+  be correct for this script to take any action in response to
+  your request.
+</p>
+<p>
+  If you are attempting to configure this form to run with FormMail, 
+  you need to set the request method to POST in the opening form tag,
+  like this:
+  <tt>&lt;form action=&quot;/cgi-bin/FormMail.pl&quot; method=&quot;POST&quot;&gt;</tt>
+</p>
+EOBODY
+ } elsif ($error eq 'no_recipient') {
    
    my $recipient = escape_html($Config{recipient});
    $title = 'Error: Bad or Missing Recipient';
