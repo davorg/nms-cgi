@@ -558,6 +558,28 @@ no_email                    - Set this to a true value to prevent the main
                               that if you're using TFmail.pl to record data
                               to a log file and don't need it mailed as well.
 
+date_fmt                    - The format that the date will be displayed in. This
+                              is a string that contains a number of different 'tags'.
+                              Each tag consists of a % character followed by a letter.
+                              Each tag represents one way of displaying a particular
+                              part of the date or time. Here are some common tags:
+
+                              %Y - four digit year (2002)
+                              %y - two digit year (02)
+                              %m - month of the year (01 to 12)
+                              %b - short month name (Jan to Dec)
+                              %B - long month name (January to December)
+                              %d - day of the month (01 to 31)
+                              %a - short day name (Sun to Sat)
+                              %A - long day name (Sunday to Saturday)
+                              %H - hour in 24 hour clock (00 to 23)
+                              %I - hour in 12 hour clock (01 to 12)
+                              %p - AM or PM
+                              %M - minutes (00 to 59)
+                              %S - seconds (00 to 59)
+                              %Z - the name of the local timezone
+
+                              Default: '%A, %B %d, %Y at %H:%M:%S'
 
 INLINE TEMPLATES
 
