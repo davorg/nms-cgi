@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.39 2002-08-30 20:36:08 nickjc Exp $
+# $Id: wwwboard.pl,v 1.40 2002-08-31 22:50:52 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.39 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.40 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.39 $
+# wwwboard.pl $Revision: 1.40 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -57,7 +57,7 @@ BEGIN
   $allow_html          = 1;
   $quote_text          = 1;
   $quote_char          = ':';
-  $quote_html          = 0; 
+  $quote_html          = 1; 
   $subject_line        = 0;
   $use_time            = 1;
   $date_fmt            = '%d/%m/%y';
@@ -329,11 +329,22 @@ sub get_variables {
   }
 
   if (my $body = $Form->{'body'}) {
+
+    unless ($allow_html) {
+      # strip out what look like tags, then escape all but
+      # wellformed HTML entities.
+      $body =~ s#</?\w+[^>]*># #g;
+      $body =~ s/(&#?\w{1,20};)|(.[^&]*)/ defined $1 ? $1 : $cs->escape($2) /ges;
+    }
+
     $body = "<p>$body</p>";
     $body =~ s/\cM//g;
     $body =~ s|\n\n|</p><p>|g;
     $body =~ s%\n%<br />%g;
-    $body = strip_html($body,$allow_html);
+
+    if ($allow_html) {
+      $body = filter_html($body);
+    }
 
     $variables->{'body'} = $body;
 
@@ -406,7 +417,7 @@ sub new_file {
 <?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>$E{$variables->{subject}}</title>
     $html_style
@@ -436,7 +447,7 @@ sub new_file {
   </ul><!--end: $E{$variables->{id}}-->
   <br /><hr />
   <p><a id="postfp" name="postfp">Post a Followup</a></p>
-  <form method=POST action="$E{$cgi_url}">
+  <form method="post" action="$E{$cgi_url}">
 END_HTML
 
   my $follow_ups = ( defined $variables->{followups} )  ? 
@@ -448,8 +459,8 @@ END_HTML
 
   print NEWFILE qq(<input type="hidden" name="followup" value="$E{"$follow_ups$id"}" />);
 
-  print NEWFILE qq(<input type=hidden name="origname" value="$E{$variables->{name}}" />);
-  print NEWFILE qq(<input type=hidden name="origemail" value="$E{$variables->{email}}" />)
+  print NEWFILE qq(<input type="hidden" name="origname" value="$E{$variables->{name}}" />);
+  print NEWFILE qq(<input type="hidden" name="origemail" value="$E{$variables->{email}}" />)
     if $variables->{email};
 
   print NEWFILE <<END_HTML;
@@ -474,9 +485,9 @@ END_HTML
     print NEWFILE qq(<input type="hidden" name="subject" value="$E{$subject}" />\n);
     print NEWFILE "<tr><td>Subject:</td><td><b>$E{$subject}</b></td></tr>\n";
   } elsif ($subject_line == 2) {
-    print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject" size="50"></td></tr>\n);
+    print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject" size="50" /></td></tr>\n);
   } else {
-    print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject" value="$E{$subject}" size="50"></td></tr>\n);
+    print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject" value="$E{$subject}" size="50" /></td></tr>\n);
   }
   print NEWFILE "<tr><td>Comments:</td>\n";
   print NEWFILE qq(<td><textarea name="body" cols="50" rows="10">\n);
@@ -548,7 +559,7 @@ sub main_page {
       if (/<!--begin-->/) {
         print MAIN_OUT <<END_HTML;
 <!--begin-->
-<!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
+<!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i></li>
 (<!--responses: $E{$id}-->0)
 <ul><!--insert: $E{$id}-->
 </ul><!--end: $E{$id}-->
@@ -817,29 +828,17 @@ END_HTML
   print "</body></html>\n";
 }
 
-sub strip_html
+sub filter_html
 {
-   my ( $comments,$allow_html ) = @_;
+   my ( $comments ) = @_;
 
-   if ($allow_html)
-   {
-      my $filter = CGI::NMS::HTMLFilter->new(
-                                              charset        => $cs,
-                                              allow_href     => 1,
-                                              allow_a_mailto => 1,
-                                              deny_tags      => ['hr'],
-                                            );
-      $comments = $filter->filter($comments, 'Inline');
-   }
-   else
-   {
-      # strip out what look like tags, then escape all but
-      # wellformed HTML entities.
-      $comments =~ s#</?\w+[^>]*># #g;
-      $comments =~ s/(&#?\w{1,20};)|(.[^&]*)/ defined $1 ? $1 : $cs->escape($2) /ges;
-   }
-
-   return $comments;
+   my $filter = CGI::NMS::HTMLFilter->new(
+                                           charset        => $cs,
+                                           allow_href     => 1,
+                                           allow_a_mailto => 1,
+                                           allow_src      => 1,
+                                         );
+   return $filter->filter($comments, 'Flow');
 }
 
 ###################################################################
@@ -1228,7 +1227,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$revision: 1.4 $ =~ /(\d+)\.(\d+)/);
 
 use CGI::NMS::Charset;
 
@@ -1782,7 +1781,7 @@ my %table = (
 %_Context = (
   'Inline'      => \%inline,
   'Flow'        => \%flow,
-  'Notags'      => {},
+  'Notags'      => { 'CDATA' => 'CDATA' },
   'pre.content' => \%pre_content,
   'table'       => \%table,
   'list'        => { 'li' => 'Flow' },

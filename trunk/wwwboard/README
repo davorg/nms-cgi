@@ -118,7 +118,7 @@ During the following you will be guided through the configuration and installati
 
       $style              - This is the web address (URL) of a CSS stylesheet
                             which will be used for script generated
-                            messages.  This probably want's to be the
+                            messages.  This probably wants to be the
                             same as the one that you use for all the
                             other pages.  This should be a local absolute
                             URI fragment.
@@ -127,11 +127,10 @@ During the following you will be guided through the configuration and installati
                             wwwboard FAQ will be shown on the generated pages.
 
       $allow_html         - If $allow_html is set to 1 then HTML will not be
-                            removed from the body of the message.
-                            Be warned however that setting this is a
-                            possible security risk allowing malicious
-                            defacement of the page and possible cross
-                            page scripting attacks on this or other site.
+                            removed from the body of the message.  Scripting
+                            and other potentially malicious constructs will
+                            still be removed, and closing tags will be added
+                            for any tags left open in the message.
 
       $quote_text         - If $quote_text is set to 1 then the text of the
                             original message will be placed in the
@@ -256,7 +255,7 @@ During the following you will be guided through the configuration and installati
       None.
 
    Installation
-      Simply upload this file to $basedir, as mentionned in wwwboard.pl. You
+      Simply upload this file to $basedir, as mentioned in wwwboard.pl. You
       also have to chmod the file to 666 (no, we are not the devil) using the
       following command
          chmod 666 data.txt
@@ -270,6 +269,6 @@ During the following you will be guided through the configuration and installati
 
 SUPPORT
 
-For support of this script please suscribe to and email
+For support of this script please subscribe to and email
 
   <nms-cgi-support@lists.sourceforge.net>
