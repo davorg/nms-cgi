@@ -1,8 +1,11 @@
-#!/usr/bin/perl -Tw
+#!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.6 2001-12-01 19:45:21 gellyfish Exp $
+# $Id: countdown.pl,v 1.7 2001-12-02 10:26:26 gellyfish Exp $
 #
-# $Log: not supported by cvs2svn $
+# Revision 1.6  2001/12/01 19:45:21  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.5  2001/11/25 11:39:38  gellyfish
 # * add missing use vars qw($DEBUGGING) from most of the files
 # * sundry other compilation failures
@@ -38,12 +41,12 @@ BEGIN
 {
    $DEBUGGING = 1;
 }
-   
+
 # @from_date = (yyyy,mm,dd,hh,mm,ss);
 # Which means: (year,month,day,hour,minute,second)
 my @from_date = (2002,9,7,0,0,0);
-
-my $date_fmt = '%c';
+my $delimiter = "<br />";
+my $date_fmt = '%H:%M:%S %d/%b/%Y';
 
 # $style is the URL of a CSS stylesheet which will be used for script
 # generated messages.  This probably want's to be the same as the one
@@ -74,7 +77,7 @@ BEGIN
       {
          $message = '';
       }
-      
+
       my ( $pack, $file, $line, $sub ) = caller(1);
       my ($id ) = $file =~ m%([^/]+)$%;
 
@@ -102,45 +105,51 @@ EOERR
    };
 
    $SIG{__DIE__} = \&fatalsToBrowser;
-}   
-
-$from_date[0] -= 1900;
-$from_date[1]--;
+}
 
 my @diffs = ('X', 12, 'X', 24, 60, 60);
 
-if (my $query = query_string()) {
-   $query =~ s/%2C/,/g;
-   $query =~ s/=//g;
-   @from_date = split(/,/, $query);
-}
+# use the CGI module's param function to import from the query
+# string the variable named date.  That variable is then split
+# on a dash.  If there is a valid date in the query string, it
+# replaces the default one.
+
+my @query_string = split(/,/, length param("date") > 0 ? param("date") : param("keywords"));
+@from_date = @query_string if(@query_string == 6);
+
+# format the date so that calculations can be more easily done
+# to it.
+
+$from_date[0] -= 1900;
+$from_date[1]--;
 
 my @now = reverse((localtime)[0 .. 5]);
 
 my $from_date = strftime($date_fmt, reverse @from_date);
 my $now = strftime($date_fmt, reverse @now);
 
-print header(),
-      start_html('title' => "Countdown to: $from_date",
-                 'style' => {'href' => $style});
+# Output formatting
 
-print h1("Countdown to: $from_date"),
-      hr();
+print header;
+
+# Check to see whether the date has already passed.
 
 if (timelocal(reverse @now) > timelocal(reverse @from_date)) {
-  print p('Date has passed'),
-        end_html();
+  print p('Date has passed');
   exit;
 }
 
-my @days = (31, is_leap($now[0]+1900) ? 29 : 28 , 31, 30, 31, 30, 31,
-	    31, 30, 31, 30, 31);
+# @days contains the number of days in every month.
+
+my @days = (31, (is_leap($now[0]+1900) ? 29 : 28), 31, 30, 31, 30, 31,
+	 31, 30, 31, 30, 31);
 
 my @diff = ('-') x 6;
 my @skip = () x 6;
 
+# Calculate the difference
+
 foreach (reverse 0 .. $#from_date) {
-#  print "$_: [@from_date][@now][@diff]\n";
 
   if ($from_date[$_] eq 'XX') {
     $skip[$_] = 1;
@@ -151,39 +160,42 @@ foreach (reverse 0 .. $#from_date) {
 
   if ($diff[$_] < 0) {
     if ($_ == 0) {
-      die "Argh!! Time travel not implemented";
-    } elsif ($_ == 2) {
+      die "$!";
+    }
+    elsif ($_ == 2)
+    {
       $diff[$_] += $days[$now[1]];
       $now[$_ - 1]++;
-    } else {
+    }
+    else {
       $diff[$_] += $diffs[$_];
       $now[$_ - 1]++;
     }
   }
 }
 
-#print " : [@from_date][@now][@diff]\n";
+# Format then output the data.
 
 my @units = qw(Year Month Day Hour Minute Second);
 
-my $diff;
 
+my $diff;
 for (0 .. $#diff) {
   next if $skip[$_];
 
   $diff .= "$diff[$_] $units[$_]";
   $diff .= 's' if $diff[$_] != 1;
-  $diff .= "<br>\n";
+  $diff .= "$delimiter\n";
 }
 
-print p($diff);
+print p($diff), "\n";
 
-print hr(),
-      p("It is currently $now"),
-      end_html();
+# is_leap is a subroutine that takes 1 argument, a year.  It then checks
+# whether that year is a leap year; If it is, it returns true, otherwise
+# it returns false.
 
 sub is_leap {
   my $y = shift;
-
-  (!($y % 100) && !($y % 400)) || (($y % 100) && !($y % 4));
+  return (!($y % 100) && !($y % 400)) || (($y % 100) && !($y % 4));
 }
+
