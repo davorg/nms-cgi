@@ -266,6 +266,16 @@ During the following you will be guided through the configuration and installati
                             could block for some time.  More information
                             on DNSBL and useful zones can be found in
                             README.dnsbl you got with wwwboard.
+
+      $check_sc_uri       - *THIS IS EXPERIMENTAL* - if this is set to 1
+                            then a check will be made against all the inputs
+                            from the form for anything that looks like a URL
+                            and then the domains found in these URLs will be
+                            checked against the DNSBL sc.surbl.org which
+                            holds domains that have been found in SPAM. This
+                            is experimental and not widely tested - the 
+                            developers would be interested in getting
+                            feedback.
    
 
    Installation

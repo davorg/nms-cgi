@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.59 2005-01-21 09:53:54 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.60 2005-02-09 11:45:11 gellyfish Exp $
 #
 
 use strict;
@@ -17,13 +17,13 @@ use vars qw(
   $quote_text $quote_char $quote_html $subject_line $use_time
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset @bannedwords
-  $bannedwords $bannednets @use_rbls
+  $bannedwords $bannednets @use_rbls $check_sc_uri
 );
-BEGIN { $VERSION = substr q$Revision: 1.59 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.60 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.59 $
+# wwwboard.pl $Revision: 1.60 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -88,9 +88,10 @@ BEGIN
     $locale         = '';
     $charset        = 'iso-8859-1';
 
-    $bannedwords = '';
-    $bannednets  = '';
-    @use_rbls    = qw();
+    $bannedwords    = '';
+    $bannednets     = '';
+    @use_rbls       = qw();
+    $check_sc_uri   = 0;
 
     #
     # USER CONFIGURATION << END >>
@@ -218,7 +219,7 @@ $ENV{PATH} =~ /(.*)/ and $ENV{PATH} = $1;
 
 $done_headers = 0;
 
-if ( check_ip($ENV{REMOTE_ADDRESS}) )
+if ( check_ip($ENV{REMOTE_ADDR}) )
 {
    error('blocked');
 }
@@ -393,6 +394,7 @@ sub get_variables
     if ( $Form->{subject} )
     {
         check_banned( $Form->{subject} ) or error('invalid');
+        check_uri_rbl( $Form->{subject} ) and error ('invalid');
         $variables->{subject} = $Form->{subject};
     }
     else
@@ -401,6 +403,7 @@ sub get_variables
     }
 
     my $url = validate_url( $Form->{'url'} || '' );
+    check_uri_rbl( $url ) and error ('invalid');
     $Form->{'url_title'} =~ s/&#[0-9]{1,3};//g;
     $Form->{'url_title'} =~ s/[^a-zA-Z0-9_ ?!&;]//g;
     if ( $url and $Form->{'url_title'} )
@@ -410,6 +413,7 @@ sub get_variables
     }
 
     my $message_img = validate_url( $Form->{'img'} || '' );
+    check_uri_rbl( $message_img ) and error ('invalid');
     if ( $message_img and $strict_image )
     {
         my $image_suffixes = join '|', @image_suffixes;
@@ -423,7 +427,6 @@ sub get_variables
     if ( my $body = $Form->{'body'} )
     {
 
-        check_banned($body) or error('invalid');
         unless ($allow_html)
         {
 
@@ -443,6 +446,9 @@ sub get_variables
         {
             $body = filter_html($body);
         }
+
+        check_banned($body) or error('invalid');
+        check_uri_rbl( $body ) and error ('invalid');
 
         $variables->{html_body} = $body;
 
@@ -485,6 +491,7 @@ sub check_ip
       while (<BANNED>)
       {
          chomp;
+         next unless $_;
          if (ip_in_network($ip, $_))
          {
             return 1;
@@ -495,7 +502,7 @@ sub check_ip
 
    foreach my $rbl (@use_rbls)
    {
-      if ( rbl_check($ip, $rbl ))
+      if ( !rbl_check($ip, $rbl ))
       {
          return 1;
       }
@@ -1040,6 +1047,41 @@ sub validate_url
                 (?: \? [\w\-.!~*'(|);/\@&=+\$,%#]* )?
               $
             )>x ? $1 : undef;
+}
+
+=item check_uri_rbl (URI)
+
+Checks the host of the provided URI against the sc.surbl.org DNSBL
+returns 1 if part of the domain name is in the DNSBL
+
+=cut
+
+sub check_uri_rbl
+{
+   my ($text) = @_;
+
+   if ( $check_sc_uri )
+   {
+      my @urls = $text =~ m%(?:ftp|http|https)://([^:/?\s\x00-\x21\x7F-\xFF">]+)%g;
+
+      foreach my $host ( @urls )
+      {
+         $host =~ s/(?:%|=)([0-9a-fA-F]{2})/chr(hex($1))/eg;
+
+         my @bits = split /\./, $host;
+
+         while (@bits > 1 )
+         {
+            my $host = join '.', (@bits,'sc.surbl.org');
+
+            return 1 if ( defined gethostbyname($host));
+
+            shift @bits;
+         }
+      }
+   }
+
+   return 0;
 }
 
 ###############################################################
