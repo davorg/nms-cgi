@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.25 2002-01-20 14:52:02 nickjc Exp $
+# $Id: FormMail.pl,v 1.26 2002-01-21 21:58:00 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2002/01/20 14:52:02  nickjc
+# added a warning about the risks of turning on the confirmation email
+#
 # Revision 1.24  2002/01/19 23:44:28  nickjc
 # Added the option to send a confirmation email to the submitter, in
 # response to a user request.
@@ -550,7 +553,7 @@ EOMAIL
 
   foreach (@sorted_keys) {
     if ($Config{'print_blank_fields'} || defined $Form{$_}) {
-      print MAIL "$_: $Form{$_}\n\n";
+      print MAIL "$_: ", (ref $Form{$_} ? "@{$Form{$_}}" : $Form{$_}),"\n\n";
     }
   }
 
