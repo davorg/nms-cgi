@@ -8,7 +8,7 @@ use POSIX qw(strftime);
 use NMSCharset;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.12 $, 10, -1;
+$VERSION = substr q$Revision: 1.13 $, 10, -1;
 
 =head1 NAME
 
@@ -801,7 +801,13 @@ sub _interpolate_date
    my $date_fmt = $self->{r}{'config'}{date_fmt};
    defined $date_fmt or $date_fmt = $self->{opt}{DateFormat};
 
-   return strftime $date_fmt, localtime;
+   my $date = strftime $date_fmt, localtime;
+
+   # cache so that all date directives in a single request get the
+   # same date.
+   $self->{r}{date} = $date;
+
+   return $date;
 }
 
 =item _dest_to_coderef ( DEST )
