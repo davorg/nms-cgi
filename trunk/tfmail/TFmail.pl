@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.25 2004-08-11 08:05:00 gellyfish Exp $
+# $Id: TFmail.pl,v 1.26 2004-08-20 08:00:16 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -69,7 +69,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.25 $, 10, -1;
+   $VERSION = substr q$Revision: 1.26 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -129,7 +129,15 @@ sub main
             log_to_file($treq);
          }
          send_confirmation_email($treq, $confto);
-         return_html($treq);
+         if ( $treq->config('no_content',0))
+         {
+            print $treq->cgi()->header(-status => 204 );
+            exit;
+         }
+         else
+         {
+            return_html($treq);
+         }
       }
       else
       {
@@ -221,7 +229,7 @@ sub bad_method
 
    if ( $treq->config('bad_method_status',0))
    {
-      print $treq->cgi()->header(-status => 405);
+      print $treq->cgi()->header(-status => "405 Request method not allowed");
       exit;
    }
    else
@@ -236,7 +244,9 @@ Checks that all configured recipients are reasonable email
 addresses, and returns a string suitable for use as the value
 of a To header.  Dies if any configured recipient is bad.
 Returns the empty string if the 'no_email' configuration
-setting is true.
+setting is true.  It will check first if there is the 'recipient_input'
+configuration defined in which case it will attempt to use the value
+for the recipient, otherwise it will use the 'recipient' configuration.
 
 =cut
 
@@ -246,7 +256,16 @@ sub check_recipients
 
    $treq->config('no_email', '') and return '';
 
-   my @recip = split /[\s,]+/, $treq->config('recipient', '');
+   my @recip;
+
+   if ( my $recip_field = $treq->config('recipient_input', '' ) )
+   {
+      $recip[0] = $treq->param($recip_field);
+   }
+   else
+   {
+      @recip = split /[\s,]+/, $treq->config('recipient', '');
+   }
    scalar @recip or die 'no recipients specified in the config file';
    foreach my $rec (@recip)
    {
@@ -347,6 +366,31 @@ sub setup_input_fields
    );
 }
 
+=item dangerous_recipient ( TREQ )
+
+This will return true if the recipient that the main mail message will be
+sent to is not directly under the control, currently this will be the case
+if the configuration directive 'recipient_input' is being used.  
+
+=cut
+
+=for developers
+
+It is important to keep this function up to date if allowing input from
+anywhere other than the config file as we MUST prohibit any other user
+supplied input from being sent in the e-mail if this is the case.
+
+=cut
+
+sub dangerous_recipient
+{
+   my ($treq) = @_;
+
+   my $ret = defined $treq->config('recipient_input', undef) ? 1 : 0;
+
+   return $ret;
+}
+
 =item send_main_email ( TREQ, RECIPIENTS )
 
 Sends the main email to the configured recipient.
@@ -385,7 +429,8 @@ sub send_main_email
          $from = build_from_address($treq,$from,$realname);
       }
       my $by = $treq->config('by_submitter_by', 'by');
-      $treq->install_directive('by_submitter', "$by $from ");
+      $treq->install_directive('by_submitter', "$by $from ") ;
+                                      
    }
 
    return $confto unless length $recipients;
@@ -404,7 +449,7 @@ sub send_main_email
       Subject  => $subject,
    };
 
-   if (ENABLE_UPLOADS)
+   if (!dangerous_recipient($treq) and ENABLE_UPLOADS)
    {
       my $cthash = {};
       $msg->{attach} = [];
@@ -457,9 +502,21 @@ sub send_main_email
       $treq->install_directive('content_type', $cthash);
    }
 
-   $msg->{body} = $treq->process_template($template, 'email', undef),
+   my $save;
 
-   send_email($msg);
+   if ( dangerous_recipient($treq))
+   {
+      $save = clean_template($treq);
+   }
+
+   $msg->{body} = $treq->process_template($template, 'email', undef);
+
+   if ( dangerous_recipient($treq))
+   {
+      restore_template($treq, $save);
+   }
+
+   send_email($treq,$msg);
 
    return $confto;
 }
@@ -519,23 +576,11 @@ sub send_confirmation_email
    my $conftemp = $treq->config('confirmation_template', '');
    return unless length $conftemp;
 
-   my %save = (
-     'param'        => $treq->uninstall_directive('param'),
-     'param_values' => $treq->uninstall_directive('param_values'),
-     'env'          => $treq->uninstall_directive('env'),
-     'by_submitter' => $treq->uninstall_directive('by_submitter'),
-   );
-   my $save_foreach = $treq->uninstall_foreach('input_field');
-
+   my $save = clean_template($treq);
    my $body = $treq->process_template($conftemp, 'email', undef);
+   restore_template($treq, $save);
 
-   foreach my $k (keys %save)
-   {
-     $treq->install_directive($k, $save{$k});
-   }
-   $treq->install_foreach('input_field', $save_foreach);
-
-   send_email({
+   send_email($treq, {
       To      => $confto,
       From    => POSTMASTER,
       Subject => $treq->config('confirmation_subject', 'Thanks'),
@@ -543,7 +588,60 @@ sub send_confirmation_email
    });
 }
 
-=item send_email ( HASHREF )
+=item clean_template ( TREQ )
+
+This will remove all of the template directives that would place user
+supplied input into the processed template - this includes the param
+and foreach directives.  It should be used when output (particularly an
+e-mail) is going to a recipient which is derived from user input.
+A scalar is returned that can be fed to L<restore_template> in order to
+put the template directives back.
+
+=cut
+
+=for developers
+
+This should be kept up to date if any further directives are introduced
+ideally we should be tracking the installed directives globally.
+
+=cut
+
+sub clean_template
+{
+   my ( $treq ) = @_;
+
+   my $save = {
+     'param'        => $treq->uninstall_directive('param'),
+     'param_values' => $treq->uninstall_directive('param_values'),
+     'env'          => $treq->uninstall_directive('env'),
+     'by_submitter' => $treq->uninstall_directive('by_submitter'),
+   };
+   my $save_foreach = $treq->uninstall_foreach('input_field');
+
+   return { save => $save, save_foreach => $save_foreach };
+}
+
+=item restore_template (TREQ, HASHREF)
+
+This will restore the template directives removed previously by a
+L<clean_template> when supplied with the output of that subroutine.
+It is recommended to always restore in case a new output is defined
+that is considered "safe" and requires templating.
+
+=cut
+
+sub restore_template
+{
+   my ( $treq, $restore ) = @_;
+
+   foreach my $k (keys %{$restore->{save}})
+   {
+     $treq->install_directive($k, $restore->{save}{$k});
+   }
+   $treq->install_foreach('input_field', $restore->{save_foreach});
+}
+
+=item send_email ( TREQ, HASHREF )
 
 Adds abuse tracing headers to an outgoing email stored in a
 hashref, and sends it.  Dies on error.
@@ -552,7 +650,7 @@ hashref, and sends it.  Dies on error.
 
 sub send_email
 {
-   my ($msg) = @_;
+   my ($treq, $msg) = @_;
 
    my $remote_addr = $ENV{REMOTE_ADDR};
    $remote_addr =~ /^[\d\.]+$/ or die "weird remote_addr [$remote_addr]";
@@ -561,6 +659,7 @@ sub send_email
    my $x_gen_by = "NMS TFmail v$VERSION (NMStreq $NMStreq::VERSION)";
 
    email_start( POSTMASTER, split /\s*,\s*/, $msg->{To} );
+
 
    if (MIME_LITE)
    {

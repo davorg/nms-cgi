@@ -653,6 +653,29 @@ locale                     - This when set will determine the locale which is
                             This is not a complete list and your server may
                             support a different set. 
 
+recipient_input            - This specifies the name of a form field that
+                             the recipient is taken from.  It takes precedence
+                             over any recipient specified in the config.
+                             When this is set ALL templating that allows input
+                             from the form to be introduced into the form is
+                             switched off and attempting to use a template
+                             for the email that does this will result in an
+                             error.  You should think carefully before using
+                             this as it is only intended for a "recommend this
+                             page" type scenario and is not generally useful.
+
+no_content                   If this configuration is set to 1 then no HTML
+                             output will be sent to the browser and instead a
+                             204 status will be sent telling the browser that
+                             no content was intended to be sent and it should
+                             not update the current view.  This could be 
+                             useful if, for instance you are using a Flash
+                             form or you have a small subscription box on your
+                             page, on the other hand it may be confusing to
+                             the visitor of your web page as they will have no
+                             feedback that the submission was successful.
+
+
 INLINE TEMPLATES
 
 If you don't want to have a separate file for each template, you can
