@@ -57,53 +57,56 @@ DEBUGGING           - This should be set to 1 whilst you are installing
 
 LIBDIR              - The filesystem path to the location of the .pm files
                       that come with TFmail.pl.
-		      
-MAILPROG            - The path to the sendmail compatible program the the
-                      script should invoke to send an outgoing email.  Your
-		      hosting provider or system administrator should be
-		      able to tell you what to set this variable to.
 
-                      A MAILPROG setting that works for many UNIX-like
-                      hosts is:
+MAILPROG            - The command line that the script should use to fire
+                      up a program that will read an email message from its
+                      standard input, get a list of recipients from the To
+                      header and send the email.  On most UNIX systems, the
+                      correct value will be either:
 
-                        MAILPROG => '/usr/lib/sendmail';
+                        MAILPROG => '/usr/lib/sendmail -oi -t';
 
-                      Some other UNIX-like hosts need:
+                      or
 
-                        MAILPROG => '/usr/sbin/sendmail';
+                        MAILPROG => '/usr/sbin/sendmail -oi -t';
 
-MAILPROG_ARGS       - The switches that need to be applied to MAILPROG in
-                      order for it to read an e-mail message from STDIN and
-		      determine the recipients from the message headers.
-		      The defaults will work with any sendmail compatible
-		      program, so most people won't need to change this
-		      setting.
+                      If your system lacks a suitable sendmail program, then
+                      you can use the nms_sendmail script available from
+                      http://nms-cgi.sourceforge.net/ in place of sendmail.
+
+                      Success has been reported on windows systems using a
+                      MAILPROG setting like:
+
+                        MAILPROG => "$^X -wT d:/inetpub/web31337/nms_sendmail -oi -t";
+
+                      ... you will need to replace "d:/inetpub/web31337/" with
+                      the filesystem location of the nms_sendmail script.
 
 POSTMASTER          - The email address to use as the 'envelope sender' of
                       outgoing e-mails.  This address will receive the bounce
-		      messages if there is trouble delivering an email, so
-		      it's important to set this.  If in doubt, set this to
-		      your email address.
+                      messages if there is trouble delivering an email, so
+                      it's important to set this.  If in doubt, set this to
+                      your email address.
 
 CONFIG_ROOT         - The filesystem path to the directory that holds all of
                       the configuration files and template files for the script.
-		      This must be set to the path to the directory on the
-		      server to which you uploaded the .trc and .trt files.
+                      This must be set to the path to the directory on the
+                      server to which you uploaded the .trc and .trt files.
 
 MAX_DEPTH           - The depth of subdirectories under CONFIG_ROOT that
                       configuration files and templates may be placed.  The
-		      default of 0 is fine for most people.
+                      default of 0 is fine for most people.
 
 CONFIG_EXT          - The file extension that configuration files have.  The
                       default of .trc will work with the sample configuration
-		      files supplied.
+                      files supplied.
 
 TEMPLATE_EXT        - The file extension that template files have.  The default
                       of .trt will work with the sample template files supplied.
 
 ENABLE_UPLOADS      - Set this to 1 if you wish to use HTTP file uploads to
-                      allow users to upload files via the form and have them 
-		      come through to you as attachments to the email.
+                      allow users to upload files via the form and have them
+                      come through to you as attachments to the email.
 
 
 SCRIPT INSTALLATION
@@ -139,7 +142,7 @@ replaces it with a value.  For example, the template directive
 directives for introducing environment variables and CGI form input
 values, and a few others.
 
-For example, be default TFmail will use the template email.tft to 
+For example, be default TFmail will use the template email.tft to
 generate the body of the email.  By default that template looks
 like this.
 
@@ -205,7 +208,7 @@ from the spage.trt template file, which defaults to this:
   </body>
 </html>
 
-The {= param_values =} directive uses a different sub-template 
+The {= param_values =} directive uses a different sub-template
 for the inputs when it appears in an html template: pv_html.trt,
 which looks like this:
 
@@ -330,86 +333,86 @@ email_template              - The template file to use for the body
 
 success_page_template       - The template file to use for the main
                               HTML success page, displayed when the
-			      email has been sent.  Default: spage
+                              email has been sent.  Default: spage
 
 param_values_html_template  - The template file to use for each
                               CGI input when a {= param_values =}
-			      directive is encountered in an HTML
-			      page template.  Default: pv_html
+                              directive is encountered in an HTML
+                              page template.  Default: pv_html
 
 param_values_email_template - The template file to use for each
                               CGI input when a {= param_values =}
-			      directive is encountered in an email
-			      body template.  Default: pv_email
+                              directive is encountered in an email
+                              body template.  Default: pv_email
 
 sort                        - This sets the order in which the
                               {= param_values =} directive processes the CGI
-			      parameters.  It can be the string 'alphabetic'
+                              parameters.  It can be the string 'alphabetic'
                               for alphabetic order, or the string "order:"
-                              followed by a comma separated list of the 
-			      parameter names.  Default: the parameters are
-			      output in the order in which they occur in the
-			      HTTP request.
+                              followed by a comma separated list of the
+                              parameter names.  Default: the parameters are
+                              output in the order in which they occur in the
+                              HTTP request.
 
 print_blank_fields          - If this is set to a true value then fields that
                               the user left blank will be visited by the
-			      {= param_values =} directive.  Normally, blank
-			      fields are suppressed to save space.  Default: 0
+                              {= param_values =} directive.  Normally, blank
+                              fields are suppressed to save space.  Default: 0
 
 subject                     - The subject for the email.  Default:
                               "WWW Form Submission".
 
-email_input                 - The name of the CGI parameter that 
+email_input                 - The name of the CGI parameter that
                               will hold the user's email address.
-			      Used by TFmail to set the From field
-			      of the email.  Default: no email_input,
-			      the mail comes from POSTMASTER.
+                              Used by TFmail to set the From field
+                              of the email.  Default: no email_input,
+                              the mail comes from POSTMASTER.
 
 realname_input              - The name of the CGI parameter that will
                               hold the user's full name.  Used by
-			      TFmail to set the comment part of the
-			      From field of the email if a valid
-			      email address was found in the
-			      email_input input.  Default: none, so
-			      there will be no comment on the From
-			      address.
+                              TFmail to set the comment part of the
+                              From field of the email if a valid
+                              email address was found in the
+                              email_input input.  Default: none, so
+                              there will be no comment on the From
+                              address.
 
 redirect                    - If this configuration value is set, then it
                               must be a URL, TFmail will generate a redirect
-			      to that URL on success, instead of using the
-			      success page template.
+                              to that URL on success, instead of using the
+                              success page template.
 
 required                    - A list of the names of inputs that the
                               user cannot leave blank.  If any of these
-			      are blank, then the submission will not be
-			      accepted.  Default: no fields are required.
+                              are blank, then the submission will not be
+                              accepted.  Default: no fields are required.
 
 missing_template            - The HTML template file used to generate the
                               page that the user sees if they leave a
-			      required field blank.  Default: missing
+                              required field blank.  Default: missing
 
 missing_fields_redirect     - If this configuration value is set then
                               it must be a URL and TFmail will generate
-			      a redirect to that URL instead of using a
-			      template if the user leaves a required
-			      field blank.
+                              a redirect to that URL instead of using a
+                              template if the user leaves a required
+                              field blank.
 
 confirmation_template       - If this field is set then it must be the
                               name of an email template that will be used
-			      to send a mail back to the user confirming
-			      their submission.  CAUTION: since the user
-			      could give any email address (not just their
-			      own) and submit repeatedly, there is risk that
-			      some nasty person will use this to mailbomb
-			      a third party.  Only switch this on if you
-			      really need it.  Template directives that
-			      depend on user input will be disabled for this
-			      template, so that this feature can't be used to
-			      send SPAM.  Default: no confirmation email.
+                              to send a mail back to the user confirming
+                              their submission.  CAUTION: since the user
+                              could give any email address (not just their
+                              own) and submit repeatedly, there is risk that
+                              some nasty person will use this to mailbomb
+                              a third party.  Only switch this on if you
+                              really need it.  Template directives that
+                              depend on user input will be disabled for this
+                              template, so that this feature can't be used to
+                              send SPAM.  Default: no confirmation email.
 
 confirmation_subject        - The subject for the confirmation email, if it
                               is activated by the confirmation_template
-			      directive above.
+                              directive above.
 
 
 FILE UPLOADS

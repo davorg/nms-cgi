@@ -7,7 +7,7 @@ use IO::File;
 use POSIX qw(strftime);
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.1.1.1 $, 10, -1;
+$VERSION = substr q$Revision: 1.2 $, 10, -1;
 
 =head1 NAME
 
@@ -31,7 +31,7 @@ NMStreq - CGI request object with output templating
       $sendmail
   );
   $sendmail->close or die "close sendmail pipe: $!";
-  
+
   ....
 
   print "Content-type: text/html; charset=iso-8859-1\n\n";
@@ -165,8 +165,8 @@ sub new
       $self->{r}{env}{$key} = $val;
    }
 
-   $self->{r}{date}         = \&_interpolate_date; 
-   $self->{r}{param_values} = \&_interpolate_param_values; 
+   $self->{r}{date}         = \&_interpolate_date;
+   $self->{r}{param_values} = \&_interpolate_param_values;
 
    return $self;
 }
@@ -216,8 +216,8 @@ sub process_template
       $ret = '';
       $coderef = sub { $ret .= $_[0] };
    }
-   
-   my $fh = $self->_open_file($template, "$context template"); 
+
+   my $fh = $self->_open_file($template, "$context template");
 
    local $_;
    while(<$fh>)
@@ -225,7 +225,7 @@ sub process_template
       while( s|^(.*?) \{\= \s* (\w+(?:\.\w+)?) \s* \=\} ||x )
       {
          my ($pre, $subst) = ($1, $2);
-	 &{ $coderef }($pre) if length $pre;
+         &{ $coderef }($pre) if length $pre;
          $self->_interpolate($context, $subst, $coderef);
       }
       &{ $coderef }($_) if length;
@@ -262,7 +262,7 @@ a string.
 
 =item C<a hashref>
 
-In this case a new tree of two-part directives is defined, 
+In this case a new tree of two-part directives is defined,
 with the sub-directives corresponding to the keys in the
 hash.  The values in the hash must be strings, coderefs
 or further hashrefs.
@@ -322,7 +322,7 @@ If the same CGI parameter appears several times then all
 the values of that parameter are joined together, using
 a single space character as a separator.
 
-Returns the empty string if no such parameter is set. 
+Returns the empty string if no such parameter is set.
 
 =cut
 
@@ -609,7 +609,7 @@ sub _read_config_file
    my ($self, $cfg_file) = @_;
 
    my $fh = $self->_open_file($cfg_file, 'configuration');
-   
+
    my %config = ();
    my $key = '**NOKEY**';
    local $_;
@@ -652,7 +652,7 @@ sub _open_file
 
    unless ( $filename =~ m#^[a-zA-Z0-9]# and
             $filename =~ m#[a-zA-Z0-9]$# and
-	    $filename =~ m#^([/a-zA-Z0-9_]{1,100})$# )
+            $filename =~ m#^([/a-zA-Z0-9_]{1,100})$# )
    {
       $self->error("Invalid $filetype filename: [$filename]");
    }
@@ -699,7 +699,7 @@ sub _open_file
    {
       $self->error("$filetype file [$filename] lacks a valid header line");
    }
-   
+
    return $fh;
 }
 
@@ -792,7 +792,7 @@ Here is an example of an HTML template:
      <i>{= env.HTTP_USER_AGENT =}</i>.
     </p>
     <p>
-     You put <b>{= param.foo =}</b> in the <b>foo</b> input.     
+     You put <b>{= param.foo =}</b> in the <b>foo</b> input.
     </p>
   {= param_values =}
    </body>
@@ -813,7 +813,7 @@ in this way.
 =item C<opt.*>
 
 The C<opt.*> directive (not used in this example) substitutes
-values passed to the C<NMStreq> object's constructor into 
+values passed to the C<NMStreq> object's constructor into
 the output document.
 
 =item C<env.*>

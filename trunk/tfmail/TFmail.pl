@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.2 2002-04-30 12:44:08 nickjc Exp $
+# $Id: TFmail.pl,v 1.3 2002-04-30 19:42:49 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -10,8 +10,7 @@ use strict;
 
 use constant DEBUGGING      => 1;
 use constant LIBDIR         => '.';
-use constant MAILPROG       => '/usr/lib/sendmail';
-use constant MAILPROG_ARGS  => ['-oi', '-t'];
+use constant MAILPROG       => '/usr/lib/sendmail -oi -t';
 use constant POSTMASTER     => 'me@my.domain';
 use constant CONFIG_ROOT    => '.';
 use constant MAX_DEPTH      => 0;
@@ -52,7 +51,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.2 $, 10, -1;
+  $VERSION = substr q$Revision: 1.3 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -87,7 +86,7 @@ sub main
       TemplateExt   => TEMPLATE_EXT,
       EnableUploads => ENABLE_UPLOADS,
       CGIPostMax    => 1000000,
-   ); 
+   );
 
    if ( POSTMASTER eq 'me@my.domain' )
    {
@@ -169,7 +168,7 @@ sub check_required_fields
    }
    return 1;
 }
-   
+
 =item send_emails ( TREQ, RECIPIENTS )
 
 Sends the email, and sends the additional confirmation email
@@ -201,8 +200,8 @@ sub send_emails
       if ($realname_input)
       {
          my $realname = $treq->param($realname_input, '');
-	 $realname =~ tr#a-zA-Z0-9_\-\.\,\'# #cs;
-	 $realname = substr $realname, 0, 100;
+         $realname =~ tr#a-zA-Z0-9_\-\.\,\'# #cs;
+         $realname = substr $realname, 0, 100;
          $from = "$from ($realname)";
       }
       $treq->install_directive('by_submitter', "by $from ");
@@ -254,7 +253,7 @@ sub send_emails
             Filename    => "$param.$bestext",
             FH          => $filehandle,
             Disposition => 'attachment',
-	    Encoding    => 'base64',
+            Encoding    => 'base64',
          );
       }
    }
@@ -305,10 +304,7 @@ sub send_mime_email
    $msg->add('X-HTTP-Client'  => "[$remote_addr]");
    $msg->add('X-Generated-By' => "NMS TFmail v$VERSION (NMStreq $NMStreq::VERSION)");
 
-   $msg->send_by_sendmail( Sendmail   => MAILPROG,
-                           BaseArgs   => MAILPROG_ARGS,
-                           FromSender => POSTMASTER,
-                         );
+   $msg->send_by_sendmail( MAILPROG . ' -f ' . POSTMASTER );
 }
 
 =item missing_html ( TREQ )
@@ -335,7 +331,7 @@ sub missing_html
 
 =item return_html ( TREQ )
 
-Generates the output page in the case where the email has been 
+Generates the output page in the case where the email has been
 successfully sent.
 
 =cut
