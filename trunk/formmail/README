@@ -186,8 +186,8 @@ $date_fmt           - The format that the date will be displayed in. This
                       %Z - the name of the local timezone
 
 $style              - This is the URL of a CSS stylesheet which will be
-                      used for script generated messages.  This probably
-                      want's to be the same as the one that you use for all
+                      used for script generated messages.  This should
+		      probably be the same as the one that you use for all
                       the other pages.  This should be a local absolute URI
                       fragment.  Set $style to '0' or the emtpy string if
                       you don't want to use style sheets.

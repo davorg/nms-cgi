@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.77 2002-04-18 20:18:57 nickjc Exp $
+# $Id: FormMail.pl,v 1.78 2002-04-21 23:24:54 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.77 $
+# FormMail.pl $Revision: 1.78 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -65,7 +65,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.77 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.78 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -161,7 +161,7 @@ $CGI::POST_MAX        = 1000000;
 # general we have no way to tell what should be there.
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
-$ENV{PATH} =~ /(\S*)/ and $ENV{PATH} = $1;
+$ENV{PATH} =~ /(.*)/ and $ENV{PATH} = $1;
 
 
 use vars qw(%Config %Form);
@@ -857,7 +857,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.77 $
+FormMail $Revision: 1.78 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1090,8 +1090,8 @@ part of the date or time. Here are some common tags:
 =item $style
 
 This is the URL of a CSS stylesheet which will be
-used for script generated messages.  This probably
-wants to be the same as the one that you use for all
+used for script generated messages.  This should
+probably be the same as the one that you use for all
 the other pages.  This should be a local absolute URI
 fragment.  Set $style to '0' or the empty string if
 you do not want to use style sheets.
