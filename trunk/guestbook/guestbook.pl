@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.38 2002-04-19 07:46:01 nickjc Exp $
+# $Id: guestbook.pl,v 1.39 2002-04-23 20:20:59 nickjc Exp $
 #
 
 use strict;
@@ -101,7 +101,7 @@ $short_date_fmt = '%d/%m/%y %T %Z';
 # End configuration
 
 use vars qw($VERSION);
-$VERSION = ('$Revision: 1.38 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+$VERSION = ('$Revision: 1.39 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -517,7 +517,7 @@ EOMAIL
 sub strip_nonprintable {
   my $text = shift;
   return '' unless defined $text;
-  $text=~ tr#\011\012\040-\176\240-\377##dc;
+  $text=~ tr#\t\n\040-\176\240-\377##cs;
   return $text;
 }
 	
