@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.52 2002-03-12 00:41:04 nickjc Exp $
+# $Id: FormMail.pl,v 1.53 2002-03-12 19:43:02 nickjc Exp $
 #
 
 use strict;
@@ -11,7 +11,7 @@ use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl v1.32
+# FormMail.pl $Revision: 1.53 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -26,7 +26,7 @@ use vars qw($DEBUGGING $done_headers);
 
 =head1 COPYRIGHT
 
-FormMail Version 1.00
+FormMail $Revision: 1.53 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -663,7 +663,7 @@ sub parse_form {
     } else {
       my @vals = map {strip_nonprintable($_)} param($_);
       my $key = strip_nonprintable($_);
-      $Form{$key} = @vals == 1 ? $vals[0] : [@vals];
+      $Form{$key} = join ' ', @vals;
       push @field_order, $key;
     }
   }
@@ -903,7 +903,7 @@ EOMAIL
 
   foreach (@sorted_keys) {
     if ($Config{'print_blank_fields'} || $Form{$_} !~ /^\s*$/) {
-      print MAIL "$_: ", (ref $Form{$_} ? "@{$Form{$_}}" : $Form{$_}),"\n\n";
+      print MAIL "$_: $Form{$_}\n\n";
     }
   }
 
@@ -913,7 +913,7 @@ EOMAIL
     print MAIL "$_: ", strip_nonprintable($ENV{$_}), "\n" if $ENV{$_};
   }
 
-  close (MAIL) || die $!;
+  close (MAIL) || die "close mailprog: \$?=$?,\$!=$!";
 }
 
 sub cleanup_realname {
@@ -1245,6 +1245,9 @@ sub escape_html {
 
 
 # $Log: not supported by cvs2svn $
+# Revision 1.52  2002/03/12 00:41:04  nickjc
+# * Allow the value '0' in a required field
+#
 # Revision 1.51  2002/03/10 01:05:11  nickjc
 # * tightened weak checking on the realname part of email addresses
 # * added a test for that
