@@ -22,7 +22,14 @@
 
     <h2>Latest News</h2>
 
-    <h2><span class="nms">nms</span> as recommended by Matt Wright</h2>
+    <h3><span class="nms">nms</span> goodies at Cafepress</h3>
+
+    <p>You can now buy a range of <span class="nms">nms</a> stuff
+      at <a href="http://www.cafepress.com/nms/">Cafepress</a>.
+      Any profits from this store will be donated to
+      <a href="http://www.perlfoundation.org/">The Perl Foundation</a>.</p>
+
+    <h3><span class="nms">nms</span> as recommended by Matt Wright</h3>
 
     <p>Matt Wright has given the <a href="http://www.scriptarchive.com/">MSA 
       web site</a> a major redesign. He's included a 
