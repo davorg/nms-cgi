@@ -1,8 +1,11 @@
 #!perl -wT
 #
-# $Id: search.pl,v 1.19 2002-02-05 03:48:05 jfryan Exp $
+# $Id: search.pl,v 1.20 2002-02-05 04:24:38 jfryan Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2002/02/05 03:48:05  jfryan
+# Accidentally left $emulate_matts_code off by default :(
+#
 # Revision 1.18  2002/02/05 03:42:39  jfryan
 # Added sorted results guarded by a $emulate_matts_code
 #
@@ -102,6 +105,12 @@ my $search_url          = 'http://localhost/search.html';
 my @blocked             = ();
 my $emulate_matts_code  = 1;
 my $style               = '';
+
+# the following config variables only affect the program if $emulate_matts_code is switched off
+# $hit_threshhold is what the minimum amount of hits per page that are required for the match to be outputted
+my $hit_threshhold      = 1;
+
+
 #
 # USER CONFIGURATION << END >>
 # ----------------------------
@@ -177,7 +186,7 @@ if ($terms)
     @term_list = split(/\s+/, $terms);
     ($wclist, $dirlist) = build_list(@files);
     my @temp_list = @term_list;
-    $termlist = join ('|', map{quotemeta($_); $_='(?:'.$_.')'}@temp_list);
+    $termlist = join ('|', map{$_=quotemeta($_); $_='(?:'.$_.')'}@temp_list);
     # I have taken out the reimplementation hack ;-}
 
     $startdir = $basedir;
@@ -189,7 +198,7 @@ if ($terms)
         @paths   = @paths[@base];
         for (my $i=0; $i<@hits; $i++)
         {
-	    	print_result ($baseurl, $paths[$i], $titles[$i]);
+	    	print_result ($baseurl, $paths[$i], $titles[$i]) if ($hits[$i] >= $hit_threshhold);
         }
     }
 }
@@ -303,6 +312,26 @@ sub build_list
           );
 }
 
+# This subroutine overrides the core chdir in order that detainting
+# can be done on the directory name before being passed to the real
+# one - newer File::Find can overcome this need but it is needed for
+# 5.004.04 - 5.005.03
+
+sub File::Find::chdir
+{
+   return CORE::chdir(main::detaint_dirname($_[0]));
+}
+
+sub detaint_dirname
+{
+    my ($dirname) = @_;
+
+    # Pattern from File/Find.pm in Perl 5.6.1
+    $dirname =~ m|^([-+@\w./]*)$| or die "suspect directory name: $dirname";
+    return $1;
+}
+
+
 sub start_of_html
 {
     my ($title,$style) = @_;
@@ -358,23 +387,4 @@ sub end_of_html
  </body>
 </html>
 END_HTML
-}
-
-# This subroutine overrides the core chdir in order that detainting
-# can be done on the directory name before being passed to the real
-# one - newer File::Find can overcome this need but it is needed for
-# 5.004.04 - 5.005.03
-
-sub File::Find::chdir
-{
-   return CORE::chdir(main::detaint_dirname($_[0]));
-}
-
-sub detaint_dirname
-{
-    my ($dirname) = @_;
-
-    # Pattern from File/Find.pm in Perl 5.6.1
-    $dirname =~ m|^([-+@\w./]*)$| or die "suspect directory name: $dirname";
-    return $1;
 }
