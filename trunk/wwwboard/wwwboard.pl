@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.47 2002-09-25 08:19:22 nickjc Exp $
+# $Id: wwwboard.pl,v 1.48 2002-10-21 19:53:49 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.47 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.48 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.47 $
+# wwwboard.pl $Revision: 1.48 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -336,7 +336,7 @@ sub get_variables {
     error('no_subject', $variables);
   }
 
-  if ($Form->{'url'} =~ /(.*\:.*\..*)/ && $Form->{'url_title'}) {
+  if ($Form->{'url'} =~ m%^((?:https?|ftp)://.*\..*)%i && $Form->{'url_title'}) {
     $variables->{message_url} = $1;
     $variables->{message_url_title} = $Form->{'url_title'};
   }
@@ -371,7 +371,7 @@ sub get_variables {
       $body = filter_html($body);
     }
 
-    $variables->{'body'} = $body;
+    $variables->{html_body} = $body;
 
   } else {
     error('no_body', $variables);
@@ -473,7 +473,7 @@ sub new_file {
 
   $html_img
 
-  $variables->{'body'}<br />$html_url
+  $variables->{html_body}<br />$html_url
 
   <hr />
   <p><a id="followups" name="followups">Follow Ups:</a></p>
@@ -656,7 +656,7 @@ sub return_html {
       <b>E-Mail:</b> $E{$variables->{email}}<br />
       <b>Subject:</b> $E{$variables->{subject}}<br />
       <b>Body of Message:</b></p>
-      <p>$variables->{'body'}</p>
+      <p>$variables->{html_body}</p>
     $html_url
     $html_img
 
@@ -688,7 +688,7 @@ sub preview_post {
   </head>
   <body><h1 align="center">$E{$variables->{subject}}</h1>
   <hr />
-    $variables->{'body'}
+    $variables->{html_body}
   <hr />
 END_HTML
   rest_of_form($variables);
@@ -701,26 +701,13 @@ sub error {
   $done_headers++;
 
   my ($html_error_message, $error_title);
-  if ($error eq 'no_name') {
-    $error_title = 'No Name';
+  if ($error =~ /^no_(name|subject|body)$/) {
+    my $missing = ucfirst $1;
+    $error_title = "No $missing";
     $html_error_message =<<EOMESS;
-  <p>You forgot to fill in the 'Name' field in your posting.  Correct it 
+  <p>You forgot to fill in the '$missing' field in your posting.  Correct it 
     below and re-submit.  The necessary fields are: Name, Subject and 
     Message.</p>
-EOMESS
-  } elsif ($error eq 'no_subject') {
-    $error_title = 'No Subject';
-    $html_error_message =<<EOMESS;
-  <p>You forgot to fill in the 'Subject' field in your posting.  Correct it 
-  below and re-submit.  The necessary fields are: Name, Subject and 
-  Message.</p>
-EOMESS
-  } elsif ($error eq 'no_body') {
-    $error_title = 'No Message';
-    $html_error_message =<<EOMESS;
-<p>You forgot to fill in the 'Message' field in your posting.  Correct it
-below and re-submit.  The necessary fields are: Name, Subject and 
-Message.</p>
 EOMESS
    } elsif ($error eq 'field_size') {
      $error_title = 'Field too Long';
