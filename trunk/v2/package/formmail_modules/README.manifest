@@ -8,5 +8,6 @@ lib/CGI/NMS/Validator.pm        - A module required by FormMail.pl
 lib/CGI/NMS/Script.pm           - A module required by FormMail.pl
 lib/CGI/NMS/Script/FormMail.pm  - A module required by FormMail.pl
 lib/CGI/NMS/Mailer.pm           - A module required by FormMail.pl
+lib/CGI/NMS/Mailer/ByScheme.pm  - A module required by FormMail.pl
 lib/CGI/NMS/Mailer/Sendmail.pm  - A module required by FormMail.pl
 lib/CGI/NMS/Mailer/SMTP.pm      - A module required by FormMail.pl
