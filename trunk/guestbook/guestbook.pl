@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.43 2002-07-23 20:31:54 nickjc Exp $
+# $Id: guestbook.pl,v 1.44 2003-01-18 08:50:38 nickjc Exp $
 #
 
 use strict;
@@ -14,7 +14,7 @@ use vars qw(
   $DEBUGGING $done_headers @debug_msg $guestbookurl
   $guestbookreal $guestlog $cgiurl $emulate_matts_code
   $style $mail $uselog $linkmail $separator $redirection
-  $entry_order $remote_mail $allow_html $line_breaks
+  $entry_order $remote_mail $allow_html $line_breaks $postmaster
   $mailprog $recipient $short_date_fmt $long_date_fmt $locale $timezone
 );
 
@@ -34,7 +34,7 @@ delete @ENV{qw(ENV BASH_ENV IFS PATH)};
 BEGIN
 {
    $DEBUGGING = 1;
-}
+
 
 $guestbookurl  = 'http://your.host.com/~yourname/guestbook.html';
 $guestbookreal = '/home/yourname/public_html/guestbook.html';
@@ -80,6 +80,11 @@ $mailprog  = '/usr/lib/sendmail -t -oi -oem';
 
 $recipient = 'you@your.com';
 
+# $postmaster is the envelope sender to use for all outgoing emails.
+# If in doubt, put your own email address here.
+
+$postmaster = '';
+
 # $timezone is the timezone which you want the times to show as
 # if you are happy with the current timezone it should be left as '';
 
@@ -108,8 +113,14 @@ $locale         = '';
 
 # End configuration
 
+  if ($mailprog =~ /^SMTP:/i) {
+    require IO::Socket;
+    import IO::Socket;
+  }
+}
+
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.43 $, 10, -1;
+$VERSION = substr q$Revision: 1.44 $, 10, -1;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -495,13 +506,13 @@ sub do_mail
 
   my ( $to, $from,$reply , $subject, $body ) = @_;
 
-  open (MAIL, "|$mailprog") || die "Can't open $mailprog - $!\n";
+  email_start($postmaster, $to);
 
   my $addr = remote_addr();
   $addr =~ /^([\d\.]+)$/ or die "bad remote addr [$addr]";
   $addr = $1;
 
-  print MAIL <<EOMAIL;
+  email_data(<<EOMAIL);
 X-HTTP-Client: [$addr]
 X-Generated-By: NMS guestbook.pl v$VERSION
 To: $to
@@ -516,22 +527,106 @@ $inputs{realname}
 EOMAIL
 
   if ($inputs{username}){
-    print MAIL " <$inputs{username}>";
+    email_data(" <$inputs{username}>");
   }
 
-  print MAIL "\n";
+  email_data("\n");
 
-  print MAIL "$inputs{city}'," if $inputs{city};
+  email_data("$inputs{city}',") if $inputs{city};
 
-  print MAIL " $inputs{state}" if $inputs{state};
+  email_data(" $inputs{state}") if $inputs{state};
 
-  print MAIL " $inputs{country}" if $inputs{country};
+  email_data(" $inputs{country}") if $inputs{country};
 
-  print MAIL " - $date\n";
-  print MAIL "------------------------------------------------------\n";
+  email_data(<<EOMAIL);
+ - $date
+------------------------------------------------------
+EOMAIL
 
-  close (MAIL);
+  email_end();
 }
+
+use vars qw($smtp);
+sub email_start {
+  my ($sender, @recipients) = @_;
+
+  if ($mailprog =~ /^SMTP:([\w\-\.]+(:\d+)?)$/i) {
+    my $mailhost = $1;
+    $mailhost .= ':25' unless $mailhost =~ /:/;
+    $smtp = IO::Socket::INET->new($mailhost);
+    defined $smtp or die "SMTP connect to [$mailhost]: $!";
+
+    my $banner = smtp_getline();
+    $banner =~ /^2/ or die "bad SMTP banner [$banner] from [$mailhost]";
+
+    my $helohost = ($ENV{SERVER_NAME} =~ /^([\w\-\.]+)$/ ? $1 : '.');
+    smtp_command("HELO $helohost");
+    smtp_command("MAIL FROM: <$sender>");
+    foreach my $r (@recipients) {
+      smtp_command("RCPT TO: <$r>");
+    }
+    smtp_command("DATA", '3');
+  }
+  else {
+    my $command = $mailprog;
+    $command .= qq{ -f "$postmaster"} if $postmaster;
+    my $result;
+    eval { local $SIG{__DIE__};
+           $result = open SENDMAIL, "| $command"
+         };
+    if ($@) {
+      die $@ unless $@ =~ /Insecure directory/;
+      delete $ENV{PATH};
+      $result = open SENDMAIL, "| $command";
+    }
+
+    die "Can't open mailprog [$command]\n" unless $result;
+  }
+}
+
+sub email_data {
+  my ($data) = @_;
+
+  if (defined $smtp) {
+    $data =~ s#\n#\015\012#g;
+    $data =~ s#^\.#..#mg;
+    $smtp->print($data) or die "write to SMTP server: $!";
+  } else {
+    print SENDMAIL $data or die "write to sendmail pipe: $!";
+  }
+}
+
+sub email_end {
+  if (defined $smtp) {
+    smtp_command(".");
+    smtp_command("QUIT");
+    undef $smtp;
+  } else {
+    close SENDMAIL or die "close sendmail pipe failed, mailprog=[$mailprog]";
+  }
+}
+
+sub smtp_command {
+  my ($cmd, $want) = @_;
+  defined $want or $want = '2';
+
+  $smtp->print("$cmd\015\012")
+      or die "write [$cmd] to SMTP server: $!";
+
+  my $resp = smtp_getline();
+  unless (substr($resp, 0, 1) eq $want) {
+    die "SMTP command [$cmd] gave response [$resp]";
+  }
+}
+
+sub smtp_getline {
+  my $line = <$smtp>;
+  defined $line or die "read from SMTP server: $!";
+  $line =~ tr#\012\015##d;
+  return $line;
+}
+
+##############################################################
 
 sub strip_nonprintable {
   my $text = shift;
@@ -539,7 +634,7 @@ sub strip_nonprintable {
   $text=~ tr#\t\n\040-\176\240-\377# #cs;
   return $text;
 }
-	
+
 ##############################################################
 #
 # Validity checks for various contexts.
@@ -551,7 +646,7 @@ sub cleanup_realname {
   return '' unless defined $realname;
 
   $realname =~ s#\s+# #g;
-  $realname =~ tr# a-zA-Z0-9_\-,./'\241-\377# #dc;
+  $realname =~ tr# a-zA-Z0-9_\-,./'\241-\377# #cs;
   return substr $realname, 0, 128;
 }
 
@@ -1012,7 +1107,7 @@ sub cleanup_attr_multilength {
   /^(\d+(?:\.\d+)?[*%]?)$/ ? $1 : undef;
 }
 sub cleanup_attr_text {
-  tr/-a-zA-Z0-9()[]{}\/?.,\\|;:@#~=+*^%$! //dc;
+  tr/-a-zA-Z0-9()[]{}\/?.,\\|;:@#~=+*^%$! / /cs;
   $_;
 }
 sub cleanup_attr_length {

@@ -81,17 +81,49 @@ $mail          - If this is set to 1 then you will be notified by e-mail
 
 $recipient     - The e-mail address of the person who wants to receive
                  notification of new guestbook entries.
-                
-$mailprog      - The full path to the program that will be used to send
-                 e-mail - this should also include any command line
-                 options that might be required.
+
+$mailprog      - The system command that the script should invoke to
+                 send an outgoing email. This should be the full path
+                 to a program that will read a message from STDIN and
+                 determine the list of message recipients from the
+                 message headers. Any switches that the program
+                 requires should be provided here.
+
+                 A $mailprog setting that works for many UNIX-like
+                 hosts is:
+
+                   $mailprog = '/usr/lib/sendmail -oi -t -oem';
+
+                 Some other UNIX-like hosts need:
+
+                   $mailprog = '/usr/sbin/sendmail -oi -t -oem';
+
+                 If your web server lacks a sendmail binary, you can
+                 use an SMTP relay instead, by setting $mailprog like
+                 this:
+
+                   $mailprog = 'SMTP:mailhost.your.domain';
+
+                 You will need to replace mailhost.your.domain with
+                 the name or IP address of an SMTP server configured
+                 to relay mail for the web server.
+
+                 Your system administrator or hosting provider should
+                 be able to tell you either the path to sendmail on the
+                 web server or the name of a host that will act as an
+                 SMTP relay for the web server.
+
+$postmaster    - The envelope sender address to use for all emails
+                 sent by the script.  This address will recieve bounce
+                 messages if any of the emails cannot be delivered.  If
+                 in doubt, put your own email address here.
 
 $uselog        - If this variable is set to 1 then all new entries to the
                  guestbook will be recorded in a short log, also any
                  errors will be recorded.  If you don't want this
                  facility then set this to 0.
 
-$linkmail      - If this is set to 1 then the e-mail addresses that 
+$linkmail      - If this is set to 1 then the e-mail addresses that
                  visitors enter will be added as mailto: links rather than
                  just as plain text.  You may not want to do this if you
                  are concerned that spammers might harvest the addresses.
@@ -112,7 +144,7 @@ $entry_order   - If this is set to 1 then new entries will be added to the
                  added at the end.
 
 $remote_mail   - When this is set to 1 then the visitor who makes the
-                 guestbook entry will be sent a confirmation e-mail 
+                 guestbook entry will be sent a confirmation e-mail
                  ( assuming they have entered a valid address ) - you
                  will need to have set $mailprog and $recipient as described
                  above.  You should think carefully about setting this
@@ -134,9 +166,9 @@ $line_breaks  -  When set to 1 all of the carriage returns in the visitors
                  comments will be changed to <br /> - this is probably not
                  necessary if $allow_html is set to 1.
 
-$timezone     -   If set this will over-ride the timezone as set on the 
-                  server.  The timezone is a three upper case letter code 
-                  with an optional offset from UTC (The time in London) and 
+$timezone     -   If set this will over-ride the timezone as set on the
+                  server.  The timezone is a three upper case letter code
+                  with an optional offset from UTC (The time in London) and
                   a code for daylight saving time.  Some examples might be:
 
                        AST4ADT   America/Thule
@@ -166,7 +198,7 @@ INSTALLATION
 All that is need to install the Guestbook is to copy the guestbook.pl file
 to the cgi-bin directory (or whatever is appropriate for your system - you
 should ask your system administrator or web hosting provider about this if
-you are unsure ) on your web server and to copy the addguest.html, 
+you are unsure ) on your web server and to copy the addguest.html,
 guestbook.html and guestlog.html to the location that you will have entered
 in the configuration above.
 
