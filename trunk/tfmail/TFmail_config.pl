@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail_config.pl,v 1.3 2002-11-17 09:33:51 nickjc Exp $
+# $Id: TFmail_config.pl,v 1.4 2004-07-28 13:57:14 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -53,7 +53,7 @@ use IO::File;
 BEGIN
 {
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.3 $, 10, -1;
+   $VERSION = substr q$Revision: 1.4 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -149,9 +149,9 @@ END
    if ($gotpass ne PASSWORD)
    { 
       sleep 1;
-      seek LOCK, 0, 2 or die "seek: $!";
-      print LOCK "x";
-      close LOCK;
+      seek $flock, 0, 2 or die "seek: $!";
+      print $flock "x";
+      close $flock;
       html_header();
       print <<END;
 <?xml version="1.0" encoding="@{[ CHARSET ]}"?>
