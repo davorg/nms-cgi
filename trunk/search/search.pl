@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.15 2002-02-01 22:50:28 nickjc Exp $
+# $Id: search.pl,v 1.16 2002-02-02 13:57:54 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2002/02/01 22:50:28  nickjc
+# * Took out some remains of the old tainted chdir botch
+#
 # Revision 1.14  2002/01/27 12:40:41  gellyfish
 # Fixed typo
 #
@@ -354,7 +357,7 @@ sub detaint_dirname
     my ($dirname) = @_;
 
     # Pattern from File/Find.pm in Perl 5.6.1
-    $dirname =~ m|^([-+@\w./]+)$| or die "suspect directory name: $dirname";
+    $dirname =~ m|^([-+@\w./]*)$| or die "suspect directory name: $dirname";
     return $1;
 }
 
