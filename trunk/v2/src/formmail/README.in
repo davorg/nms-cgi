@@ -359,7 +359,7 @@ recipient               - The email address to which the form submission
                           address harvesters collecting it and sending
                           you SPAM. This feature is disabled if the
                           $emulate_matts_code configuration variable is
-                          set to 0.
+                          set to 1.
 
 subject                 - The subject line for the email. For example:
 
