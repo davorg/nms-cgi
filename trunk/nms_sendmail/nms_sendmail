@@ -1,0 +1,181 @@
+#!/usr/local/bin/perl -wT
+use strict;
+#
+# NMS sendmail $Revision: 1.1.1.1 $
+#
+# This program is part of the NMS suite, see
+# <http://nms-cgi.sourceforge.net/> for details.
+#
+# This program is licensed in the same way as Perl
+# itself. You are free to choose between the GNU Public
+# License <http://www.gnu.org/licenses/gpl.html>  or
+# the Artistic License
+# <http://www.perl.com/pub/a/language/misc/Artistic.html>
+#
+# This script is a substitute for the sendmail program
+# required by the NMS FormMail.pl CGI script, intended
+# to allow NMS FormMail to be used on systems that lack
+# a sendmail binary.  
+#
+# Note: this is NOT a CGI script, and should not be
+# installed in your cgi-bin directory or given a file
+# extension that will cause your web server to treat
+# it as a CGI.  Ideally, this script should be
+# installed outside the document root.
+#
+# See the accompanying README file for more details.
+#
+# You will need to change $mailhost below to to the
+# name of a host that will act as an SMTP relay for
+# your web server.
+
+ my $mailhost = 'localhost';
+
+#######################################################
+
+=head1 NAME
+
+nms_sendmail - a Perl emulation of C<sendmail -oi -t>
+
+=head1 SYNOPSIS
+
+   open SENDMAIL, '|nms_sendmail -oi -t' or die "open: $!";
+   ...
+   close SENDMAIL or die 'nms_sendmail failed';
+
+
+   open SENDMAIL, '|nms_sendmail -f envelope-sender@your.domain -oi -t'
+      or die "open: $!";
+
+=head1 DESCRIPTION
+
+This script emulates the behavior of the C<sendmail> program
+with the C<-oi> and C<-t> switches.  It is intended to allow
+CGI scripts that invoke C<sendmail -t> to work on systems that
+lack a sendmail binary.
+
+Only the subset of sendmail's behavior required by the NMS
+scripts is emulated, and in particular this script ignores
+C<Cc> and C<Bcc> headers and all but the first C<To> header.
+
+All mail is sent out via a single, statically configured SMTP
+relay.  C<Net::SMTP> is not used, because the policy of the
+NMS project is to avoid any modules that are not installed
+by default in Perl versions back to 5.00404.
+
+=head1 VERSION
+
+nms_sendmail $Revision: 1.1.1.1 $
+
+=head1 MAINTAINERS
+
+The NMS project, E<lt>http://nms-cgi.soureceforge.net/E<gt>
+
+To request support or report bugs, please email
+E<lt>nms-cgi-support@lists.sourceforge.netE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2002 London Perl Mongers, All rights reserved
+
+=head1 LICENSE
+
+This script is free software; you are free to redistribute it
+and/or modify it under the same terms as Perl itself.
+
+=cut
+
+my $VERSION = ('$Revision: 1.1.1.1 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+
+use IO::Socket;
+use Getopt::Std;
+
+my %opts;
+getopts('to:f:', \%opts);
+
+# Require these to be set, so that we abort if invoked
+# directly as a CGI.
+die "expected -t  switch" unless $opts{'t'};
+die "expected -oi switch" unless $opts{'o'} eq 'i';
+
+my $sender = (defined $opts{'f'} ? $opts{'f'} : '');
+if (length $sender)
+{
+   $sender =~ /^([a-z0-9_\-\.\*\+\=]+\@[\w\-\.]+)$/
+      or die "bad sender in -f switch: <$sender>";
+   $sender = $1;
+}
+
+my $header = '';
+my @lines_read = ();
+while (<STDIN>)
+{
+   tr#\012\015##d;
+   $header .= "$_\n";
+   push @lines_read, $_;
+   last unless length;
+}
+
+$header =~ s#\n[ \t]# #g;
+$header =~ m#^To:\s*([^\n]+)#mi or die "no 'To' field in message header";
+my @rcpt = split /\s*,\s*/, $1;
+
+scalar @rcpt or die "no recipients found in header";
+foreach my $r (@rcpt)
+{
+   $r =~ /^[a-z0-9_\-\.\*\+\=]+\@[\w\-\.]+$/
+      or die "bad recipient <$r>";
+}
+
+my $socket = IO::Socket::INET->new("$mailhost:25");
+defined $socket or die "connect to $mailhost: $!";
+
+my $banner = get_server_line($socket);
+$banner =~ /^2/ or die "bad SMTP banner $banner";
+
+command($socket, "helo .", '^2');
+command($socket, "mail from: <$sender>", '^2');
+
+foreach my $r (@rcpt)
+{
+   command($socket, "rcpt to: <$r>", '^2');
+}
+
+command($socket, "data", '^3');
+foreach my $line ("X-NMS-Sendmail: v$VERSION", @lines_read, <STDIN>)
+{
+   $line =~ tr#\012\015##d;
+   $line =~ s#^\.#..#;
+   $socket->print("$line\015\012")
+      or die "write data to SMTP server: $!";
+}
+command($socket, ".", '^2');
+
+command($socket, "quit", '^2');
+
+sub command
+{
+   my ($socket, $command, $expect) = @_;
+
+   $socket->print("$command\015\012")
+      or die "write $command to SMTP server: $!";
+  
+   my $resp = get_server_line($socket);
+
+   unless ($resp =~ /$expect/)
+   {
+      die "command $command: unexpected response $resp";
+   }
+}
+
+sub get_server_line
+{
+   my ($socket) = @_;
+
+   my $line = <$socket>;
+   defined $line or die "read from SMTP server: $!";
+
+   $line =~ tr#\015\012##d;
+   return $line;
+}
+
