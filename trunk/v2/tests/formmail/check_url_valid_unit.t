@@ -76,6 +76,9 @@ sub request {
     [ 1, '/html/foo.htm' ],
     [ 1, '/' ],
     [ 0, '../html/foo.html' ],
+
+    [ 1, 'https://www.paypal.com/xclick/business=admin%40al2004.org&item_name=Campaign+Contribution&no_shipping=1&return=http%3A//www.al2004.org/thankyou.htm&no_note=1&tax=0&currency_code=USD' ],
+
     );
 
     foreach my $t (@unittests)
