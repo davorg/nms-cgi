@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.31 2004-10-08 08:08:30 gellyfish Exp $
+# $Id: TFmail.pl,v 1.32 2004-10-12 08:37:21 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -70,7 +70,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.31 $, 10, -1;
+   $VERSION = substr q$Revision: 1.32 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -120,10 +120,14 @@ sub main
          if (! rbl_check($ENV{REMOTE_ADDR}, $zone ) )
          {
             my $stat = $treq->config('block_status','403 Forbidden');
-            print header(-status => $stat);
+            my @extra = (-status => $stat);
             if ( $treq->config('blocked_template',''))
             {
-               html_page($treq,  $treq->config('blocked_template',''));
+               html_page($treq,  $treq->config('blocked_template',''),@extra);
+            }
+            else
+            {
+               print header(@extra);
             }
             exit;
          }
@@ -385,10 +389,14 @@ sub bad_method
 
    if ( $treq->config('bad_method_status',0))
    {
-      print $treq->cgi()->header(-status => "405 Request method not allowed");
+      my @extra = (-status => "405 Request method not allowed");
       if ( $treq->config('bad_method_template',''))
       {
-         html_page($treq, $$treq->config('bad_method_template',''));
+         html_page($treq, $$treq->config('bad_method_template',''),@extra);
+      }
+      else
+      {
+         print header(@extra);
       }
       exit;
    }
@@ -1290,7 +1298,7 @@ E<lt>nms-cgi-support@lists.sourceforge.netE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2002 London Perl Mongers, All rights reserved
+Copyright 2002 -2004 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
 

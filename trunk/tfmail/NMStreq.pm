@@ -9,7 +9,7 @@ use POSIX qw(locale_h strftime);
 use NMSCharset;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.15 $, 10, -1;
+$VERSION = substr q$Revision: 1.16 $, 10, -1;
 
 =head1 NAME
 
@@ -1123,7 +1123,7 @@ E<lt>nms-cgi-support@lists.sourceforge.netE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2002 London Perl Mongers, All rights reserved
+Copyright 2002 - 2004 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
 

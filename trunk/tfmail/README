@@ -1,7 +1,7 @@
 COPYRIGHT
 
 TFMail
-Copyright 2002 London Perl Mongers, All rights reserved
+Copyright 2002 - 2004 London Perl Mongers, All rights reserved
 
 The file MIME_Lite.pm is copyright ZeeGee Software Inc,
 see the file for details.
@@ -130,12 +130,13 @@ ENABLE_UPLOADS      - Set this to 1 if you wish to use HTTP file uploads to
                       come through to you as attachments to the email.
 
 USE_MIME_LITE       - If you're not using file uploads then you can set this to
-                      0 to prevent TFmail from using the MIME::Lite perl module.
-                      This may speed the script up in some cases, and might be
-                      desirable if the e-mail is going to an automated system
-                      that doesn't understand MIME messages.  However, the e-mail
-                      is more likely to be mangled in some way by mail transport
-                      agents if you don't use MIME::Lite.
+                      0 to prevent TFmail from using the MIME::Lite
+                      perl module.  This may speed the script up in
+                      some cases, and might be desirable if the e-mail
+                      is going to an automated system that doesn't
+                      understand MIME messages.  However, the e-mail
+                      is more likely to be mangled in some way by mail
+                      transport agents if you don't use MIME::Lite.
 
 LOGFILE_ROOT        - The filesystem path to the directory under which log
                       files can be written.  Leave this set to the empty
@@ -147,10 +148,10 @@ LOGFILE_ROOT        - The filesystem path to the directory under which log
 LOGFILE_EXT         - The file extension that log files must have.  Default:
                       .log
 
-HTMLFILE_ROOT       - The filesystem path to the directory under which any HTML
-                      files that you wish TFmail to modify live.  Leave this set
-                      to the empty string unless you want to use TFmail to
-                      modify HTML files on your server.
+HTMLFILE_ROOT       - The filesystem path to the directory under which any 
+                      HTML files that you wish TFmail to modify live.
+                      Leave this set to the empty string unless you want
+                      to use TFmail to modify HTML files on your server.
 
 HTMLFILE_EXT        - The file extension that the HTML files which TFmail
                       modifies must have.  Default: .html
@@ -505,17 +506,18 @@ redirect                    - If this configuration value is set, then it
 required                    - A comma separated list of the names of inputs
                               that the user cannot leave blank.  If any of
                               these are blank, then the submission will not
-                              be accepted.  Default: no fields are required.
+                              be accepted and 'missing_template' be displayed.
+                              Default: no fields are required.
 
 missing_template            - The HTML template file used to generate the
                               page that the user sees if they leave a
-                              required field blank.
+                              required field blank. Default: missing.
 
 missing_fields_redirect     - If this configuration value is set then
                               it must be a URL and TFmail will generate
                               a redirect to that URL instead of using a
                               template if the user leaves a required
-                              field blank.
+                              field blank. Default: display template.
 
 confirmation_template       - If this field is set then it must be the
                               name of an email template that will be used
@@ -564,11 +566,13 @@ no_email                    - Set this to a true value to prevent the main
                               that if you're using TFmail.pl to record data
                               to a log file and don't need it mailed as well.
 
-date_fmt                    - The format that the date will be displayed in. This
-                              is a string that contains a number of different 'tags'.
-                              Each tag consists of a % character followed by a letter.
-                              Each tag represents one way of displaying a particular
-                              part of the date or time. Here are some common tags:
+date_fmt                    - The format that the date will be displayed in. 
+                              This is a string that contains a number
+                              of different 'tags'.  Each tag consists
+                              of a % character followed by a letter.
+                              Each tag represents one way of displaying
+                              a particular part of the date or time. Here
+                              are some common tags:
 
                               %Y - four digit year (2002)
                               %y - two digit year (02)
@@ -702,7 +706,7 @@ recipient_input            - This specifies the name of a form field that
                              the recipient is taken from.  It takes precedence
                              over any recipient specified in the config.
                              When this is set ALL templating that allows input
-                             from the form to be introduced into the form is
+                             from the form to be introduced into the mail is
                              switched off and attempting to use a template
                              for the email that does this will result in an
                              error.  You should think carefully before using

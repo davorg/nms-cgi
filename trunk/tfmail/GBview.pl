@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: GBview.pl,v 1.4 2003-01-04 14:37:36 nickjc Exp $
+# $Id: GBview.pl,v 1.5 2004-10-12 08:37:21 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -45,7 +45,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.4 $, 10, -1;
+  $VERSION = substr q$Revision: 1.5 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -277,7 +277,7 @@ E<lt>nms-cgi-support@lists.sourceforge.netE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2002 London Perl Mongers, All rights reserved
+Copyright 2002 - 2004 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
 

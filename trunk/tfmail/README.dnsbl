@@ -112,6 +112,6 @@ strongly encouraged to check their policy before using them.
 
 This is far from an exhaustive list of available DNSBLs, please feel free
 to contact the nms-cgi-support@lists.sf.net for more information or to add
-more suitbale DNSBLs to the list.
+more suitable DNSBLs to the list.
 
-$Id: README.dnsbl,v 1.1 2004-08-25 08:03:22 gellyfish Exp $
+$Id: README.dnsbl,v 1.2 2004-10-12 08:37:21 gellyfish Exp $

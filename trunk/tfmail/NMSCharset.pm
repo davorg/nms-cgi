@@ -344,7 +344,7 @@ E<lt>nms-cgi-support@lists.sourceforge.netE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2002 London Perl Mongers, All rights reserved
+Copyright 2002 - 2004 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
 
