@@ -17,15 +17,30 @@ action) you need to see the TTREERC variable like this:
 This works in a modern bash-like shell. For other things, you're on your
 own!
 
-Now, you can rebuild the site from the input templates jsut be typing
+Now, you can rebuild the site from the input templates just by typing
 
   $ ttree
 
 See how it told you what it was doing.
 
-That's really all there is to it right now. Let me know (dave@dave.org.uk)
-if you have any questions.
+Now the FAQs are stored in another directory. They are in ../docs. And
+they're not in a format that makes it particularly easy to integrate them
+with the rest of the site. So I've written the faq2html.pl program that
+takes care of that. You'll need to install Andy Wardley's excellent
+Pod::POM module in order to use it. Just running faq2html.pl from the
+pub directory will add three new templates to the ./in directory which 
+are constructed from the three faq pod files in ../docs.
 
-Now I need to thing about how I'm going to get the FAQ pages to fit into
-this framework.
+So. Finally to generate the whole site you need to do the following.
 
+* Edit the files in ./in to make any required changes.
+* cvs commit and/or cvs update
+* cd to the pub directory
+* ./faq2html.pl (to add the faq templates to ./in)
+* export TTREERC=./.ttreerc
+* ttree
+* You've now got the new site in ./out. Use scp to copy it to sf
+
+Let me know if you have any questions.
+
+Dave (dave@dave.org.uk)
