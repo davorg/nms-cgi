@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>nms</title>
+    <link rel="stylesheet" type="text/css" href="nms.css"
+
+    <!-- $Id: index.html,v 1.1.1.1 2001-11-13 16:36:31 gellyfish Exp $
+    <!-- $Log: not supported by cvs2svn $
+    <!-- Revision 1.7  2001/11/12 20:51:01  davorg
+    <!-- Corrected <ul> idiocy :(
+    <!--
+    <!-- Revision 1.6  2001/11/12 20:49:16  davorg
+    <!-- Added info about future directions.
+    <!--
+    <!-- Revision 1.5  2001/11/12 20:38:30  davorg
+    <!-- Added FormMail to the list
+    <!--
+    <!-- Revision 1.4  2001/11/12 20:02:49  davorg
+    <!-- Corrected email address.
+    <!--
+    <!-- Revision 1.3  2001/11/11 18:46:50  davorg
+    <!-- Attempt to fix HTML comments
+    <!--
+    <!-- Revision 1.2  2001/11/11 18:43:36  davorg
+    <!-- Expanded and enhanced.
+    <!-- -->
+
+  </head>
+
+  <body>
+    <h1><span class="nms">nms</span></h1>
+
+    <h2>What is <span class="nms">nms</span>?</h2>
+
+    <p><span class="nms">nms</span> is a set of CGI scripts that are intended
+      as drop-in replacments for the scripts at 
+      <a href="http://www.worldwidemart.com/scripts/">Matt's Script
+	Archive</a>. Matt's Script Archive has been on the web since 1995. It 
+      is a repository of CGI scripts written in Perl by a programmer called 
+      Matt Wright.</p>
+
+    <p>MSA is probably the most popular repository of CGI scripts currently
+      available on the internet.</p>
+
+    <h2>Why do we need a replacement for Matt's Script Archive?</h2>
+
+    <p>The problem is that Matt is not exactly the world's best Perl 
+      programmer. His scripts are well known amongst the community to be
+      badly written, buggy and insecure. Anyone asking for support on Matt's
+      scripts in any forum will be told in no uncertain terms that they
+      shouldn't use his scripts.</p>
+
+    <p>Unfortunately until now there have been no replacements for Matt's
+      scripts that you would want people to use. Some months ago, 
+      <a href="http://london.pm.org">the London Perl Mongers</a> decided
+      to address this problem and write a series of <i>drop-in</i>
+      replacements for Matt's scripts. This project is the result.</p>
+
+    <h2>So what exactly is <span class="nms">nms</span>?</h2>
+
+    <p><span class="nms">nms</span> is a project hosted at
+      <a href="http://www.sourceforge.net">SourceForge</a>. The intention
+      is to produce drop-in replacements for all of Matt's scripts. This
+      means that someone who uses one of Matt's scripts should be able to
+      get the <span class="nms">nms</span> replacement and just drop it in
+      in place of the original script. Everything should then work exactly
+      as before, except that the user will sleep easier knowing that their
+      web site is that little more secure.</p>
+
+    <p>Note that these scripts are intended to replace Matt's scripts. 
+      This means that their target audience is people who might not know 
+      very much at all about Perl. Any contributed scripts must 
+      therefore follow certain rules:</p>
+
+    <ul>
+      <li>They must run under Perl 5.004_04 or later. Any earlier Perl
+	than this is pre-historic and can therefore be safely ignored.</li>
+
+      <li>They must <b>not</b> use any non-standard Perl modules. I know
+	this is a bit contentious, but I really think that the target
+	audience will have problems installing modules from CPAN.</li>
+
+      <li>They must run with no errors or warnings under <tt>use strict</tt>
+	and <tt>-wT</tt>. One of the worst legacies of Matt's scripts is 
+	that people use them to learn Perl. And Matt is a complete 
+	stranger to programming under these contraints. If people learn 
+	Perl from NMS they will at least learn better programming 
+	habits.</li>
+    </ul>
+
+    <h2>Getting involved</h2>
+
+    <p>We always need developers, tech writers and testers to work on making
+      <span class="nms">nms</span> better. Please visit the 
+      <a href="http://sourceforge.net/projects/nms-cgi/"><span class="nms">nms</span>
+        project page</a> on Sourceforge for more details on getting involved.</p>
+
+    <p>There are currently two mailing lists set up for the discussion of
+      <span class="nms">nms</span>.</p>
+
+    <ul>
+      <li>The <span class="nms">nms</span>
+        <a href="http://lists.sourceforge.net/mailman/listinfo/nms-cgi-support">end-user support</a> list</li>
+      <li>The <span class="nms">nms</span>
+        <a href="http://lists.sourceforge.net/mailman/listinfo/nms-cgi-devel">developers discussion</a> list</li>
+    </ul>
+
+    <h2>So what's here?</h2>
+
+    <p>Did I mention this was a work in progress? Here are the scripts that
+      are currently available. Others will follow in due course.</p>
+
+    <p><b>Note:</b> Most of the docs included with the scripts are a bit 
+      rough and ready and could use some tidying up. If you'd like to 
+      help, please get <a href="mailto:davorg@users.sourceforge.net">in touch 
+        with me</a>.</p>
+
+    <table border="1">
+      <tr>
+	<th>Script</th><th>Description</th>
+      </tr>
+      <tr>
+	<td><a href="countdown.tar.gz">Countdown</a></td>
+	<td>Count down the time to a certain date</td>
+      </tr>
+      <tr>
+	<td><a href="formmail.tar.gz">Formmail</a></td>
+	<td>Send emails from web forms</td>
+      </tr>
+      <tr>
+	<td><a href="guestbook.tar.gz">Guestbook</a></td>
+	<td>A simple guest book script</td>
+      </tr>
+      <tr>
+	<td><a href="rand_image.tar.gz">Random Image</a></td>
+	<td>Display a random image</td>
+      </tr>
+      <tr>
+	<td><a href="rand_link.tar.gz">Random Links</a></td>
+	<td>Display a random link</td>
+      </tr>
+      <tr>
+	<td><a href="rand_text.tar.gz">Random Text</a></td>
+	<td>Display a randomly chosen piece of text</td>
+      </tr>
+      <tr>
+	<td><a href="search.tar.gz">Simple Search</a></td>
+	<td>Simple web site search engine</td>
+      </tr>
+      <tr>
+	<td><a href="ssi_rand_image.tar.gz">SSI Random Image</a></td>
+	<td>Display a random image using SSI</td>
+      </tr>
+      <tr>
+	<td><a href="textclock.tar.gz">Text Clock</a></td>
+	<td>Display the time</td>
+      <tr>
+	<td><a href="textcounter.tar.gz">Text Counter</a></td>
+	<td>Text counter</td>
+      </tr>
+    </table>
+
+    <h2>Future Plans</h2>
+
+    <p>The initial plan is to create a set of scripts that mirror exactly
+      the functionality of Matt's scripts (minus the insecurities and 
+      bugs). Once this is complete, I'd like to look at extending the
+      archive in four directions:</p>
+
+    <ul>
+      <li>Simplifying and improving the installation process.</li>
+
+      <li>Adding new functionality to the existing scripts.</li>
+
+      <li>Adding new scripts that are not in the original list.</li>
+
+      <li>Adding enhance versions of the scripts which require slightly
+        more knowledge from the person installing them - perhaps needing
+        modules from CPAN.</li>
+    </ul>
+
+    <p>Any suggestions in any of these areas will be appreciated, but won't
+      be acted on until the initial scripts are complete.</p>
+
+    <h2>Why the name <span class="nms">nms</span>?</h2>
+
+    <p><span class="nms">nms</span> originally stood for something that
+      was pretty derogatory to Matt Wright and his scripts. Whilst I still
+      believe that his scripts should not be used, I decided that the name
+      of the project shouldn't be so negative. Unfortunately, by the time
+      I'd reached that decision, the name <span class="nms">nms</span>
+      had pretty much stuck and I didn't want to change it.</p>
+
+    <p>There was some <a href="http://perlmonks.org/index.pl?node_id=113073">discussion</a> 
+      on <a href="http://perlmonks.org">PerlMonks</a>
+      about alternative meanings for <span class="nms">nms</span>, and
+      whilst I like many of those ideas, I think that 
+      <span class="nms">nms</span> probably doesn't actually stand for 
+      anything.</p>
+	  
+    <hr>
+    <table border="0" width="100%">
+      <tr>
+        <td align="left" valign="top">
+          <address><a href="mailto:davorg@users.sourceforge.net">Dave 
+            Cross</a></address>
+<!-- Created: Sat Aug 11 16:11:48 BST 2001 -->
+<!-- hhmts start -->
+Last modified: Mon Nov 12 20:49:33 GMT 2001
+<!-- hhmts end -->
+        </td>
+        <td align="right" valign="top">Project hosted by<br>
+          <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=39625&type=1" width="88" height="31" border="0" alt="SourceForge Logo"></a>
+        </td>
+      </tr>
+    </table>
+  </body>
+<html>
