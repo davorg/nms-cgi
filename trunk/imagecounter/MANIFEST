@@ -1,6 +1,7 @@
 imagecounter/icounter.pl
 imagecounter/MANIFEST
 imagecounter/README
+imagecounter/ChangeLog
 imagecounter/digits/0.gif
 imagecounter/digits/1.gif
 imagecounter/digits/2.gif
