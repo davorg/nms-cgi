@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.91 2002-06-16 07:32:08 nickjc Exp $
+# $Id: FormMail.pl,v 2.0 2002-06-22 06:57:09 gellyfish Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.91 $
+# FormMail.pl $Revision: 2.0 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -67,7 +67,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.91 $, 10, -1;
+  $VERSION = substr q$Revision: 2.0 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -916,7 +916,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.91 $
+FormMail $Revision: 2.0 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
