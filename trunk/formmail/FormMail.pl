@@ -1,8 +1,13 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.27 2002-01-27 13:59:08 gellyfish Exp $
+# $Id: FormMail.pl,v 1.28 2002-01-27 14:45:11 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2002/01/27 13:59:08  gellyfish
+# Issues from  http://www.monkeys.com/anti-spam/formmail-advisory.pdf
+# * Left anchored regex to check referer
+# * If $secure and no referer supplied then croak
+#
 # Revision 1.26  2002/01/21 21:58:00  gellyfish
 # Checkbox fix from Chris Benson
 #
@@ -147,7 +152,18 @@ my $mailprog = '/usr/lib/sendmail -oi -t';
 
 my @referers = qw(dave.org.uk 209.207.222.64 localhost);
 
-my @recipients = @referers;
+# A list of the email addresses and/or hosts that this script will send
+# mail to.  Individual email addresses can be specified, or host names
+# can be specified to allow mail to be sent to any address at that host.
+
+my @allow_mail_to = qw(you@your.domain some.one.else@your.domain localhost);
+
+# The recipients array is the old way of adding to the list of allowed
+# destination email addresses.  It still works (for compatibility with
+# older versions) but it's use should be avoided.  See the README for
+# more details.
+
+my @recipients = ();
 
 my @valid_ENV = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
 
@@ -192,6 +208,9 @@ Thankyou for your form submission.
 END_OF_CONFIRMATION
 
 # End configuration
+
+# Merge @allow_mail_to and @recipients into a single list of regexps
+push @recipients, map { /\@/ ? "^\Q$_\E" : "\@\Q$_\E" } @allow_mail_to;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
