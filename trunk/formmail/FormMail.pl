@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.30 2002-01-29 00:05:01 nickjc Exp $
+# $Id: FormMail.pl,v 1.31 2002-01-30 19:04:45 proub Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.30  2002/01/29 00:05:01  nickjc
+# * typo
+# * added X-HTTP-Client header to the confirmation email.
+#
 # Revision 1.29  2002/01/27 16:00:04  nickjc
 # allow_mail_to: explicit $ rather than depend on the one that's added
 # unless $emulate_matts_code.
@@ -286,6 +290,11 @@ my %valid_ENV;
 
 @valid_ENV{@valid_ENV} = (1) x @valid_ENV;
 
+#  Uncomment the following line (and the Unit Tests section)
+#  to unit test URL checking functions
+#
+# unitTest();
+
 check_url();
 
 my $date = strftime($date_fmt, localtime);
@@ -300,34 +309,50 @@ send_mail();
 return_html();
 
 sub check_url {
-  my $check_referer;
+  my $check_referer = check_referer(referer());
 
-  if (my $referer = referer()) {
+  error('bad_referer') unless $check_referer;
+}
+
+sub check_referer
+{
+  my $check_referer;
+  my ($referer) = @_;
+
+  if ($referer && ($referer =~ m!^https?://([^/]*\@)?([^/]+)!i)) {
+    my $refHost;
+
+    if (defined($1) and (! $secure)) {
+      $refHost = $1;
+      chop $refHost;
+    } else {
+      $refHost = $2;
+    } 
+    
     foreach my $test_ref (@referers) {
-      if ($referer =~ m|^https?://([^/]*)\Q$test_ref\E|i) {
+      if ($refHost =~ m|\Q$test_ref\E$|i) {
 	$check_referer = 1;
 	last;
       }
       elsif ( $secure && $test_ref =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/ ) {
-        if ( $referer =~ m|https?://([^/]+)| ) {
-          if ( my $ref_host = inet_aton($1) ) {
-            $ref_host = unpack "l", $ref_host;
-            if ( my $test_ref_ip = inet_aton($test_ref) ) {
-               $test_ref_ip = unpack "l", $test_ref_ip;
-               if ( $test_ref_ip == $ref_host ) {
-                  $check_referer = 1;
-                  last;
-               }
-            }
+        if ( my $ref_host = inet_aton($refHost) ) {
+          $ref_host = unpack "l", $ref_host;
+          if ( my $test_ref_ip = inet_aton($test_ref) ) {
+             $test_ref_ip = unpack "l", $test_ref_ip;
+             if ( $test_ref_ip == $ref_host ) {
+                $check_referer = 1;
+                last;
+             }
           }
-        }  
+        }
       }
     }
   } else {
     $check_referer = $secure ? 0 : 1;
   }
-  error('bad_referer') unless $check_referer;
-}
+
+  return $check_referer;
+};
 
 sub parse_form {
 
@@ -676,6 +701,7 @@ sub error {
 
   if ($error eq 'bad_referer') {
     my $referer = referer();
+    $referer = '' if ! defined( $referer );
     my $escaped_referer = escape_html($referer);
 
     if ( $referer =~ m|^https?://([\w\.]+)|i) {
@@ -843,6 +869,61 @@ sub escape_html {
 
   my $chars = join '', keys %escape_html_map;
 
-  $str =~ s/([\Q$chars\E])/$escape_html_map{$1}/g;
+  if (defined($str))
+  {
+    $str =~ s/([\Q$chars\E])/$escape_html_map{$1}/g;
+  }
+
   return $str;
 }
+
+
+
+# begin Unit Tests
+# sub unitTest
+# {
+#     refCheck('xxx.xxx.xxx', 0);
+#     refCheck('http://dave.org.uk', 1);
+#     refCheck('http://dave.org.uk/', 1);
+#     refCheck('http://dave.org.uk/more', 1);
+#     refCheck('https://dave.org.uk/', 1);
+#     refCheck(undef, 0, 0);
+#     refCheck(undef, 1, 1);
+#     refCheck('https://dave.org.uk@someplace.else.com', 0);
+#     refCheck('https://dave.org.uk@someplace.else.com', 1, 1);
+#     refCheck('https://someguy@dave.org.uk', 0, 1);
+#     refCheck('https://someguy@dave.org.uk', 1, 0);
+#     refCheck('https://someguy@dave.org.uk/more', 1, 0);
+#     refCheck('http://209.207.222.64', 1);
+#     refCheck('http://localhost/', 1);
+#
+#     exit(0);
+# }
+#
+# sub refCheck
+# {
+#     my ($referer, $shouldBeGood, $emulate) = @_;
+#     my $secureMsg;
+#
+#     $emulate = 0 if ! defined( $emulate );
+#
+#     if ($emulate) 
+#     {
+# 	$secure = 0;
+# 	$secureMsg = 'insecure';
+#     }
+#     else
+#     {
+# 	$secure = 1;
+# 	$secureMsg = 'secure';
+#     }
+#	
+#     if ($shouldBeGood)
+#     {
+# 	warn "$referer should be good ($secureMsg)" if ! check_referer($referer);
+#     }
+#     else
+#     {
+# 	warn "$referer should be bad ($secureMsg)" if check_referer($referer);
+#     }
+# }
