@@ -1,12 +1,14 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.39 2002-09-20 08:07:25 nickjc Exp $
+# $Id: search.pl,v 1.40 2003-01-30 00:56:51 nickjc Exp $
 #
 
 use strict;
 use CGI qw(param);
 use subs 'File::Find::chdir';# see note above the File::Find::chdir subroutine
-use vars qw($DEBUGGING $done_headers);
+use vars qw($DEBUGGING $basedir $baseurl @files $title $title_url
+ $search_url @blocked $emulate_matts_code $style $charset
+ $hit_threshhold @subdirs $done_headers $no_prune $done_headers);
 use File::Find;
 $ENV{PATH} = '/bin:/usr/bin';# sanitize the environment
 delete @ENV{qw(ENV BASH_ENV IFS)};# ditto
@@ -17,7 +19,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision: 1.39 $
+# search.pl $Revision: 1.40 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -36,25 +38,26 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 # your own web server. If the purpose of these
 # parameters seems unclear, please see the README file.
 #
-BEGIN { $DEBUGGING      = 1; }
-my $basedir             = '/usr/local/apache/htdocs';
-my $baseurl             = 'http://localhost/';
-my @files               = ('*.html','*/*.html');
-my $title               = "NMS Search Program";
-my $title_url           = 'http://cgi-nms.sourceforge.net';
-my $search_url          = 'http://localhost/search.html';
-my @blocked             = ();
-my $emulate_matts_code  = 1;
-my $style               = '';
-my $charset             = 'iso-8859-1';
+BEGIN {
+   $DEBUGGING           = 1;
+   $basedir             = '/usr/local/apache/htdocs';
+   $baseurl             = 'http://localhost/';
+   @files               = ('*.html','*/*.html');
+   $title               = "NMS Search Program";
+   $title_url           = 'http://cgi-nms.sourceforge.net';
+   $search_url          = 'http://localhost/search.html';
+   @blocked             = ();
+   $emulate_matts_code  = 1;
+   $style               = '';
+   $charset             = 'iso-8859-1';
 
 # the following config variables only affect the program if
 # $emulate_matts_code is switched off $hit_threshhold is what the minimum
 # amount of hits per page that are required for the match to be outputted
 
-my $hit_threshhold      = 1;
-my @subdirs             = ('','/manual','/vmanual');
-my $no_prune            = 1;
+   $hit_threshhold      = 1;
+   @subdirs             = ('','/manual','/vmanual');
+   $no_prune            = 1;
 
 #
 # USER CONFIGURATION << END >>
@@ -64,12 +67,14 @@ my $no_prune            = 1;
 # a common error is to put a trailing / on $basedir.
 $basedir =~ s#/$##;
 
+} # BEGIN
+
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
 # This is basically the same as what CGI::Carp does inside but simplified
 # for our purposes here.
 
-BEGIN
+BEGIN 
 {
    sub fatalsToBrowser
    {
@@ -128,7 +133,8 @@ sub TIEHASH { bless {}, shift }
 sub FETCH { $cs->escape($_[1]) }
 
 
-my $style_element = $style ?
+use vars qw($style_element);
+$style_element = $style ?
                     qq%<link rel="stylesheet" type="text/css" href="$style" />%
                   : '';
 
