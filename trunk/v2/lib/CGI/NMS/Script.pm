@@ -226,7 +226,10 @@ sub request {
 </html>
 END
 
-    die $err;
+    if ($ENV{SCRIPT_NAME}) =~ m#^([\w\-\/\.\:]{1,100})$#) {
+      $err = "$1: $err";
+    }
+    warn $err;
   }
 }
 
