@@ -124,7 +124,7 @@ look like:
  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
 </head>
 <body>
- <form method="POST" action="/cgi-bin/FormMail.pl">
+ <form method="post" action="/cgi-bin/FormMail.pl">
   <table>
    <tr>
     <td>What is your name ?</td>
@@ -134,8 +134,8 @@ look like:
     <td>What is your favorite animal ?</td>
     <td><input type="text" name="animal" /></td>
    </tr>
-   <tr colspan="2">
-    <td><input type="submit" /></td>
+   <tr>
+    <td colspan="2"><input type="submit" /></td>
    </tr>
   </table>
  </form>
@@ -190,7 +190,7 @@ With this line added, the HTML now looks like:
  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
 </head>
 <body>
- <form method="POST" action="/cgi-bin/FormMail.pl">
+ <form method="post" action="/cgi-bin/FormMail.pl">
   <input type="hidden" name="subject" value="Favorite Animal" />
   <table>
    <tr>
@@ -201,8 +201,8 @@ With this line added, the HTML now looks like:
     <td>What is your favorite animal ?</td>
     <td><input type="text" name="animal" /></td>
    </tr>
-   <tr colspan="2">
-    <td><input type="submit" /></td>
+   <tr>
+    <td colspan="2"><input type="submit" /></td>
    </tr>
   </table>
  </form>
@@ -296,7 +296,7 @@ of "animals":
  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
 </head>
 <body>
- <form method="POST" action="/cgi-bin/FormMail.pl">
+ <form method="post" action="/cgi-bin/FormMail.pl">
   <input type="hidden" name="subject" value="Favorite Animal" />
   <input type="hidden" name="recipient" value="animals" />
   <table>
@@ -308,8 +308,8 @@ of "animals":
     <td>What is your favorite animal ?</td>
     <td><input type="text" name="animal" /></td>
    </tr>
-   <tr colspan="2">
-    <td><input type="submit" /></td>
+   <tr>
+    <td colspan="2"><input type="submit" /></td>
    </tr>
   </table>
  </form>
@@ -403,7 +403,7 @@ this:
  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
 </head>
 <body>
- <form method="POST" action="/cgi-bin/FormMail.pl">
+ <form method="post" action="/cgi-bin/FormMail.pl">
   <input type="hidden" name="subject" value="Favorite Plant" />
   <input type="hidden" name="recipient" value="plants" />
   <table>
@@ -415,8 +415,8 @@ this:
     <td>What is your favorite plant ?</td>
     <td><input type="text" name="plant" /></td>
    </tr>
-   <tr colspan="2">
-    <td><input type="submit" /></td>
+   <tr>
+    <td colspan="2"><input type="submit" /></td>
    </tr>
   </table>
  </form>
@@ -454,7 +454,7 @@ just add an "email" field to the form and rename the
  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
 </head>
 <body>
- <form method="POST" action="/cgi-bin/FormMail.pl">
+ <form method="post" action="/cgi-bin/FormMail.pl">
   <input type="hidden" name="subject" value="Favorite Plant" />
   <input type="hidden" name="recipient" value="plants" />
   <table>
@@ -470,8 +470,8 @@ just add an "email" field to the form and rename the
     <td>What is your favorite plant ?</td>
     <td><input type="text" name="plant" /></td>
    </tr>
-   <tr colspan="2">
-    <td><input type="submit" /></td>
+   <tr>
+    <td colspan="2"><input type="submit" /></td>
    </tr>
   </table>
  </form>
