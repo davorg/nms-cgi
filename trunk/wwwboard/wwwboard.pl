@@ -1,12 +1,16 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.2 2001-11-11 17:55:27 davorg Exp $
+# $Id: wwwboard.pl,v 1.3 2001-11-13 20:35:14 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/11/11 17:55:27  davorg
+# Small amount of post-import tidying :)
+#
 #
 
 use strict;
 use CGI qw(:standard);
+use CGI::Carp qw(fatalsToBrowser set_message);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX 'strftime';
 #use diagnostics;
@@ -15,6 +19,17 @@ my $VERSION = '1.0';
 
 # Configuration
 
+#
+# $DEBUGGING must be set in a BEGIN block in order to have it be set before
+# the program is fully compiled.
+# This should almost certainly be set to 0 when the program is 'live'
+#
+
+BEGIN
+{
+   $DEBUGGING = 1;
+}
+   
 my $basedir = '/var/www/html/wwwboard';
 #my $basedir = '.';
 my $baseurl = 'http://tma2/wwwboard';
@@ -40,19 +55,30 @@ my $use_time = 1;
 my $show_poster_ip = 1;
 my $enforce_max_len = 0;   # 2 = YES, error; 1 = YES, truncate; 0 = NO
 
-my %max_len = (name => 50,
-	       email => 70,
-	       subject => 80,
-	       url => 150,
-	       url_title => 80,
-	       img => 150,
-	       body => 3000,
+my %max_len = (name        => 50,
+	       email       => 70,
+	       subject     => 80,
+	       url         => 150,
+	       url_title   => 80,
+	       img         => 150,
+	       body        => 3000,
 	       origsubject => 80,
-	       origname => 50,
-	       origemail => 70,
-	       origdate => 50);
+	       origname    => 50,
+	       origemail   => 70,
+	       origdate    => 50);
 
 # End configuration
+
+BEGIN
+{
+   my $error_message = sub {
+                             my ($message ) = @_;
+                             print "Content-Type: text/html\n\n";
+                             print "<h1>It's all gone horribly wrong</h1>";
+                             print $message if $DEBUGGING;
+                            };
+  set_message($error_message);
+}   
 
 # Nasty global variables. Need to localise them
 my ($date, $followup, $subject, @followup_num, $message_img, $origemail,

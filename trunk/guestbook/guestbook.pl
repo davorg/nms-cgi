@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.2 2001-11-11 17:55:27 davorg Exp $
+# $Id: guestbook.pl,v 1.3 2001-11-13 20:35:14 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/11/11 17:55:27  davorg
+# Small amount of post-import tidying :)
+#
 # Revision 1.1.1.1  2001/11/11 16:48:53  davorg
 # Initial import
 #
@@ -10,23 +13,37 @@
 use strict;
 use POSIX 'strftime';
 use CGI qw(param);
+use CGI::Carp qw(fatalsToBrowser set_message);
+
 use Fcntl qw(:DEFAULT :flock);
 
 # Configuration
 
+
+#
+# $DEBUGGING must be set in a BEGIN block in order to have it be set before
+# the program is fully compiled.
+# This should almost certainly be set to 0 when the program is 'live'
+#
+
+BEGIN
+{
+   $DEBUGGING = 1;
+}
+   
 my $guestbookurl = 'http://your.host.com/~yourname/guestbook.html';
 my $guestbookreal = '/home/yourname/public_html/guestbook.html';
 my $guestlog = '/home/yourname/public_html/guestlog.html';
 my $cgiurl = 'http://your.host.com/cgi-bin/guestbook.pl';
 
-my $mail = 0;
-my $uselog = 1;
-my $linkmail = 1;
-my $separator = 1;
+my $mail        = 0;
+my $uselog      = 1;
+my $linkmail    = 1;
+my $separator   = 1;
 my $redirection = 0;
 my $entry_order = 1;
 my $remote_mail = 0;
-my $allow_html = 1;
+my $allow_html  = 1;
 my $line_breaks = 0;
 
 my $mailprog = '/usr/lib/sendmail';
@@ -36,6 +53,18 @@ my $long_date_fmt = '%A, %B %d, %Y at %T (%Z)';
 my $short_date_fmt = '%D %T %Z';
 
 # End configuration
+
+
+BEGIN
+{
+   my $error_message = sub {
+                             my ($message ) = @_;
+                             print "Content-Type: text/html\n\n";
+                             print "<h1>It's all gone horribly wrong</h1>";
+                             print $message if $DEBUGGING;
+                            };
+  set_message($error_message);
+}   
 
 my @now = localtime;
 my $date = strftime($long_date_fmt, @now);

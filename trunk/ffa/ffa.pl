@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.3 2001-11-12 21:24:37 gellyfish Exp $
+#  $Id: ffa.pl,v 1.4 2001-11-13 20:35:14 gellyfish Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.3  2001/11/12 21:24:37  gellyfish
+#  * Captured newer version from elsewhere
+#  * Made links.html an XHTML file
+#
 #  Revision 1.2  2001/11/12 16:52:36  gellyfish
 #  * Removed confusing log messages
 #
@@ -11,8 +15,10 @@
 
 use strict;
 use CGI qw(:standard);
-use CGI::Carp qw(fatalsToBrowser);
+use CGI::Carp qw(fatalsToBrowser set_message);
 use Fcntl qw(:flock);
+
+use vars qw($DEBUGGING);
 
 @ENV{qw(PATH IFS)} = ('') x 2;
 
@@ -20,27 +26,54 @@ use Fcntl qw(:flock);
 # Configurable stuff
 #
 
+#
+# $DEBUGGING must be set in a BEGIN block in order to have it be set before
+# the program is fully compiled.
+# This should almost certainly be set to 0 when the program is 'live'
+#
+
+BEGIN
+{
+   $DEBUGGING = 1;
+}
+   
+
 # must be set for all configurations
-# 
+
+# $directory is the full filesystem path to the files that are associated
+# with this program.
 
 my $directory  = '/usr/local/apache/htdocs/links';
+
+# This is the title that will be displayed for some of the pages.
+
 my $linkstitle = "Blah Blah Pointless FFA Script";
 
 # Act as drop in replacement for Matts FFA script
 # if so the $filename & $linksurl must be valid (otherwise not used);
 
-my $emulate_matts_ffa = 1;
+my $emulate_matts_code = 1;
+
+# $filename is the full filesystem path of the html file in which the links
+# are created.
+
 my $filename          = "$directory/links.html";
+
+# $linksurl is the public URL of the links page.
+
 my $linksurl          = "http://localhost/links/links.html";
 
 # Store all links in database file ?
 
 my $usedatabase = 1;
+
+# This is the location of the database file in which the links can be kept.
+
 my $database    = "$directory/database.txt";
 
 # if matts ffa is not being emulated then we must use the database.
 
-unless ( $emulate_matts_ffa )
+unless ( $emulate_matts_code )
 {
    $usedatabase = 1;
 }
@@ -87,7 +120,19 @@ my %sections = (
                );
 
 #
+# No user maintainable parts beneath here
 #
+
+BEGIN
+{
+   my $error_message = sub {
+                             my ($message ) = @_;
+                             print "Content-Type: text/html\n\n";
+                             print "<h1>It's all gone horribly wrong</h1>";
+                             print $message if $DEBUGGING;
+                            };
+  set_message($error_message);
+}   
 
 my $linkscgi   = url();
 my $url        = param('url')     || no_url();

@@ -1,8 +1,11 @@
 #!/usr/bin/perl -w
 #
-# $Id: FormMail.pl,v 1.2 2001-11-11 17:55:27 davorg Exp $
+# $Id: FormMail.pl,v 1.3 2001-11-13 20:35:14 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/11/11 17:55:27  davorg
+# Small amount of post-import tidying :)
+#
 # Revision 1.1.1.1  2001/11/11 16:48:47  davorg
 # Initial import
 #
@@ -10,10 +13,21 @@
 use strict;
 use POSIX 'strftime';
 use CGI qw(:standard);
-use CGI::Carp qw(fatalsToBrowser);
+use CGI::Carp qw(fatalsToBrowser set_message);
 
 # Configuration
 
+#
+# $DEBUGGING must be set in a BEGIN block in order to have it be set before
+# the program is fully compiled.
+# This should almost certainly be set to 0 when the program is 'live'
+#
+
+BEGIN
+{
+   $DEBUGGING = 1;
+}
+   
 my $mailprog = '/usr/lib/sendmail';
 
 my @referers = qw(dave.org.uk 209.207.222.64 localhost);
@@ -26,9 +40,23 @@ my $date_fmt = '%A, %B %d, %Y at %H:%M:%S';
 
 # End configuration
 
-$ENV{PATH} = '/bin;/usr/bin';
+
+BEGIN
+{
+   my $error_message = sub {
+                             my ($message ) = @_;
+                             print "Content-Type: text/html\n\n";
+                             print "<h1>It's all gone horribly wrong</h1>";
+                             print $message if $DEBUGGING;
+                            };
+  set_message($error_message);
+}   
+
+
+$ENV{PATH} = '/bin:/usr/bin';
 
 my %valid_ENV;
+
 @valid_ENV{@valid_ENV} = (1) x @valid_ENV;
 
 &check_url;
