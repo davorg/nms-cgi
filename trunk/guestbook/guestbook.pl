@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.5 2001-11-14 22:21:17 davorg Exp $
+# $Id: guestbook.pl,v 1.6 2001-11-14 23:00:13 davorg Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/11/14 22:21:17  davorg
+# Changed script archive URL to Sourceforge.
+# Added link to support mailing list.
+#
 # Revision 1.4  2001/11/14 19:39:14  davorg
 # Fixed stupid bug getting CGI parameters
 #
@@ -273,26 +277,36 @@ sub no_name {
   print <<END_FORM;
 Content-type: text/html
 
-<html><head><title>No Name</title></head>
-<body><h1>Your Name appears to be blank</h1>
-<p>The Name Section in the guestbook fillout form appears to
-be blank and therefore your entry to the guestbook was not
-added.  Please add your name in the blank below.</p>
-<form method=POST action="$cgiurl">
-<p>Your Name:<input type=text name="realname" size=30><br>
-E-Mail: <input type=text name="username"
-          value="$username" size=40><br>
-City: <input type=text name="city" value="$city" 
-       size=15>, 
-State: <input type=text name="state" 
-        value="$state" size=2> 
-Country: <input type=text name="country" value="$country" 
-          size=15></p>
-<p>Comments have been retained.
-<input type=hidden name="comments" value="$comments"></p>
-<p><input type=submit> * <input type=reset></p></form><hr>
-<p>Return to the <a href="$guestbookurl">Guestbook</a>.
-</body></html>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>No Name</title>
+  </head>
+  <body>
+    <h1>Your Name appears to be blank</h1>
+    <p>The Name Section in the guestbook fillout form appears to
+      be blank and therefore your entry to the guestbook was not
+      added.  Please add your name in the blank below.</p>
+    <form method="post" action="$cgiurl">
+      <p>Your Name: <input type="text" name="realname" size="30" /><br />
+        E-Mail: <input type="text" name="username"
+                       value="$username" size="40" /><br />
+        City: <input type="text" name="city" value="$city" 
+                     size="15" />, 
+        State: <input type="text" name="state" 
+                      value="$state" size="2" /> 
+        Country: <input type="text" name="country" value="$country" 
+                        size="15" /></p>
+      <p>Comments have been retained.
+        <input type="hidden" name="comments" value="$comments"></p>
+      <p><input type="submit"> * <input type="reset"></p>
+    </form>
+    <hr />
+    <p>Return to the <a href="$guestbookurl">Guestbook</a>.
+  </body>
+</html>
 
 END_FORM
 
@@ -328,13 +342,21 @@ sub no_redirection {
   print <<END_HTML;
 Content-Type: text/html
 
-<html><head><title>Thank You</title></head>
-<body><h1>Thank You For Signing The Guestbook</h1>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Thank You</title>
+  </head>
+  <body>
+    <h1>Thank You For Signing The Guestbook</h1>
 
-<p>Thank you for filling in the guestbook.  Your entry has
-been added to the guestbook.</p><hr>
-<p>Here is what you submitted:</p>
-<p><b>$comments</b><br>
+    <p>Thank you for filling in the guestbook.  Your entry has
+      been added to the guestbook.</p>
+    <hr />
+    <p>Here is what you submitted:</p>
+    <p><b>$comments</b><br>
 
 END_HTML
 
@@ -353,7 +375,7 @@ END_HTML
     }
   }
 
-  print "<br>\n";
+  print "<br />\n";
 
   print "$city," if $city;
 
@@ -367,11 +389,12 @@ END_HTML
 
   print <<END_HTML;
 
-<hr>
-<p><a href="$guestbookurl">Back to the Guestbook</a>
-- You may need to reload it when you get there to see your
-entry.</p>
-</body></html>
+    <hr />
+    <p><a href="$guestbookurl">Back to the Guestbook</a>
+      - You may need to reload it when you get there to see your
+      entry.</p>
+  </body>
+</html>
 
 END_HTML
 
