@@ -112,7 +112,7 @@ sub new
    $self->parse_options({
      TEST_ID         => undef,
      SCRIPT_FILENAME => undef,
-     OUTDIR          => '<<<DIR>>>/out',
+     OUTDIR          => '[[DIR]]/out',
      LOGFILE         => '',
      CGI_ARGS        => [],
      HTTP_REFERER    => 'http://localhost/foo.html',
@@ -187,15 +187,15 @@ sub run
    close CGI;
    my $exit = $?;
 
+   if ($exit)
+   {
+      die "script terminated with non-zero status, test set aborted\n";
+   }
+
    my @results = ( "Test ID: $self->{TEST_ID}\n",
                    "Script exit status: $exit\n",
                     $self->_grab_and_delete_output
                  );
-
-   if ( grep /^ERR\s+\*\*\*STOP\*\*\*/, @results )
-   {
-      die "***STOP***\n";
-   }
 
    if ( length $self->{RESULTS_DIR} )
    {
