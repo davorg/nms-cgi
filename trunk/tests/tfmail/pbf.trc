@@ -1,0 +1,10 @@
+%% NMS configuration file %%
+
+#
+# This config file is used in print_blank_fields.t, to
+# switch on the "print_blank_fields" setting.
+#
+
+recipient: recipient@pbf.test.domain
+print_blank_fields: 1
+

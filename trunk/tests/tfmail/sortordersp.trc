@@ -1,0 +1,3 @@
+%% NMS configuration file %%
+recipient: recipient@sortordersp.test.domain
+sort: order: yz, x x

@@ -1,0 +1,2 @@
+%% NMS html template file %%
+<p><b>{= name =}:</b> {= value =}</p>

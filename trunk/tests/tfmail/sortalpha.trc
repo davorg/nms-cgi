@@ -1,0 +1,3 @@
+%% NMS configuration file %%
+recipient: recipient@sortalpha.test.domain
+sort: alphabetic

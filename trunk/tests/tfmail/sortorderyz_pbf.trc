@@ -1,0 +1,4 @@
+%% NMS configuration file %%
+recipient: recipient@sortorderyz.pbf.test.domain
+sort: order:y,z
+print_blank_fields: yes
