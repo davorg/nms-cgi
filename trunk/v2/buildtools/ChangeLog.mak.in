@@ -32,6 +32,8 @@ my @files = qw(
   package/formmail_modules/README.manifest
 
   package/formmail_compat/Makefile
+  package/formmail_compat/README.install
+  package/formmail_compat/README.manifest
 
   buildtools/ChangeLog.mak.in
   buildtools/tarballs

@@ -1,0 +1,11 @@
+Formmail is installed by copying the file FormMail.pl into your cgi-bin
+directory. If you don't know where your cgi-bin directory is, then please
+ask your system administrator.
+
+You may need to rename FormMail.pl to FormMail.cgi. Again, your system
+administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x FormMail.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.

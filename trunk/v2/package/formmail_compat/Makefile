@@ -6,51 +6,37 @@
 
 NAME=formmail
 
-MODULES=../../lib/CGI/NMS/Charset.pm         \
-	../../lib/CGI/NMS/Validator.pm       \
-	../../lib/CGI/NMS/Script.pm          \
-	../../lib/CGI/NMS/Script/FormMail.pm \
-	../../lib/CGI/NMS/Mailer.pm          \
-	../../lib/CGI/NMS/Mailer/Sendmail.pm \
-	../../lib/CGI/NMS/Mailer/SMTP.pm 
+MODULES=CGI/NMS/Charset.pm         \
+	CGI/NMS/Validator.pm       \
+	CGI/NMS/Script.pm          \
+	CGI/NMS/Script/FormMail.pm \
+	CGI/NMS/Mailer.pm          \
+	CGI/NMS/Mailer/Sendmail.pm \
+	CGI/NMS/Mailer/SMTP.pm 
 
-SOURCES=../../src/formmail/FormMail.pl       \
-	../../src/formmail/README            \
-	../../src/formmail/EXAMPLES          \
-	../../buildtools/inline.pl           \
-	../../buildtools/tarballs.pl         \
-	Makefile $(MODULES)
+SOURCE_FILES= src/formmail/FormMail.pl                \
+	      src/formmail/README                     \
+	      src/formmail/EXAMPLES                   \
+	      package/formmail_compat/Makefile        \
+	      package/formmail_compat/README.manifest \
+	      package/formmail_compat/README.install  \
+	      buildtools/inline                       \
+	      buildtools/tarballs                     \
+	      $(MODULES:%=lib/%)
 
-PKGFILES=.pkg/README .pkg/EXAMPLES .pkg/FormMail.pl .pkg/ChangeLog
+PKGFILES = README EXAMPLES FormMail.pl ChangeLog MANIFEST
 
 ######################################################################
 
-TARBALLS=../../.tarballs/$(NAME).tar.gz ../../.tarballs/$(NAME).zip
+include ../../buildtools/package.mak
 
-$(TARBALLS): ../../.tarballs $(PKGFILES) ../../buildtools/tarballs.pl
-	../../buildtools/tarballs.pl ../../.tarballs $(NAME) $(PKGFILES)
+.pkg/FormMail.pl: .pkg ../../src/formmail/FormMail.pl ../../buildtools/inline $(MODULES:%=../../lib/%)
+	../../buildtools/inline ../../lib ../../src/formmail/FormMail.pl >.pkg/FormMail.pl
+	chmod 755 .pkg/FormMail.pl
 
-.pkg/ChangeLog: .pkg $(SOURCES)
-	../../buildtools/cvs2cl.pl --revisions -f .pkg/ChangeLog \
-		$(SOURCES) 
-
-.pkg/README: .pkg ../../src/formmail/README
-	cp ../../src/formmail/README .pkg/
+.pkg/README: .pkg ../../src/formmail/README README.manifest README.install
+	../../buildtools/template ../../src/formmail/README >$@
 
 .pkg/EXAMPLES: .pkg ../../src/formmail/EXAMPLES
 	cp ../../src/formmail/EXAMPLES .pkg/
-
-.pkg/FormMail.pl: .pkg ../../src/formmail/FormMail.pl ../../buildtools/inline.pl $(MODULES)
-	../../buildtools/inline.pl ../../lib ../../src/formmail/FormMail.pl .pkg/FormMail.pl
-
-.pkg:
-	mkdir -p .pkg
-
-../../.tarballs:
-	mkdir -p ../../.tarballs
-
-clean:
-	rm -rf .pkg ../../.tarballs/$(NAME).*
-
-.PHONY: clean
 

@@ -1,0 +1,410 @@
+#!/usr/bin/perl -w
+use strict;
+
+=head1 NAME
+
+inline - inline modules to make standalone scripts
+
+=head1 SYNOPSIS
+
+  inline <MODULE_ROOT> <SOURCE>
+
+=head1 DESCRIPTION
+
+Reads in the Perl CGI script SOURCE, determines which of the
+C<.pm> files present under the library directory MODULE_ROOT it
+needs, and prints an equivalent CGI script to STDOUT.
+
+The output CGI has the source of all required C<.pm> files
+from MODULE_ROOT inlined into it, so it will work on systems
+without some or all of those C<.pm> files.
+
+The output CGI will attempt to C<require> in the modules
+before falling back to the inlined source, so installed modules
+take precedence.
+
+=head1 INTERNALS
+
+Code to attempt to C<require> in all needed modules is added to
+the CGI, above the first non-pragma C<use> statement.  If the
+require fails and inline source is used, then an entry is made
+in C<%INC>.  This means that future C<require> and C<use>
+directives will know that the module has already been loaded,
+so there is no need for this script to rewrite C<use> directives
+found in the CGI and in the inlined module source.
+
+Conditional compilation adds an extra degree of complexity
+however.  Consider the following code:
+
+  if ($foomode) {
+    require Foo::Foo;
+  }
+  else {
+    require Foo::Baz;
+  }
+
+  ...
+
+  if ($barmode) {
+    require Foo::Foo;
+  }
+
+Since C<Foo::Foo> appears twice, it would not be efficient to rewrite
+both C<require> statements to include the source of C<Foo::Foo>.
+
+This script assumes all C<require> statements represent conditional
+compilation, and outputs code to assign the source of the required
+files to global variables in the C<CGI::NMS::INLINED_SOURCE> package.
+The C<require> statements are rewritten so that they try a real
+C<require> first and fall back to C<eval>-ing the inlined source in
+the package variable.
+
+Note that modules brought in with C<use> can represent conditional
+compilation, if the C<use> directive occurs in a module that is
+itself brought in with a C<require>.  This script treats cases like
+that by expanding the C<use> into the equivalent C<BEGIN> block and
+then handling the resulting C<require> as normal.
+
+=head1 LIMITATIONS
+
+=over
+
+=item *
+
+The parsing of the Perl source is very simplistic, and it would be
+easy to produce source that confuses this script.  It has only
+been tested with the NMS CGIs, which all follow a similar pattern.
+
+=item *
+
+Sometimes compilation that appears to be conditional isn't really.
+For example, the CGI could require either C<Foo::Foo> or C<Foo::Bar>,
+both of which use C<Foo::Generic>.  This script will incorrectly
+decide that C<Foo::Generic> is conditionally compiled in that case.
+
+This is a relatively minor efficiency hit, and complex to fix.
+
+=item *
+
+The NMS scripts and modules never rely on C<use base> to load up a
+superclass module (since that doesn't work in older perls) so this
+script doesn't know anything about C<use base>.
+
+=back
+
+=cut
+
+use IO::File;
+
+use vars qw($module_root $source);
+($module_root, $source) = @ARGV;
+
+my $main = read_file($source) or die "open [$source] failed";
+
+my %usage_map = ();
+map_module_usage(\%usage_map, 'main', $main);
+
+my %uncond = ();
+find_unconditional_modules(\%usage_map, \%uncond, 'main');
+my %cond = map {$_=>1} grep { $_ ne 'main' and !exists $uncond{$_} } keys %usage_map;
+
+$main =~ /(.+?)(^use [A-Z].+)/ms or die "can't find first use in script";
+my ($pre, $post) = ($1, $2);
+print $pre;
+  
+print <<END;
+#
+# The code below consists of module source inlined into this
+# script to make it a standalone CGI.
+#
+# Inlining performed by NMS inline - see /v2/buildtools/inline
+# in CVS at http://sourceforge.net/projects/nms-cgi for details.
+#
+BEGIN {
+
+END
+
+my @uncond = sort_unconditional_modules(\%usage_map, \%uncond);
+foreach my $m (keys %cond, @uncond) {
+  inline_module(\%cond, \%uncond, $m);
+}
+
+print <<END;
+}
+#
+# End of inlined modules
+#
+END
+
+adapt_module_text(\%cond, \%uncond, \$post);
+print $post;
+
+=head1 INTERNAL METHODS
+
+=over
+
+=item map_module_usage( MAP, NAME, TEXT )
+
+MAP is a reference to a partially constructed hash by module name
+of hashes by module name, showing which other modules each module
+depends on.
+
+NAME is C<main> for the CGI script or the name of a module.
+
+TEXT is the full text of the module or CGI.
+
+This sub adds an entry to the MAP for NAME, and then recursively
+calls itself for any as yet unmapped modules that NAME depends on.
+
+=cut
+
+sub map_module_usage {
+  my ($map, $name, $text) = @_;
+
+  while( $text =~ m#^\s*(use|require)\s+([A-Z][\w\:]+);#mg ) {
+    my ($directive, $module) = ($1, $2);
+    my $module_text = read_module_file($module);
+    next unless defined $module_text;
+
+    $map->{$name}{$directive}{$module} = 1;
+
+    next if defined $map->{$module};
+    $map->{$module} = { 'use' => {}, 'require' => {} };
+    map_module_usage(\%usage_map, $module, $module_text);
+  }
+}
+
+=item find_unconditional_modules ( MAP, FOUND, STARTAT )
+
+Another recursive sub, this one walks the usage map MAP and
+builds up a hash by module name with entries for all modules
+that are unconditionally compiled, in the hashref FOUND.
+
+STARTAT is C<main> or the name of an unconditionally compiled
+module.
+
+=cut
+
+sub find_unconditional_modules {
+  my ($map, $found, $startat) = @_;
+
+  foreach my $mod (keys %{ $map->{$startat}{'use'} }) {
+    next if $found->{$mod};
+    $found->{$mod} = 1;
+    find_unconditional_modules($map, $found, $mod);
+  }
+}
+
+=item sort_unconditional_modules ( MAP, UNCOND )
+
+Takes the keys of the hashref UNCOND as a list of the unconditionally
+compiled modules, and sorts them into an order such that no module
+depends on one that comes before.
+
+Returns the sorted module names as a list.
+
+=cut
+
+sub sort_unconditional_modules {
+  my ($map, $uncond) = @_;
+
+  my %todo = %$uncond;
+  my @result = ();
+  while (keys %todo) {
+    my ($good, $doing);
+    foreach my $candidate (sort keys %todo) {
+      $good = 1;
+      foreach my $depends (keys %{ $map->{$candidate}{'use'} }) {
+        $good = 0 if exists $todo{$depends};
+      }
+      if ($good) {
+        $doing = $candidate;
+	last;
+      }
+    }
+    $good or die "can't find module to inline - circ depend ?";
+    push @result, $doing;
+    delete $todo{$doing};
+  }
+  
+  return @result;
+}
+
+=item inline_module ( COND, UNCOND, MODNAME )
+
+Prints the source of module MODNAME to stdout, with the correct
+bits of code around it.  If the module is conditionally compiled
+then the source is assigned to a global, otherwise the code tries
+to C<require> in the module and falls back to C<eval>-ing the
+inline copy.
+
+=cut
+
+sub inline_module {
+  my ($cond, $uncond, $modname) = @_;
+
+  my $text = read_module_file($modname) or die "can't read $modname";
+  adapt_module_text($cond, $uncond, \$text);
+
+  my $filename = mod2file($modname);
+  my $wordname = mod2word($modname);
+
+  if (exists $uncond->{$modname}) {
+    print <<END;
+
+unless (eval 'local \$SIG{__DIE__} ; require $modname') {
+  eval <<'END_INLINED_$wordname' or die \$\@;
+$text
+END_INLINED_$wordname
+  \$INC{'$filename'} = 1;
+}
+
+END
+  }
+  else {
+    print <<END;
+
+\$CGI::NMS::INLINED_SOURCE::$wordname = <<'END_INLINED_$wordname';
+$text
+END_INLINED_$wordname
+
+END
+  }
+}
+
+=item adapt_module_text ( COND, UNCOND, TEXTREF )
+
+Modifies the module (or CGI) source in the scalar reference
+TEXTREF, fixing up C<use> and C<require> directives for
+conditionally compiled modules.
+
+=cut
+
+sub adapt_module_text {
+  my ($cond, $uncond, $text) = @_;
+
+  #
+  # First, expand 'use' directives for conditionally compiled
+  # inlined modules.
+  # 
+  $$text =~ s% ^(\s*)use(\s+)([\w\:]+);
+             % exists $cond->{$3}   ? "${1}BEGIN { require $3; import $3 }" :
+              "${1}use$2$3;"
+             %gemx;
+
+  #
+  # Now sort out 'require' directives for conditionally compiled
+  # inlined modules.
+  #
+  $$text =~ s% \brequire([ ]+)([\w\:]+);
+             % exists $cond->{$2} ? inline_require($2) : "require$1$2;"
+             %gex;
+}
+
+=item inline_require ( MODNAME )
+
+Returns the code that should replace a C<require> statement
+for a conditionally compiled module encountered by
+adapt_module_text().
+
+=cut
+
+sub inline_require {
+  my ($modname) = @_;
+
+  my $filename = mod2file($modname);
+  my $wordname = mod2word($modname);
+
+  return <<END;
+
+do {
+  unless (eval 'local \$SIG{__DIE__} ; require $modname') {
+    eval \$CGI::NMS::INLINED_SOURCE::$wordname or die \$\@;
+    \$INC{'$filename'} = 1;
+  }
+  undef \$CGI::NMS::INLINED_SOURCE::$wordname; # to save memory
+};
+
+END
+}
+
+=item read_module_file ( MODNAME )
+
+Tries to open a module file under the module root passed as an
+argument to this script, and returns C<undef> on failure or the
+contents of the C<.pm> file as a multiline string.
+
+MODNAME is the module name in the usual C<Foo::Bar> format.
+
+=cut
+
+sub read_module_file {
+  my ($modname) = @_;
+
+  return read_file("$module_root/" . mod2file($modname));
+}
+
+=item read_file ( FILENAME )
+
+FILENAME the path to a file, returns the contents of that file if
+it can be opened for read, otherwise C<undef>.
+
+=cut
+
+sub read_file {
+  my ($filename) = @_;
+
+  my $file = IO::File->new("<$filename") or return undef;
+  
+  my $text;
+  $file->read($text, 10000000);
+  $file->close;
+
+  return $text;
+}
+
+=item mod2file ( MODNAME )
+
+Translates a module name like C<Foo::Bar> to the equivalent
+relative filename like C<Foo/Bar.pm>.
+
+=cut
+
+sub mod2file {
+  my ($modname) = @_;
+
+  $modname =~ s#::#/#g;
+  return "$modname.pm";
+}
+
+=item mod2word ( MODNAME )
+
+Translates a module name like C<Foo::Bar> to a string of word
+characters like C<Foo_Bar>.
+
+=cut
+
+sub mod2word {
+  my ($modname) = @_;
+
+  $modname =~ s#::#_#g;
+  return $modname;
+}  
+
+=back
+
+=head1 AUTHORS
+
+The NMS developers E<lt>nms-cgi-devel@lists.sourceforge.netE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2003 London Perl Mongers, All rights reserved
+
+=head1 LICENSE
+
+This script is free software; you are free to redistribute it
+and/or modify it under the same terms as Perl itself.
+
+=cut
+
