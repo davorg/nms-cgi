@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.7 2001-12-01 19:45:22 gellyfish Exp $
+# $Id: counter.pl,v 1.8 2002-01-27 14:13:33 davorg Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/12/01 19:45:22  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.6  2001/11/26 13:40:05  nickjc
 # Added \Q \E around variables in regexps where metacharacters in the
 # variables shouldn't be interpreted by the regex engine.
@@ -49,7 +53,7 @@ my @valid_uri = ('/');
 
 my @invalid_uri = ();
 
-my $show_link = 'http://www.dave.org.uk/scripts/nms/';
+my $show_link = 'http://nms-cgi.sourceforge.net/';
 
 my $auto_create = 1;
 
@@ -116,8 +120,6 @@ check_uri();
 
 $count_page =~ s|/$||;
 $count_page =~ s/[^\w]/_/g;
-
-my $lock_file = "$count_page.lock";
 
 my ($date, $count);
 if (-e "$data_dir$count_page") {
