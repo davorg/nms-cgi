@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.27 2004-08-24 09:23:02 gellyfish Exp $
+# $Id: TFmail.pl,v 1.28 2004-08-25 08:02:39 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -70,7 +70,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.27 $, 10, -1;
+   $VERSION = substr q$Revision: 1.28 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -111,6 +111,19 @@ sub main
    if ( POSTMASTER eq 'me@my.domain' )
    {
       die "You must configure the POSTMASTER constant in the script\n";
+   }
+
+   if ( $treq->config('block_lists',''))
+   {
+      foreach my $zone (split /[\s,]+/, $treq->config('block_lists',''))
+      { 
+         if (! rbl_check($ENV{REMOTE_ADDR}, $zone ) )
+         {
+            my $stat = $treq->config('block_status','403 Forbidden');
+            print header(-status => $stat);
+            exit;
+         }
+      }
    }
 
    if ( $ENV{REQUEST_METHOD} eq 'POST' )
@@ -1221,6 +1234,41 @@ sub html_header {
         # -charset option so we cheat:
         print header('-type' => "text/html; charset=@{[ CHARSET ]}", @extra);
     }
+}
+
+=item rbl_check (IP, ZONE )
+
+This performs a dns block list lookup of the supplied IP in the specified
+zone, returning false if there is an entry listed and true otherwise.
+It can block for a long time if the SOA for the supplied zone is busy or
+unavailable.  It is only really useful if the DNSBL zone provided is one
+that lists open HTTP proxies and know exploited machines that may be used
+by spammers or crackers.  
+
+=cut
+
+=for developers
+
+This has only been tested against a local DNSBL which I can put my own
+IP in, so it could probably be tested more thoroughly against a real
+DNSBL using some known proxies.
+
+=cut
+
+sub rbl_check 
+{
+    my ( $ip, $zone ) = @_;
+
+    my $rc = 1;
+    if ( $ip =~ /(\d+)\.(\d+).(\d+)\.(\d+)/ ) {
+        my $query = "$4.$3.$2.$1.$zone.";
+        my $res   = gethostbyname($query);
+        if ( defined $res ) {
+            $rc = 0;
+        }
+    }
+
+    return $rc;
 }
 
 =back

@@ -636,7 +636,7 @@ session_field              - this can be set to the name of a hidden field on
                                <input type="hidden" name="SessionID"
                                       value="{= session_id =}" />
 
-                             where you have session_field is set to SessionID.
+                             where you have session_field set to SessionID.
 
 address_style              - This will specify the style of the address that
                              is used in the From: address of the main mail
@@ -700,7 +700,7 @@ recipient_input            - This specifies the name of a form field that
                              this as it is only intended for a "recommend this
                              page" type scenario and is not generally useful.
 
-no_content                   If this configuration is set to 1 then no HTML
+no_content                 - If this configuration is set to 1 then no HTML
                              output will be sent to the browser and instead a
                              204 status will be sent telling the browser that
                              no content was intended to be sent and it should
@@ -711,7 +711,34 @@ no_content                   If this configuration is set to 1 then no HTML
                              the visitor of your web page as they will have no
                              feedback that the submission was successful.
 
+block_lists                - This is a space delimited list of DNSBL zones
+                             that list open proxies or exploited computers
+                             that can be used by spammers or crackers to
+                             attempt to anonymously access TFmail, if this
+                             is set and the requesting client appears in one
+                             of the lists then the request will be refused
+                             before any further action is taken - the default
+                             response status is '403 Forbidden' but this
+                             may be altered by setting the block_status
+                             configuration directive.  Care should be taken
+                             in using this item as a lookup on a nonexistent
+                             or overloaded zone could block for some time.
+                             More information on DNSBL and useful zones can
+                             be found in README.dnsbl you got with TFmail.
 
+block_status               - This will set the status that is returned if one
+                             of the configured block_lists has an entry for
+                             the requesting host - the default is
+                             '403 Forbidden' which is probably appropriate
+                              but you may for instance want to use
+                             '404 Not Found', or some other status that will
+                             indicate a permanently unsuccessful request.
+                             Issuing a status beginning with '2' is almost
+                             certainly not appropriate unless for some reason
+                             you want to encourage the client to make further
+                             requests in the belief that this one was
+                             successfull.
+                             
 INLINE TEMPLATES
 
 If you don't want to have a separate file for each template, you can
