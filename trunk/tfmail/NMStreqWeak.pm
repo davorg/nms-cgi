@@ -51,8 +51,8 @@ sub strip_nonprintable
 =item escape_html ( STRING )
 
 Returns a copy of STRING with any HTML metacharacters escaped.
-In order to work in any charset, escapes only E<lt>, E<gt> and
-" characters.
+In order to work in any charset, escapes only E<lt>, E<gt>, C<">
+and C<&> characters.
 
 =cut
 
@@ -60,7 +60,7 @@ sub escape_html
 {
    my ($self, $string) = @_;
 
-   $string =~ s/[<>"]/$NMStreq::eschtml_map{$1}/eg;
+   $string =~ s/[<>"&]/$NMStreq::eschtml_map{$1}/eg;
    return $string;
 }
 
