@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-05-22 09:53:00 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-05-31 11:58:45 $ )
 
 =head1 DESCRIPTION
 
@@ -276,23 +276,13 @@ and Postfix also have their own equivalents - you should ask your system
 administrator or web hosting provider for more information on this.
 
 If you are on a Windows webserver then you probably don't have a local MTA
-at all, although this is not say that you will not be able to use C<FormMail>.
-You should ask your System Administrator or web hosting provider if the
-program C<blat> is available, C<blat> is a command line program for Windows
-that enables you to send e-mail in a similar way to C<sendmail>, if it is
-not available you could get your own copy and upload it to your own website
-at a push, however it does require some configuration so you should read the
-documentation before you do that.  Microsoft did once make available a port
-of C<sendmail> for Windows NT which works exactly the same as the Unix version
-however it is extremely unlikey to be already installed on your webserver
-- you should be able to find it on the microsoft FTP site but it is 
-almost certainly going to be too difficult to install unless you are the
-administrator of the server yourself.
+at all, although this is not to say that you will not be able to use 
+C<FormMail>.
 
-Blat is available from  http://www.interlog.com/~tcharron/blat.html
-
-Microsofts sendmail port is at 
-ftp://ftp.microsoft.com/developr/drg/unix-to-windows/ports/sendmail/sm1121.zip
+As part of the I<nms> project a program called C<nms_sendmail> has been
+released that provides the same function as sendmail.  This can be
+downloaded from the same place that you downloaded FormMail and its
+installation is described in the associated README file.
 
 =head2 Is Simple Search broken - it can't find text in my PDF files?
 
