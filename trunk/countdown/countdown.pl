@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.7 2001-12-02 10:26:26 gellyfish Exp $
+# $Id: countdown.pl,v 1.8 2002-01-14 09:31:48 gellyfish Exp $
 #
 # Revision 1.6  2001/12/01 19:45:21  gellyfish
 # * Tested everything with 5.004.04
@@ -54,6 +54,11 @@ my $date_fmt = '%H:%M:%S %d/%b/%Y';
 # URI fragment.
 
 my $style = '/css/nms.css';
+
+# If $EMULATE_MATTS_CODE is set to 1 then this will behave exactly as the
+# original countdown.pl did.
+
+my $EMULATE_MATTS_CODE = 1;
 
 # End configuration
 
@@ -111,11 +116,32 @@ my @diffs = ('X', 12, 'X', 24, 60, 60);
 
 # use the CGI module's param function to import from the query
 # string the variable named date.  That variable is then split
-# on a dash.  If there is a valid date in the query string, it
+# on a comma.  If there is a valid date in the query string, it
 # replaces the default one.
 
-my @query_string = split(/,/, length param("date") > 0 ? param("date") : param("keywords"));
-@from_date = @query_string if(@query_string == 6);
+# This will still get an uninitialized warning won't it ?
+
+my @query_string = split(/,/, length param("date") > 0 ? 
+                                   param("date") : param("keywords"));
+
+
+# The appropriate days for each month.
+
+my @days = (31, (is_leap($now[0]+1900) ? 29 : 28), 31, 30, 31, 30, 31,
+	 31, 30, 31, 30, 31);
+
+if ( @query_string == 6 )
+{
+
+   if ( ($from_date[1] < 13 and $from_date > 0) and 
+        ($from_date[2] <= $days[$from_date[1] - 1 ]) and
+        ($from_date[3] >= 0 and $from_date[3] < 24 ) and
+        ($from_date[4] >= 0 and $from_date[4] < 60 ) and
+        ($from_date[5] >= 0 and $from_date[5] < 60 ))
+   {
+      @from_date = @query_string;
+   }
+}
 
 # format the date so that calculations can be more easily done
 # to it.
@@ -139,10 +165,6 @@ if (timelocal(reverse @now) > timelocal(reverse @from_date)) {
   exit;
 }
 
-# @days contains the number of days in every month.
-
-my @days = (31, (is_leap($now[0]+1900) ? 29 : 28), 31, 30, 31, 30, 31,
-	 31, 30, 31, 30, 31);
 
 my @diff = ('-') x 6;
 my @skip = () x 6;
@@ -179,14 +201,18 @@ foreach (reverse 0 .. $#from_date) {
 my @units = qw(Year Month Day Hour Minute Second);
 
 
-my $diff;
-for (0 .. $#diff) {
-  next if $skip[$_];
+for my $diff_ index(0 .. $#diff) {
+  if ($diff[$diff_index] == 0 and !$EMULATE_MATTS_CODE) {
+    $skip[$diff_index] = 1;
+  }
+  next if $skip[$diff_index];
 
-  $diff .= "$diff[$_] $units[$_]";
-  $diff .= 's' if $diff[$_] != 1;
+  $diff .= "$diff[$diff_index] $units[$diff_index]";
+  $diff .= 's' if $diff[$diff_index] != 1;
   $diff .= "$delimiter\n";
 }
+
+# Print out the resulting difference in a <p></p>
 
 print p($diff), "\n";
 
