@@ -207,6 +207,7 @@ sub run
    if ( length $self->{RESULTS_DIR} )
    {
       $self->_substitute_dates(\@results);
+      $self->_substitute_generated_header(\@results);
 
       my $id = $self->{TEST_ID};
       $id =~ tr/ =/_-/;
@@ -364,6 +365,26 @@ sub _substitute_dates
    {
       $r =~ s[($daypat), ($monpat) \d\d?, \d{4} at \d\d:\d\d:\d\d]
              [Sunday, December 31, 2002 at 23:58:00]og;
+   }
+}
+
+=item _substitute_generated_header
+
+Replaces any script version numbers in X-Generated-By headers
+in emails with a fixed version number.  This prevents false
+differences appearing when attempting to perform regression
+tests of scripts that send email with this header.
+
+=cut
+
+sub _substitute_generated_header
+{
+   my ($self, $results) = @_;
+
+   foreach my $r (@$results)
+   {
+      $r =~ s[^(MAIL\d *X-Generated-By: NMS \w+\.pl) v\d+\.\d+]
+             [$1 v1.01]g;
    }
 }
 
