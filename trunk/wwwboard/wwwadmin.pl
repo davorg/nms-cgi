@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -wT
+#!/usr/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.18 2002-07-23 21:00:17 nickjc Exp $
+# $Id: wwwadmin.pl,v 1.19 2002-09-11 19:30:24 nickjc Exp $
 #
 
 use strict;
@@ -12,7 +12,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.18 $ (part of wwwboard)
+# wwwadmin.pl $Revision: 1.19 $ (part of wwwboard)
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -115,6 +115,8 @@ my %HTML;
   while (<DATA>) {
     chomp;
     my ($k, $v) = split(/\n--\n/);
+    $k =~ /^\s*(\w+)\s*$/ or die "bad HTML key [$k]";
+    $k = $1;
 
     $v =~ s/<!-- STYLE -->/$style_element/;
 
@@ -284,7 +286,7 @@ if ($command eq 'remove') {
   $html =~ s/(\$\w+)/$1/eeg;
   print $html;
 
-} elsif ($FORM->{action} eq 'remove') {
+} elsif (defined $FORM->{action} and $FORM->{action} eq 'remove') {
 
    check_passwd();
 
@@ -361,7 +363,7 @@ if ($command eq 'remove') {
 
    return_html($FORM->{type});
 
-} elsif ($FORM->{action} eq 'remove_by_date_or_author') {
+} elsif (defined $FORM->{action} and $FORM->{action} eq 'remove_by_date_or_author') {
 
    check_passwd();
 
@@ -382,7 +384,7 @@ if ($command eq 'remove') {
 
    return_html($FORM->{type});
 
-} elsif ($FORM->{action} eq 'change_passwd') {
+} elsif (defined $FORM->{action} and $FORM->{action} eq 'change_passwd') {
 
   open(PASSWD,"<$basedir/$passwd_file") || error('passwd_file');
   my $passwd_line = <PASSWD>;

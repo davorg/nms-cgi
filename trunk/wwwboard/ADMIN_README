@@ -38,7 +38,7 @@ The configuration of wwwadmin.pl is very similar to wwwboard.pl. In fact, for al
 * wwwadmin.pl
    Settings (remember to carry other parameters over from wwwboard.pl):
 
-      $cgi_url     - This is the full website address (URL) to the wwwboard.pl
+      $cgi_url     - This is the full website address (URL) to the wwwadmin.pl
                      file which will run the wwwboard.
 
       $passwd_file - This is the name of the file, in $basedir, where the
@@ -51,7 +51,7 @@ The configuration of wwwadmin.pl is very similar to wwwboard.pl. In fact, for al
       $cgi_url put in the settings. You must also give the file the right
       permissions. In order to do so, the file must be chmoded to 755 using the
       following command:
-         chmod 755 wwwboard.pl
+         chmod 755 wwwadmin.pl
 
 * password.txt
    Settings:
