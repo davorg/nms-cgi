@@ -165,6 +165,10 @@ $mailprog           - The system command that the script should invoke to
 
                       <input type="hidden" name="recipient" value="2" />
 
+@valid_ENV          - A list of all the environment variables that you want
+                      to be able to include in the email. See 'env_report'
+                      below.
+
 $locale             - This determines the language that is used in the date - by
                       default this is blank and the language will probably be
                       english. The following a list of some possible values,
@@ -204,49 +208,6 @@ $locale             - This determines the language that is used in the date - by
 
 $charset            - The character set to use for output documents.
 
-$no_content         - If this is set to 1 then rather than returning the 
-                      HTML confirmation page or doing a redirect the script 
-                      will output a header that indicates that no content 
-                      will be returned and that the submitted form should 
-                      not be replaced.  This should be used carefully as an
-                      unwitting visitor may click the submit button several 
-                      times thinking that nothing has happened.
-
-$wrap_text          - If this is set to 1 then the content of any long text 
-                      fields will be wrapped at around 72 columns in the 
-                      e-mail which is sent.  The way that this is done is 
-                      controlled by the variable $wrap_style
-
-$wrap_style         - If $wrap_text is set to 1 then if this is set to 1 then 
-                      the text will be wrapped in such a way that the left 
-                      margin of the text is lined up with the beginning of the 
-                      text after the description of the field - that is to 
-                      say it is indented by the length of the field name 
-                      plus 2.  If it is set to 2 then the subsequent lines
-                      of the text will not be indented at all and will be 
-                      flush with the start of the lines.  The choice of style 
-                      is really a matter of taste although you might find 
-                      that style 1 does not work particularly well if your 
-                      e-mail client uses a proportional font where the spaces 
-                      of the indent might be smaller than the characters in 
-                      the field name.
-
-@config_include     - This optional configuration may contain a list of the
-                      names of certain configuration form fields (as 
-                      described below) that may be included in the body of
-                      the e-mail that is sent and also in the confirmation
-                      page that is returned to the visitors browser.  In
-                      order for these fields to be actually displayed they
-                      should be included in the value of a 'sort' field
-                      explicitly ( along with the other fields that want to
-                      be displayed ).  You probably want to use this sparingly
-                      as most of the configuration fields will be meaningless
-                      to a visitor.
-
-@valid_ENV          - A list of all the environment variables that you want
-                      to be able to include in the email. See 'env_report'
-                      below.
-
 $date_fmt           - The format that the date will be displayed in. This
                       is a string that contains a number of different 'tags'.
                       Each tag consists of a % character followed by a letter.
@@ -274,6 +235,38 @@ $style              - This is the URL of a CSS stylesheet which will be
                       the other pages.  This should be a local absolute URI
                       fragment.  Set $style to '0' or the emtpy string if
                       you don't want to use style sheets.
+
+$no_content         - If this is set to 1 then rather than returning the 
+                      HTML confirmation page or doing a redirect the script 
+                      will output a header that indicates that no content 
+                      will be returned and that the submitted form should 
+                      not be replaced.  This should be used carefully as an
+                      unwitting visitor may click the submit button several 
+                      times thinking that nothing has happened.
+
+$double_spacing     - If this is set to 1 (as it is by default) then a blank
+                      line is printed after each form value in the e-mail.
+                      Change this value to 0 if you want the e-mail to be
+                      more compact.
+
+$wrap_text          - If this is set to 1 then the content of any long text 
+                      fields will be wrapped at around 72 columns in the 
+                      e-mail which is sent.  The way that this is done is 
+                      controlled by the variable $wrap_style
+
+$wrap_style         - If $wrap_text is set to 1 then if this is set to 1 then 
+                      the text will be wrapped in such a way that the left 
+                      margin of the text is lined up with the beginning of the 
+                      text after the description of the field - that is to 
+                      say it is indented by the length of the field name 
+                      plus 2.  If it is set to 2 then the subsequent lines
+                      of the text will not be indented at all and will be 
+                      flush with the start of the lines.  The choice of style 
+                      is really a matter of taste although you might find 
+                      that style 1 does not work particularly well if your 
+                      e-mail client uses a proportional font where the spaces 
+                      of the indent might be smaller than the characters in 
+                      the field name.
 
 $send_confirmation_mail - If this flag is set to 1 then an additional email
                           will be sent to the person who submitted the
@@ -417,7 +410,7 @@ sort                    - This sets the order in which the submitted form
                           names, for example:
 
                           <input type="hidden" name="sort"
-                           value="order:name,email,age,comments">
+                           value="order:name,email,age,comments" />
 
                           If "order:" is used you must supply the names of
                           all of the fields that you want to be in the body of
@@ -429,7 +422,7 @@ print_config            - This is mainly used for debugging, and if set it
                           For example:
 
                           <input type="hidden" name="print_config"
-                           value="title,sort">
+                           value="title,sort" />
 
                           ... will include whatever values you set for
                           'title' and 'sort' (if any) in the email.
@@ -440,7 +433,7 @@ required                - This is a list of fields that the user must fill
                           back to the form to try again.  For example:
 
                           <input type="hidden" name="required"
-                           value="name,comments">
+                           value="name,comments" />
 
 missing_fields_redirect - If this is set, it must be a URL, and the user
                           will be redirected there if any of the fields

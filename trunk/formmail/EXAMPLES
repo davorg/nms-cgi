@@ -31,6 +31,10 @@ script looks like:
     $charset           = 'iso-8859-1';
     $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
     $style             = '/css/nms.css';
+    $no_content        = 0;
+    $double_spacing    = 1;
+    $wrap_text         = 0;
+    $wrap_style        = 1;
     $send_confirmation_mail = 0;
     $confirmation_text = <<'END_OF_CONFIRMATION';
   From: you@your.com
@@ -101,6 +105,10 @@ So the configuration section should now look like:
     $charset           = 'iso-8859-1';
     $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
     $style             = '/css/nms.css';
+    $no_content        = 0;
+    $double_spacing    = 1;
+    $wrap_text         = 0;
+    $wrap_style        = 1;
     $send_confirmation_mail = 0;
     $confirmation_text = <<'END_OF_CONFIRMATION';
   From: you@your.com
@@ -259,6 +267,10 @@ collect target email addresses from web sites.
     $charset           = 'iso-8859-1';
     $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
     $style             = '/css/nms.css';
+    $no_content        = 0;
+    $double_spacing    = 1;
+    $wrap_text         = 0;
+    $wrap_style        = 1;
     $send_confirmation_mail = 0;
     $confirmation_text = <<'END_OF_CONFIRMATION';
   From: you@your.com
@@ -369,6 +381,10 @@ script is now:
     $charset           = 'iso-8859-1';
     $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
     $style             = '/css/nms.css';
+    $no_content        = 0;
+    $double_spacing    = 1;
+    $wrap_text         = 0;
+    $wrap_style        = 1;
     $send_confirmation_mail = 0;
     $confirmation_text = <<'END_OF_CONFIRMATION';
   From: you@your.com

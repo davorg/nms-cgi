@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.14 2002-09-23 20:39:05 nickjc Exp $
+# $Id: FormMail.pl,v 2.15 2002-09-26 22:10:09 nickjc Exp $
 #
 
 use strict;
@@ -13,13 +13,13 @@ use vars qw(
   $allow_empty_ref $max_recipients $mailprog @referers
   @allow_mail_to @recipients %recipient_alias
   @valid_ENV $date_fmt $style $send_confirmation_mail
-  $confirmation_text $locale $charset $no_content @config_include
-  $wrap_text $wrap_style
+  $confirmation_text $locale $charset $no_content
+  $double_spacing $wrap_text $wrap_style
 );
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.14 $
+# FormMail.pl $Revision: 2.15 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -56,9 +56,9 @@ BEGIN
   $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
   $style             = '/css/nms.css';
   $no_content        = 0;
+  $double_spacing    = 1;
   $wrap_text         = 0;
   $wrap_style        = 1;
-  @config_include    = qw();
   $send_confirmation_mail = 0;
   $confirmation_text = <<'END_OF_CONFIRMATION';
 From: you@your.com
@@ -73,7 +73,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.14 $, 10, -1;
+  $VERSION = substr q$Revision: 2.15 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -283,6 +283,7 @@ sub parse_form {
       next if /redirect$/ and not check_url_valid($val);
       next if /^return_link_url$/ and $secure and not check_url_valid($val);
       $Config{$_} = $val;
+      $Form{$_} = $val unless $emulate_matts_code;
     } else {
       my @vals = map {strip_nonprintable($_)} param($_);
       my $key = strip_nonprintable($_);
@@ -302,12 +303,6 @@ sub parse_form {
   }
 
   $Config{env_report} = [ grep { $valid_ENV{$_} } @{$Config{env_report}} ];
-
-  foreach my $config_item ( @config_include ) {
-     if ( exists $Config{$config_item} ) {
-        $Form{$config_item} = $Config{$config_item};
-     }
-  }
 
   if (defined $Config{'sort'}) {
     if ($Config{'sort'} eq 'alphabetic') {
@@ -528,13 +523,14 @@ Subject: $subject
 Below is the result of your feedback form.  It was submitted by
 $Config{realname} (${\( $Config{email}||'' )}) on $date
 $dashes
-
-
 EOMAIL
+
+  print MAIL "\n\n" if $double_spacing;
+  my $nl = ( $double_spacing ? "\n\n" : "\n" );
 
   if ($Config{print_config}) {
     foreach (@{$Config{print_config}}) {
-      print MAIL "$_: $Config{$_}\n\n" if $Config{$_};
+      print MAIL "$_: $Config{$_}$nl" if $Config{$_};
     }
   }
 
@@ -549,11 +545,11 @@ EOMAIL
         }
         $Text::Wrap::columns = 72;
         my $wraped;
-        eval { local $SIG{__DIE__} ;  $wraped = wrap($field_name,$subs_indent,$val) };
-        print MAIL +($@ ? "$field_name$val" : $wraped), "\n\n";
+        eval { local $SIG{__DIE__} ; $wraped = wrap($field_name,$subs_indent,$val) };
+        print MAIL +($@ ? "$field_name$val" : $wraped), $nl;
       }
       else {
-        print MAIL "$field_name$val\n\n";
+        print MAIL "$field_name$val$nl";
       }
     }
   }
@@ -950,7 +946,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.14 $
+FormMail $Revision: 2.15 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
