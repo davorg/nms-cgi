@@ -1,11 +1,11 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-01-14 11:27:49 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-01-22 20:42:56 $ )
 
 =head1 DESCRIPTION
 
-This document seeks to some of the questions that people might want to ask
-about the I<nms> project and the programs therein.
+This document seeks to answer some of the questions that people might
+want to ask about the I<nms> project and the programs therein.
 
 =head2 What is this I<nms> thing all about ?
 
