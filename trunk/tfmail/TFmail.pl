@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.15 2002-07-18 22:17:17 nickjc Exp $
+# $Id: TFmail.pl,v 1.16 2002-07-30 22:38:26 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -46,8 +46,10 @@ See the F<README> file for instructions.
 use constant MIME_LITE => USE_MIME_LITE || ENABLE_UPLOADS;
 
 use Fcntl ':flock';
+use IO::File;
 use lib LIBDIR;
-use vars qw($TREQ_PKG);
+use NMStreq;
+use NMSCharset;
 BEGIN
 {
    if (MIME_LITE)
@@ -58,31 +60,9 @@ BEGIN
       require MIME_Lite if $@;
       import MIME::Lite;
    }
-   if (HTMLFILE_ROOT ne '')
-   {
-      require IO::File;
-      import IO::File;
-   }
 
-   if (CHARSET eq 'utf-8' or CHARSET eq 'UTF-8')
-   {
-      $TREQ_PKG = 'NMStreqUTF8';
-   }
-   elsif (CHARSET =~ /^iso-8859-/i)
-   {
-      $TREQ_PKG = 'NMStreq';
-   }
-   else
-   {
-      $TREQ_PKG = 'NMStreqWeak';
-   }
-   require "$TREQ_PKG.pm";
-}
-
-BEGIN
-{
-  use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.15 $, 10, -1;
+   use vars qw($VERSION);
+   $VERSION = substr q$Revision: 1.16 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -110,13 +90,14 @@ sub main
 {
    local ($CGI::DISABLE_UPLOADS, $CGI::POST_MAX);
 
-   my $treq = $TREQ_PKG->new(
+   my $treq = NMStreq->new(
       ConfigRoot    => CONFIG_ROOT,
       MaxDepth      => MAX_DEPTH,
       ConfigExt     => CONFIG_EXT,
       TemplateExt   => TEMPLATE_EXT,
       EnableUploads => ENABLE_UPLOADS,
       CGIPostMax    => 1000000,
+      Charset       => CHARSET,
    );
 
    if ( POSTMASTER eq 'me@my.domain' )
@@ -697,7 +678,8 @@ EOERR
 
    if ( DEBUGGING )
    {
-      $message = '<p>' . NMStreq->escape_html($message) . '</p>';
+      $message = NMSCharset->new(CHARSET)->escape($message);
+      $message = "<p>$message</p>";
    }
    else
    {

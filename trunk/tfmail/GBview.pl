@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: GBview.pl,v 1.1 2002-07-19 19:39:10 nickjc Exp $
+# $Id: GBview.pl,v 1.2 2002-07-30 22:38:26 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -44,7 +44,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.1 $, 10, -1;
+  $VERSION = substr q$Revision: 1.2 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -77,6 +77,7 @@ sub main
       TemplateExt   => TEMPLATE_EXT,
       EnableUploads => 0,
       CGIPostMax    => 10000,
+      Charset       => CHARSET,
    );
 
    if ( HTMLFILE_ROOT eq '' )
@@ -228,7 +229,8 @@ EOERR
 
    if ( DEBUGGING )
    {
-      $message = '<p>' . NMStreq->escape_html($message) . '</p>';
+      $message = NMSCharset->new(CHARSET)->escape($message);
+      $message = "<p>$message</p>";
    }
    else
    {

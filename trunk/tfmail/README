@@ -33,10 +33,7 @@ In this distribution, you will find the following files:
 TFmail.pl      - The main Perl script
 GBview.pl      - A script that allows TFmail to function as a guestbook
 NMStreq.pm     - A Perl module that TFmail.pl needs
-NMStreqUTF8.pm - A Perl module that TFmail.pl needs if you use the 'utf-8'
-                 character encoding.
-NMStreqWeak.pm - A Perl module that TFmail.pl needs if you use a charset
-                 other than utf-8 or one of the iso-8859 charsets.
+NMSCharset.pm  - Another Perl module that TFmail.pl needs
 MIME_Lite.pm   - A Perl module that TFmail.pl needs if you want to use
                  file uploads, unless MIME::Lite is installed on the
                  server

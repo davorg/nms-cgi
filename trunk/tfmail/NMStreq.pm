@@ -5,9 +5,10 @@ use CGI;
 use Carp;
 use IO::File;
 use POSIX qw(strftime);
+use NMSCharset;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.8 $, 10, -1;
+$VERSION = substr q$Revision: 1.9 $, 10, -1;
 
 =head1 NAME
 
@@ -108,6 +109,12 @@ C<CGI.pm>.  Defaults to false.
 The maximum total size of post data.  Defaults to 1000000
 bytes.
 
+=item C<Charset>
+
+The name of the character set to be used for input and
+output text, used to initialise an C<NMSCharset> object,
+see L<NMSCharset>.  Defaults to C<iso-8859-1>.
+
 =back
 
 Any other options set will be ignored by this module,
@@ -132,11 +139,16 @@ sub new
       DateFormat    => '%A, %B %d, %Y at %H:%M:%S',
       EnableUploads => 0,
       CGIPostMAx    => 1000000,
+      Charset       => 'iso-8859-1',
       @_
    };
 
    $CGI::DISABLE_UPLOADS = ($self->{opt}{EnableUploads} ? 0 : 1);
    $CGI::POST_MAX        = $self->{opt}{CGIPostMax};
+
+   my $charset = NMSCharset->new($self->{opt}{Charset});
+   $self->{strip_nonprint} = $charset->strip_nonprint_coderef;
+   $self->{escape_html}    = $charset->escape_html_coderef;
 
    my $cgi = CGI->new;
    $self->{cgi} = $cgi;
@@ -461,10 +473,8 @@ sub error
 
 Returns a copy of STRING with runs of non-printable
 characters replaced with space.  The default implementation
-allows all printable C<iso-8859-1> characters (including
-some with the high bit set) and disallows control and
-whitespace characters other than tab, newline, space and
-nbsp (character 160, non-breaking space).
+uses the coderef provided by the C<NMSCharset> module, see
+L<NMSCharset>.
 
 =cut
 
@@ -472,36 +482,22 @@ sub strip_nonprintable
 {
    my ($self, $string) = @_;
 
-   return '' unless defined $string;
-   $string =~ tr#\t\n\040-\176\240-\377# #cs;
-   return $string;
+   &{ $self->{strip_nonprint} }( $string );
 }
 
 =item escape_html ( STRING )
 
-Returns a copy of STRING with any HTML metacharacters
-escaped.  The default implementation is paranoid in that
-it escapes all but the most commonly occurring characters.
+Returns a copy of STRING with any HTML metacharacters escaped.
+The default implementation uses the coderef provided by the
+C<NMSCharset> module, see L<NMSCharset>.
 
 =cut
-
-BEGIN
-{
-   use vars qw(%eschtml_map);
-   %eschtml_map = ( ( map {chr($_) => "&#$_;"} (0..255) ),
-                    '<' => '&lt;',
-                    '>' => '&gt;',
-                    '&' => '&amp;',
-                    '"' => '&quot;',
-                 );
-}
 
 sub escape_html
 {
    my ($self, $string) = @_;
 
-   $string =~ s|([^\w \t\r\n\-\.\,])| $eschtml_map{$1} |ge;
-   return $string;
+   &{ $self->{escape_html} }( $string );
 }
 
 =back
@@ -1076,6 +1072,10 @@ The C<date> directive outputs the current date, formatted
 according to the C<date_fmt> configuration setting.
 
 =back
+
+=head1 SEE ALSO
+
+L<NMSCharset>, L<CGI>
 
 =head1 MAINTAINERS
 

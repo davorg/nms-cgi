@@ -1,8 +1,7 @@
 tfmail/TFmail.pl
 tfmail/GBview.pl
 tfmail/NMStreq.pm
-tfmail/NMStreqUTF8.pm
-tfmail/NMStreqWeak.pm
+tfmail/NMSCharset.pm
 tfmail/MIME_Lite.pm
 tfmail/default.trc
 tfmail/gb.trc
