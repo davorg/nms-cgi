@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.34 2002-02-03 21:32:47 dragonoe Exp $
+# $Id: FormMail.pl,v 1.35 2002-02-13 23:33:52 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.34  2002/02/03 21:32:47  dragonoe
+# Indent configuration variables so they are all aligned. Made sure that it fits in 80 characters.
+#
 # Revision 1.33  2002/02/03 20:47:06  dragonoe
 # Added header to script after the cvs log.
 #
@@ -150,7 +153,7 @@ use vars qw($DEBUGGING);
 # <http://www.perl.com/pub/a/language/misc/Artistic.html>
 #
 # For a list of changes see CHANGELOG
-# 
+#
 # For help on configuration or installation see README
 #
 # USER CONFIGURATION SECTION
@@ -184,6 +187,13 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
 
+# We don't need file uploads or very large POST requests.
+# Annoying locution to shut up 'used only once' warning in older perl
+
+$CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX = $CGI::POST_MAX = 1000000;
+
+
 # Merge @allow_mail_to and @recipients into a single list of regexps
 push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
 
@@ -207,7 +217,7 @@ BEGIN
       {
          $message = '';
       }
-      
+
       my ( $pack, $file, $line, $sub ) = caller(1);
       my ($id ) = $file =~ m%([^/]+)$%;
 
@@ -235,12 +245,14 @@ EOERR
    };
 
    $SIG{__DIE__} = \&fatalsToBrowser;
-}   
+}
 
 if ( $emulate_matts_code )
 {
    $secure = 0; # ;-}
 }
+
+my $debug_warnings = '';
 
 #  Empty the environment of potentially harmful variables
 #  This might cause problems if $mail_prog is a shell script :)
@@ -290,8 +302,8 @@ sub check_referer
       chop $refHost;
     } else {
       $refHost = $2;
-    } 
-    
+    }
+
     foreach my $test_ref (@referers) {
       if ($refHost =~ m|\Q$test_ref\E$|i) {
         $check_referer = 1;
@@ -320,25 +332,25 @@ sub check_referer
 sub parse_form {
 
   my @fields = qw(
-                  recipient 
-                  subject 
-                  email 
-                  realname 
-                  redirect 
+                  recipient
+                  subject
+                  email
+                  realname
+                  redirect
                   bgcolor
-                  background 
-                  link_color 
-                  vlink_color 
+                  background
+                  link_color
+                  vlink_color
                   text_color
-                  alink_color 
-                  title 
-                  sort 
-                  print_config 
+                  alink_color
+                  title
+                  sort
+                  print_config
                   required
-                  env_report 
-                  return_link_title 
+                  env_report
+                  return_link_title
                   return_link_url
-                  print_blank_fields 
+                  print_blank_fields
                   missing_fields_redirect
                  );
 
@@ -377,6 +389,8 @@ sub parse_form {
 sub check_required {
   my ($require, @error);
 
+  defined $Config{subject} or $Config{subject} = '';
+  defined $Config{recipient} or $Config{recipient} = '';
   if ($Config{subject} =~ /[\n\r]/m ||
       $Config{recipient} =~ /[\n\r]/m) {
     error('no_recipient');
@@ -397,7 +411,10 @@ sub check_required {
     $Config{recipient} = join ',', @valid;
 
   } else {
-    if (%Form) {
+    my @allow = grep {/\@/} @allow_mail_to;
+    if (scalar @allow > 0 and not $emulate_matts_code) {
+      $Config{recipient} = $allow[0];
+    } elsif (%Form) {
       error('no_recipient')
     } else {
       error('bad_referer')
@@ -430,6 +447,7 @@ sub check_recipient {
     }
   }
 
+  warn_bad_email($recip, "script not configured to allow this address");
   return(0);
 }
 
@@ -451,7 +469,7 @@ sub return_html {
      <title>$title</title>
      <link rel="stylesheet" type="text/css" href="$style" />
   </head>
-  <body $attr>
+  <body $attr>$debug_warnings
     <h1 align="center">$title</h1>
     <p>Below is what you submitted to $recipient on $date</p>
     <p><hr size="1" width="75%" /></p>
@@ -476,7 +494,7 @@ EOHTML
 
     foreach (@sorted_fields) {
       if ($Config{print_blank_fields} || $Form{$_}) {
-        print '<p><b>', escape_html($_), ':</b> ', 
+        print '<p><b>', escape_html($_), ':</b> ',
                         escape_html($Form{$_}), "</p>\n";
       }
     }
@@ -494,7 +512,7 @@ EOHTML
         <hr size="1" width="75%" />
         <p align="center">
            <font size="-1">
-             <a href="http://nms-cgi.sourceforge.net/">FormMail</a> 
+             <a href="http://nms-cgi.sourceforge.net/">FormMail</a>
              &copy; 2001  London Perl Mongers
            </font>
         </p>
@@ -599,46 +617,77 @@ EOMAIL
 sub check_email {
   my ($email) = @_;
 
-  # If the e-mail address contains:
-  if ($email =~ /(@.*@)|(\.\.)|(@\.)|(\.@)|(^\.)/ ||
+  return 0 if $email =~ /^\s*$/;
 
-      # the e-mail address contains an invalid syntax.  Or, if the
-      # syntax does not match the following regular expression pattern
-      # it fails basic syntax verification.
-
-      $email !~ /^(.+)\@(?:[a-zA-Z0-9\-\.]+|\[[0-9\.]+\])$/ || 
-      ($secure and ($1 =~ /\%/)))
-      {
-
-    # Basic syntax requires:  one or more characters before the @ sign,
-    # followed by an optional '[', then any number of letters, numbers,
-    # dashes or periods (valid domain/IP characters) ending in a period
-    # and then 2 or 3 letters (for domain suffixes) or 1 to 3 numbers
-    # (for IP addresses).  An ending bracket is also allowed as it is
-    # valid syntax to have an email address like: user@[255.255.255.0]
-
-    # Return a false value, since the e-mail address did not pass valid
-    # syntax.
-
+  unless ($email =~ /^(.+)\@([a-z0-9_\.\-\[\]]+)$/is) {
+    warn_bad_email($email, "malformed email address");
     return 0;
-  } else {
-    if ($secure) {
-      # An extra check on the local part: allow only those characters
-      # that RFC822 permits without quoting.
-      my $localpart = $1;
-      if ($localpart !~ /^[A-Za-z0-9_\Q!#\$\%&'*+-.\/=?^_`{|}~\E\200-\377]+$/) {
-        return 0;
-      }
-    }
-    # Return a true value, e-mail verification passed.
-    return 1;
   }
+  my ($user, $host) = ($1, $2);
+
+  if ($host =~ /\.\./) {
+    warn_bad_email($email, "hostname $host contains '..'");
+    return 0;
+  } elsif ($host =~ /^\./) {
+    warn_bad_email($email, "hostname $host starts with '.'");
+    return 0;
+  } elsif ($host =~ /\.$/) {
+    warn_bad_email($email, "hostname $host ends with '.'");
+    return 0;
+  }
+
+  if ($emulate_matts_code and not $secure) {
+    # Be as generous as possible without opening any known or strongly
+    # suspected relaying holes.
+    if ($user =~ /([^a-z0-9_\-\.\#\$\&\'\*\+\/\=\?\^\`\{\|\}\~\200-\377])/i) {
+      my $c = sprintf '%s (ASCII 0x%.2X)', $1, unpack('C',$1);
+      warn_bad_email($email, "bad character $c");
+      return 0;
+    } else {
+      return 1;
+    }
+  } else {
+    # Only allow reasonable email addresses.
+
+    if ($user =~ /([^a-z0-9_\-\.\*\+\=])/i) {
+      my $c = sprintf '%s (ASCII 0x%.2X)', $1, unpack('C',$1);
+      warn_bad_email($email, "bad character $c");
+      return 0;
+    } elsif (length $user > 100) {
+      warn_bad_email($email, "username part too long");
+      return 0;
+    }
+
+    return 1 if $host =~ /^\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\]$/;
+    return 1 if $host =~ /^[a-z0-9\-\.]{1,100}$/i;
+
+    warn_bad_email($email, "invalid hostname $host");
+    return 0;
+  }
+
+  # not reached
+  return 0;
+}
+
+sub warn_bad_email {
+  my ($email, $whybad) = @_;
+
+  $debug_warnings .= <<END if $DEBUGGING;
+<p>
+<font color="red">Warning:</font>
+The email address <tt>${\( escape_html($email) )}</tt> was rejected
+for the following reason: ${\( escape_html($whybad) )}
+</p>
+END
 }
 
 # check the validity of a URL.
 
 sub check_url_valid {
   my $url = shift;
+
+  # allow relative URLs with sane values
+  return 1 if $url =~ m#^[a-z0-9_\-\.\,\+\/]+$#i;
 
   $url =~ m< ^ (?:ftp|http|https):// [\w\-\.]+ (?:\:\d+)?
                (?: / [\w\-.!~*'(|);/?\@&=+\$,%#]* )?
@@ -663,6 +712,12 @@ sub body_attributes {
   my $attr = '';
 
   foreach (keys %attrs) {
+    next unless $Config{$_};
+    if (/color$/) {
+      /^#[0-9a-z]{6}$/i or /^[\w\-]{2,50}$/ or next;
+    } else {
+      check_url_valid($_) or next;
+    }
     $attr .= qq( $attrs{$_}=") . escape_html($Config{$_}) . '"' if $Config{$_};
   }
 
@@ -686,12 +741,12 @@ sub error {
        $heading = $title;
        $error_body =<<EOBODY;
 <p>
-  The form attempting to use FormMail resides at <tt>$escaped_referer</tt>, 
+  The form attempting to use FormMail resides at <tt>$escaped_referer</tt>,
   which is not allowed to access this program.
 </p>
 <p>
-  If you are attempting to configure FormMail to run with this form, 
-  you need to add the following to \@referers, explained in detail in the 
+  If you are attempting to configure FormMail to run with this form,
+  you need to add the following to \@referers, explained in detail in the
   README file.
 </p>
 <p>
@@ -712,6 +767,8 @@ EOBODY
    } else {
      $ref = 'that you just filled in';
    }
+   $title = 'Error: GET request';
+   $heading = $title;
    $error_body =<<EOBODY;
 <p>
   The form $ref fails to specify the POST method, so it would not
@@ -719,14 +776,14 @@ EOBODY
   your request.
 </p>
 <p>
-  If you are attempting to configure this form to run with FormMail, 
+  If you are attempting to configure this form to run with FormMail,
   you need to set the request method to POST in the opening form tag,
   like this:
   <tt>&lt;form action=&quot;/cgi-bin/FormMail.pl&quot; method=&quot;POST&quot;&gt;</tt>
 </p>
 EOBODY
  } elsif ($error eq 'no_recipient') {
-   
+
    my $recipient = escape_html($Config{recipient});
    $title = 'Error: Bad or Missing Recipient';
    $heading = $title;
@@ -737,9 +794,9 @@ EOBODY
   <tt>recipient</tt> form field with an e-mail address that has
   been configured in <tt>\@recipients</tt>. More information on
   filling in <tt>recipient</tt> form fields and variables can be
-  found in the README file.  
+  found in the README file.
 </p>
-<hr size="1" /> 
+<hr size="1" />
 <p>
  The recipient was: [ $recipient ]
 </p>
@@ -750,7 +807,7 @@ EOBODY
         print  redirect($Config{'missing_fields_redirect'});
         exit;
       }
-      else {        
+      else {
         my $missing_field_list = join '',
                                  map { '<li>' . escape_html($_) . "</li>\n" }
                                  @error_fields;
@@ -766,7 +823,7 @@ EOBODY
    </ul>
 </div>
 <p>
-    These fields must be filled in before you can successfully 
+    These fields must be filled in before you can successfully
     submit the form.
 </p>
 
@@ -793,7 +850,7 @@ EOBODY
               color: #000000;
              }
        p.c2 {
-              font-size: 80%; 
+              font-size: 80%;
               text-align: center;
             }
        th.c1 {
@@ -804,7 +861,7 @@ EOBODY
      -->
     </style>
   </head>
-  <body>
+  <body>$debug_warnings
     <table border="0" width="600" bgcolor="#9C9C9C" align="center" summary="">
       <tr>
         <th class="c1">$heading</th>
@@ -894,7 +951,7 @@ sub escape_html {
 #
 #     $emulate = 0 if ! defined( $emulate );
 #
-#     if ($emulate) 
+#     if ($emulate)
 #     {
 #       $secure = 0;
 #       $emulate_matts_code = 1;
@@ -948,7 +1005,7 @@ sub escape_html {
 #
 #     $emulate = 0 if ! defined( $emulate );
 #
-#     if ($emulate) 
+#     if ($emulate)
 #     {
 #       $secure = 0;
 #       $secureMsg = 'insecure';
@@ -958,7 +1015,7 @@ sub escape_html {
 #       $secure = 1;
 #       $secureMsg = 'secure';
 #     }
-#       
+#
 #     if ($shouldBeGood)
 #     {
 #       warn "$referer should be good ($secureMsg)" if ! check_referer($referer);

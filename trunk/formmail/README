@@ -206,6 +206,17 @@ recipient               - The email address to which the form submission
                           <input type="hidden" name="recipient"
                                 value="you@your.domain,me@your.domain" />
 
+                          If you leave the 'recipient' field out of the
+                          form, formmail will send to the first address
+                          listed in the @allow_mail_to configuration
+                          variable (see above).  This allows you to avoid
+                          putting your email address in the form, which
+                          might be desirable if you're concerned about
+                          address harvesters collecting it and sending
+                          you SPAM. This feature is disabled if the
+                          $emulate_matts_code configuration variable is
+                          set to 0.
+
 subject                 - The subject line for the email. For example:
 
                           <input type="hidden" name="subject"
@@ -238,10 +249,11 @@ alink_color             - The alink color for the success page.
 
 title                   - The title for the success page.
 
-return_link_url         - The target URL for a link the end of the success
-                          page. This is normally used to provide a link
-                          from the success page back to your main page or
-                          back to the page with the form on. For example:
+return_link_url         - The target URL for a link at the end of the
+                           success page. This is normally used to provide
+                          a link from the success page back to your main
+                          page or back to the page with the form on. For
+                          example:
 
                           <input type="hidden" name="return_link_url"
                            value="/home.html" />
@@ -254,11 +266,12 @@ return_link_title       - The label for the return link.  For example:
 sort                    - This sets the order in which the submitted form
                           inputs will appear in the email and on the
                           success page.  It can be the string 'alphabetic'
-                          for alphabetic order, or a comma separated list
-                          of the input names, for example:
+                          for alphabetic order, or the string "order:"
+                          followed by a comma separated list of the input
+                          names, for example:
 
                           <input type="hidden" name="sort"
-                           value="name,email,age,comments">
+                           value="order:name,email,age,comments">
 
 print_config            - This is mainly used for debugging, and if set it
                           causes formmail to include a dump of the
