@@ -298,6 +298,22 @@ alter the way that the program works.
       </description>
    </variable>
    <variable>
+      <var_name>@config_include</var_name>
+      <description>
+This optional configuration may contain a list of the
+names of certain configuration form fields (as 
+described below) that may be included in the body of
+the e-mail that is sent and also in the confirmation
+page that is returned to the visitors browser.  In
+order for these fields to be actually displayed they
+should be included in the value of a 'sort' field
+explicitly ( along with the other fields that want to
+be displayed ).  You probably want to use this sparingly
+as most of the configuration fields will be meaningless
+to a visitor.
+      </description>
+   </variable>
+   <variable>
       <var_name>@valid_ENV</var_name>
       <description>
          <paragraph>
