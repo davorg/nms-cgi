@@ -1,6 +1,6 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.31 2002-03-27 20:36:36 davorg Exp $
+# $Id: guestbook.pl,v 1.32 2002-04-01 19:12:02 nickjc Exp $
 #
 
 use strict;
@@ -265,6 +265,8 @@ unless ( close GUEST ) {
    unlink "$guestbookreal.tmp";
    die "write to $guestbookreal.tmp: $!";
 }
+
+close GUEST_IN;
 
 rename "$guestbookreal.tmp", $guestbookreal
    or die "rename $guestbookreal.tmp -> $guestbookreal: $!";
