@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.5 2002-07-20 08:56:39 gellyfish Exp $
+# $Id: FormMail.pl,v 2.6 2002-07-22 18:54:30 proub Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.5 $
+# FormMail.pl $Revision: 2.6 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -73,7 +73,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.5 $, 10, -1;
+  $VERSION = substr q$Revision: 2.6 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -360,7 +360,7 @@ sub check_required {
     }
   }
 
-  if ($secure and request_method() ne 'POST') {
+  if ($secure and (! defined(request_method()) || request_method() ne 'POST')) {
     error('bad_method');
   }
 
@@ -590,7 +590,7 @@ sub cleanup_realname {
     # Allow no unusual characters and impose a length limit. We
     # need to allow extended ASCII characters because they can
     # occur in non-English names.
-    $realname =~ tr# a-zA-Z0-9_\-,./'\200-377##dc;
+    $realname =~ tr# a-zA-Z0-9_\-,./'\200-\377##dc;
     $realname = substr $realname, 0, 128;
   } else {
     # Be as generous as possible without opening any known or
@@ -947,7 +947,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.5 $
+FormMail $Revision: 2.6 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
