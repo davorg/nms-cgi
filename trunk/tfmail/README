@@ -607,6 +607,12 @@ and you might put in the HTML form:
   A picture of yourself:
   <input type="file" name="picture" />
 
+If you want the MIME content-type of the upload to be recorded in the
+email, then you should add:
+
+  {= content_type.picture =}
+
+to the email template file.
 
 INSERTING TEXT INTO HTML FILES
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.19 2002-09-17 19:28:28 nickjc Exp $
+# $Id: TFmail.pl,v 1.20 2002-10-02 08:10:46 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -62,7 +62,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.19 $, 10, -1;
+   $VERSION = substr q$Revision: 1.20 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -308,11 +308,11 @@ sub send_main_email
       To       => $recipients,
       From     => $from,
       Subject  => $subject,
-      body     => $treq->process_template($template, 'email', undef),
    };
 
    if (ENABLE_UPLOADS)
    {
+      my $cthash = {};
       $msg->{attach} = [];
       my $cgi = $treq->cgi;
       foreach my $param ($treq->param_list)
@@ -328,6 +328,7 @@ sub send_main_email
          my $info = $cgi->uploadInfo($filename);
          next unless defined $info;
          my $ct = $info->{'Content-Type'} || $info->{'Content-type'} || '';
+         $cthash->{$param} = $ct;
 
          my $filehandle = $cgi->param($param);
          next unless defined $filehandle;
@@ -359,7 +360,10 @@ sub send_main_email
             Encoding    => 'base64',
          };
       }
+      $treq->install_directive('content_type', $cthash);
    }
+
+   $msg->{body} = $treq->process_template($template, 'email', undef),
 
    send_email($msg);
 
