@@ -1,7 +1,7 @@
 COPYRIGHT
 
-FormMail
-Copyright 2001 London Perl Mongers, All rights reserved
+FormMail Version [% INCLUDE .pkg/VERSION %]
+Copyright 2001-2003 London Perl Mongers, All rights reserved
 
 LICENSE
 

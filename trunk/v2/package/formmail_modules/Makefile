@@ -22,6 +22,7 @@ SOURCE_FILES = \
 	src/formmail/README             \
 	src/formmail/EXAMPLES           \
 	buildtools/tarballs             \
+	buildtools/cl2ver               \
 	package/$(NAME)/Makefile        \
 	package/$(NAME)/README.install  \
 	package/$(NAME)/README.manifest \
@@ -32,10 +33,11 @@ PKGFILES = FormMail.pl README EXAMPLES ChangeLog MANIFEST $(MODULES:%=lib/%)
 include ../../buildtools/package.mak
 include ../../buildtools/libfiles.mak
 
-.pkg/FormMail.pl: .pkg ../../src/formmail/FormMail.pl
-	cp ../../src/formmail/FormMail.pl .pkg/
+.pkg/FormMail.pl: .pkg/VERSION ../../src/formmail/FormMail.pl
+	../../buildtools/template ../../src/formmail/FormMail.pl >$@
+	chmod 755 $@
 
-.pkg/README: .pkg ../../src/formmail/README README.manifest README.install
+.pkg/README: ../../src/formmail/README README.manifest README.install .pkg/VERSION
 	../../buildtools/template ../../src/formmail/README >$@
 
 .pkg/EXAMPLES: .pkg ../../src/formmail/EXAMPLES

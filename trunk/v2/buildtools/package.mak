@@ -25,8 +25,7 @@
 FILES_IN_PKG_DIR = $(PKGFILES:%=.pkg/%)
 
 TARBALLS=../../.tarballs/$(NAME).tar.gz \
-	 ../../.tarballs/$(NAME).zip    \
-	 ../../.tarballs/$(NAME).VER
+	 ../../.tarballs/$(NAME).zip
 
 $(TARBALLS): $(FILES_IN_PKG_DIR) ../../buildtools/tarballs
 	mkdir -p ../../.tarballs
@@ -39,6 +38,9 @@ tarballs: $(TARBALLS)
 
 .pkg/MANIFEST: .pkg
 	touch .pkg/MANIFEST
+
+.pkg/VERSION: .pkg .pkg/ChangeLog
+	../../buildtools/cl2ver .pkg/ChangeLog .pkg/VERSION
 
 clean:
 	rm -rf .pkg $(TARBALLS)

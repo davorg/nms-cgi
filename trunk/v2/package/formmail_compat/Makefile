@@ -22,6 +22,7 @@ SOURCE_FILES= src/formmail/FormMail.pl                \
 	      package/formmail_compat/README.install  \
 	      buildtools/inline                       \
 	      buildtools/tarballs                     \
+	      buildtools/cl2ver                       \
 	      $(MODULES:%=lib/%)
 
 PKGFILES = README EXAMPLES FormMail.pl ChangeLog MANIFEST
@@ -30,11 +31,13 @@ PKGFILES = README EXAMPLES FormMail.pl ChangeLog MANIFEST
 
 include ../../buildtools/package.mak
 
-.pkg/FormMail.pl: .pkg ../../src/formmail/FormMail.pl ../../buildtools/inline $(MODULES:%=../../lib/%)
-	../../buildtools/inline ../../lib ../../src/formmail/FormMail.pl >.pkg/FormMail.pl
+.pkg/FormMail.pl: ../../src/formmail/FormMail.pl ../../buildtools/inline $(MODULES:%=../../lib/%) .pkg/VERSION
+	../../buildtools/inline ../../lib ../../src/formmail/FormMail.pl >.pkg/FormMail.pl.in
+	../../buildtools/template .pkg/FormMail.pl.in >.plg/FormMail.pl
+	rm .pkg/FormMail.pl.in
 	chmod 755 .pkg/FormMail.pl
 
-.pkg/README: .pkg ../../src/formmail/README README.manifest README.install
+.pkg/README: ../../src/formmail/README README.manifest README.install .pkg/VERSION
 	../../buildtools/template ../../src/formmail/README >$@
 
 .pkg/EXAMPLES: .pkg ../../src/formmail/EXAMPLES
