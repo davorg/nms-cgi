@@ -1,0 +1,12 @@
+lib/CGI/NMS/Charset.pm
+lib/CGI/NMS/Validator.pm
+lib/CGI/NMS/Script.pm
+lib/CGI/NMS/Script/FormMail.pm
+lib/CGI/NMS/Mailer.pm
+lib/CGI/NMS/Mailer/Sendmail.pm
+lib/CGI/NMS/Mailer/SMTP.pm
+src/formmail/FormMail.pl.in
+src/formmail/README.in
+src/formmail/EXAMPLES
+src/formmail/VERSION
+src/formmail/SOURCES

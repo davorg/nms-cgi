@@ -1,6 +1,15 @@
+#!/usr/bin/perl -w
+use strict;
+
+use Template;
+
+my $t = Template->new({ RELATIVE => 1 });
+
+$t->process(\<<'END_README', {}) or die $t->error;
+
 COPYRIGHT
 
-FormMail Version [% INCLUDE '.pkg/VERSION' -%]
+FormMail Version [% INCLUDE 'VERSION' -%]
 Copyright 2001-2003 London Perl Mongers, All rights reserved
 
 LICENSE
@@ -520,4 +529,6 @@ SUPPORT
 For support of this script please email:
 
   <nms-cgi-support@lists.sourceforge.net>
+
+END_README
 
