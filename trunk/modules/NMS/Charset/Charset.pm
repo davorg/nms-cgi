@@ -4,7 +4,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 =head1 NAME
 
@@ -285,7 +285,7 @@ sub _escape_html_8859_1
 {
    my ($string) = @_;
 
-   $string =~ s|([^\w \t\r\n\-\.\,])| $eschtml_map{$1} |ge;
+   $string =~ s|([^\w \t\r\n\-\.\,\/\:])| $eschtml_map{$1} |ge;
    return $string;
 }
 
@@ -302,7 +302,7 @@ sub _escape_html_8859
 {
    my ($string) = @_;
 
-   $string =~ s|([^\w \t\r\n\-\.\,\240-\377])| $eschtml_map{$1} |ge;
+   $string =~ s|([^\w \t\r\n\-\.\,\/\:\240-\377])| $eschtml_map{$1} |ge;
    return $string;
 }
 
