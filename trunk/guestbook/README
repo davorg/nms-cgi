@@ -92,14 +92,14 @@ $uselog        - If this variable is set to 1 then all new entries to the
                  facility then set this to 0.
 
 $linkmail      - If this is set to 1 then the e-mail addresses that 
-                 visitors will be added as mailto: links rather than
+                 visitors enter will be added as mailto: links rather than
                  just as plain text.  You may not want to do this if you
                  are concerned that spammers might harvest the addresses.
 
 $separator     - This determines how the entries in the guestbook page are
                  separated.  If it is set to 1 then the entries will be
                  separated by a horizontal rule (<hr />).  If it is set
-                 to 0 then they will be place in separate paragraphs.
+                 to 0 then they will be placed in separate paragraphs.
 
 $redirection   - If this variable is set to 1 then the program will issue
                  a browser redirection to the guestbook page after the entry
@@ -148,7 +148,7 @@ new entries.
 
 INSTALLATION
 
-ll that is need to install the Guestbook is to copy the guestbook.pl file
+All that is need to install the Guestbook is to copy the guestbook.pl file
 to the cgi-bin directory (or whatever is appropriate for your system - you
 should ask your system administrator or web hosting provider about this if
 you are unsure ) on your web server and to copy the addguest.html, 
