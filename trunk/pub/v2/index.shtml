@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>nms - web scripts written by experts</title>
+    <link rel="stylesheet" type="text/css" href="../nms.css" />
+  </head>
+
+  <body>
+    <div class="menu">
+      <a href="/">Home</a>
+      <a href="../faq_nms.html">FAQ</a>
+      <p>The Scripts</p>
+      <a href="../support.html">Support</a>
+      <a href="../isp.html">ISPs</a>
+    </div>
+ 
+    <div class="content">
+
+    <h1><span class="nms">nms</span> FormMail - alpha versions</h1>
+
+    <p>
+    These versions of FormMail are very new and probably full of bugs.
+    They are not yet stable enough for use in production.  For now,
+    we strongly recommend that you get your FormMail script from
+    <a href="../scripts.shtml">our main script page</a> rather than
+    using these packages.
+    </p>
+    
+    <p>Files are available in Unix .tar.gz and DOS/Windows .zip formats.</p>
+    <table border="1">
+      <tr>
+	<th>Package</th><th>Description</th><th>.tar.gz</th><th>.zip</th>
+	<th>Version</th>
+      </tr>
+      <tr>
+	<td>formmail_compat</td>
+	<td>Compatability version, with a standalone FormMail.pl</td>
+        <td><a href="formmail_compat.tar.gz">formmail_compat.tar.gz</a></td>
+        <td><a href="formmail_compat.zip">formmail_compat.zip</a></td>
+	<td><!--#include file="formmail_compat.VER"--></td>
+      </tr>
+      <tr>
+	<td>formmail_modules</td>
+	<td>Modular version, supplied with Perl modules to upload</td>
+        <td><a href="formmail_modules.tar.gz">formmail_modules.tar.gz</a></td>
+        <td><a href="formmail_modules.zip">formmail_modules.zip</a></td>
+	<td><!--#include file="formmail_modules.VER"--></td>
+      </tr>
+    </table>
+	  
+    <hr />
+    <table border="0" width="100%">
+      <tr>
+        <td align="left" valign="top">
+          <address>
+              General Enquiries: 
+	      <a href="mailto:davorg@users.sourceforge.net">Dave Cross</a>
+              <br />
+              Support:
+              <a href="mailto:nms-cgi-support@lists.sourceforge.net">nms-cgi-support@lists.sourceforge.net</a>
+          </address>
+<a href="http://validator.w3.org/check/referer"><img
+        src="http://www.w3.org/Icons/valid-xhtml10"
+        alt="Valid XHTML 1.0!" height="31" width="88" border="0" /></a>
+        </td>
+        <td align="right" valign="top">Project hosted by<br />
+          <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=39625&amp;type=1" width="88" height="31" border="0" alt="SourceForge Logo" /></a>
+        </td>
+      </tr>
+    </table>
+    </div>
+  </body>
+</html>
