@@ -298,6 +298,29 @@ alter the way that the program works.
       </description>
    </variable>
    <variable>
+      <var_name>$wrap_text</var_name>
+      <description>
+         If this is set to 1 then the content of any long text fields will
+         be wrapped at around 72 columns in the e-mail which is sent.  The
+         way that this is done is controlled by the variable $wrap_style
+      </description>
+   </variable>
+   <variable>
+      <var_name>$wrap_style</var_name>
+      <description>
+         If $wrap_text is set to 1 then if this is set to 1 then the text
+         will be wrapped in such a way that the left margin of the text
+         is lined up with the beginning of the text after the description
+         of the field - that is to say it is indented by the length of the
+         field name plus 2.  If it is set to 2 then the subsequent lines
+         of the text will not be indented at all and will be flush with the
+         start of the lines.  The choice of style is really a matter of taste
+         although you might find that style 1 does not work particularly well
+         if your e-mail client uses a proportional font where the spaces of
+         the indent might be smaller than the characters in the field name.
+      </description>
+   </variable>
+   <variable>
       <var_name>@config_include</var_name>
       <description>
 This optional configuration may contain a list of the

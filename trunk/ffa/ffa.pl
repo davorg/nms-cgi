@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.16 2002-06-08 07:50:09 gellyfish Exp $
+#  $Id: ffa.pl,v 1.17 2002-07-20 08:56:39 gellyfish Exp $
 #
 
 use strict;
@@ -91,7 +91,7 @@ unless ( $emulate_matts_code )
 #
 
 my $sendmail     = 1;
-my $mailer       = '/usr/lib/sendmail -t -oi -oem';
+my $mailer       = '/usr/lib/sendmail -t -oi';
 my $mail_address = 'gellyfish@localhost';
 
 # $style is the URL of a CSS stylesheet which will be used for script

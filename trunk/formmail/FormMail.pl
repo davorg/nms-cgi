@@ -1,10 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.4 2002-07-08 19:47:02 gellyfish Exp $
+# $Id: FormMail.pl,v 2.5 2002-07-20 08:56:39 gellyfish Exp $
 #
 
 use strict;
 use POSIX qw(locale_h strftime);
+use Text::Wrap;              # Er for wrapping :)
 use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
 use vars qw(
@@ -13,11 +14,12 @@ use vars qw(
   @allow_mail_to @recipients %recipient_alias
   @valid_ENV $date_fmt $style $send_confirmation_mail
   $confirmation_text $locale $charset $no_content @config_include
+  $wrap_text $wrap_style
 );
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.4 $
+# FormMail.pl $Revision: 2.5 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -54,6 +56,8 @@ BEGIN
   $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
   $style             = '/css/nms.css';
   $no_content        = 0;
+  $wrap_text         = 0;
+  $wrap_style        = 1;
   @config_include    = qw();
   $send_confirmation_mail = 0;
   $confirmation_text = <<'END_OF_CONFIRMATION';
@@ -69,7 +73,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.4 $, 10, -1;
+  $VERSION = substr q$Revision: 2.5 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -534,10 +538,19 @@ EOMAIL
     }
   }
 
-  foreach (@$Field_Order) {
+  foreach (@{$Field_Order}) {
     my $val = (defined $Form{$_} ? $Form{$_} : '');
     if ($Config{'print_blank_fields'} || $val !~ /^\s*$/) {
-      print MAIL "$_: $val\n\n";
+      my $field_name = "$_: ";
+      if ( $wrap_text and length("$field_name$val") > 72 ) {
+         my $subs_indent = '';
+         if ( $wrap_style == 1 ) {
+            $subs_indent = ' ' x length($field_name);
+         }
+         $Text::Wrap::columns = 72;
+         $val = wrap('',$subs_indent,$val);
+      }
+      print MAIL "$field_name: $val\n\n";
     }
   }
 
@@ -934,7 +947,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.4 $
+FormMail $Revision: 2.5 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE

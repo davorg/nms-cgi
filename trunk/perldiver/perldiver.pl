@@ -1,9 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: perldiver.pl,v 1.3 2002-06-01 12:14:54 davorg Exp $
+# $Id: perldiver.pl,v 1.4 2002-07-20 08:56:39 gellyfish Exp $
 #
 use strict;
+use subs 'File::Find::chdir';
 use File::Find;
+
+delete @ENV{qw(BASH_ENV ENV IFS)};
 
 $ENV{PATH} = '/bin:/usr/bin';
 
@@ -13,7 +16,7 @@ my $inc        = join('<br />', @INC);
 
 my $dev = 'nms';
 my $program = 'perldiver';
-my $version = sprintf "%d.%02d", '$Revision: 1.3 $ ' =~ /(\d+)\.(\d+)/;
+my $version = sprintf "%d.%02d", '$Revision: 1.4 $ ' =~ /(\d+)\.(\d+)/;
 
 my $env;
 foreach (keys %ENV){
@@ -21,10 +24,13 @@ foreach (keys %ENV){
 }
 
 my @foundmods;
-find({wanted => \&wanted, untaint => 1}, @INC);
+find( \&wanted, @INC);
 
 my %found;
-++$found{$_} foreach @foundmods;
+foreach (@foundmods)
+{
+   ++$found{$_} ;
+}
 
 @foundmods = sort keys(%found);
 my $modcount = @foundmods;
@@ -59,6 +65,21 @@ sub wanted {
     }
   }
 }
+
+sub File::Find::chdir
+{
+   return CORE::chdir(main::detaint_dirname($_[0]));
+}
+
+sub detaint_dirname
+{
+    my ($dirname) = @_;
+
+    $dirname =~ m|^([:\\+@\w./-]*)$| or die "suspect directory name: $dirname";
+    return $1;
+}
+
+
 __END__
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
