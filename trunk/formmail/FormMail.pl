@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.57 2002-03-13 23:52:52 nickjc Exp $
+# $Id: FormMail.pl,v 1.58 2002-03-15 00:33:51 nickjc Exp $
 #
 
 use strict;
@@ -11,7 +11,7 @@ use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.57 $
+# FormMail.pl $Revision: 1.58 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -53,7 +53,7 @@ END_OF_CONFIRMATION
 # ----------------------------
 # (no user serviceable parts beyond here)
 
-my $VERSION = ('$Revision: 1.57 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+my $VERSION = ('$Revision: 1.58 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We don't need file uploads or very large POST requests.
 # Annoying locution to shut up 'used only once' warning in older perl
@@ -416,6 +416,9 @@ sub send_mail {
   }
 
   my $subject = $Config{subject} || 'WWW Form Submission';
+  if ($secure) {
+    $subject = substr($subject, 0, 256);
+  }
 
   my $email = $Config{email};
   unless (defined $email and check_email($email)) {
@@ -832,7 +835,7 @@ __END__
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.57 $
+FormMail $Revision: 1.58 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1256,6 +1259,9 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.57  2002/03/13 23:52:52  nickjc
+ * Better diagnostics when referrer is malformed or missing
+
  Revision 1.56  2002/03/13 00:49:36  nickjc
  * Added an X-Generated-By header.
 
