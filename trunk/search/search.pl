@@ -1,8 +1,11 @@
 #!perl -Tw
 #
-# $Id: search.pl,v 1.23 2002-03-03 21:52:45 gellyfish Exp $
+# $Id: search.pl,v 1.24 2002-03-04 09:09:39 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2002/03/03 21:52:45  gellyfish
+# * Folded in the intent of the patches from  Gianluca Sforna
+#
 # Revision 1.22  2002/02/27 09:04:29  gellyfish
 # * Added question about simple search and PDF to FAQ
 # * Suppressed output of headers in fatalsToBrowser if $done_headers
@@ -200,7 +203,10 @@ my $style_element = $style ?
 my $case   = param("case") ? param("case") : "Insensitive";
 my $bool   = param("boolean") ? param("boolean") : "OR";
 my $terms  = param("terms") ? param("terms") : "";
-my $seldir = param("directory") ? @subdirs[param("directory")] : "";
+
+my $directory = param('directory') || 0;
+my $seldir = $directory && $directory < @subdirs ? 
+                                            $subdirs[$directory] : "";
 
 # Print page headers
 
@@ -216,8 +222,9 @@ if ($terms)
     @term_list = split(/\s+/, $terms);
     ($wclist, $dirlist) = build_list(@files);
     my @temp_list = @term_list;
-    $termlist = join ('|', map{$_=quotemeta($_); $_='(?:'.$_.')'}@temp_list);
-    # I have taken out the reimplementation hack ;-}
+
+    $termlist = join '|', map { "\Q$_\E" } @temp_list;
+    $termlist = "(?:$termlist)";
 
     if ( $emulate_matts_code ) 
     {
@@ -273,8 +280,8 @@ sub do_search
         if ($emulate_matts_code ) {
            return if $File::Find::dir eq $blocked;
         }
-        else {         
-           return if $File::Find::dir =~ /$blocked/)
+        else {
+           return if $File::Find::dir =~ /$blocked/;
         }
     }
 

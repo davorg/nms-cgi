@@ -1,8 +1,16 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.29 2002-02-27 09:04:29 gellyfish Exp $
+# $Id: guestbook.pl,v 1.30 2002-03-04 09:09:39 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2002/02/27 09:04:29  gellyfish
+# * Added question about simple search and PDF to FAQ
+# * Suppressed output of headers in fatalsToBrowser if $done_headers
+# * Suppressed output of '<link rel...' if not $style
+# * DOCTYPE in fatalsToBrowser
+# * moved redirects until after possible cause of failure
+# * some small XHTML fixes
+#
 # Revision 1.28  2002/02/14 12:57:53  nickjc
 # * file locking review
 #
@@ -455,7 +463,7 @@ EOCOMMENT
   print header;
   $done_headers++;
   print <<END_FORM;
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -537,7 +545,7 @@ sub no_redirection {
   print header();
   $done_headers++;
   print <<END_HTML;
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">

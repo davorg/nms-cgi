@@ -1,8 +1,13 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.21 2002-03-03 10:55:14 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.22 2002-03-04 09:09:40 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2002/03/03 10:55:14  gellyfish
+# * Added POST_MAX etc
+# * File locking in wwwboard.pl
+# * Started on wwwadmin
+#
 # Revision 1.20  2002/03/03 06:10:17  proub
 # typo correction -- $max_followups was spelled $max_follups in initial
 # declaration
@@ -468,7 +473,7 @@ sub new_file {
       '';
 
   print NEWFILE <<END_HTML;
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
@@ -722,7 +727,7 @@ END_HTML
         print FOLLOWUP $_;
       }
     }
-##JNS
+
     unless (close(FOLLOWUP)) {
        unlink "$basedir/$mesgdir/$followup_num.tmp";
        die "write $basedir/$mesgdir/$followup_num.tmp $!";
@@ -746,7 +751,7 @@ sub return_html {
     qq(<p><b>Image:</b> <img src="$variables->{message_img}"></p>) : '';
 
   print <<END_HTML;
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -829,7 +834,7 @@ please use your back button and try again</p>
 EOMESS
    }
    print <<END_HTML;
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">

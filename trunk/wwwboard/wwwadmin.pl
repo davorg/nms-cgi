@@ -1,8 +1,11 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.12 2002-03-03 11:55:06 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.13 2002-03-04 09:09:39 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/03/03 11:55:06  gellyfish
+# * XHTML output from wwwadmin.pl
+#
 # Revision 1.11  2002/03/03 10:55:14  gellyfish
 # * Added POST_MAX etc
 # * File locking in wwwboard.pl
@@ -611,7 +614,7 @@ sub check_passwd {
 __END__
 HTML_DECL
 --
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 ==
