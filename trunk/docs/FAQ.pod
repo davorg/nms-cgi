@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-07-18 22:58:58 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-08-04 09:22:44 $ )
 
 =head1 DESCRIPTION
 
@@ -259,15 +259,15 @@ Firstly, because Net::SMTP is not available as part of the core Perl
 distribution except for in the development version leading to Perl 5.8.
 
 Secondly, because the I<nms> developers feel that it is better to use
-the queueing, MX lookup and retry capabilities of the local message transfer
+the queuing, MX lookup and retry capabilities of the local message transfer
 agent (MTA) to deliver mail messages - the Net::SMTP module does not do
 any of these things and the code to support them is likely to run into
 hundreds of lines and require several other modules.  Also Net::SMTP requires
 an SMTP relay to be available on the local network.
 
-=head2 But I don't have C<sendmail> on my webserver, what can I do?
+=head2 But I don't have C<sendmail> on my web-server, what can I do?
 
-Well, if your webserver has a Unix-like operating system it is likely that
+Well, if your web-server has a Unix-like operating system it is likely that
 it has a program that performs a similar function for the preferred MTA
 on that system.  C<QMail> has a program called C<qmail-inject> which takes
 similar command line options to C<sendmail>, indeed on some systems the
@@ -275,7 +275,7 @@ program that is available as C<sendmail> is actually C<qmail-inject>. Exim
 and Postfix also have their own equivalents - you should ask your system
 administrator or web hosting provider for more information on this.
 
-If you are on a Windows webserver then you probably don't have a local MTA
+If you are on a Windows web-server then you probably don't have a local MTA
 at all, although this is not to say that you will not be able to use 
 C<FormMail>.
 
@@ -290,7 +290,7 @@ The 'text' in a  PDF file is stored as a page description, a sort of image
 file really, so the text that appears in the acrobat viewer doesn't 
 actually appear literally in the file.  If you are on a Unix-like system 
 you can see this for yourself by doing 'strings *.pdf'.  Simple Search 
-really is *simple*, it looks for the plaintext strings that are specified 
+really is *simple*, it looks for the plain-text strings that are specified 
 on the form in the specified files, it won't find them in a PDF file.
 
 A quick hack that we really don't think we would ever consider putting in 
@@ -322,13 +322,13 @@ The above comes with no warranty whatsoever.
 Well for one thing you could tell them that you are using the NMS FormMail
 and that is secure from all of the known problems with earlier Form to Email
 programs and more besides :)  On the other hand they have every right to be
-sceptical of that claim.
+skeptical of that claim.
 
 Part of the problem is that there are other Form to E-Mail programs that
 are widely used that will allow mail to be sent to anyone by anyone on the
-internet and this fact has become widely known, as a consequence there
+Internet and this fact has become widely known, as a consequence there
 are spammers out there who are using search engines to find instances
-of FormMail.pl on the internet which they can try to use to send spam
+of FormMail.pl on the Internet which they can try to use to send spam
 anonymously in the belief that all FormMail programs can be made to
 do this.
 
@@ -347,7 +347,7 @@ The '-T' turns on Perl's taint checking, this basically means that data
 coming from outside the program is marked as 'tainted' (untrustworthy) and
 attempts to use that data in certain ways will result in an error in the
 program unless the data is checked carefully.  All secure CGI programs
-should use taint checking, as the internet is a fundamentally insecure
+should use taint checking, as the Internet is a fundamentally insecure
 medium.
 
 That you are getting this error probably suggests that your web server
@@ -379,7 +379,7 @@ it one of the first things that it does is to check the check the shebang
 line and if it contains 'perl' it will parse it to find if there are any
 switches there that should be applied and (with one or two exceptions) it
 applies them (as an aside, if 'perl' is not found in the line it will try
-to use what is found there as program to be executed with the scriptname
+to use what is found there as program to be executed with the script name
 as an argument).  The '-T' is one of the exceptions because by the time
 that perl has discovered that you want to turn taint checking on it is
 already too late to ensure that all of the environment that the program
@@ -407,5 +407,32 @@ The fix is to set the '$allow_empty_ref' configuration variable to 1 in
 the FormMail script.  If the copy of FormMail.pl that you're using
 doesn't have $allow_empty_ref, then you need to grab a newer version 
 from E<lt>http://nms-cgi.sourceforge.net/scripts.shtmlE<gt>.
+
+=head2 I would like to use 'windmail' instead of 'nms_sendmail' but I keep getting an error.
+
+Windmail is a commercial program for Windows that can be used as a 
+replacement for the 'sendmail' that is found on Unix systems.  It will work
+in the NMS FormMail if you set $mailprog is set to:
+
+   $mailprog = 'c:/path/to/windmail.exe -t';
+
+(Obviously adjusting the path as necessary).  This will enable the mail to
+be sent, but, because NMS FormMail is careful to check the success of the
+running of $mailprog and because windmail uses an exit code of 1 rather than
+0 to indicate success an error message will be generated after the mail has
+been sent.   This can be worked round by making a small alteration to the
+program.  
+
+In FormMail.pl you should find the line that is like:
+
+ close (MAIL) || die "close mailprog: \$?=$?,\$!=$!";
+
+and change it to something like:
+
+ if ( close(MAIL) and $? != 256 ) {
+     die "close mailprog: \$?=$?,\$!=$!";
+ }
+
+This will stop the error message.
 
 =cut
