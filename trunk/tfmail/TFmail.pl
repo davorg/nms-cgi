@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.29 2004-09-17 09:48:42 gellyfish Exp $
+# $Id: TFmail.pl,v 1.30 2004-09-17 09:56:29 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -70,7 +70,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.29 $, 10, -1;
+   $VERSION = substr q$Revision: 1.30 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -736,7 +736,7 @@ sub send_confirmation_email
 
    send_email($treq, {
       To      => $confto,
-      From    => $treq->config('confirmation_email_from'.POSTMASTER),
+      From    => $treq->config('confirmation_email_from',POSTMASTER),
       Subject => $treq->config('confirmation_subject', 'Thanks'),
       body    => $body,
    });
