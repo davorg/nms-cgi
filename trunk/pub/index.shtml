@@ -13,6 +13,7 @@
       <a href="FAQ.html">FAQ</a>
       <a href="scripts.shtml">The Scripts</a>
       <a href="support.html">Support</a>
+      <a href="isp.html">ISPs</a>
     </div>
  
     <div class="content">
@@ -62,31 +63,9 @@
 
     <h3>ISPs Switch to <span class="nms">nms</span></h3>
 
-    <p>A number of ISPs have started to replace versions of Matt Wright's
-      scripts with the <span class="nms">nms</span> equivalents. This is
-      happening most commonly with <b>formmail</b>. This is almost certainly
-      the result of the recent increases in spam email sent via insecure
-      versions of <b>formmail</b>.</p>
-
-    <p>ISPs making the switch include:</p>
-
-    <ul>
-      <li><a href="http://www.verio.com/support/view_article.cfm?doc_id=1088">Verio</a></li>
-      <li><a href="http://www.netbenefit.com/ontouch/?issue=3#5">NetBenefit</a></li>
-      <li><a href="http://www.pwebtech.com/support.html#formmail">Pegasus Web Technology</a></li>
-
-      <li><a href="http://www.iols.com/hosting/support/websites/cgi.htm">IOLS</a></li>
-
-      <li><a href="http://webhuset.no/kundesenter/hjelp/nms-formmail.shtml">Webhuset Datasenter AS</a> (article in Norwegian)</li>
-
-      <li><a href="http://faq.oneandone.co.uk/homepage/3.html">1&1</a> (also on their <a href="http://faq.puretec.de/skripte/perl/7.html">main site</a> in German)</li>
-
-      <li><a href="http://www.whizhost.com/faq.html#cgi">Whiz Host</a></li>
-    </ul>
-
-    <p>If you know of any other ISPs or web hosting companies who are 
-      switching to <span class="nms">nms</span>, then please let
-      <a href="mailto:davorg@users.sourceforge.net">us</a> know.</p>
+    <p>The list of ISPs using <span class="nms">nms</span> programs
+      was getting very long, so it's been moved to its
+      <a href="isp.html">own page</a>.</p>
 
     <h3><span class="nms">nms</span> Articles</h3>
 
@@ -311,7 +290,7 @@
             Cross</a></address>
 <!-- Created: Sat Aug 11 16:11:48 BST 2001 -->
 <!-- hhmts start -->
-Last modified: Wed May 22 10:49:41 BST 2002
+Last modified: Sat Jun 29 18:18:20 BST 2002
 <!-- hhmts end --><br />
 <a href="http://validator.w3.org/check/referer"><img
         src="http://www.w3.org/Icons/valid-xhtml10"
