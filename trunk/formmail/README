@@ -20,7 +20,7 @@ HTML form submission via an email message.
 
 FILES
 
-In this distribution, you will find three files:
+In this distribution, you will find the following files:
 
 FormMail.pl    - The main Perl script
 README         - This file. Instructions on how to install and use formmail

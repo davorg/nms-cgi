@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.72 2002-04-09 20:02:37 nickjc Exp $
+# $Id: FormMail.pl,v 1.73 2002-04-09 20:22:36 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.72 $
+# FormMail.pl $Revision: 1.73 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -65,7 +65,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.72 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.73 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -855,7 +855,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.72 $
+FormMail $Revision: 1.73 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -875,7 +875,7 @@ HTML form submission via an email message.
 
 =head1 FILES
 
-In this distribution, you will find three files:
+In this distribution, you will find the following files:
 
 =over
 
@@ -888,6 +888,14 @@ The main Perl script
 This documentation. Instructions on how to install and use
 formmail
 
+=item EXAMPLES
+
+Some worked examples of ways to set up formmail
+
+=item ChangeLog
+
+The change history of these files
+
 =item MANIFEST
 
 List of files
@@ -897,7 +905,7 @@ List of files
 
 =head1 CONFIGURATION
 
-There are a number of variables that you can change in formmail.pl which
+There are a number of variables that you can change in FormMail.pl which
 alter the way that the program works.
 
 =over
@@ -928,7 +936,7 @@ do not recommend changing this variable to 0, as the
 resulting drop in security may leave your formmail
 open to use as a SPAM relay.
 
-=item allow_empty_ref
+=item $allow_empty_ref
 
 Some web proxies and office firewalls may strip
 certain headers from the HTTP request that is sent
