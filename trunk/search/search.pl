@@ -1,14 +1,14 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.40 2003-01-30 00:56:51 nickjc Exp $
+# $Id: search.pl,v 1.41 2003-01-30 22:41:37 nickjc Exp $
 #
 
 use strict;
 use CGI qw(param);
-use subs 'File::Find::chdir';# see note above the File::Find::chdir subroutine
 use vars qw($DEBUGGING $basedir $baseurl @files $title $title_url
  $search_url @blocked $emulate_matts_code $style $charset
  $hit_threshhold @subdirs $done_headers $no_prune $done_headers);
+use subs qw(File::Find::chdir); # for old File::Find taint problems
 use File::Find;
 $ENV{PATH} = '/bin:/usr/bin';# sanitize the environment
 delete @ENV{qw(ENV BASH_ENV IFS)};# ditto
@@ -19,7 +19,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision: 1.40 $
+# search.pl $Revision: 1.41 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -74,7 +74,7 @@ $basedir =~ s#/$##;
 # This is basically the same as what CGI::Carp does inside but simplified
 # for our purposes here.
 
-BEGIN 
+BEGIN
 {
    sub fatalsToBrowser
    {
@@ -139,22 +139,25 @@ $style_element = $style ?
                   : '';
 
 # Parse Form Search Information
-my $case   = param("case") ? param("case") : "Insensitive";
-my $bool   = param("boolean") ? param("boolean") : "OR";
-my $terms  = param("terms") ? param("terms") : "";
+use vars qw($case $bool $terms);
+$case   = param("case") ? param("case") : "Insensitive";
+$bool   = param("boolean") ? param("boolean") : "OR";
+$terms  = param("terms") ? param("terms") : "";
 
 my $directory = param('directory') || 0;
-my $seldir = $directory && $directory < @subdirs ? 
+my $seldir = $directory && $directory < @subdirs ?
                                             $subdirs[$directory] : "";
 
 # Print page headers
 
 start_of_html($title, $style);
 
-my (@term_list,@paths,@hits,@titles);
-my ($wclist, $dirlist, $termlist);
+use vars qw(@term_list @paths @hits @titles);
+use vars qw($wclist $dirlist $termlist);
+use vars qw($startdir);
 
-my $startdir;
+use vars qw($mess_with_file_find_chdir);
+BEGIN { $mess_with_file_find_chdir = 0; }
 
 if ($terms)
 {
@@ -165,16 +168,41 @@ if ($terms)
     $termlist = join '|', map { "\Q$_\E" } @temp_list;
     $termlist = "(?:$termlist)";
 
-    if ( $emulate_matts_code ) 
+    if ( $emulate_matts_code )
     {
-      $startdir = $basedir;
+       $startdir = $basedir;
     }
     else
     {
        $startdir = "$basedir$seldir";
     }
 
-    find ( \&do_search, $startdir);
+    if ($] >= 5.006) {
+      # Our perl instalation is new enough that this is worth a try:
+      eval <<'END';
+        local $SIG{__DIE__};
+        find({ wanted          => \&do_search,
+               untaint         => 1,
+               untaint_pattern => qr<^([:\\+\@\w./ -]*)$>,
+             },
+             $startdir
+            );
+END
+      if ($@) {
+        if ($@ =~ /not a (code|subroutine) ref/i) {
+          # File::Find too old for the newer calling convention, fall
+          # back to the older way of doing it.
+          oldstyle_find();
+        }
+        else {
+          die $@;
+        }
+      }
+    }
+    else {
+      oldstyle_find();
+    }
+
     if (!$emulate_matts_code)
     {
         my @base = sort {$hits[$b] <=> $hits[$a]} (0 .. $#hits);
@@ -183,7 +211,7 @@ if ($terms)
 
         for my $i (0 .. $#hits)
         {
-           print_result($baseurl, $paths[$i], $titles[$i]) 
+           print_result($baseurl, $paths[$i], $titles[$i])
                  if ($hits[$i] >= $hit_threshhold);
         }
     }
@@ -195,6 +223,32 @@ else
 
 end_of_html($search_url, $title_url, $title, $terms, $bool, $case);
 
+sub oldstyle_find
+{
+    local $mess_with_file_find_chdir = 1;
+    find(\&do_search, $startdir);
+}
+
+sub File::Find::chdir
+{
+    #
+    # This sub replaces the chdir() builtin for the code in File::Find.
+    #
+    # We might be running under mod_perl or similar, so we must be careful
+    # not to interfere with File::Find's functionality as seen by other
+    # scripts sharing this Perl interpreter.
+    #
+    # To acheive that, this sub only differs from what CORE::chdir does if
+    # the package variable $mess_with_file_find_chdir is true, which will
+    # only happen when File::Find is being used by this script.
+    #
+    my $dir = shift;
+    if ($mess_with_file_find_chdir) {
+        $dir =~ m|^([:\\+\@\w./ -]*)$| or die "suspect directory name: [$_[0]]";
+        $dir = $1;
+    }
+    CORE::chdir($dir);
+}
 
 sub do_search
 {
@@ -208,7 +262,7 @@ sub do_search
     if (-d _ and $basename =~ /^\./) {
         $File::Find::prune = 1;
     }
-       
+
     return if $basename =~ /^\./;
 
     if (-d _) {
@@ -321,24 +375,6 @@ sub build_list
     return( '^(?:(?:' . join(')|(?:', @filepat)     . '))$',
             '^(?:(?:' . join(')|(?:', keys %dirpat) . '))$'
           );
-}
-
-# This subroutine overrides the core chdir in order that detainting
-# can be done on the directory name before being passed to the real
-# one - newer File::Find can overcome this need but it is needed for
-# 5.004.04 - 5.005.03
-
-sub File::Find::chdir
-{
-   return CORE::chdir(main::detaint_dirname($_[0]));
-}
-
-sub detaint_dirname
-{
-    my ($dirname) = @_;
-
-    $dirname =~ m|^([:\\+\@\w./ -]*)$| or die "suspect directory name: $dirname";
-    return $1;
 }
 
 
@@ -574,7 +610,7 @@ equivalent HTML entities.
 =cut
 
 use vars qw(%eschtml_map);
-%eschtml_map = ( 
+%eschtml_map = (
                  ( map {chr($_) => "&#$_;"} (0..255) ),
                  '<' => '&lt;',
                  '>' => '&gt;',
@@ -666,7 +702,7 @@ sub _strip_nonprint_weak
    $string =~ s/\0+/ /g;
    return $string;
 }
-   
+
 =item _escape_html_weak ( STRING )
 
 Returns a copy of STRING with any HTML metacharacters escaped.
