@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.85 2002-05-09 22:35:19 nickjc Exp $
+# $Id: FormMail.pl,v 1.86 2002-05-09 22:59:41 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.85 $
+# FormMail.pl $Revision: 1.86 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -66,7 +66,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.85 $, 10, -1;
+  $VERSION = substr q$Revision: 1.86 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -466,7 +466,7 @@ sub send_mail {
   # valid in a URL - or what ?
 
   if ( $secure and defined (my $referer = referer()) ) {
-    if ( $referer =~ /([\d\w.:@&%\/;?,-]+)/ ) {
+    if ( $referer =~ /([\d\w.:@&%\/;?,-]{1,128})/ ) {
        $xheader .= "X-HTTP-Referer: [$1]\n";
     }
   }
@@ -890,7 +890,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.85 $
+FormMail $Revision: 1.86 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
