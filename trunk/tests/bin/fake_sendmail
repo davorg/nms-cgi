@@ -1,0 +1,52 @@
+#!/usr/bin/perl -wT
+use strict;
+
+=head1 NAME
+
+fake_sendmail - fake sendmail binary for testing
+
+=head1 DESCRIPTION
+
+A fake sendmail binary for automated testing of CGI scripts
+that send email by invoking sendmail.  Saves its command
+line options and the data read from STDIN to a file in a
+directory specified by the FAKE_SENDMAIL_OUTPUT
+environment variable.
+
+=head1 SEE ALSO
+
+L<NMSTest::ScriptUnderTest>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2002 The London Perl Mongers. All rights reserved.
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=cut
+
+use Fcntl ':flock';
+
+my $path = $ENV{FAKE_SENDMAIL_OUTPUT};
+defined $path or die "no FAKE_SENDMAIL_OUTPUT in environment";
+$path =~ m|^([/\.\w\-]+)$| or die "bad path $path";
+$path = $1;
+
+my $lock = "$path/.lock";
+open LOCK, ">$lock" or die "open $lock: $!";
+flock LOCK, LOCK_EX or die "flock $lock: $!";
+
+my $index = 1;
+$index++ while -e "$path/MAIL$index.out";
+
+open OUT, ">$path/MAIL$index.out" or die "open: $!";
+print OUT join ':', @ARGV;
+print OUT "\n";
+
+close LOCK;
+
+while(<STDIN>)
+{
+   print OUT $_;
+}
+
