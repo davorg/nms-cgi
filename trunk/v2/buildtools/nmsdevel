@@ -1,4 +1,4 @@
-#!/usr/local/perl58/bin/perl -w
+#!/usr/bin/perl -w
 use strict;
 
 use constant BASE => "$ENV{NMS_WORKING_COPY}/v2";
