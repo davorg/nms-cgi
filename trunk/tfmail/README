@@ -448,7 +448,9 @@ print_blank_fields          - If this is set to a true value then fields that
                               Default: 0
 
 subject                     - The subject for the email.  Default:
-                              "WWW Form Submission".
+                              "WWW Form Submission".  Template directives can
+                              be included in the subject value, see the section
+                              on OUTPUT CUSTOMIZATION below.
 
 email_input                 - The name of the CGI parameter that
                               will hold the user's email address.

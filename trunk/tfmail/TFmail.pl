@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.16 2002-07-30 22:38:26 nickjc Exp $
+# $Id: TFmail.pl,v 1.17 2002-08-04 20:09:04 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -62,7 +62,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.16 $, 10, -1;
+   $VERSION = substr q$Revision: 1.17 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -298,10 +298,16 @@ sub send_main_email
 
    my $template = $treq->config('email_template', 'email');
 
+   my $subject = $treq->config('subject', 'WWW Form Submission');
+   $subject = $treq->process_template("\%$subject", 'email', undef);
+   $subject =~ tr#\r\n\t # #s;
+   $subject =~ s#\s*$##;
+   $subject = substr $subject, 0, 150;
+
    my $msg = {
       To       => $recipients,
       From     => $from,
-      Subject  => $treq->config('subject', 'WWW Form Submission'),
+      Subject  => $subject,
       body     => $treq->process_template($template, 'email', undef),
    };
 
