@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.7 2002-05-12 16:49:29 nickjc Exp $
+# $Id: TFmail.pl,v 1.8 2002-05-15 07:47:42 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -60,7 +60,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.7 $, 10, -1;
+  $VERSION = substr q$Revision: 1.8 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -336,7 +336,7 @@ sub send_emails
         'env'          => $treq->uninstall_directive('env'),
         'by_submitter' => $treq->uninstall_directive('by_submitter'),
       );
-      my $save_foreach => $treq->uninstall_foreach('input_field');
+      my $save_foreach = $treq->uninstall_foreach('input_field');
 
       my $body = $treq->process_template($conftemp, 'email', undef);
 
