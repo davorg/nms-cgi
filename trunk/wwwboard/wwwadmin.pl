@@ -1,8 +1,16 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.10 2002-02-27 09:04:30 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.11 2002-03-03 10:55:14 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/02/27 09:04:30  gellyfish
+# * Added question about simple search and PDF to FAQ
+# * Suppressed output of headers in fatalsToBrowser if $done_headers
+# * Suppressed output of '<link rel...' if not $style
+# * DOCTYPE in fatalsToBrowser
+# * moved redirects until after possible cause of failure
+# * some small XHTML fixes
+#
 # Revision 1.9  2002/02/04 21:14:39  dragonoe
 # Added header to script and aligned values of parameter settings.
 #
@@ -41,6 +49,9 @@
 use strict;
 use CGI qw(:standard);
 use vars qw($DEBUGGING $done_headers);
+
+$CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
 
 # PROGRAM INFORMATION
 # -------------------
@@ -155,9 +166,10 @@ my %HTML;
 print header;
 $done_headers++;
 
-my %FORM;
+# should we be allowing this ISINDEX stuff ?
+
 my $command = $ENV{QUERY_STRING};
-parse_form() unless $command;
+my $FORM = parse_form() unless $command;
 
 if ($command eq 'remove') {
   my $html = $HTML{REMOVE_TOP};
@@ -311,16 +323,16 @@ if ($command eq 'remove') {
   $html =~ s/(\$\w+)/$1/eeg;
   print $html;
 
-} elsif ($FORM{action} eq 'remove') {
+} elsif ($FORM->{action} eq 'remove') {
 
    check_passwd();
 
    my (@all, @single);
-   foreach ($FORM{'min'} .. $FORM{'max'}) {
-      if ($FORM{$_} eq 'all') {
+   foreach ($FORM->{'min'} .. $FORM->{'max'}) {
+      if ($FORM->{$_} eq 'all') {
          push(@all, $_);
       }
-      elsif ($FORM{$_} eq 'single') {
+      elsif ($FORM->{$_} eq 'single') {
          push(@single, $_);
       }
    }
@@ -386,53 +398,30 @@ if ($command eq 'remove') {
    print WWWBOARD @lines;
    close(WWWBOARD);
 
-   return_html($FORM{type});
+   return_html($FORM->{type});
 
-} elsif ($FORM{action} eq 'remove_by_date_or_author') {
+} elsif ($FORM->{action} eq 'remove_by_date_or_author') {
 
    check_passwd();
 
    my (@attempted, @not_removed, @no_file, @top_bot);
 
    my @single;
-   my @used_values = split(/\s/, $FORM{used_values});
+   my @used_values = split(/\s/, $FORM->{used_values});
    foreach my $used_value (@used_values) {
-      my @misc_values = split(/\s/,$FORM{$used_value});
+      my @misc_values = split(/\s/,$FORM->{$used_value});
       foreach my $misc_value (@misc_values) {
          push(@single, $misc_value);
       }
-   }
-
-   open(MSGS, "$basedir/$mesgfile") || die $!;
-   my @lines = <MSGS>;
-   close(MSGS);
-
-   foreach my $single (@single) {
-     foreach my $j (0 .. @lines) {
-       if ($lines[$j] =~ /<!--top: $single-->/) {
-         splice(@lines, $j, 3);
-         $j -= 3;
-       } elsif ($lines[$j] =~ /<!--end: $single-->/) {
-         splice(@lines, $j, 1);
-         $j--;
-       }
-     }
-     my $filename = "$basedir/$mesgdir/$single\.$ext";
-     if (-e $filename) {
-       unlink("$filename") || push(@not_removed, $single);
-     } else {
-       push(@no_file, $single);
-     }
-     push(@attempted, $single);
    }
 
    open(WWWBOARD,">$basedir/$mesgfile") || die $!;
    print WWWBOARD @lines;
    close(WWWBOARD);
 
-   return_html($FORM{type});
+   return_html($FORM->{type});
 
-} elsif ($FORM{action} eq 'change_passwd') {
+} elsif ($FORM->{action} eq 'change_passwd') {
 
   open(PASSWD,"$basedir/$passwd_file") || error('passwd_file');
   my $passwd_line = <PASSWD>;
@@ -441,17 +430,17 @@ if ($command eq 'remove') {
 
   my ($username, $passwd) = split(/:/,$passwd_line);
 
-  if (!($FORM{passwd_1} eq $FORM{passwd_2})) {
+  if (!($FORM->{passwd_1} eq $FORM->{passwd_2})) {
     error('not_same');
   }
 
-  my $test_passwd = crypt($FORM{password}, substr($passwd, 0, 2));
-  if ($test_passwd eq $passwd && $FORM{username} eq $username) {
+  my $test_passwd = crypt($FORM->{password}, substr($passwd, 0, 2));
+  if ($test_passwd eq $passwd && $FORM->{username} eq $username) {
     open(PASSWD,">$basedir/$passwd_file") || error('no_change');
-    my $new_password = crypt($FORM{passwd_1}, substr($passwd, 0, 2));
+    my $new_password = crypt($FORM->{passwd_1}, substr($passwd, 0, 2));
     my $new_username;
-    if ($FORM{new_username}) {
-      $new_username = $FORM{'new_username'};
+    if ($FORM->{new_username}) {
+      $new_username = $FORM->{'new_username'};
     } else {
       $new_username = $username;
     }
@@ -470,9 +459,13 @@ if ($command eq 'remove') {
 
 
 sub parse_form {
+
+  my $FORM = {};
   foreach (param()) {
-    $FORM{$_} = param($_);
+    $FORM->{$_} = param($_);
   }
+
+  return $FORM;
 }
 
 sub return_html {
@@ -503,7 +496,7 @@ sub return_html {
       print "<body><center><h1>WWWBoard WWWAdmin Password Changed</h1></center>\n";
       print "Your Password for WWWBoard WWWAdmin has been changed!  Results are below:<p><hr size=7 width=75%><p>\n";
       print "<b>New Username: $new_username<p>\n";
-      print "New Password: $FORM{'passwd_1'}</b><p>\n";
+      print "New Password: $FORM->{'passwd_1'}</b><p>\n";
       print "<hr size=7 width=75%><p>\n";
       print "Do not forget these, since they are now encoded in a file, and not readable!.\n";
       print "</body></html>\n";
@@ -600,8 +593,8 @@ sub check_passwd {
 
    my ($username,$passwd) = split(/:/,$passwd_line);
 
-   my $test_passwd = crypt($FORM{'password'}, substr($passwd, 0, 2));
-   if (!($test_passwd eq $passwd && $FORM{'username'} eq $username)) {
+   my $test_passwd = crypt($FORM->{'password'}, substr($passwd, 0, 2));
+   if (!($test_passwd eq $passwd && $FORM->{'username'} eq $username)) {
       error('bad_combo');
    }
 }

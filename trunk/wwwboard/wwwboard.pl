@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.20 2002-03-03 06:10:17 proub Exp $
+# $Id: wwwboard.pl,v 1.21 2002-03-03 10:55:14 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2002/03/03 06:10:17  proub
+# typo correction -- $max_followups was spelled $max_follups in initial
+# declaration
+#
 # Revision 1.19  2002/03/02 20:48:00  gellyfish
 # * Added $max_followups configuration to prevent message bomb attack
 #
@@ -93,6 +97,11 @@ BEGIN
     sub SEEK_SET() {0;}
   } unless defined(&SEEK_SET);
 }
+
+# Horrible locution to shut up warnings
+
+$CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
 
 # PROGRAM INFORMATION
 # -------------------
@@ -421,7 +430,10 @@ sub new_file {
   my ($variables) = @_;
 
   open(NEWFILE,">$basedir/$mesgdir/$variables->{id}.$ext")
-    || die "$! [$basedir/$mesgdir/$variables->{id}.$ext]";
+    || die "Open: $! [$basedir/$mesgdir/$variables->{id}.$ext]";
+
+  flock(NEWFILE,LOCK_EX)
+    || die "Flock: $! [$basedir/$mesgdir/$variables->{id}.$ext]";
 
   my $faq = $show_faq ? qq( [ <a href="$baseurl/$faqfile">FAQ</a> ]) : '';
   my $print_name = $variables->{email} ? 
@@ -577,13 +589,20 @@ END_HTML
 sub main_page {
 
    my ( $variables ) = @_;
+
+  open(MAIN_LOCK,">>$basedir/$mesgfile.lck") ||
+    die "Open: $! [$basedir/$mesgfile.lck]";
+
+  flock(MAIN_LOCK,LOCK_EX) ||
+    die "Flock: $! [$basedir/$mesgfile.lck]";
+
   open(MAIN,"$basedir/$mesgfile") ||
-    die "$! [$basedir/$mesgfile]";
+    die "Open: $! [$basedir/$mesgfile]";
 
   my @main = <MAIN>;
   close(MAIN);
 
-  open(MAIN,">$basedir/$mesgfile") || die $!;
+  open(MAIN_OUT,">$basedir/$mesgfile.tmp") || die $!;
 
   my $id = $variables->{id};
   my $name = $variables->{name};
@@ -593,7 +612,7 @@ sub main_page {
   if ($variables->{followup} == 0) {
     foreach (@main) {
       if (/<!--begin-->/) {
-        print MAIN <<END_HTML;
+        print MAIN_OUT <<END_HTML;
 <!--begin-->
 <!--top: $id--><li><a href="$mesgdir/$id.$ext">$subject</a> - <b>$name</b> <i>$date</i>
 (<!--responses: $id-->0)
@@ -601,14 +620,14 @@ sub main_page {
 </ul><!--end: $id-->
 END_HTML
       } else {
-        print MAIN $_;
+        print MAIN_OUT $_;
       }
     }
   } else {
     foreach (@main) {
       my $work = 0;
       if (/<ul><!--insert: $variables->{last_message}-->/) {
-        print MAIN <<END_HTML;
+        print MAIN_OUT <<END_HTML;
 <ul><!--insert: $variables->{last_message}-->
 <!--top: $id--><li><a href="$mesgdir/$id.$ext">$subject</a> - <b>$name</b> <i>$date</i>
 (<!--responses: $id-->0)
@@ -626,14 +645,23 @@ END_HTML
           }
         }
         if ($work != 1) {
-          print MAIN $_;
+          print MAIN_OUT $_;
         }
       } else {
-        print MAIN $_;
+        print MAIN_OUT $_;
       }
     }
   }
-  close(MAIN);
+
+  unless(close(MAIN_OUT)) {
+     unlink "$basedir/$mesgfile.tmp";
+     die "write to : $basedir/$mesgfile.tmp - $!";
+  }
+
+  rename "$basedir/$mesgfile.tmp", "$basedir/$mesgfile"
+   or die "rename $basedir/$mesgfile.tmp => $basedir/$mesgfile - $!";
+
+  close(MAIN_LOCK);
 }
 
 ############################################
@@ -650,6 +678,12 @@ sub thread_pages {
   my $date    = $variables->{date};
 
   foreach my $followup_num (@{$variables->{followups}}) {
+
+    open(FOLLOWUP_LOCK, ">>$basedir/$mesgdir/$followup_num.lck")
+      || die "$!";
+
+    flock FOLLOWUP_LOCK, LOCK_EX or die "Can't lock $!\n";
+
     open(FOLLOWUP, "$basedir/$mesgdir/$followup_num.$ext")
       || die "$!";
 
@@ -657,11 +691,9 @@ sub thread_pages {
     close(FOLLOWUP);
 
 
-    open(FOLLOWUP, ">>$basedir/$mesgdir/$followup_num.$ext") || die "$!"; 
+    open(FOLLOWUP, ">$basedir/$mesgdir/$followup_num.tmp") || die "$!"; 
 
     flock FOLLOWUP, LOCK_EX or die "Can't lock $!\n";
-    truncate FOLLOWUP,0;
-    seek FOLLOWUP, SEEK_SET,0;
 
     foreach (@followup_lines) {
       my $work = 0;
@@ -690,7 +722,14 @@ END_HTML
         print FOLLOWUP $_;
       }
     }
-    close(FOLLOWUP);
+##JNS
+    unless (close(FOLLOWUP)) {
+       unlink "$basedir/$mesgdir/$followup_num.tmp";
+       die "write $basedir/$mesgdir/$followup_num.tmp $!";
+    }
+    rename "$basedir/$mesgdir/$followup_num.tmp",
+            "$basedir/$mesgdir/$followup_num.$ext"
+     or die "rename : $followup_num.tmp => $followup_num.$ext - $!";
   }
 }
 
