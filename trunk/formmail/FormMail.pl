@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.1 2002-07-01 09:15:51 gellyfish Exp $
+# $Id: FormMail.pl,v 2.2 2002-07-04 08:22:12 gellyfish Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.1 $
+# FormMail.pl $Revision: 2.2 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -67,7 +67,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.1 $, 10, -1;
+  $VERSION = substr q$Revision: 2.2 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -112,10 +112,12 @@ BEGIN
          $message = '';
       }
 
-      my ( $pack, $file, $line, $sub ) = caller(1);
-      my ($id ) = $file =~ m%([^/]+)$%;
+      my ( $pack, $file ) = caller(1);
 
       return undef if $file =~ /^\(eval/;
+
+      
+      $charset = 'iso-8859-1' unless $charset;
 
       print "Content-Type: text/html; charset=$charset\n\n" unless $done_headers;
 
@@ -489,7 +491,8 @@ sub send_mail {
     my ( $realagent ) = $0 =~ m%([\d\w.]+)$%;
     $realagent = defined $realagent ? "($realagent)" : '';
     $xheader .= "X-HTTP-Client: [$addr]\n"
-             . "X-Generated-By: NMS FormMail.pl $realagent v$VERSION\n";
+             . "X-Mailer: NMS FormMail.pl $realagent v$VERSION"
+             . "[http://nms-cgi.sourceforge.net/]\n";
   }
 
   if ( $send_confirmation_mail ) {
@@ -918,7 +921,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.1 $
+FormMail $Revision: 2.2 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
