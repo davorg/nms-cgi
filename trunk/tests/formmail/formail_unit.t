@@ -20,6 +20,7 @@ NMSTest::ScriptUnderTest->new(
 sub install_tests
 {
    s#^check_url\(\);#unitTest\(\);#m;
+   s#(\s\$allow_empty_ref).*?;#$1 = 0;#;
    s#(__END__|\z)#$tests$1#;
 }
 
