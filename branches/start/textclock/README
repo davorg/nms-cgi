@@ -1,0 +1,77 @@
+
+Text Clock Version 1.00
+Copyright 2001 London Perl Mongers, All rights reserved
+
+This script is free software; you are free to redistibute it
+and/or modify it under the same terms as Perl itself.
+
+Scripts Archive at  <http://www.dave.org.uk/scripts/nms/>
+
+
+TextClock is a Perl CGI script which is meant to be run from Server Side 
+Includes. When this script is implemented, it can be used to show browsers 
+several variations of the current time and/or date.
+
+There are two files included with this script:
+    1) README 	- This file; includes detailed installation 
+                  instructions.
+    2) textclock.pl - The Perl script which generates the headers 
+                  and sends the current time and/or date to 
+                  your user.
+
+Should you encounter any problems running this script, such as Method Not
+Implemented, try changing the name of the program to nph-textclock.cgi, 
+as some servers require the use of .cgi extensions.  Otherwise, this 
+script must be placed in your cgi-bin.  There are several variables which
+must be edited in the textclock.pl script.
+
+TEXTCLOCK.PL -
+
+    There are up to nine variables in the textclock.pl script, however
+    if you wish to receive the default display, you need not edit any
+    of them.  You can mix and match all of these options and see which
+    kind of clock you like the best.  You can get the clock to display
+    only the day of the week, only the date, only the time, everything
+    or make up your own combination!
+
+    $Display_Week_Day = '1';
+        If this option is set to '1', the day of the week will be 
+        displayed; Possible Values: Monday, Tuesday, Wednesday,
+        Thursday, Friday, Saturday and Sunday.  Setting this option
+        to '0' will suppress the printing of the Day of the Week.
+
+    $Display_Month = '1';
+        If this option is set to '1', the month will be printed.
+        Possible values include: January, February, March, April, May,
+        June, July, August, September, October, November and December.
+        If this option is set to '0', the month will not be displayed.
+
+    $Display_Month_Day = '1';
+        If this option is set to '1', the day of the month is
+        displayed, containing a value from 01 - 31.  Setting this to
+        '0' will hide the Day of the Month.
+
+    $Display_Year = '1';
+        If this option is set to '1', the four digit year is 
+        displayed, and it can be hidden by setting this to '0'.
+
+    $Display_Time = '1';
+        If this option is set to '1', a twenty four hour clock is
+        displayed.  Otherwise, if it is set to '0', it is supressed.
+
+    $Display_Time_Zone = '1';
+        Setting this to '1' allows users to your site to know what
+        time zone the date is being displayed from.
+
+
+##############################################################################
+
+How to Call This Script From Your Web Page
+------------------------------------------
+
+Calling this script from a web page is fairly simple.  You just use a standard
+Server Side Include call, such as:
+
+	<!--#exec cgi="/url/path/to/textclock.cgi"-->
+
+
