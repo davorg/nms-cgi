@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.6 $, 10, -1;
+$VERSION = substr q$Revision: 1.7 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -922,8 +922,15 @@ sub get_missing_fields {
   my @missing = ();
 
   foreach my $f (@{ $self->{FormConfig}{required} }) {
-    if ($f eq 'email' and $self->get_user_email !~ /\@/) {
-      push @missing, 'email (must be a valid email address)';
+    if ($f eq 'email') {
+      unless ( $self->get_user_email =~ /\@/ ) {
+        push @missing, 'email (must be a valid email address)';
+      }
+    }
+    elsif ($f eq 'realname') { 
+      unless ( length $self->get_user_realname ) {
+        push @missing, 'realname';
+      }
     }
     else {
       my $val = $self->{Form}{$f};
