@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.1 2003-01-13 21:01:21 nickjc Exp $
+# $Id: FormMail.pl,v 1.2 2003-01-24 20:30:32 nickjc Exp $
 #
 
 use strict;
@@ -15,7 +15,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.1 $
+# FormMail.pl $Revision: 1.2 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -64,8 +64,10 @@ Subject: form submission
 Thank you for your form submission.
 
 END_OF_CONFIRMATION
-#
-#
+
+# You may need to uncomment the line below and adjust the path.
+# use lib './lib';
+
 # USER CUSTOMISATION SECTION
 # --------------------------
 # Place any custom code here
