@@ -1,12 +1,13 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.34 2002-04-09 19:56:25 nickjc Exp $
+# $Id: guestbook.pl,v 1.35 2002-04-11 22:39:20 nickjc Exp $
 #
 
 use strict;
 use POSIX qw(strftime);
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
+use IO::File;
 
 use vars qw($DEBUGGING $done_headers @debug_msg);
 
@@ -146,7 +147,7 @@ EOERR
    $SIG{__DIE__} = \&fatalsToBrowser;
 }
 
-my $style_element = $style ? 
+my $style_element = $style ?
                     qq%<link rel="stylesheet" type="text/css" href="$style" />%
                   : '';
 
@@ -195,85 +196,55 @@ my %escaped = (
  country  => escape_html($country),
 );
 
-open (LOCK, ">>$guestbookreal.lck")
-  || die "Can't Open $guestbookreal.lck: $!\n";
-flock LOCK, LOCK_EX
-  || die "Can't lock $guestbookreal.lck: $!\n";
+rewrite_file($guestbookreal, sub
+{
+   if (defined and /<!--begin-->/) {
 
-open (GUEST_IN, "<$guestbookreal")
-  || die "Can't Open $guestbookreal: $!\n";
-open (GUEST, ">$guestbookreal.tmp")
-  || die "Can't Open $guestbookreal.tmp: $!\n";
+     $_ = '' unless $entry_order;
 
-
-while ( defined( $_ = <GUEST_IN> ) ) {
-   if (/<!--begin-->/) {
-
-     if ($entry_order) {
-       print GUEST "<!--begin-->\n";
-     }
-
-
-     print GUEST "<b>$comments</b><br />\n";
+     $_ .= "<b>$comments</b><br />\n";
 
      if ($url) {
        my $eurl = escape_html($url);
-       print GUEST qq(<a href="$eurl">$escaped{realname}</a>);
-      } else {
-         print GUEST $escaped{realname};
-      }
+       $_ .= qq(<a href="$eurl">$escaped{realname}</a>);
+     } else {
+       $_ .= $escaped{realname};
+     }
 
      if ($username){
        if ($linkmail) {
-         print GUEST qq( &lt;<a href="mailto:$escaped{username}">);
-         print GUEST "$escaped{username}</a>&gt;";
+         $_ .= qq( &lt;<a href="mailto:$escaped{username}">);
+         $_ .= "$escaped{username}</a>&gt;";
        } else {
-         print GUEST " &lt;$escaped{username}&gt;";
+         $_ .= " &lt;$escaped{username}&gt;";
        }
      }
 
-     print GUEST "<br />\n";
+     $_ .= "<br />\n";
 
      if ($city){
-       print GUEST "$escaped{city}, ";
+       $_ .= "$escaped{city}, ";
      }
 
      if ($state){
-       print GUEST $escaped{state};
+       $_ .= $escaped{state};
      }
 
      if ($country){
-       print GUEST " $escaped{country}";
+       $_ .= " $escaped{country}";
      }
 
      if ($separator) {
-       print GUEST " - $date<hr />\n\n";
+       $_ .= " - $date<hr />\n\n";
      } else {
-       print GUEST " - $date<p />\n\n";
+       $_ .= " - $date<p />\n\n";
      }
 
-     unless ($entry_order) {
-       print GUEST "<!--begin-->\n";
-     }
-
-   } else {
-     print GUEST $_;
+     $_ .= "<!--begin-->\n" unless $entry_order;
    }
-}
-
-unless ( close GUEST ) {
-   unlink "$guestbookreal.tmp";
-   die "write to $guestbookreal.tmp: $!";
-}
-
-close GUEST_IN;
-
-rename "$guestbookreal.tmp", $guestbookreal
-   or die "rename $guestbookreal.tmp -> $guestbookreal: $!";
+});
 
 write_log('entry') if $uselog;
-
-close LOCK;
 
 if ($mail) {
    my $to = $recipient;
@@ -400,32 +371,32 @@ END_FORM
 sub write_log {
   my ($log_type) = @_;
 
-  if ( open(LOG, ">>$guestlog") )
+  my $found_close_body = 0;
+
+  rewrite_file($guestlog, sub
   {
-      if ( flock LOG, LOCK_EX )
-      {
-
-         my $remote = remote_host();
-         if ($log_type eq 'entry') {
-           print LOG "$remote - [$shortdate]<br />\n";
-         } elsif ($log_type eq 'no_name') {
-           print LOG "$remote - [$shortdate] - ERR: No Name<br />\n";
-         } elsif ($log_type eq 'no_comments') {
-           print LOG "$remote - [$shortdate] - ERR: No Comments<br />\n";
-         }
-      }
-      else
-      {
-         die "Can't lock log file: $!\n" if $main::DEBUGGING;
-      }
-  }
-  else
-  {
-    # We probably dont wan't to show this to the crowd :)
-
-    die "Can't open log file: $!\n" if $DEBUGGING;
-
-  }
+     if (not defined)
+     {
+        # Matt's original guestlog.html is missing these close
+        # tags, so if we don't find </body> we append them to
+        # make guestlog.html into valid XHTML.
+        $_ = "</body>\n</html>\n" unless $found_close_body;
+     }
+     if (defined and m#</body>#i)
+     {
+        $found_close_body = 1;
+        my $remote = remote_host();
+        my $logline;
+        if ($log_type eq 'entry') {
+          $logline = "$remote - [$shortdate]<br />\n";
+        } elsif ($log_type eq 'no_name') {
+          $logline = "$remote - [$shortdate] - ERR: No Name<br />\n";
+        } elsif ($log_type eq 'no_comments') {
+          $logline = "$remote - [$shortdate] - ERR: No Comments<br />\n";
+        }
+        $_ = "$logline$_";
+     }
+  });
 
 }
 
@@ -573,6 +544,82 @@ sub check_email {
     return 1;
   }
 }
+
+=head1 FILE MANIPULATION FUNCTIONS
+
+=over
+
+=item rewrite_file( FILENAME, CALLBACK )
+
+This function makes an atomic chanage to a file, by copying
+an old version to a new version line by line and then
+renaming the new version over the old version.  An external
+lock file is used to prevent clashes between several
+processes accessing the file at once.
+
+Dies on error.
+
+FILENAME is the filesystem path to the file.
+
+CALLBACK is a coderef to act on the contents of the file
+line by line.  It gets called once for each line in the
+file, with the line stored in C<$_>.  Any changes made to
+C<$_> will be reflected in the new version of the file.
+
+The CALLBACK coderef will be called one more time after
+all the lines have been processed, with C<$_> set to
+undef.
+
+=cut
+
+sub rewrite_file
+{
+   my ($filename, $callback) = @_;
+   local $_;
+
+   my $lock = IO::File->new(">>$filename.lck") or die
+      "open $filename.lck: $!";
+   flock $lock, LOCK_EX or die "flock $filename: $!";
+
+   my $temp = IO::File->new(">$filename.tmp") or die
+      "open >$filename.tmp: $!";
+
+   my $in = IO::File->new("<$filename") or die
+      "open <$filename: $!";
+
+   my $last_line_done = 0;
+   until ($last_line_done)
+   {
+      $last_line_done = not defined ($_ = <$in>);
+
+      &{ $callback }();
+      if (defined and length and not $temp->print($_))
+      {
+         my $write_err = $!;
+         $temp->close;
+         unlink "$filename.tmp";
+         die "write to $filename.tmp: $write_err";
+      }
+   }
+
+   unless ($temp->close)
+   {
+      my $close_err = $!;
+      unlink "$filename.tmp";
+      die "close $filename.tmp: $close_err";
+   }
+
+   $in->close;
+
+   rename "$filename.tmp", $filename or die
+      "rename $filename.tmp -> $filename: $!";
+
+   $lock->close;
+}
+
+=back
+
+=cut
 
 ##################################################################
 #
