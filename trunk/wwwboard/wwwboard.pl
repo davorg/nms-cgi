@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.18 2002-03-02 16:58:48 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.19 2002-03-02 20:48:00 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2002/03/02 16:58:48  gellyfish
+# * Fixed get_number() to handle more than ten unique messages ;-}
+#
 # Revision 1.17  2002/03/02 16:46:27  gellyfish
 # * Fixed the threading
 # * simplified error()
@@ -111,6 +114,7 @@ BEGIN
 #
 BEGIN { $DEBUGGING      = 1; }
 my $emulate_matts_code  = 1;
+my $max_follups         = 10;
 my $basedir             = '/var/www/nms-test/wwwboard';
 my $baseurl             = 'http://nms-test/wwwboard';
 my $cgi_url             = 'http://nms-test/cgi-bin/wwwboard.pl';
@@ -145,6 +149,7 @@ my %max_len             = ('name'        => 50,
                            'origdate'    => 50);
 my $strict_image        = 1;
 my @image_suffixes      = qw(png jpe?g gif);
+
 #
 # USER CONFIGURATION << END >>
 # ----------------------------
@@ -300,9 +305,20 @@ sub get_variables {
       $fcheck{$fn}++;
     }
 
-    # WTF!
 
     @followup_num = keys %fcheck;
+
+    # truncate the list of followups so that a vandal can't followup
+    # to every existing message on the site.
+
+    if ( !$emulate_matts_code && $max_followups && 
+                                 $max_followups < @followup_num ) {
+
+        my $start_followups = $#followup_num - $max_followups;
+
+        @followup_num = @followup_num[$start_followups .. $#followup_num];
+    }
+    
 
     $variables->{followups} = \@followup_num;
     $variables->{num_followups} = scalar @followup_num;

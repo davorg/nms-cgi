@@ -53,33 +53,48 @@ During the following you will be guided through the configuration and installati
                             should not be used when the script is live.
 
       $emulate_matts_code - This determines whether the program should behave
-                            exactly like the original wwwboard program from Matt
-                            Wright Script Archive.  It should be set to 1 if you
-                            want to emulate the original program - this is
-                            recommended if you are replacing an existing
-                            installation with this program.  If it is set to 0
-                            then potentially it will not work with files
+                            exactly like the original wwwboard program
+                            from Matt Wright Script Archive.  It should
+                            be set to 1 if you want to emulate the
+                            original program - this is recommended if
+                            you are replacing an existing installation
+                            with this program.  If it is set to 0 then
+                            potentially it will not work with files
                             produced by the original version - this is
-                            recommended for people installing this for the first
-                            time. It is also more secure to set it to 0 as the
-                            original script had many flaws which don't show up
-                            when not using emulation.
+                            recommended for people installing this for
+                            the first time. It is also more secure to set
+                            it to 0 as the original script had many flaws
+                            which don't show up when not using emulation.
+
+      $max_followups      - In the original wwwboard it would be possible
+                            for a person with minimal skill to construct
+                            a request that could create a followup to
+                            every existing message on the board which
+                            could cause wwwboard.html to become extremely
+                            large and potentially effect a Denial of Service
+                            on your site.  By setting this variable to a
+                            reasonably low number you will be able to
+                            reduce the impact of an attack of this sort.
+                            If it is set to zero then any depth of followups
+                            will be allowed.  This setting only takes effect
+                            if $emulate_matts_code is set to 0.
 
       $basedir            - This is the directory from / on the server's
-                            filesystem. It is not the directory that appears in
-                            the web address, although part of it may be. Neither
-                            is it the cgi-bin directory where you put the
-                            wwwboard.pl file. This is where you upload the
-                            wwwboard by ftp. If you are not running your own
-                            server and aren't sure what this value should be,
-                            contact your system administrator to make sure you
-                            have the right value.
+                            filesystem. It is not the directory that
+                            appears in the web address, although part of
+                            it may be. Neither is it the cgi-bin directory
+                            where you put the wwwboard.pl file. This is
+                            where you upload the wwwboard by ftp. If you
+                            are not running your own server and aren't
+                            sure what this value should be, contact your
+                            system administrator to make sure you have
+                            the right value.
 
       $baseurl            - This is the full website address (URL) to the
-                            directory containing the wwwboard files. This this
-                            the directory that'll contain messages/, data.txt,
-                            wwwboard.html and faq.html. It's the web equivalent
-                            of $basedir.
+                            directory containing the wwwboard files. This
+                            this the directory that'll contain messages/,
+                            data.txt, wwwboard.html and faq.html. It's
+                            the web equivalent of $basedir.
 
       $cgi_url            - This is the full website address (URL) to the
                             wwwboard.pl file which will run the wwwboard.
@@ -98,29 +113,31 @@ During the following you will be guided through the configuration and installati
                             (FAQ) file, in $basedir, which will be used to
                             answer wwwboard users' questions.
 
-      $ext                - This is the extension that will be given to various
-                            web documents created by wwwboard. You should leave
-                            it as 'html' for most purposes, although you might
-                            want to change it to 'htm' if using MS-DOS.
+      $ext                - This is the extension that will be given to 
+                            various web documents created by wwwboard. You
+                            should leave it as 'html' for most purposes,
+                            although you might want to change it to
+                            'htm' if using MS-DOS.
 
       $title              - This is the title that will be displayed on the
                             program generated pages.
 
       $style              - This is the web address (URL) of a CSS stylesheet
-                            which will be used for script generated messages.
-                            This probably want's to be the same as the one that
-                            you use for all the other pages.  This should be a
-                            local absolute URI fragment.
+                            which will be used for script generated
+                            messages.  This probably want's to be the
+                            same as the one that you use for all the
+                            other pages.  This should be a local absolute
+                            URI fragment.
 
       $show_faq           - If $show_faq is set to 1 then the link for the
                             wwwboard FAQ will be shown on the generated pages.
 
       $allow_html         - If $allow_html is set to 1 then HTML will not be
-                            removed from the body of the message.  Be warned
-                            however that setting this is a possible security
-                            risk allowing malicious defacement of the page and
-                            possible cross page scripting attacks on this or
-                            other site.
+                            removed from the body of the message.
+                            Be warned however that setting this is a
+                            possible security risk allowing malicious
+                            defacement of the page and possible cross
+                            page scripting attacks on this or other site.
 
       $quote_text         - If $quote_text is set to 1 then the text of the
                             original message will be placed in the
@@ -131,14 +148,15 @@ During the following you will be guided through the configuration and installati
                             to 1.
 
       $quote_html         - If $quote_html is set to 1 then if $quote_text is
-                            set to 1 above the original HTML in the post will
-                            be retained in the followup - otherwise it will be
-                            removed.
+                            set to 1 above the original HTML in the
+                            post will be retained in the followup -
+                            otherwise it will be removed.
 
       $subject_line       - When set to 0, the subject will be quoted and
-                            editable. When set to 1, the subject will be
-                            quoted but uneditable. When set to 2, the subject
-                            will not be quoted but will be editable.
+                            editable. When set to 1, the subject will
+                            be quoted but uneditable. When set to 2,
+                            the subject will not be quoted but will
+                            be editable.
 
       $use_time           - If $use_time is set to 1 then the dates will be
                             displayed as "$time_fmt $date_fmt" - see note below
@@ -148,26 +166,33 @@ During the following you will be guided through the configuration and installati
       $time_fmt           - $date_fmt and $time_fmt describe the format of the
                             dates that will output - the replacement parameters
                             you can use here are:
-               %A - the full name of the weekday according to the current local
-               %B - the full name of the month according to the current local
-               %m - the month as a number
-               %d - the day of the month as a number
-               %D - the date in the form %m/%d/%y (i.e. the US format )
-               %y - the year as a number without the century
-               %Y - the year as a number including the century
-               %H - the hour as number in the 24 hour clock
-               %M - the minute as a number
-               %S - the seconds as a number
-               %T - the time in 24 hour format (%H:%M:%S)
-               %Z - the time zone (full name or abbreviation)
+
+            %A - the full name of the weekday according to the current locale
+            %B - the full name of the month according to the current locale
+            %m - the month as a number
+            %d - the day of the month as a number
+            %D - the date in the form %m/%d/%y (i.e. the US format )
+            %y - the year as a number without the century
+            %Y - the year as a number including the century
+            %H - the hour as number in the 24 hour clock
+            %M - the minute as a number
+            %S - the seconds as a number
+            %T - the time in 24 hour format (%H:%M:%S)
+            %Z - the time zone (full name or abbreviation)
+
+                             If you are going to be running this program
+                             on Apple OSX then you should avoid %Z as there
+                             is a problem with getting the correct timezome
+                             on that OS.
 
       $show_poster_ip     - Set to 1, the client IP address of the poster is
                             displayed in the message. Otherwise it won't.
 
       $enforce_max_len    - Set to 2, this will force the max length settings
-                            listed below by giving an error. Set to 1, this will
-                            force by truncating too long text. Set to 0, it will
-                            ignore the max length settings.
+                            listed below by giving an error. Set to 1,
+                            this will force by truncating too long
+                            text. Set to 0, it will ignore the max
+                            length settings.
 
       %max_len            - Contains the maximum lengths of the data allowed in
                             the various fields - they must be supplied if
