@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.8 2001-11-25 11:39:40 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.9 2001-11-26 13:40:05 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/11/25 11:39:40  gellyfish
+# * add missing use vars qw($DEBUGGING) from most of the files
+# * sundry other compilation failures
+#
 # Revision 1.7  2001/11/25 09:45:25  gellyfish
 # * Added stub FAQ (no answers just questions)
 # * More toshing on wwwboard.pl
@@ -790,7 +794,7 @@ BEGIN
 sub escape_html {
   my $str = shift;
   my $chars = join '', keys %escape_html_map;
-  $str =~ s/([$chars])/$escape_html_map{$1}/g;
+  $str =~ s/([\Q$chars\E])/$escape_html_map{$1}/g;
   return $str;
 }
 

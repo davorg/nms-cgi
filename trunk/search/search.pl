@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.6 2001-11-25 11:39:38 gellyfish Exp $
+# $Id: search.pl,v 1.7 2001-11-26 13:40:05 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/11/25 11:39:38  gellyfish
+# * add missing use vars qw($DEBUGGING) from most of the files
+# * sundry other compilation failures
+#
 # Revision 1.5  2001/11/20 08:43:56  nickjc
 # security fix on file open
 #
@@ -134,14 +138,14 @@ sub search {
     if ($bool eq 'AND') {
       foreach my $term (@terms) {
 	if ($case eq 'Insensitive') {
-	  if ($string =~ /$term/i) {
+	  if ($string =~ /\Q$term\E/i) {
 	    $files{include}{$_}++;
 	  } else {
 	    $files{include}{$_} = 0;
 	    last;
 	  }
 	} elsif ($case eq 'Sensitive') {
-	  if ($string =~ /$term/) {
+	  if ($string =~ /\Q$term\E/) {
 	    $files{include}{$_} = 1;
 	  } else {
 	    $files{include}{$_} = 0;
@@ -153,11 +157,11 @@ sub search {
     } elsif ($bool eq 'OR') {
       foreach my $term (@terms) {
 	if ($case eq 'Insensitive') {
-	  if ($string =~ /$term/i) {
+	  if ($string =~ /\Q$term\E/i) {
 	    $files{include}{$_}++;
 	  }
 	} elsif ($case eq 'Sensitive') {
-	  if ($string =~ /$term/) {
+	  if ($string =~ /\Q$term\E/) {
 	    $files{include}{$_}++;
 	    last;
 	  }

@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.11 2001-11-26 09:20:20 gellyfish Exp $
+# $Id: FormMail.pl,v 1.12 2001-11-26 13:40:05 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/11/26 09:20:20  gellyfish
+# Tidied up the error() subroutine
+#
 # Revision 1.10  2001/11/25 16:07:40  gellyfish
 # A couple of nits
 #
@@ -160,7 +163,7 @@ sub check_url {
 
   if (my $referer = referer()) {
     foreach my $test_ref (@referers) {
-      if ($referer =~ m|https?://([^/]*)$test_ref|i) {
+      if ($referer =~ m|https?://([^/]*)\Q$test_ref\E|i) {
 	$check_referer = 1;
 	last;
       }
@@ -614,6 +617,6 @@ sub escape_html {
 
   my $chars = join '', keys %escape_html_map;
 
-  $str =~ s/([$chars])/$escape_html_map{$1}/g;
+  $str =~ s/([\Q$chars\E])/$escape_html_map{$1}/g;
   return $str;
 }

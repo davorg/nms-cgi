@@ -1,8 +1,15 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.6 2001-11-24 11:59:58 gellyfish Exp $
+#  $Id: ffa.pl,v 1.7 2001-11-26 13:40:05 nickjc Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.6  2001/11/24 11:59:58  gellyfish
+#  * documented strfime date formats is various places
+#  * added more %ENV cleanup
+#  * spread more XHTML goodness and CSS stylesheet
+#  * generalization in wwwadmin.pl
+#  * sundry tinkering
+#
 #  Revision 1.5  2001/11/15 09:11:04  gellyfish
 #  * Fixed the -style thing in start_html
 #  * added nms.css to the links page
@@ -195,7 +202,7 @@ foreach my $line (@lines)
    SECTION:
    foreach my $tag ( keys %sections) 
    { 
-      if (($section eq $sections{$tag}) && ($line =~ /<!--$tag-->/)) 
+      if (($section eq $sections{$tag}) && ($line =~ /<!--\Q$tag\E-->/)) 
       {
          print FILE qq%<li><a href="$url">$title</a></li>\n%; 
          last SECTION;

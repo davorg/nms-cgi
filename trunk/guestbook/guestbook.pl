@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.11 2001-11-25 15:28:43 gellyfish Exp $
+# $Id: guestbook.pl,v 1.12 2001-11-26 13:40:05 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2001/11/25 15:28:43  gellyfish
+# * Added security features
+# * more refactoring
+#
 # Revision 1.10  2001/11/25 11:39:38  gellyfish
 # * add missing use vars qw($DEBUGGING) from most of the files
 # * sundry other compilation failures
@@ -526,7 +530,7 @@ BEGIN
 sub escape_html {
   my $str = shift;
   my $chars = join '', keys %escape_html_map;
-  $str =~ s/([$chars])/$escape_html_map{$1}/g;
+  $str =~ s/([\Q$chars\E])/$escape_html_map{$1}/g;
   return $str;
 }
 

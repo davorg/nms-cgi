@@ -1,8 +1,12 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.6 2001-11-25 11:39:40 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.7 2001-11-26 13:40:05 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/11/25 11:39:40  gellyfish
+# * add missing use vars qw($DEBUGGING) from most of the files
+# * sundry other compilation failures
+#
 # Revision 1.5  2001/11/24 11:59:58  gellyfish
 # * documented strfime date formats is various places
 # * added more %ENV cleanup
@@ -119,7 +123,7 @@ if ($command eq 'remove') {
 
   foreach my $line (@lines) {
     if (my ($id, $subject, $author, $date) 
-	= $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1\.$ext">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>/) {
+	= $line =~ /<!--top: (.*)--><li><a href="\Q$mesgdir\E\/\1\Q.$ext\E">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>/) {
       $min = $id if ! defined $min or $id < $min;
       $max = $id if ! defined $max or $id > $max;
 

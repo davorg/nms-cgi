@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: icounter.pl,v 1.5 2001-11-25 11:39:38 gellyfish Exp $
+# $Id: icounter.pl,v 1.6 2001-11-26 13:40:05 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/11/25 11:39:38  gellyfish
+# * add missing use vars qw($DEBUGGING) from most of the files
+# * sundry other compilation failures
+#
 # Revision 1.4  2001/11/13 20:35:14  gellyfish
 # Added the CGI::Carp workaround
 #
@@ -94,13 +98,13 @@ close(COUNT);
 sub check_uri {
   my $uri_check_flag = 0; # Guilty until proven innocent
   foreach (@valid_uri) {
-    if ($ENV{DOCUMENT_URI} =~ /$_/) {
+    if ($ENV{DOCUMENT_URI} =~ /\Q$_\E/) {
       $uri_check_flag = 1;
       last;
     }
   }
   foreach (@invalid_uri) {
-    if ($ENV{DOCUMENT_URI} =~ /$_/) {
+    if ($ENV{DOCUMENT_URI} =~ /\Q$_\E/) {
       $uri_check_flag = 0;
       last;
     }
