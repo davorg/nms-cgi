@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.9 2001-12-02 10:20:28 gellyfish Exp $
+# $Id: search.pl,v 1.10 2002-01-11 22:37:22 nickjc Exp $
 #
 # Revision 1.8  2001/12/01 19:45:22  gellyfish
 # * Tested everything with 5.004.04
@@ -140,18 +140,54 @@ my $terms = param("terms") ? param("terms") : "";
 start_of_html($title, $style);
 
 my @term_list = ();
-my $wclist    = '';
+my ($wclist, $dirlist) = ('', '');
+
+my %extra_basedirs = ();
+my $old_file_find = ( $] < 5.006 ? 1 : 0 );
+my $startdir;
 
 if ($terms)
 {
     @term_list = split(/\s+/, $terms);
-    $wclist = build_list(@files);
+    ($wclist, $dirlist) = build_list(@files);
 
-    find (\&do_search, $basedir);
+    if ($old_file_find) {
+        #
+        # File::Find before Perl 5.6 doesn't have the no_chdir option,
+        # and will fail to enter subdirectories under taint checking
+        # because it doesn't detaint the directory names.
+        #
+        # We fake it by pruning subdirectories in the wanted() function
+        # and invoking find() again for each subdirectory so pruned.
+        #
+        # We need the eval and the Cwd stuff because find will also
+        # fail when it tries to chdir back to the saved cwd at the
+        # end, because that's tainted as well.
+        #
+        # Yuk.
+        #
+        my $oldcwd = detaint_dirname(Cwd::cwd());
+        my @dirs = ($basedir);
+        while (scalar @dirs) {
+            foreach my $dir (@dirs) {
+                $startdir = $dir;
+                $SIG{__DIE__} = sub {};
+                eval { find (\&do_search, $dir) };
+                $SIG{__DIE__} = \&fatalsToBrowser;
+                die $@ if $@ and $@ !~ /Insecure dependency in chdir/i;
+                delete $extra_basedirs{$dir};
+            }
+            @dirs = keys %extra_basedirs;
+        }
+        chdir $oldcwd or die "chdir $oldcwd: $!";
+    } else {
+        $startdir = $basedir;
+        find ({'wanted' => \&do_search, 'no_chdir' => 1}, $startdir);
+    }
 }
 else
 {
-    print "<li>No Terms Specifiedi</li>";
+    print "<li>No Terms Specified</li>";
 }
 
 end_of_html($search_url, $title_url, $title, $terms, $bool, $case);
@@ -159,13 +195,28 @@ end_of_html($search_url, $title_url, $title, $terms, $bool, $case);
 
 sub do_search
 {
-    return if(/^\./);
-    return unless (m/$wclist/i);
+    return if $File::Find::name eq $startdir;
+    $File::Find::name =~ m#^\Q$basedir\E(.*/)([^/]+)$#
+         or die "can't parse File::Find::name [$File::Find::name]";
+    my ($dirname, $basename) = ($1, $2);
+    $dirname =~ s#^/+##;
+
+    return if($basename =~ /^\./);
+
     my @stats = stat $File::Find::name;
-    return if -d _;
+    if (-d _) {
+        if ("$dirname$basename" !~ /$dirlist/o) {
+            $File::Find::prune = 1;
+        } elsif ($old_file_find) {
+            $extra_basedirs{detaint_dirname($File::Find::name)} = 1;
+            $File::Find::prune = 1;
+        }
+        return;
+    }
+    return unless ("$dirname$basename" =~ m/$wclist/i);
     return unless -r _;
     foreach my $blocked (@blocked) {
-         return if ($File::Find::dir eq $blocked)
+        return if ($File::Find::dir eq $blocked)
     }
 
     open(FILE, "<$File::Find::name") or return;
@@ -195,37 +246,46 @@ sub do_search
        return unless $find;
     }
 
-    my $page_title = $_;
+    my $page_title = $basename;
 
-    if ($string =~ /<title>(.*?)<\/title>/is) {
+    if ($string =~ /<title>(.+?)<\/title>/is) {
         $page_title = $1;
     }
 
-    print_result($baseurl, $_, $page_title);
+    print_result($baseurl, "$dirname$basename", $page_title);
 }
 
+#
+# Returns a list of 2 strings holding regular expressions.  The
+# first matches the names of files to be searched.  The second
+# matches the names of directories that might have matching
+# files in them.
+#
+# Treats '*' like the shell does, all else is literal.
+#
 sub build_list
 {
     my @files = @_;
-    my $typelist;
 
-    my @wildcards = grep(/[^a-z]/,@files);
-    my @filetypes = grep($_!~/[^a-z]/,@files);
+    my (@filepat, %dirpat);
+    foreach my $file (@files) {
+        # The README says 'fun/' means 'fun/*'
+        $file =~ s#/$#/*#;
 
-    $typelist  = '(?:\.';
-    $typelist .= join(')|(\.',@filetypes) if (@filetypes>0);
-    $typelist .= ')';
-    $typelist .= '|' if (@wildcards>0 && @filetypes>0);
+        my $filepat = quotemeta($file);
+        $filepat =~ s#\\\*#(?:(?:[^/.][^/]*)?)#g;
+        push @filepat, $filepat;
 
-    foreach my $wildcard (@wildcards)
-    {
-        $wildcard  =~ s/\*(\.)/'.*?'/g;
-        $wildcard .=  '\.' if ($1);
-        $wildcard  =  '(' . $_ . ')';
+        while ($file =~ s#/[^/]+$##) {
+            my $dirpat = quotemeta($file);
+            $dirpat =~ s#\\\*#(?:(?:[^/.][^/]*)?)#g;
+            $dirpat{$dirpat} = 1;
+        }
     }
 
-    $typelist .= join ('|',@wildcards);
-    return $typelist;
+    return( '^(?:(?:' . join(')|(?:', @filepat)     . '))$',
+            '^(?:(?:' . join(')|(?:', keys %dirpat) . '))$'
+          );
 }
 
 sub start_of_html
@@ -256,7 +316,7 @@ END_HTML
 sub print_result
 {
     my ($baseurl, $file, $title) = @_;
-    print qq(<li><a href="$baseurl$file">$title</a></li>\n);
+    print qq(<li><a href="$baseurl/$file">$title</a></li>\n);
 }
 
 
@@ -284,3 +344,13 @@ sub end_of_html
 </html>
 END_HTML
 }
+
+sub detaint_dirname
+{
+    my ($dirname) = @_;
+
+    # Pattern from File/Find.pm in Perl 5.6.1
+    $dirname =~ m|^([-+@\w./]+)$| or die "suspect directory name: $dirname";
+    return $1;
+}
+
