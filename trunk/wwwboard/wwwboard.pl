@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.19 2002-03-02 20:48:00 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.20 2002-03-03 06:10:17 proub Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2002/03/02 20:48:00  gellyfish
+# * Added $max_followups configuration to prevent message bomb attack
+#
 # Revision 1.18  2002/03/02 16:58:48  gellyfish
 # * Fixed get_number() to handle more than ten unique messages ;-}
 #
@@ -114,7 +117,7 @@ BEGIN
 #
 BEGIN { $DEBUGGING      = 1; }
 my $emulate_matts_code  = 1;
-my $max_follups         = 10;
+my $max_followups       = 10;
 my $basedir             = '/var/www/nms-test/wwwboard';
 my $baseurl             = 'http://nms-test/wwwboard';
 my $cgi_url             = 'http://nms-test/cgi-bin/wwwboard.pl';
