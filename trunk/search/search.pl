@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.36 2002-08-13 21:45:52 nickjc Exp $
+# $Id: search.pl,v 1.37 2002-08-28 08:06:31 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision: 1.36 $
+# search.pl $Revision: 1.37 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -318,7 +318,7 @@ sub detaint_dirname
 {
     my ($dirname) = @_;
 
-    $dirname =~ m|^([:\\+@\w./-]*)$| or die "suspect directory name: $dirname";
+    $dirname =~ m|^([:\\+\@\w./ -]*)$| or die "suspect directory name: $dirname";
     return $1;
 }
 
@@ -348,6 +348,10 @@ END_HTML
 sub print_result
 {
     my ($baseurl, $file, $title) = @_;
+
+    $file    =~ s#^/##;
+    $baseurl =~ s#/$##;
+
     print qq(<li><a href="$E{"$baseurl/$file"}">$E{$title}</a></li>\n);
 }
 
