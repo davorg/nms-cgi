@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.49 2002-10-21 20:38:47 nickjc Exp $
+# $Id: wwwboard.pl,v 1.50 2002-10-21 21:10:18 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.49 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.50 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.49 $
+# wwwboard.pl $Revision: 1.50 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -345,7 +345,7 @@ sub get_variables {
   my $message_img = validate_url($Form->{'img'} || '');
   if ( $message_img and $strict_image ) {
     my $image_suffixes = join '|', @image_suffixes;
-    unless ($message_img =~ /($image_suffixes)$/) {
+    unless ($message_img =~ /($image_suffixes)$/i) {
       undef $message_img;
     } 
   }
