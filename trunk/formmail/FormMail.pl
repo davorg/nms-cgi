@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.19 2002-11-20 22:08:43 nickjc Exp $
+# $Id: FormMail.pl,v 2.20 2002-11-21 06:39:42 nickjc Exp $
 #
 
 use strict;
@@ -14,12 +14,12 @@ use vars qw(
   @allow_mail_to @recipients %recipient_alias
   @valid_ENV $date_fmt $style $send_confirmation_mail
   $confirmation_text $locale $charset $no_content
-  $double_spacing $wrap_text $wrap_style
+  $double_spacing $wrap_text $wrap_style $postmaster
 );
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.19 $
+# FormMail.pl $Revision: 2.20 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -46,6 +46,7 @@ BEGIN
   $allow_empty_ref   = 1;
   $max_recipients    = 5;
   $mailprog          = '/usr/lib/sendmail -oi -t';
+  $postmaster        = '';
   @referers          = qw(dave.org.uk 209.207.222.64 localhost);
   @allow_mail_to     = qw(you@your.domain some.one.else@your.domain localhost);
   @recipients        = ();
@@ -73,7 +74,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.19 $, 10, -1;
+  $VERSION = substr q$Revision: 2.20 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -90,6 +91,11 @@ END_OF_CONFIRMATION
   $style_element = $style ?
                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
                    : '';
+
+  if ($mailprog =~ /^SMTP:/i) {
+    require IO::Socket;
+    import IO::Socket;
+  }
 }
 
 use vars qw($done_headers $hide_recipient $debug_warnings);
@@ -525,14 +531,14 @@ sub send_mail {
   }
 
   if ( $send_confirmation_mail and $email =~ /\@/ ) {
-    open_sendmail_pipe(\*CMAIL, $mailprog);
-    print CMAIL $xheader, "To: $email$realname\n$confirmation_text";
-    close CMAIL;
+    email_start($postmaster, $email);
+    email_data($xheader . "To: $email$realname\n$confirmation_text");
+    email_end();
   }
 
-  open_sendmail_pipe(\*MAIL, $mailprog);
+  email_start( $postmaster, split(/\s*,\s*/, $Config{recipient}) );
 
-  print MAIL $xheader, <<EOMAIL;
+  email_data($xheader . <<EOMAIL);
 To: $Config{recipient}
 From: $email$realname
 Subject: $subject
@@ -542,12 +548,12 @@ $Config{realname} (${\( $Config{email}||'' )}) on $date
 $dashes
 EOMAIL
 
-  print MAIL "\n\n" if $double_spacing;
+  email_data("\n\n") if $double_spacing;
   my $nl = ( $double_spacing ? "\n\n" : "\n" );
 
   if ($Config{print_config}) {
     foreach (@{$Config{print_config}}) {
-      print MAIL "$_: $Config{$_}$nl" if $Config{$_};
+      email_data("$_: $Config{$_}$nl") if $Config{$_};
     }
   }
 
@@ -563,38 +569,102 @@ EOMAIL
         $Text::Wrap::columns = 72;
         my $wraped;
         eval { local $SIG{__DIE__} ; $wraped = wrap($field_name,$subs_indent,$val) };
-        print MAIL +($@ ? "$field_name$val" : $wraped), $nl;
+        email_data( ($@ ? "$field_name$val" : $wraped) . $nl );
       }
       else {
-        print MAIL "$field_name$val$nl";
+        email_data("$field_name$val$nl");
       }
     }
   }
 
-  print MAIL "$dashes\n\n";
+  email_data("$dashes\n\n");
 
   foreach (@{$Config{env_report}}) {
-    print MAIL "$_: ", strip_nonprintable($ENV{$_}), "\n" if $ENV{$_};
+    email_data("$_: " . strip_nonprintable($ENV{$_}) . "\n") if $ENV{$_};
   }
 
-  close (MAIL) || die "close mailprog: \$?=$?,\$!=$!,mailprog=[$mailprog]";
+  email_end();
 }
 
-sub open_sendmail_pipe {
-  my ($fh, $mailprog) = @_;
+use vars qw($smtp);
+sub email_start {
+  my ($sender, @recipients) = @_;
 
-  my $result;
-  eval { local $SIG{__DIE__};
-         $result = open $fh, "| $mailprog"
-       };
-  if ($@) {
-    die $@ unless $@ =~ /Insecure directory/;
-    delete $ENV{PATH};
-    $result = open $fh, "| $mailprog";
+  if ($mailprog =~ /^SMTP:([\w\-\.]+(:\d+)?)$/i) {
+    my $mailhost = $1;
+    $mailhost .= ':25' unless $mailhost =~ /:/;
+    $smtp = IO::Socket::INET->new($mailhost);
+    defined $smtp or die "SMTP connect to [$mailhost]: $!";
+
+    my $banner = smtp_getline();
+    $banner =~ /^2/ or die "bad SMTP banner [$banner] from [$mailhost]";
+
+    my $helohost = ($ENV{SERVER_NAME} =~ /^([\w\-\.]+)$/ ? $1 : '.');
+    smtp_command("HELO $helohost");
+    smtp_command("MAIL FROM: <$sender>");
+    foreach my $r (@recipients) {
+      smtp_command("RCPT TO: <$r>");
+    }
+    smtp_command("DATA", '3');
   }
+  else {
+    my $command = $mailprog;
+    $command .= qq{ -f "$postmaster"} if $postmaster;
+    my $result;
+    eval { local $SIG{__DIE__};
+           $result = open SENDMAIL, "| $command"
+         };
+    if ($@) {
+      die $@ unless $@ =~ /Insecure directory/;
+      delete $ENV{PATH};
+      $result = open SENDMAIL, "| $command";
+    }
 
-  die "Can't open $mailprog\n" unless $result;
+    die "Can't open mailprog [$command]\n" unless $result;
+  }
 }
+
+sub email_data {
+  my ($data) = @_;
+
+  if (defined $smtp) {
+    $data =~ s#\n#\015\012#g;
+    $data =~ s#^\.#..#mg;
+    $smtp->print($data) or die "write to SMTP server: $!";
+  } else {
+    print SENDMAIL $data or die "write to sendmail pipe: $!";
+  }
+}
+
+sub email_end {
+  if (defined $smtp) {
+    smtp_command(".");
+    smtp_command("QUIT");
+    undef $smtp;
+  } else {
+    close SENDMAIL or die "close sendmail pipe failed, mailprog=[$mailprog]";
+  }
+}
+
+sub smtp_command {
+  my ($cmd, $want) = @_;
+  defined $want or $want = '2';
+
+  $smtp->print("$cmd\015\012")
+      or die "write [$cmd] to SMTP server: $!";
+
+  my $resp = smtp_getline();
+  unless (substr($resp, 0, 1) eq $want) {
+    die "SMTP command [$cmd] gave response [$resp]";
+  }
+}
+
+sub smtp_getline {
+  my $line = <$smtp>;
+  defined $line or die "read from SMTP server: $!";
+  $line =~ tr#\012\015##d;
+  return $line;
+}  
 
 sub cleanup_realname {
   my ($realname) = @_;
@@ -963,7 +1033,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.19 $
+FormMail $Revision: 2.20 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE

@@ -22,6 +22,7 @@ script looks like:
     $allow_empty_ref   = 1;
     $max_recipients    = 5;
     $mailprog          = '/usr/lib/sendmail -oi -t';
+    $postmaster        = '';
     @referers          = qw(dave.org.uk 209.207.222.64 localhost);
     @allow_mail_to     = qw(you@your.domain some.one.else@your.domain localhost);
     @recipients        = ();
@@ -58,6 +59,10 @@ Everyone will need to ensure that $mailprog, @referers and
 @allow_mail_to are set correctly.  These are described in
 detail in the README file.
 
+It is good practice to also set $postmaster to a valid email
+address, so that you recieve bounce messages if something goes
+wrong with the delivery of the email.
+
 
 EXAMPLE 1: A simple feedback form
 
@@ -75,6 +80,7 @@ Now edit the configuration part of FormMail.pl.  The lines that
 need to be changed for this example are:
 
     $mailprog          = '/usr/sbin/sendmail -oi -t';
+    $postmaster        = 'fred@your.domain';
     @referers          = qw(www.your.domain);
     @allow_mail_to     = qw(your-name@your.domain);
 
@@ -96,6 +102,7 @@ So the configuration section should now look like:
     $allow_empty_ref   = 1;
     $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
+    $postmaster        = 'fred@your.domain';
     @referers          = qw(www.your.domain);
     @allow_mail_to     = qw(your-name@your.domain);
     @recipients        = ();
@@ -256,6 +263,7 @@ collect target email addresses from web sites.
     $allow_empty_ref   = 1;
     $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
+    $postmaster        = 'fred@your.domain';
     @referers          = qw(www.your.domain);
     @allow_mail_to     = ();
     @recipients        = ();
@@ -369,6 +377,7 @@ script is now:
     $allow_empty_ref   = 1;
     $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
+    $postmaster        = 'fred@your.domain';
     @referers          = qw(www.your.domain);
     @allow_mail_to     = ();
     @recipients        = ();

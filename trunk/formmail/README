@@ -78,9 +78,7 @@ $mailprog           - The system command that the script should invoke to
                       to a program that will read a message from STDIN and
                       determine the list of message recipients from the
                       message headers. Any switches that the program
-                      requires should be provided here. Your hosting
-                      provider or system administrator should be able to
-                      tell you what to set this variable to.
+                      requires should be provided here.
 
                       A $mailprog setting that works for many UNIX-like
                       hosts is:
@@ -91,12 +89,25 @@ $mailprog           - The system command that the script should invoke to
 
                         $mailprog = '/usr/sbin/sendmail -oi -t';
 
-                      For hosts that lack a suitable sendmail binary
-                      (such as most Windows systems) we have a Perl
-                      script which does the job of the sendmail binary,
-                      in the nms_sendmail package at
-                      <http://nms-cgi.sourceforge.net/>.  See the README
-                      file in the nms_sendmail package for instructions.
+                      If your web server lacks a sendmail binary, you can
+		      use an SMTP relay instead, by setting $mailhost like
+		      this:
+
+		        $mailhost = 'SMTP:mailhost.your.domain';
+
+                      You will need to replace mailhost.your.domain with
+		      the name or IP address of an SMTP server configured
+		      to relay mail for the web server.
+
+                      Your system administrator or hosting provider should
+		      be able to tell you either the path to sendmail on the
+		      web server or the name of a host that will act as an
+		      SMTP relay for the web server.
+
+$postmaster         - The envelope sender address to use for all emails
+                      sent by the script.  This address will recieve bounce
+		      messages if any of the emails cannot be delivered.  If
+		      in doubt, put your own email address here.
 
 @referers           - A list of referring hosts. This should be a list of
                       the names or IP addresses of all the systems that
