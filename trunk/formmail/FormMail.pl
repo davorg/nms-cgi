@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.43 2002-02-26 22:13:20 proub Exp $
+# $Id: FormMail.pl,v 1.44 2002-02-26 22:30:49 proub Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.43  2002/02/26 22:13:20  proub
+# Removed commented-out unit-tests (unit tests now live in /tests/formail)
+#
 # Revision 1.42  2002/02/26 08:50:15  nickjc
 # Hide the recipient when it comes directly from @allow_mail_to and
 # isn't in $recipient, to prevent SPAM harvesting
@@ -846,9 +849,9 @@ EOBODY
   There was no recipient or an invalid recipient specified in the
   data sent to FormMail. Please make sure you have filled in the
   <tt>recipient</tt> form field with an e-mail address that has
-  been configured in <tt>\@recipients</tt>. More information on
-  filling in <tt>recipient</tt> form fields and variables can be
-  found in the README file.
+  been configured in <tt>\@recipients</tt> or <tt>\@allow_mail_to</tt>. 
+  More information on filling in <tt>recipient/allow_mail_to</tt> 
+  form fields and variables can be found in the README file.
 </p>
 <hr size="1" />
 <p>
