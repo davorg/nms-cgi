@@ -1,6 +1,17 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.9 2002-01-25 15:55:13 davorg Exp $
+# $Id: countdown.pl,v 1.10 2002-01-25 16:37:09 gellyfish Exp $
+#
+# $Log: not supported by cvs2svn $
+# Revision 1.9  2002/01/25 15:55:13  davorg
+# Made it compile :(
+# 
+# Revision 1.8  2002/01/14 09:31:48  gellyfish
+# * Added patch from sourceforge
+# * Added real validation of the input date
+# 
+# Revision 1.7  2001/12/02 10:26:26 gellyfish
+# Merged in changes from Joseph Ryan
 #
 # Revision 1.6  2001/12/01 19:45:21  gellyfish
 # * Tested everything with 5.004.04
