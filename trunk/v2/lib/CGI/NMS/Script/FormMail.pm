@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.8 $, 10, -1;
+$VERSION = substr q$Revision: 1.9 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -41,7 +41,7 @@ FormMail.pl CGI script.
 =head1 CONFIGURATION SETTINGS
 
 As well as the generic NMS script configuration settings described in
-L<CGI::NMS::Script>, the FormMail constructor recognises the following
+L<CGI::NMS::Script>, the FormMail constructor recognizes the following
 configuration settings:
 
 =over
@@ -237,6 +237,16 @@ in the C<subject> form field, you would set:
 
 Default: none set
 
+=item C<include_config_*>
+
+Configuration settings of this form can be used to treat particular
+configuration inputs as normal data inputs as well as honoring their
+special meaning.  For example, a user might use C<include_config_email>
+to include the email address as a regular input as well as using it in
+the email header.
+
+Default: none set
+
 =back
 
 =head1 COMPILE TIME METHODS
@@ -277,7 +287,7 @@ sub default_configuration {
 =item init ()
 
 Invoked from the new() method inherited from L<CGI::NMS::Script>,
-this method performs FormMail specific initialisation of the script
+this method performs FormMail specific initialization of the script
 object.
 
 =cut
@@ -643,6 +653,9 @@ sub parse_config_form_input {
   $self->{FormConfig}{$name} = $val;
   unless ($self->{CFG}{emulate_matts_code}) {
     $self->{Form}{$name} = $val;
+    if ( $self->{CFG}{"include_config_$name"} ) {
+      push @{ $self->{Field_Order} }, $name;
+    }
   }
 }
 
