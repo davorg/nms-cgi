@@ -1,0 +1,12 @@
+FormMail.pl                     - The main Perl script
+README                          - This file. Instructions on how to install and use formmail
+EXAMPLES                        - Some worked examples of ways to set up formmail
+ChangeLog                       - The change history of these files
+MANIFEST                        - List of files
+lib/CGI/NMS/Charset.pm          - A module required by FormMail.pl
+lib/CGI/NMS/Validator.pm        - A module required by FormMail.pl
+lib/CGI/NMS/Script.pm           - A module required by FormMail.pl
+lib/CGI/NMS/Script/FormMail.pm  - A module required by FormMail.pl
+lib/CGI/NMS/Mailer.pm           - A module required by FormMail.pl
+lib/CGI/NMS/Mailer/Sendmail.pm  - A module required by FormMail.pl
+lib/CGI/NMS/Mailer/SMTP.pm      - A module required by FormMail.pl

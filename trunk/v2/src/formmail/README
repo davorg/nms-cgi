@@ -22,11 +22,7 @@ FILES
 
 In this distribution, you will find the following files:
 
-FormMail.pl    - The main Perl script
-README         - This file. Instructions on how to install and use formmail
-EXAMPLES       - Some worked examples of ways to set up formmail
-ChangeLog      - The change history of these files
-MANIFEST       - List of files
+[% INCLUDE README.manifest -%]
 
 CONFIGURATION
 
@@ -317,17 +313,9 @@ $confirmation_text      - The header and body of the confirmation email
 
 INSTALLATION
 
-Formmail is installed simply by copying the file FormMail.pl into your
-cgi-bin directory. If you don't know where your cgi-bin directory is, then
-please ask your system administrator.
+[% INCLUDE 'README.install' -%]
 
-You may need to rename FormMail.pl to FormMail.cgi. Again, your system
-administrator will know if this is the case.
-
-You will probably need to turn on execute permissions to the file. You can
-do this by running the command "chmod +x FormMail.pl" from your command
-line. If you don't have command line access to your web server then there
-will probably be an equivalent function in your file transfer program.
+FORM CONFIGURATION
 
 To make use of it, you need to write an HTML form that refers to the
 FormMail script. Here's an example which will send mail to the address
@@ -339,8 +327,6 @@ FormMail script. Here's an example which will send mail to the address
   Please enter your comments<br />
   <input type="submit" />
 </form>
-
-FORM CONFIGURATION
 
 See how the hidden 'recipient' input in the example above told formmail who
 to send the mail to ? This is how almost all of formmail's configuration

@@ -1,0 +1,31 @@
+Formmail is installed by copying the file FormMail.pl into your cgi-bin
+directory. If you don't know where your cgi-bin directory is, then please
+ask your system administrator.
+
+You may need to rename FormMail.pl to FormMail.cgi. Again, your system
+administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x FormMail.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+
+You will also need to have the Perl modules under the lib/ directory in
+this distribution installed on the machine where FormMail.pl is to run.
+The directory structure under lib/ must be preserved.  For example, if
+you choose to install the modules under /usr/local/nms on the web
+server then you should end up with a file heirarchy that looks like:
+
+   /usr/local/nms/
+   /usr/local/nms/lib/
+   /usr/local/nms/lib/CGI/
+   /usr/local/nms/lib/CGI/NMS/
+   /usr/local/nms/lib/CGI/NMS/Charset.pm
+   /usr/local/nms/lib/CGI/NMS/Validator.pm
+   /usr/local/nms/lib/CGI/NMS/Script.pm
+   /usr/local/nms/lib/CGI/NMS/Script/
+   /usr/local/nms/lib/CGI/NMS/Script/FormMail.pm
+   /usr/local/nms/lib/CGI/NMS/Mailer.pm
+   /usr/local/nms/lib/CGI/NMS/Mailer/
+   /usr/local/nms/lib/CGI/NMS/Mailer/Sendmail.pm
+   /usr/local/nms/lib/CGI/NMS/Mailer/SMTP.pm
