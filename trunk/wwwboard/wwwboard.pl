@@ -1,12 +1,14 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.58 2004-10-18 12:12:19 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.59 2005-01-21 09:53:54 gellyfish Exp $
 #
 
 use strict;
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
+
+CGI::NMS::IPFilter->import();
 
 use vars qw(
   $DEBUGGING $VERSION $done_headers $emulate_matts_code
@@ -17,11 +19,11 @@ use vars qw(
   %max_len $strict_image @image_suffixes $locale $charset @bannedwords
   $bannedwords $bannednets @use_rbls
 );
-BEGIN { $VERSION = substr q$Revision: 1.58 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.59 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.58 $
+# wwwboard.pl $Revision: 1.59 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public

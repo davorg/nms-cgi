@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwadmin.pl,v 1.28 2004-10-11 16:10:59 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.29 2005-01-21 09:53:54 gellyfish Exp $
 #
 
 use strict;
@@ -12,11 +12,11 @@ use vars qw(
   $basedir $baseurl $cgi_url $mesgdir $datafile $mesgfile
   $passwd_file $ext $title $style $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.28 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.29 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.28 $
+# wwwadmin.pl $Revision: 1.29 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -273,7 +273,7 @@ sub run_command {
     remove_messages($FORM);
   }
   elsif ($FORM->{action} eq 'change_passwd') {
-    #change_passwd($FORM);
+    change_passwd($FORM);
   }
   else {
     display_form('');
