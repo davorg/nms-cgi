@@ -1,8 +1,11 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.26 2001-12-28 22:17:07 nickjc Exp $
+# $Id: guestbook.pl,v 1.27 2002-01-29 08:50:44 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2001/12/28 22:17:07  nickjc
+# minor HTML filter fix
+#
 # Revision 1.25  2001/12/21 08:53:24  nickjc
 # More HTML filter fixes
 #
@@ -256,7 +259,7 @@ my ($city, $state, $country)
   = (param('city'), param('state'), param('country'));
 
 my ($url) = param('url');
-$url = '' if $url and not check_url($url);
+$url = '' if $url and not check_url_valid($url);
 
 # There is a possibility that the comments can be escaped if passed as
 # the hidden field from the form_error() form
@@ -662,7 +665,7 @@ sub check_email {
 #
 # The code below provides some functions for manipulating HTML.
 #
-#  check_url ( URL )
+#  check_url_valid ( URL )
 #
 #    Returns 1 if the string URL is a valid http, https or ftp
 #    URL, 0 otherwise.
@@ -701,11 +704,12 @@ use vars qw(%safe_tags %safe_style %tag_is_empty $convert_nl
             %auto_deinterleave $auto_deinterleave_pattern);
 
 # check the validity of a URL.
-sub check_url {
+
+sub check_url_valid {
   my $url = shift;
 
-  $url =~ m< ^ (?:ftp|http|https):// [\w\-\.]+
-               [\w\-.!~*'(|);/?\@&=+\$,%#]*
+  $url =~ m< ^ (?:ftp|http|https):// [\w\-\.]+ (?:\:\d+)?
+               (?: / [\w\-.!~*'(|);/?\@&=+\$,%#]* )?
              $
            >x ? 1 : 0;
 }
@@ -1028,7 +1032,7 @@ sub cleanup_attr_color {
   /^(\w{2,20}|#[\da-fA-F]{6})$/ ? $1 : undef;
 }
 sub cleanup_attr_uri {
-  check_url($_) ? $_ : undef;
+  check_url_valid($_) ? $_ : undef;
 }
 sub cleanup_attr_tframe {
   /^(void|above|below|hsides|lhs|rhs|vsides|box|border)$/i
