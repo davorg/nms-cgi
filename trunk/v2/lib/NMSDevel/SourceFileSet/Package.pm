@@ -173,6 +173,9 @@ sub generate_tarballs {
 	$self->_file_into_package("$src_path/$file",                  "$arc_path/$file") or
 	$self->_file_into_package($self->upstream->srcpath."/$file",  "$arc_path/$file") or
 	$self->_file_into_package($self->basepath."/$file",           "$arc_path/$file") or
+	# Allow ChangeLog to be missing so that packages can be built and tests run
+	# against them without access to CVS.
+	$file eq 'ChangeLog'                                                             or
         die "can't generate package file [$file]";
 
 	$manifest_out->print("$arc_name/$file\n");
@@ -194,6 +197,27 @@ sub generate_tarballs {
 
    system('rm', '-rf', $arc_path) and die "rm failed";
 
+}
+
+=item run_tests_against_package ()
+
+Runs the regression tests for this script against the contents of an archive
+previously created with the generate_tarballs() method.
+
+=cut
+
+sub run_tests_against_package {
+    my ($self) = @_;
+
+    my $src_path = $self->srcpath;
+    my $arc_name = $self->archive_name;
+    my $arc_path = $self->archive_path;
+    
+    system "cd $src_path && gzip -dc $arc_name.tar.gz | tar xvf -" and die;
+    system "cd $arc_path && ln -s . ".$self->upstream->name       and die;
+    local $ENV{NMSTEST_USE_LIB} = "$arc_path/lib";
+    local $ENV{NMSTEST_SRCDIR} = $arc_path;
+    system($self->basepath."/buildtools/run_tests", $self->upstream->name) and die;
 }
 
 =back

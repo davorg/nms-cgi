@@ -20,11 +20,11 @@ foreach my $package ( map "${script}_$_", qw(compat modules autoinst) ) {
 
 
 if ($action eq 'test') {
+    tarballs();
     test();
 }
 elsif ($action eq 'upload') {
     release();
-    tarballs();
     test();
     upload();
 }    
@@ -48,8 +48,9 @@ sub tarballs {
 }
 
 sub test {
-    $ENV{NMSTEST_USE_LIB} = "$ENV{NMS_WORKING_COPY}/v2/lib";
-    system(BASE . "/buildtools/run_tests", $script);
+    foreach my $pkg (@pkg) {
+        $pkg->run_tests_against_package;
+    }
 }
 
 sub upload {

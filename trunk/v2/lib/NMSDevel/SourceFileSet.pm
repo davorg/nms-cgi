@@ -56,6 +56,18 @@ sub new {
 
 =over
 
+=item name ()
+
+Returns the name that was passed to new().
+
+=cut
+
+sub name {
+    my ($self) = @_;
+
+    $self->{NAME};
+}
+
 =item basepath ()
 
 Returns the basepath that was passed to new().
