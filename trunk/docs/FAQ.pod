@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-01-22 20:42:56 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-01-28 09:19:33 $ )
 
 =head1 DESCRIPTION
 
@@ -171,7 +171,7 @@ presentation information is stored in a stylesheet.
 In some cases, Matt's way of doing things isn't the best. However we've
 set ourselves the target that all of our programs should exactly the same
 way as Matt's originals. If you set C<$emulate_matts_code> to 1, then
-the <nms> script will work exactly the the same way. If you set it to
+the I<nms> script will work exactly the the same way. If you set it to
 0, then our script will be free to do some things in a more sensible way, 
 but it might not be able to deal with data created with Matt's scripts.
 
@@ -228,4 +228,58 @@ to the file simultaneously, then the file can become corrupted. If they
 both try to flock (for "file lock") first, then only the first one will
 be successful. The second will be forced to wait until the first unlocks the
 file. This leads to many less corrupt files and is therefore a good idea.
+
+=head2 The programs keep crashing with C<flock unimplemented>, why ?
+
+Hasn't anyone told you that Windows 98 is not a server operating system?
+
+Unfortunately on Windows 95 and 98 there is no support whatsoever for
+advisory locking like C<flock>, Perl does not try to emulate it because it
+would have to behave completely differently.  You could try commenting out
+the lines in the affected programs with a '#', but you should be warned
+that this will lead to other side effects as these operating systems
+implement a 'mandatory non-blocking lock' on files open for writing: that is
+to say that is if one process has a file open so it can write to it and a
+second process attempts to open the same file (whether for writing or reading
+only) then the second attempt will simply fail and there will be an error
+message.  This is alright for testing or development purpose where you are
+unlikely to have more than person using the program at the same time, but
+would be far from ideal for a public website.
+
+=head2 Why don't the programs use C<Net::SMTP> to send mail ?
+
+Firstly, because Net::SMTP is not available as part of the core Perl 
+distribution except for in the development version leading to Perl 5.8.
+
+Secondly, because the I<nms> developers feel that it is better to use
+the queuing, MX lookup and retry capabilities of the local message transfer
+agent (MTA) to deliver mail messages - the Net::SMTP module does not do
+any of these things and the code to support them is likely to run into
+hundreds of lines and require several other modules.  Also Net::SMTP requires
+an SMTP relay to be available on the local network.
+
+=head2 But I don't have c<sendmail> on my webserver, what can I do ?
+
+Well, if your webserver has a Unix-like operating system it is likely that
+it has a program that performs a similar function for the preferred MTA
+on that system.  C<QMail> has a program called C<qmail-inject> which takes
+similar command line options to C<sendmail>, indeed on some systems the
+program that is available as C<sendmail> is actually C<qmail-inject>. Exim
+and Postfix also have their own equivalents - you should ask your system
+administrator or web hosting provider for more information on this.
+
+If you are on a Windows webserver then you probably don't have a local MTA
+at all, although this is not say that you will not be able to use C<FormMail>.
+You should ask your System Administrator or web hosting provider is the
+program C<blat> is available, C<blat> is command line program for Windows
+that enables you to send e-mail in a similar way to C<sendmail>, if it is
+not available you could get your own copy and upload it to your own website
+at a push, however it does require some configuration so you should read the
+documentation before you do that.  Microsoft did once make available a port
+of C<sendmail> for Windows NT which works exactly the same as the Unix version
+however it is extremely unlikey to be already installed on your webserver
+- you should be able to find it on the microsoft FTP site but it is 
+almost certainly going to be too difficult to install unless you are the
+administrator of the server yourself.
+
 

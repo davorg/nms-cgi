@@ -1,19 +1,68 @@
-Image Gallery Version 1.0
+COPYRIGHT
+
+Image Gallery Version 1.00
 Copyright 2002 London Perl Mongers, All rights reserved
+
+LICENSE
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-The Perl license can be found in the README file in the Perl source 
-distribution.
+URL
 
-Scripts Archive at <http://nms-cgi.sourceforge.net/>
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>.
 
-README
-======
+SUMMARY
 
-Just read it!
-------------------------------------------------------------------------------
+Image Gallery is a program that allows you to display a small series of
+images as a series of individual pages with navigation links between them.
+
+FILES
+
+In this distribution, you will find three files:
+
+gallery.pl    - The main perl script.
+README        - This file. Instructions on how to install and use ffa.
+gallery.css   - An example cascading stylesheet (CSS) file
+MANIFEST      - List of files
+
+CONFIGURATION
+
+In order for this program to work properly on your webserver it will require
+a small amount of configuration before you upload it.
+
+All of the configuration is done by editing the program file directly, you
+can do this in your favourite text editor or notepad if you are on Windows.
+You probably don't want to use a wordprocessor to do this unless you are
+certain you can save the file as plain text.
+
+Firstly you will need to change the first line of the program:
+
+   #!/usr/bin/perl -wT
+
+so that it points at the proper location of perl on your webserver - your
+system administrator or webhosting provider should be able to tell you this.
+You only need to change the '/usr/bin/perl' part - all of the rest of the
+line must be left exactly as it is.
+
+There are a number of variables that you can change in gallery.pl which
+alter the way that the program works.
+
+INSTALLATION
+
+gallery.pl is installed simply by copying the file gallery.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator
+
+You may need to rename gallery.pl to gallery.cgi. Again, your system
+administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x gallery.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+
 
 SUPPORT
 
@@ -21,3 +70,5 @@ For support of this script please email:
 
   <nms-cgi-support@lists.sourceforge.net>
 
+This mailling list is read by the NMS developers and other helpful people
+who will try to help you solve your problem.

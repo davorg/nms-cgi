@@ -1,7 +1,11 @@
 #
-# $Id: cookielib,v 1.2 2002-01-27 12:47:58 gellyfish Exp $
+# $Id: cookielib,v 1.3 2002-01-28 09:19:33 gellyfish Exp $
 # 
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2002/01/27 12:47:58  gellyfish
+# * Added MANIFEST and README
+# * Put RCS tags in cookielib
+#
 #
 
 use strict;
