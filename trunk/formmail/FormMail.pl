@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.9 2002-07-23 20:38:34 nickjc Exp $
+# $Id: FormMail.pl,v 2.10 2002-08-04 10:06:28 gellyfish Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.9 $
+# FormMail.pl $Revision: 2.10 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -73,7 +73,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.9 $, 10, -1;
+  $VERSION = substr q$Revision: 2.10 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -887,6 +887,7 @@ EOBODY
               text-align: center;
             }
        th.c1 {
+               text-align: center;
                font-size: 143%;
              }
        p.c3 {font-size: 80%; text-align: center}
@@ -895,13 +896,11 @@ EOBODY
     </style>
   </head>
   <body>$debug_warnings
-    <table border="0" width="600" bgcolor="#9C9C9C" align="center" summary="">
-      <tr>
+    <table border="0" width="600" bgcolor="#9C9C9C" summary="">
+      <tr bgcolor="#9C9C9C">
         <th class="c1">$title</th>
       </tr>
-    </table>
-    <table border="0" width="600" bgcolor="#CFCFCF">
-      <tr>
+      <tr bgcolor="#CFCFCF">
         <td>
           $error_body
           <hr size="1" />
@@ -947,7 +946,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.9 $
+FormMail $Revision: 2.10 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
