@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.55 2004-10-11 16:11:00 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.56 2004-10-12 09:45:14 gellyfish Exp $
 #
 use strict;
 use CGI qw(:standard);
@@ -10,16 +10,15 @@ use vars qw(
   $DEBUGGING $VERSION $done_headers $emulate_matts_code
   $max_followups $basedir $baseurl $cgi_url $mesgdir $datafile
   $mesgfile $faqfile $ext $title $style $show_faq $allow_html
-  $quote_text $quote_char $quote_html $subject_line $use_time $temp
+  $quote_text $quote_char $quote_html $subject_line $use_time
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
-  %max_len $strict_image @image_suffixes $locale $charset @bannedwords $word
-  $extra_strict
+  %max_len $strict_image @image_suffixes $locale $charset @bannedwords
 );
-BEGIN { $VERSION = substr q$Revision: 1.55 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.56 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.55 $
+# wwwboard.pl $Revision: 1.56 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -39,77 +38,84 @@ BEGIN { $VERSION = substr q$Revision: 1.55 $, 10, -1; }
 # parameters seems unclear, please see the README file.
 #
 
-BEGIN
-{
-  $DEBUGGING           = 1;
-  $emulate_matts_code  = 1;
-  $max_followups       = 10;
-  $basedir             = '/var/www/nms-test/wwwboard';
-  $baseurl             = 'http://nms-test/wwwboard';
-  $cgi_url             = 'http://nms-test/cgi-bin/wwwboard.pl';
-  $mesgdir             = 'messages';
-  $datafile            = 'data.txt';
-  $mesgfile            = 'wwwboard.html';
-  $faqfile             = 'faq.html';
-  $ext                 = 'html';
-  $title               = "NMS WWWBoard Version $VERSION";
-  $style               = '/css/nms.css';
-  $show_faq            = 1;
-  $allow_html          = 1;
-  $quote_text          = 1;
-  $quote_char          = ':';
-  $quote_html          = 1;
-  $subject_line        = 0;
-  $use_time            = 1;
-  $date_fmt            = '%d/%m/%y';
-  $time_fmt            = '%T';
-  $show_poster_ip      = 1;
-  $extra_strict         = 1;
-  $enable_preview      = 0;
-  $enforce_max_len     = 0;
-  %max_len             = ('name'        => 50,
-                          'email'       => 70,
-                          'subject'     => 80,
-                          'url'         => 150,
-                          'url_title'   => 80,
-                          'img'         => 150,
-                          'body'        => 3000,
-                          'origsubject' => 80,
-                          'origname'    => 50,
-                          'origemail'   => 70,
-                          'origdate'    => 50);
-  $strict_image        = 1;
-  @image_suffixes      = qw(png jpe?g gif);
-  $locale              = '';
-  $charset             = 'iso-8859-1';
+BEGIN {
+    $DEBUGGING          = 1;
+    $emulate_matts_code = 1;
+    $max_followups      = 10;
+    $basedir            = '/var/www/nms-test/wwwboard';
+    $baseurl            = 'http://nms-test/wwwboard';
+    $cgi_url            = 'http://nms-test/cgi-bin/wwwboard.pl';
+    $mesgdir            = 'messages';
+    $datafile           = 'data.txt';
+    $mesgfile           = 'wwwboard.html';
+    $faqfile            = 'faq.html';
+    $ext                = 'html';
+    $title              = "NMS WWWBoard Version $VERSION";
+    $style              = '/css/nms.css';
+    $show_faq           = 1;
+    $allow_html         = 1;
+    $quote_text         = 1;
+    $quote_char         = ':';
+    $quote_html         = 1;
+    $subject_line       = 0;
+    $use_time           = 1;
+    $date_fmt           = '%d/%m/%y';
+    $time_fmt           = '%T';
+    $show_poster_ip     = 1;
+    $enable_preview     = 0;
+    $enforce_max_len    = 0;
+    %max_len            = (
+        'name'        => 50,
+        'email'       => 70,
+        'subject'     => 80,
+        'url'         => 150,
+        'url_title'   => 80,
+        'img'         => 150,
+        'body'        => 3000,
+        'origsubject' => 80,
+        'origname'    => 50,
+        'origemail'   => 70,
+        'origdate'    => 50
+    );
+    $strict_image   = 1;
+    @image_suffixes = qw(png jpe?g gif);
+    $locale         = '';
+    $charset        = 'iso-8859-1';
 
-@bannedwords	= qw( slut levitra viagra cialis sex phentermine casino lolita fuck );
-#
-# USER CONFIGURATION << END >>
-# ----------------------------
-# (no user serviceable parts beyond here)
+    @bannedwords =
+      qw( slut levitra viagra cialis sex phentermine casino lolita fuck );
 
+    #
+    # USER CONFIGURATION << END >>
+    # ----------------------------
+    # (no user serviceable parts beyond here)
 
-  eval { sub SEEK_SET() {0;} } unless defined(&SEEK_SET);
+    eval {
+        sub SEEK_SET() { 0; }
+    } unless defined(&SEEK_SET);
 
-  if ( $use_time ) {
-    $date_fmt = "$time_fmt $date_fmt";
-  }
+    if ($use_time) {
+        $date_fmt = "$time_fmt $date_fmt";
+    }
 
-  use vars qw($html_preview_button);
-  $html_preview_button =
-    ( $enable_preview ? ' <input type="submit" name="preview" value="Preview Post" />' : '');
+    use vars qw($html_preview_button);
+    $html_preview_button =
+      ( $enable_preview
+        ? ' <input type="submit" name="preview" value="Preview Post" />'
+        : '' );
 }
 
 sub html_header {
-    if ($CGI::VERSION >= 2.57) {
+    if ( $CGI::VERSION >= 2.57 ) {
+
         # This is the correct way to set the charset
-        print header('-type'=>'text/html', '-charset'=>$charset);
+        print header( '-type' => 'text/html', '-charset' => $charset );
     }
     else {
+
         # However CGI.pm older than version 2.57 doesn't have the
         # -charset option so we cheat:
-        print header('-type' => "text/html; charset=$charset");
+        print header( '-type' => "text/html; charset=$charset" );
     }
 }
 
@@ -118,30 +124,27 @@ sub html_header {
 # This is basically the same as what CGI::Carp does inside but simplified
 # for our purposes here.
 
-BEGIN
-{
-   sub fatalsToBrowser
-   {
-      my ( $message ) = @_;
+BEGIN {
 
-      if ( $DEBUGGING )
-      {
-         $message =~ s/</&lt;/g;
-         $message =~ s/>/&gt;/g;
-      }
-      else
-      {
-         $message = '';
-      }
+    sub fatalsToBrowser {
+        my ($message) = @_;
 
-      my ( $pack, $file, $line, $sub ) = caller(0);
-      my ($id ) = $file =~ m%([^/]+)$%;
+        if ($DEBUGGING) {
+            $message =~ s/</&lt;/g;
+            $message =~ s/>/&gt;/g;
+        }
+        else {
+            $message = '';
+        }
 
-      return undef if $file =~ /^\(eval/;
+        my ( $pack, $file, $line, $sub ) = caller(0);
+        my ($id) = $file =~ m%([^/]+)$%;
 
-      html_header() unless $done_headers;
+        return undef if $file =~ /^\(eval/;
 
-      print <<EOERR;
+        html_header() unless $done_headers;
+
+        print <<EOERR;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -159,12 +162,11 @@ BEGIN
   </body>
 </html>
 EOERR
-     die @_;
-   };
+        die @_;
+    }
 
-   $SIG{__DIE__} = \&fatalsToBrowser;
+    $SIG{__DIE__} = \&fatalsToBrowser;
 }
-
 
 use vars qw($cs);
 $cs = CGI::NMS::Charset->new($charset);
@@ -174,23 +176,21 @@ $cs = CGI::NMS::Charset->new($charset);
 use vars qw(%E);
 tie %E, __PACKAGE__;
 sub TIEHASH { bless {}, shift }
-sub FETCH { $cs->escape($_[1]) }
+sub FETCH { $cs->escape( $_[1] ) }
 
 use vars qw($html_style);
-$html_style = $style ?
-              qq%<link rel="stylesheet" type="text/css" href="$E{$style}" />%
-            : '';
-
+$html_style = $style
+  ? qq%<link rel="stylesheet" type="text/css" href="$E{$style}" />%
+  : '';
 
 # We don't need file uploads or very large POST requests.
 # Annoying locution to shut up 'used only once' warning in
 # older perl.  Localize these to avoid stomping on other
 # scripts that need file uploads under Apache::Registry.
 
-local ($CGI::DISABLE_UPLOADS, $CGI::POST_MAX);
+local ( $CGI::DISABLE_UPLOADS, $CGI::POST_MAX );
 $CGI::DISABLE_UPLOADS = 1;
 $CGI::POST_MAX        = 1000000;
-
 
 # Empty the environment of potentially harmful variables,
 # and detaint the path.  We accept anything in the path
@@ -200,94 +200,91 @@ $CGI::POST_MAX        = 1000000;
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
 $ENV{PATH} =~ /(.*)/ and $ENV{PATH} = $1;
 
-
 $done_headers = 0;
-
 
 my $Form = parse_form();
 
 my $variables = get_variables($Form);
 
 if ( param('preview') ) {
-  preview_post($variables);
+    preview_post($variables);
 }
 else {
-  open LOCK, ">>$basedir/.lock" or die "open >>$basedir/.lock: $!";
-  flock LOCK, LOCK_EX or die "flock $basedir/.lock: $!";
+    open LOCK, ">>$basedir/.lock" or die "open >>$basedir/.lock: $!";
+    flock LOCK, LOCK_EX or die "flock $basedir/.lock: $!";
 
-  my $ft = File::Transaction->new;
+    my $ft = File::Transaction->new;
 
-  eval {
-    local $SIG{__DIE__};
+    eval {
+        local $SIG{__DIE__};
 
-    $variables->{id} = get_number($ft);
+        $variables->{id} = get_number($ft);
 
-    new_file($ft, $variables);
-    main_page($ft, $variables);
+        new_file( $ft, $variables );
+        main_page( $ft, $variables );
 
-    thread_pages($ft, $variables);
-  };
+        thread_pages( $ft, $variables );
+    };
 
-  if ($@) {
-    $ft->revert;
-    close LOCK;
-    die $@;
-  }
-  else {
-    $ft->commit;
-    close LOCK;
-    return_html($variables);
-  }
+    if ($@) {
+        $ft->revert;
+        close LOCK;
+        die $@;
+    }
+    else {
+        $ft->commit;
+        close LOCK;
+        return_html($variables);
+    }
 }
 
 sub get_number {
-  my ($ft) = @_;
-  my $num = 0;
-  my $file = "$basedir/$datafile";
+    my ($ft) = @_;
+    my $num  = 0;
+    my $file = "$basedir/$datafile";
 
-  if (open NUMBER, "<$file") {
-    $num = <NUMBER> || 0;
-    $num =~ /^(\d+)\s*$/ or die "$file bad";
-    $num = $1;
-    close NUMBER;
-  }
+    if ( open NUMBER, "<$file" ) {
+        $num = <NUMBER> || 0;
+        $num =~ /^(\d+)\s*$/ or die "$file bad";
+        $num = $1;
+        close NUMBER;
+    }
 
-  $num++;
-  $num = 1 if $num > 999999;
+    $num++;
+    $num = 1 if $num > 999999;
 
-  open NUMBER, ">$file.tmp" or die "open >$file.tmp: $!";
-  print NUMBER $num;
-  close NUMBER or die "close $file.tmp: $!";
+    open NUMBER, ">$file.tmp" or die "open >$file.tmp: $!";
+    print NUMBER $num;
+    close NUMBER or die "close $file.tmp: $!";
 
-  $ft->addfile($file, "$file.tmp");
+    $ft->addfile( $file, "$file.tmp" );
 
-  return $num;
+    return $num;
 }
 
 sub parse_form {
-  my %Form;
+    my %Form;
 
-
-  foreach my $param ( keys %max_len , 'followup' )
-  {
-     my $val = param($param);
-     defined $val or $val = '';
-     $Form{$param} = &{ $cs->strip_nonprint_coderef }($val);
-     $Form{$param} =~ s/[\r\n\0]/ /g unless $param eq 'body';
-  }
-
-  if ($enforce_max_len) {
-    foreach (keys %max_len) {
-      if (length($Form{$_}) > $max_len{$_}) {
-        if ($enforce_max_len == 2) {
-          error('field_size',{Form => \%Form});
-        } else {
-          $Form{$_} = substr($Form{$_}, 0, $max_len{$_});
-        }
-      }
+    foreach my $param ( keys %max_len, 'followup' ) {
+        my $val = param($param);
+        defined $val or $val = '';
+        $Form{$param} = &{ $cs->strip_nonprint_coderef }($val);
+        $Form{$param} =~ s/[\r\n\0]/ /g unless $param eq 'body';
     }
-  }
-  return \%Form;
+
+    if ($enforce_max_len) {
+        foreach ( keys %max_len ) {
+            if ( length( $Form{$_} ) > $max_len{$_} ) {
+                if ( $enforce_max_len == 2 ) {
+                    error( 'field_size', { Form => \%Form } );
+                }
+                else {
+                    $Form{$_} = substr( $Form{$_}, 0, $max_len{$_} );
+                }
+            }
+        }
+    }
+    return \%Form;
 }
 
 ###############
@@ -295,154 +292,149 @@ sub parse_form {
 
 sub get_variables {
 
-  my ( $Form ) = @_;
+    my ($Form) = @_;
 
-  my $variables = { Form => $Form };
+    my $variables = { Form => $Form };
 
-  my @followup_num;
+    my @followup_num;
 
-  if (exists $Form->{followup} && length($Form->{followup})) {
-    $variables->{followup} = 1;
-    @followup_num = split(/,/, $Form->{followup});
+    if ( exists $Form->{followup} && length( $Form->{followup} ) ) {
+        $variables->{followup} = 1;
+        @followup_num = split( /,/, $Form->{followup} );
 
-    my %fcheck;
-    foreach my $fn (@followup_num) {
-      if ($fcheck{$fn} or $fn !~ /^(\d+)$/) {
-        error('followup_data',{Form => $Form});
-      } else {
-        $fn = $1;
-        $fcheck{$fn} = 1;
-      }
+        my %fcheck;
+        foreach my $fn (@followup_num) {
+            if ( $fcheck{$fn} or $fn !~ /^(\d+)$/ ) {
+                error( 'followup_data', { Form => $Form } );
+            }
+            else {
+                $fn = $1;
+                $fcheck{$fn} = 1;
+            }
+        }
+
+        # truncate the list of followups so that a vandal can't followup
+        # to every existing message on the site.
+        if (   !$emulate_matts_code
+            && $max_followups
+            && $max_followups < @followup_num )
+        {
+
+            my $start_followups = $#followup_num - $max_followups;
+
+            @followup_num = @followup_num[ $start_followups .. $#followup_num ];
+        }
+
+        $variables->{followups}     = \@followup_num;
+        $variables->{num_followups} = scalar @followup_num;
+        $variables->{last_message}  = $followup_num[$#followup_num];
+        $variables->{origdate}      = $Form->{origdate};
+        $variables->{origname}      = $Form->{origname};
+        $variables->{origsubject}   = $Form->{origsubject};
     }
-
-    # truncate the list of followups so that a vandal can't followup
-    # to every existing message on the site.
-    if ( !$emulate_matts_code && $max_followups &&
-                                 $max_followups < @followup_num ) {
-
-        my $start_followups = $#followup_num - $max_followups;
-
-        @followup_num = @followup_num[$start_followups .. $#followup_num];
-    }
-
-    $variables->{followups} = \@followup_num;
-    $variables->{num_followups} = scalar @followup_num;
-    $variables->{last_message} = $followup_num[$#followup_num];
-    $variables->{origdate} = $Form->{origdate};
-    $variables->{origname} = $Form->{origname};
-    $variables->{origsubject} = $Form->{origsubject};
-  } else {
-    $variables->{followup} = $variables->{num_followups} = 0;
-  }
-
-  length $Form->{name} or error('no_name', $variables);
-  $temp = $Form->{name};
-  $temp =~ s/&#[0-9]{1,3};//g;
-  $temp =~ s/[^a-zA-Z0-9_ ?!]//g;
-  $temp =~ s/ $//g;
-  foreach $word(@bannedwords) {
-    	if(lc($temp) =~ /.*$word.*/) { $temp=''; error('invalid', 0); }
-    }
-  chomp($temp);
-  $variables->{name} = $temp;
-
-  if ($Form->{email} =~ /(.*\@.*\..*)/) {
-    $variables->{email} = $1;
-  }
-  else {
-    $variables->{email} = '';
-  }
-
-  if ($Form->{subject}) {
-    $temp = $Form->{subject};
-    $temp =~ s/&#[0-9]{1,3};//g;
-    $temp =~ s/[^a-zA-Z0-9_ ?!]//g;
-    $temp =~ s/ $//g;
-    foreach $word(@bannedwords) {
-    	if($temp =~ /.*$word.*/) { $temp=''; error('invalid', 0);}
-    }
-    chomp($temp);
-    if($temp) {
-    	$variables->{subject} = $temp;
-	}
     else {
-    	$variables->{subject} = "no subject";
-	}
+        $variables->{followup} = $variables->{num_followups} = 0;
+    }
 
-  } else {
-    error('no_subject', $variables);
-  }
-#  if($ENV{REMOTE_ADDR} =~ m/217\.26\.240\.[0-9]{1,3}/ ) {
-#	error('invalid', 0);
-#  }
+    length $Form->{name} or error( 'no_name', $variables );
 
-  my $url = validate_url($Form->{'url'} || '');
+    check_banned($Form->{name}) or error('invalid');
+
+    if ( $Form->{email} =~ /(.*\@.*\..*)/ ) {
+        $variables->{email} = $1;
+    }
+    else {
+        $variables->{email} = '';
+    }
+
+    if ( $Form->{subject} ) {
+        check_banned($Form->{subject}) or error('invalid');
+        $variables->{subject} = $Form->{subject};
+    }
+    else {
+        error( 'no_subject', $variables );
+    }
+
+    # Really you would want to probably:
+    #  a) use a dnsbl of some description
+    #  b) specify the stuff in a file
+    #  c) use CIDR to block a whole network
+    #  if($ENV{REMOTE_ADDR} =~ m/217\.26\.240\.[0-9]{1,3}/ ) {
+    #	error('invalid', 0);
+    #  }
+
+    my $url = validate_url( $Form->{'url'} || '' );
     $Form->{'url_title'} =~ s/&#[0-9]{1,3};//g;
     $Form->{'url_title'} =~ s/[^a-zA-Z0-9_ ?!&;]//g;
-  if ($url and $Form->{'url_title'}) {
-    $variables->{message_url} = $url;
-    $variables->{message_url_title} = $Form->{'url_title'};
-  }
-
-  my $message_img = validate_url($Form->{'img'} || '');
-  if ( $message_img and $strict_image ) {
-    my $image_suffixes = join '|', @image_suffixes;
-    unless ($message_img =~ /($image_suffixes)$/i) {
-      undef $message_img;
-    }
-  }
-  $message_img and $variables->{message_img} = $message_img;
-
-  if (my $body = $Form->{'body'}) {
-
-  if ($extra_strict) {
-    $body =~ s/&#[a-z0-9]{1,3};//g;
-  }
-    foreach $word(@bannedwords) {
-    	if($body =~ /.*$word.*/) { $body=''; error('invalid', 0);}
+    if ( $url and $Form->{'url_title'} ) {
+        $variables->{message_url}       = $url;
+        $variables->{message_url_title} = $Form->{'url_title'};
     }
 
-    unless ($allow_html) {
-      # strip out what look like tags, then escape all but
-      # wellformed HTML entities.
-      $body =~ s#</?\w+[^>]*># #g;
-      $body =~ s/(&#?\w{1,20};)|(.[^&]*)/ defined $1 ? $1 : $cs->escape($2) /ges;
+    my $message_img = validate_url( $Form->{'img'} || '' );
+    if ( $message_img and $strict_image ) {
+        my $image_suffixes = join '|', @image_suffixes;
+        unless ( $message_img =~ /($image_suffixes)$/i ) {
+            undef $message_img;
+        }
+    }
+    $message_img and $variables->{message_img} = $message_img;
+
+    if ( my $body = $Form->{'body'} ) {
+
+        check_banned($body) or error('invalid');
+        unless ($allow_html) {
+
+            # strip out what look like tags, then escape all but
+            # wellformed HTML entities.
+            $body =~ s#</?\w+[^>]*># #g;
+            $body =~
+              s/(&#?\w{1,20};)|(.[^&]*)/ defined $1 ? $1 : $cs->escape($2) /ges;
+        }
+
+        $body = "<p>$body</p>";
+        $body =~ s/\cM//g;
+        $body =~ s|\n\n|</p><p>|g;
+        $body =~ s%\n%<br />%g;
+
+        if ($allow_html) {
+            $body = filter_html($body);
+        }
+
+        $variables->{html_body} = $body;
+
+    }
+    else {
+        error( 'no_body', $variables );
     }
 
-    if ($allow_html) {
-      $body = filter_html($body);
+    if ($quote_text) {
+        my $hidden_body = $Form->{'body'};
+        $hidden_body =~ s#(</?[a-z][^>]*>)+# #ig unless $quote_html;
+        $variables->{hidden_body} = $hidden_body;
     }
-    if($extra_strict) {
-      $body =~ s/</[/g;
-      $body =~ s/>/]/g;
+
+    eval { setlocale( LC_TIME, $locale ) if $locale; };
+
+    $variables->{date} = strftime( $date_fmt, localtime() );
+
+    return $variables;
+}
+
+=item check_banned
+
+Implement banned words list.
+
+=cut
+
+sub check_banned
+{
+   my ($temp ) = @_;
+    foreach my $word (@bannedwords) {
+        return 0 if ( lc($temp) =~ /.*$word.*/ ) 
     }
-    $body = "<p>$body</p>";
-    $body =~ s/\cM//g;
-    $body =~ s|\n\n|</p><p>|g;
-    $body =~ s%\n%<br />%g;
-    $body =~ s/&#[0-9]{1,3};//g;
 
-    $variables->{html_body} = $body;
-
-  } else {
-    error('no_body', $variables);
-  }
-
-  if ($quote_text)
-  {
-    my $hidden_body = $Form->{'body'};
-    $hidden_body =~ s#(</?[a-z][^>]*>)+# #ig unless $quote_html;
-    $variables->{hidden_body} = $hidden_body;
-  }
-
-  eval
-  {
-     setlocale(LC_TIME, $locale ) if $locale;
-  };
-
-  $variables->{date} = strftime($date_fmt , localtime());
-
-  return $variables;
+    return 1;
 }
 
 #####################
@@ -450,55 +442,58 @@ sub get_variables {
 
 sub new_file {
 
-  my ($ft, $variables) = @_;
+    my ( $ft, $variables ) = @_;
 
-  my $md = "$basedir/$mesgdir";
-  my $file = "$md/$variables->{id}.$ext";
-  -r $file and die "refusing to overwrite [$file]";
+    my $md   = "$basedir/$mesgdir";
+    my $file = "$md/$variables->{id}.$ext";
+    -r $file and die "refusing to overwrite [$file]";
 
-  -d $md or mkdir $md, 0755 or die "mkdir $md: $!";
-  open(NEWFILE,">$file.tmp") || die "Open [$file.tmp]: $!";
+    -d $md or mkdir $md, 0755 or die "mkdir $md: $!";
+    open( NEWFILE, ">$file.tmp" ) || die "Open [$file.tmp]: $!";
 
-  my $html_faq = $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
-  my $html_print_name = $variables->{email} ?
-            qq(<a href="$E{"mailto:$variables->{email}"}">$E{$variables->{name}}</a> ) :
-            $E{$variables->{name}};
-  my $ip = $show_poster_ip ? "($ENV{REMOTE_ADDR})" : '';
+    my $html_faq =
+      $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
+    my $html_print_name =
+      $variables->{email}
+      ? qq(<a href="$E{"mailto:$variables->{email}"}">$E{$variables->{name}}</a> )
+      : $E{ $variables->{name} };
+    my $ip = $show_poster_ip ? "($ENV{REMOTE_ADDR})" : '';
 
-  my $html_pr_follow = '';
+    my $html_pr_follow = '';
 
-  if ( $variables->{followup} )
-  {
-     $html_pr_follow =
-    qq(<p>In Reply to:
+    if ( $variables->{followup} ) {
+        $html_pr_follow = qq(<p>In Reply to:
        <a href="$E{"$variables->{last_message}.$ext"}">$E{$variables->{origsubject}}</a> posted by );
 
-      if ( $variables->{origemail} )
-      {
-        $html_pr_follow .=
-         qq(<a href="$E{$variables->{origemail}}">$E{$variables->{origname}}</a>) ;
-      }
-      else
-      {
-        $html_pr_follow .= $E{$variables->{origname}};
-      }
-      $html_pr_follow .= '</p>';
-  }
+        if ( $variables->{origemail} ) {
+            $html_pr_follow .=
+qq(<a href="$E{$variables->{origemail}}">$E{$variables->{origname}}</a>);
+        }
+        else {
+            $html_pr_follow .= $E{ $variables->{origname} };
+        }
+        $html_pr_follow .= '</p>';
+    }
 
-  my $html_img = $variables->{message_img} ?
-    qq(<p align="center"><img src="$E{$variables->{message_img}}" /></p>\n) : '';
-  my $html_email_input = $variables->{email} ?
-    qq(<input type="hidden" name="origemail" value="$E{$variables->{email}}" />) : '';
-  my $html_url = $variables->{message_url} ?
-    qq(<ul><li><a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></li></ul><br />) :
-      '';
+    my $html_img =
+      $variables->{message_img}
+      ? qq(<p align="center"><img src="$E{$variables->{message_img}}" /></p>\n)
+      : '';
+    my $html_email_input =
+      $variables->{email}
+      ? qq(<input type="hidden" name="origemail" value="$E{$variables->{email}}" />)
+      : '';
+    my $html_url =
+      $variables->{message_url}
+      ? qq(<ul><li><a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></li></ul><br />)
+      : '';
 
-  my $followups = $variables->{id};
-  if (defined $variables->{followups}) {
-    $followups = join(',', @{$variables->{followups}}, $followups);
-  }
+    my $followups = $variables->{id};
+    if ( defined $variables->{followups} ) {
+        $followups = join( ',', @{ $variables->{followups} }, $followups );
+    }
 
-  print NEWFILE <<END_HTML;
+    print NEWFILE <<END_HTML;
 <?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -549,27 +544,33 @@ sub new_file {
   </tr>
 END_HTML
 
-  my $subject = $variables->{subject};
+    my $subject = $variables->{subject};
 
-  $subject = 'Re: ' . $subject unless $subject =~ /^Re:/i;
+    $subject = 'Re: ' . $subject unless $subject =~ /^Re:/i;
 
-  if ($subject_line == 1) {
-    print NEWFILE qq(<input type="hidden" name="subject" value="$E{$subject}" />\n);
-    print NEWFILE "<tr><td>Subject:</td><td><b>$E{$subject}</b></td></tr>\n";
-  } elsif ($subject_line == 2) {
-    print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject" size="50" /></td></tr>\n);
-  } else {
-    print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject" value="$E{$subject}" size="50" /></td></tr>\n);
-  }
-  print NEWFILE "<tr><td>Comments:</td>\n";
-  print NEWFILE qq(<td><textarea name="body" cols="50" rows="10">\n);
-  if ($quote_text) {
-    print NEWFILE map { $E{"$quote_char $_\n"} }
-                  split /\n/, $variables->{hidden_body};
-    print NEWFILE "\n";
-  }
-  print NEWFILE "</textarea></td></tr>\n";
-  print NEWFILE <<END_HTML;
+    if ( $subject_line == 1 ) {
+        print NEWFILE
+          qq(<input type="hidden" name="subject" value="$E{$subject}" />\n);
+        print NEWFILE
+          "<tr><td>Subject:</td><td><b>$E{$subject}</b></td></tr>\n";
+    }
+    elsif ( $subject_line == 2 ) {
+        print NEWFILE
+qq(<tr><td>Subject:</td><td><input type="text" name="subject" size="50" /></td></tr>\n);
+    }
+    else {
+        print NEWFILE
+qq(<tr><td>Subject:</td><td><input type="text" name="subject" value="$E{$subject}" size="50" /></td></tr>\n);
+    }
+    print NEWFILE "<tr><td>Comments:</td>\n";
+    print NEWFILE qq(<td><textarea name="body" cols="50" rows="10">\n);
+    if ($quote_text) {
+        print NEWFILE map { $E{"$quote_char $_\n"} }
+          split /\n/, $variables->{hidden_body};
+        print NEWFILE "\n";
+    }
+    print NEWFILE "</textarea></td></tr>\n";
+    print NEWFILE <<END_HTML;
 <tr>
 <td>Optional Link URL:</td>
 <td><input type="text" name="url" size="50" /></td>
@@ -599,62 +600,70 @@ END_HTML
 </html>
 END_HTML
 
-  unless (close NEWFILE) {
-    my $err = "close $file.tmp: $!";
-    unlink "$file.tmp";
-    die $err;
-  }
+    unless ( close NEWFILE ) {
+        my $err = "close $file.tmp: $!";
+        unlink "$file.tmp";
+        die $err;
+    }
 
-  $ft->addfile($file, "$file.tmp");
+    $ft->addfile( $file, "$file.tmp" );
 }
 
 ###############################
 # Main WWWBoard Page Subroutine
 
 sub main_page {
-  my ($ft, $variables) = @_;
+    my ( $ft, $variables ) = @_;
 
-  if ($variables->{followup}) {
-    insert_followup($ft, $variables, "$basedir/$mesgfile", "$mesgdir/");
-  } else {
-    $ft->linewise_rewrite("$basedir/$mesgfile", sub {
-      if (/<!--begin-->/) {
-        $_ .= html_message_line($variables, "$mesgdir/");
-      }
-    });
-  }
+    if ( $variables->{followup} ) {
+        insert_followup( $ft, $variables, "$basedir/$mesgfile", "$mesgdir/" );
+    }
+    else {
+        $ft->linewise_rewrite(
+            "$basedir/$mesgfile",
+            sub {
+                if (/<!--begin-->/) {
+                    $_ .= html_message_line( $variables, "$mesgdir/" );
+                }
+            }
+        );
+    }
 }
 
 sub insert_followup {
-  my ($ft, $variables, $file, $url_prefix) = @_;
+    my ( $ft, $variables, $file, $url_prefix ) = @_;
 
-  my %is_followup_to = map {$_=>1} @{$variables->{followups}};
+    my %is_followup_to = map { $_ => 1 } @{ $variables->{followups} };
 
-  $ft->linewise_rewrite($file, sub {
+    $ft->linewise_rewrite(
+        $file,
+        sub {
 
-    if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/) {
-      $_ .= html_message_line($variables, $url_prefix);
-    } elsif (m#\(<!--responses: (\d+?)-->(\d+?)\)#) {
-      my ($respto, $respcount) = ($1, $2);
-      if (exists $is_followup_to{$respto}) {
-        $respcount++;
-        s#\(<!--responses: \d+-->\d+\)#(<!--responses: $respto-->$respcount)#
-            or die "unexpected s/// failure";
-      }
-    }
+            if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/) {
+                $_ .= html_message_line( $variables, $url_prefix );
+            }
+            elsif (m#\(<!--responses: (\d+?)-->(\d+?)\)#) {
+                my ( $respto, $respcount ) = ( $1, $2 );
+                if ( exists $is_followup_to{$respto} ) {
+                    $respcount++;
+s#\(<!--responses: \d+-->\d+\)#(<!--responses: $respto-->$respcount)#
+                      or die "unexpected s/// failure";
+                }
+            }
 
-  });
+        }
+    );
 }
 
 sub html_message_line {
-  my ($variables, $url_prefix) = @_;
+    my ( $variables, $url_prefix ) = @_;
 
-  my $id      = $variables->{id};
-  my $subject = $variables->{subject};
-  my $name    = $variables->{name};
-  my $date    = $variables->{date};
+    my $id      = $variables->{id};
+    my $subject = $variables->{subject};
+    my $name    = $variables->{name};
+    my $date    = $variables->{date};
 
-  return <<END_HTML;
+    return <<END_HTML;
 <!--top: $E{$id}--><li><a href="$E{"$url_prefix$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
 (<!--responses: $E{$id}-->0)
 <ul><!--insert: $E{$id}-->
@@ -667,30 +676,35 @@ END_HTML
 # Add Followup Threading to Individual Pages
 sub thread_pages {
 
-  my ($ft, $variables) = @_;
+    my ( $ft, $variables ) = @_;
 
-  return unless $variables->{num_followups};
+    return unless $variables->{num_followups};
 
-  foreach my $followup_num (@{$variables->{followups}}) {
-    insert_followup($ft, $variables, "$basedir/$mesgdir/$followup_num.$ext", '');
-  }
+    foreach my $followup_num ( @{ $variables->{followups} } ) {
+        insert_followup( $ft, $variables,
+            "$basedir/$mesgdir/$followup_num.$ext", '' );
+    }
 
 }
 
 sub return_html {
 
-  my ( $variables ) = @_;
-  my $id = $variables->{id};
+    my ($variables) = @_;
+    my $id = $variables->{id};
 
-  html_header();
-  $done_headers++;
+    html_header();
+    $done_headers++;
 
-  my $html_url = $variables->{message_url} ?
-    qq(<p><b>Link:</b> <a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></p>) : '';
-  my $html_img = $variables->{message_img} ?
-    qq(<p><b>Image:</b> <img src="$E{$variables->{message_img}}" /></p>) : '';
+    my $html_url =
+      $variables->{message_url}
+      ? qq(<p><b>Link:</b> <a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></p>)
+      : '';
+    my $html_img =
+      $variables->{message_img}
+      ? qq(<p><b>Image:</b> <img src="$E{$variables->{message_img}}" /></p>)
+      : '';
 
-  print <<END_HTML;
+    print <<END_HTML;
 <?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -723,12 +737,12 @@ END_HTML
 }
 
 sub preview_post {
-  my ($variables) = @_;
+    my ($variables) = @_;
 
-  html_header();
-  $done_headers = 1;
+    html_header();
+    $done_headers = 1;
 
-  print <<END_HTML;
+    print <<END_HTML;
 <?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -742,27 +756,28 @@ sub preview_post {
     $variables->{html_body}
   <hr />
 END_HTML
-  rest_of_form($variables);
+    rest_of_form($variables);
 }
 
 sub error {
-  my ($error, $variables) = @_;
+    my ( $error, $variables ) = @_;
 
-  html_header();
-  $done_headers++;
+    html_header();
+    $done_headers++;
 
-  my ($html_error_message, $error_title);
-  if ($error =~ /^no_(name|subject|body)$/) {
-    my $missing = ucfirst $1;
-    $error_title = "No $missing";
-    $html_error_message =<<EOMESS;
+    my ( $html_error_message, $error_title );
+    if ( $error =~ /^no_(name|subject|body)$/ ) {
+        my $missing = ucfirst $1;
+        $error_title        = "No $missing";
+        $html_error_message = <<EOMESS;
   <p>You forgot to fill in the '$missing' field in your posting.  Correct it
     below and re-submit.  The necessary fields are: Name, Subject and
     Message.</p>
 EOMESS
-   } elsif ($error eq 'field_size') {
-     $error_title = 'Field too Long';
-     $html_error_message =<<EOMESS;
+    }
+    elsif ( $error eq 'field_size' ) {
+        $error_title        = 'Field too Long';
+        $html_error_message = <<EOMESS;
   <p>One of the form fields in the message submission was too long.  The
   following are the limits on the size of each field (in characters):</p>
   <ul>
@@ -776,19 +791,21 @@ EOMESS
   </ul>
   <p>Please modify the form data and resubmit.</p>
 EOMESS
-   } elsif ($error eq 'invalid') {
-   	$error_title = 'Invalid data';
-	$html_error_message =<<EOMESS;
+    }
+    elsif ( $error eq 'invalid' ) {
+        $error_title        = 'Invalid data';
+        $html_error_message = <<EOMESS;
 <p>Attempt to submit invalid data. Your message will not be added.</p>
 EOMESS
-   }   else {
-     $error_title = 'Application error';
-     $html_error_message =<<EOMESS;
+    }
+    else {
+        $error_title        = 'Application error';
+        $html_error_message = <<EOMESS;
 <p>An error has occurred while your message was being submitted
 please use your back button and try again</p>
 EOMESS
-   }
-   print <<END_HTML;
+    }
+    print <<END_HTML;
 <?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -801,37 +818,42 @@ EOMESS
     $html_error_message
   <hr />
 END_HTML
-  if($variables) { rest_of_form($variables); }
-  exit;
+    if ($variables) { rest_of_form($variables); }
+    exit;
 }
 
 sub rest_of_form {
 
-  my ( $variables ) = @_;
+    my ($variables) = @_;
 
-  print qq(<form method="POST" action="$E{$cgi_url}">\n);
+    print qq(<form method="POST" action="$E{$cgi_url}">\n);
 
-  my %Form = %{$variables->{Form}};
+    my %Form = %{ $variables->{Form} };
 
-  if (defined $variables->{followup} and $variables->{followup} == 1) {
-    print <<END_HTML;
+    if ( defined $variables->{followup} and $variables->{followup} == 1 ) {
+        print <<END_HTML;
 <input type="hidden" name="origsubject" value="$E{$Form{origsubject}}" />
 <input type="hidden" name="origname" value="$E{$Form{origname}}" />
 <input type="hidden" name="origemail" value="$E{$Form{origemail}}" />
 <input type="hidden" name="origdate" value="$E{$Form{origdate}}" />
 <input type="hidden" name="followup" value="$E{$Form{followup}}" />
 END_HTML
-  }
-  print qq(Name: <input type="text" name="name" value="$E{$Form{name}}" size="50" /><br />\n);
-  print qq(E-Mail: <input type="text" name="email" value="$E{$Form{email}}" size="50" /><p />\n);
-  if ($subject_line == 1) {
-    print qq(<input type="hidden" name="subject" value="$E{$Form{subject}}" />\n);
-    print qq(Subject: <b>$E{$Form{subject}}</b><p />\n);
-  } else {
-    print qq(Subject: <input type="text" name="subject" value="$E{$Form{subject}}" size="50" /><p />\n);
-  }
+    }
+    print
+qq(Name: <input type="text" name="name" value="$E{$Form{name}}" size="50" /><br />\n);
+    print
+qq(E-Mail: <input type="text" name="email" value="$E{$Form{email}}" size="50" /><p />\n);
+    if ( $subject_line == 1 ) {
+        print
+qq(<input type="hidden" name="subject" value="$E{$Form{subject}}" />\n);
+        print qq(Subject: <b>$E{$Form{subject}}</b><p />\n);
+    }
+    else {
+        print
+qq(Subject: <input type="text" name="subject" value="$E{$Form{subject}}" size="50" /><p />\n);
+    }
 
-  print <<END_HTML;
+    print <<END_HTML;
 Message:<br />
 <textarea cols="50" rows="10" name="body">
 $E{$Form{'body'}}
@@ -844,34 +866,35 @@ Optional Image URL: <input type="text" name="img" value="$E{$Form{'img'}}" size=
 <br /><hr size="7" width="75%" />
 END_HTML
 
-  if ($show_faq) {
-    print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ] [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]</center>\n);
-  } else {
-    print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ]</center>\n);
-  }
-  print "</body></html>\n";
+    if ($show_faq) {
+        print
+qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ] [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]</center>\n);
+    }
+    else {
+        print
+qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ]</center>\n);
+    }
+    print "</body></html>\n";
 }
 
-sub filter_html
-{
-   my ( $comments ) = @_;
+sub filter_html {
+    my ($comments) = @_;
 
-   my $filter = CGI::NMS::HTMLFilter->new(
-                                           charset        => $cs,
-                                           allow_href     => 1,
-                                           allow_a_mailto => 1,
-                                           allow_src      => 1,
-                                         );
-   return $filter->filter($comments, 'Flow');
+    my $filter = CGI::NMS::HTMLFilter->new(
+        charset        => $cs,
+        allow_href     => 1,
+        allow_a_mailto => 1,
+        allow_src      => 1,
+    );
+    return $filter->filter( $comments, 'Flow' );
 }
 
-sub validate_url
-{
-   my ($url) = @_;
+sub validate_url {
+    my ($url) = @_;
 
-   $url = "http://$url" unless $url =~ /:/;
+    $url = "http://$url" unless $url =~ /:/;
 
-   $url =~ m<( ^ (?:ftp|http|https):// [\w\-\.]+ (?:\:\d+)?
+    $url =~ m<( ^ (?:ftp|http|https):// [\w\-\.]+ (?:\:\d+)?
                 (?: /  [\w\-.!~*'(|);/\@+\$,%#]*   )?
                 (?: \? [\w\-.!~*'(|);/\@&=+\$,%#]* )?
               $
@@ -881,9 +904,9 @@ sub validate_url
 ###############################################################
 
 BEGIN {
-  eval 'local $SIG{__DIE__} ; require File::Transaction';
-  $@ and $INC{'File/Transaction.pm'} = 1;
-  $@ and eval <<'END_FILE_TRANSACTION' || die $@;
+    eval 'local $SIG{__DIE__} ; require File::Transaction';
+    $@ and $INC{'File/Transaction.pm'} = 1;
+    $@ and eval <<'END_FILE_TRANSACTION' || die $@;
 
 ## BEGIN INLINED File::Transaction
 package File::Transaction;
@@ -1091,9 +1114,9 @@ END_FILE_TRANSACTION
 
 ###################################################################
 
-  eval 'local $SIG{__DIE__} ; require CGI::NMS::Charset';
-  $@ and $INC{'CGI/NMS/Charset.pm'} = 1;
-  $@ and eval <<'END_CGI_NMS_CHARSET' || die $@;
+    eval 'local $SIG{__DIE__} ; require CGI::NMS::Charset';
+    $@ and $INC{'CGI/NMS/Charset.pm'} = 1;
+    $@ and eval <<'END_CGI_NMS_CHARSET' || die $@;
 
 ## BEGIN INLINED CGI::NMS::Charset
 package CGI::NMS::Charset;
@@ -1463,9 +1486,9 @@ END_CGI_NMS_CHARSET
 
 ###############################################################
 
-  eval 'local $SIG{__DIE__} ; require CGI::NMS::HTMLFilter';
-  $@ and $INC{'CGI/NMS/HTMLFilter.pm'} = 1;
-  $@ and eval <<'END_CGI_NMS_HTMLFILTER' || die $@;
+    eval 'local $SIG{__DIE__} ; require CGI::NMS::HTMLFilter';
+    $@ and $INC{'CGI/NMS/HTMLFilter.pm'} = 1;
+    $@ and eval <<'END_CGI_NMS_HTMLFILTER' || die $@;
 
 ## BEGIN INLINED CGI::NMS::HTMLFilter
 package CGI::NMS::HTMLFilter;
