@@ -37,17 +37,30 @@ $DEBUGGING    - This should be set to 1 whilst you are installing
                 be output to the browser. This is a security risk and
                 should not be used when the script is live.
 
-$basedir      - The URL of the directory where your images are located. For
-                example: $basedir = 'http://your.host.com/images/'. This
+$use_redirect - If this is set to 1 then the program will issue a redirect
+                to the image and $baseurl must be the beginning of the URI
+                where the images reside.  This might not work on all
+                browsers.
+
+                If it is set to 0 then the program will send the image to the
+                browser directly (which is more costly for the server) in which
+                case $basedir must be the full system path to the directory
+                where the image files are.
+
+$baseurl      - The URL of the directory where your images are located. For
+                example: $baseurl = 'http://your.host.com/images/'. This
                 value should end with a trailing '/'.
 
+$basedir      - The filesystem path on the server to the directory where
+                your images are located.
+
 @files        - The lsit of image files that the random image is chosen from.
-                These filenames will be appended to the $basedir variable and 
+                These filenames will be appended to the $basedir variable and
                 thus should be relative to $basedir. For example,
 
                 @files = qw(logo.gif people/john.jpg animals/cat.png);
 
-                If you take the $basedir variable from the previous example, 
+                If you take the $basedir variable from the previous example,
                 you would get a set of three images:
 
                     http://your.host.com/images/logo.gif
@@ -58,7 +71,7 @@ $uselog       - Set this value to 1 to log which image is returned each time
                 the program runs.
 
 $logfile      - The path to the logfile, only needed if $uselog = 1. This file
-                must be writable by the webserver. For example, 
+                must be writable by the webserver. For example,
 
                     $logfile = "/tmp/randimages.log";
 
@@ -66,7 +79,7 @@ INSTALLATION
 
 rand_image is installed simply by copying the file rand_image.pl into your
 cgi-bin directory. If you don't know where your cgi-bin directory is, then
-please ask your system administrator
+please ask your system administrator.
 
 You may need to rename rand_image.pl to rand_image.cgi. Again, your system
 administrator will know if this is the case.
