@@ -33,7 +33,7 @@ Include program.
   <configuration>
     <introduction>
     <paragraph>
-There are a number of variables that you can change in rand_image.pl which
+There are a number of variables that you can change in rand_text.pl which
 alter the way that the program works.
 </paragraph>
     </introduction>

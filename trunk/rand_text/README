@@ -31,7 +31,7 @@ MANIFEST          - List of files
 
 CONFIGURATION
 
-There are a number of variables that you can change in rand_image.pl which
+There are a number of variables that you can change in rand_text.pl which
 alter the way that the program works.
 
 $DEBUGGING    - This should be set to 1 whilst you are installing
