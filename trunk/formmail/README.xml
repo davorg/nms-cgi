@@ -525,6 +525,11 @@ sort                    - This sets the order in which the submitted form
                            value="order:name,email,age,comments">
 </paragraph>
 <paragraph>
+                         If "order:" is used you must supply the names of
+                         all of the fields that you want to be in the body of
+                         the mail message.
+</paragraph
+<paragraph>
 print_config            - This is mainly used for debugging, and if set it
                           causes formmail to include a dump of the
                           specified configuration settings in the email.

@@ -375,6 +375,10 @@ sort                    - This sets the order in which the submitted form
                           <input type="hidden" name="sort"
                            value="order:name,email,age,comments">
 
+                          If "order:" is used you must supply the names of
+                          all of the fields that you want to be in the body of
+                          the mail message.
+
 print_config            - This is mainly used for debugging, and if set it
                           causes formmail to include a dump of the
                           specified configuration settings in the email.
