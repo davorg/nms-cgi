@@ -71,8 +71,11 @@ The relative path to the script from the C<SRCDIR>.
 =item FILES
 
 A hash by output page name of information about the files
-that the script modifies.  The values of the hash are
-hashrefs, with the following keys set:
+that the script modifies.  If the output page name starts
+with a "_" character then the file will be assumed to be
+read only and its final state will be omitted from the
+output.  The values of the hash are hashrefs, with the
+following keys set:
 
 =over 4
 
@@ -82,10 +85,14 @@ The basename of the file, e.g. F<guestbook.html>.
 
 =item START
 
-The path relative to the root of the CVS working directory
-of a file who's contents should be copied into the file to
-be operated on by the script under test at the time that
-the script is rewritten and installed.
+The starting contents of the file, set up when the script
+is rewritten and installed.  Can be a scalar, in which
+case it gets interpreted as the path relative to the
+root of the CVS working directory of a file who's contents
+should be copied into the file.  Can be a scalar ref, in
+which case the referenced string is used as the starting
+contents of the file.  Can be a coderef, which will be
+invoked without arguments to generate the file contents.
 
 =back
 
@@ -163,31 +170,53 @@ sub _setup_data_files
    my ($self) = @_;
 
    # ditch any old data and output files left over from the previous test
-   foreach my $dir ($self->{DATDIR}, $self->{OUTDIR})
-   {
-      opendir D, $dir or die "opendir $dir: $!";
-      while ( defined (my $file = readdir D) )
-      {
-         next if $file =~ /^\./;
-         unlink "$dir/$file";
-      }
-      closedir D;
-   }
+   system('rm','-r','--',$self->{DATDIR},$self->{OUTDIR}) and die "rm failed";
+   mkdir $self->{DATDIR}, 0755 or die "mkdir: $!";
+   mkdir $self->{OUTDIR}, 0755 or die "mkdir: $!";
 
    foreach my $page (keys %{$self->{FILES}})
    {
       my $pdat = $self->{FILES}{$page};
       my $fname = "$self->{DATDIR}/$pdat->{NAME}"; 
       $pdat->{PATH} = $fname;
+   }
 
-      open IN, "<$self->{SRCDIR}/$pdat->{START}" or die "open <$pdat->{START}: $!";
-      local $/;
-      my $file_contents = <IN>;
-      close IN;
+   foreach my $page (keys %{$self->{FILES}})
+   {
+      my $pdat = $self->{FILES}{$page};
+      my $fname = "$self->{DATDIR}/$pdat->{NAME}"; 
+
+      my $file_contents;
+      if (ref $pdat->{START} eq 'CODE')
+      {
+         $file_contents = &{ $pdat->{START} };
+      }
+      elsif (ref $pdat->{START} eq 'SCALAR')
+      {
+         $file_contents = ${ $pdat->{START} };
+      }
+      else
+      {
+         open IN, "<$self->{SRCDIR}/$pdat->{START}" or die "open <$pdat->{START}: $!";
+         local $/;
+         $file_contents = <IN>;
+         close IN;
+      }
+
+      my @dirs = (split /\//, $fname);
+      pop @dirs; # get rid of file basename
+      my $path = '';
+      foreach my $d (@dirs)
+      {
+         $path .= "/$d";
+	 -d $path or mkdir $path, 0755 or die "mkdir $path: $!";
+      }
 
       open OUT, ">$fname" or die "open >$fname: $!";
       print OUT $file_contents;
       close OUT;
+
+      next if $page =~ /^_/;
 
       symlink $fname, "$self->{OUTDIR}/$page.out" or die 
          "symlink $fname -> $self->{OUTDIR}/$page.out: $!";

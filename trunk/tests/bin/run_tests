@@ -40,10 +40,14 @@ foreach my $testset (@testsets)
    my $resdir    = "$put_results/new/$testset";
    rmdir_r($cgibindir);
    mkdir_p($cgibindir);
+
    rmdir_r($outdir);
    mkdir_p($outdir);
-   rmdir_r($datdir);
+
+   # rmdir_r($datdir);
+   system('rm','-r',$datdir) and die "rm failed";
    mkdir_p($datdir);
+
    rmdir_r($resdir);
    mkdir_p($resdir);
    
