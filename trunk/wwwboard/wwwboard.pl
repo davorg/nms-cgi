@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.17 2002-03-02 16:46:27 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.18 2002-03-02 16:58:48 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2002/03/02 16:46:27  gellyfish
+# * Fixed the threading
+# * simplified error()
+#
 # Revision 1.16  2002/03/02 14:54:05  gellyfish
 # * Fixed the output of the new page to be valid XHTML
 # * Fixed 'In Reply To'
@@ -230,7 +234,7 @@ sub get_number {
     || die "Can't lock number file: $!\n";
   my $num = <NUMBER> || 0;
 
-  if ($num =~ /^(\d)+$/) {
+  if ($num =~ /^(\d+)$/) {
     $num = $1;
   } else {
     $num = 0;
