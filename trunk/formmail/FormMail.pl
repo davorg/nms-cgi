@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.41 2002-02-24 21:54:41 nickjc Exp $
+# $Id: FormMail.pl,v 1.42 2002-02-26 08:50:15 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.41  2002/02/24 21:54:41  nickjc
+# * DOCTYPE declarations on all output pages
+#
 # Revision 1.40  2002/02/22 12:08:30  nickjc
 # * removed stray ';' from output HTML
 #
@@ -220,6 +223,9 @@ END_OF_CONFIRMATION
 
 $CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
 $CGI::POST_MAX = $CGI::POST_MAX = 1000000;
+
+
+my $hide_recipient = 0;
 
 
 # Merge @allow_mail_to and @recipients into a single list of regexps
@@ -448,6 +454,7 @@ sub check_required {
     my @allow = grep {/\@/} @allow_mail_to;
     if (scalar @allow > 0 and not $emulate_matts_code) {
       $Config{recipient} = $allow[0];
+      $hide_recipient = 1;
     } elsif (%Form) {
       error('no_recipient')
     } else {
@@ -494,7 +501,8 @@ sub return_html {
     print header;
 
     my $title = escape_html( $Config{'title'} || 'Thank You' );
-    my $recipient = escape_html($Config{'recipient'});
+    my $torecipient = 'to ' . escape_html($Config{'recipient'});
+    $torecipient = '' if $hide_recipient;
     my $attr = body_attributes(); # surely this should be done with CSS
 
     print <<EOHTML;
@@ -512,7 +520,7 @@ sub return_html {
   </head>
   <body $attr>$debug_warnings
     <h1 class="title">$title</h1>
-    <p>Below is what you submitted to $recipient on $date</p>
+    <p>Below is what you submitted $torecipient on $date</p>
     <p><hr size="1" width="75%" /></p>
 EOHTML
 
