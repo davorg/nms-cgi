@@ -72,5 +72,18 @@ sub upload {
 
     system('ssh', "$username\@shell.sourceforge.net", '/home/groups/n/nm/nms-cgi/post_upload')
         and die;
+
+    print "uploading packages via ftp...\n";
+    my $ftp = Net::FTP->new('upload.sourceforge.net', Passive => 1) or die;
+    $ftp->login('anonymous',"$username\@users.sourceforge.net") or die;
+    $ftp->cwd("/incoming") or die;
+    $ftp->binary or die;
+    foreach my $pkg (@pkg) {
+        $ftp->put($pkg->archive_path . ".tar.gz") or die;
+        $ftp->put($pkg->archive_path . ".zip") or die;
+    }
+    $ftp->put("$package.zip") or die;
+    $ftp->quit or die;
+    print "ftp done\n";
 }
 
