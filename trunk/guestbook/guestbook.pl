@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.37 2002-04-15 07:46:30 nickjc Exp $
+# $Id: guestbook.pl,v 1.38 2002-04-19 07:46:01 nickjc Exp $
 #
 
 use strict;
@@ -70,7 +70,7 @@ $line_breaks = 0;
 # $mailprog is the program that will be used to send mail if that is
 # required.  It should be the full path of a program that will accept
 # the message on its standard input, it should also include any required
-# switches.  If $mail is set to 0 above this can be ignores.
+# switches.  If $mail is set to 0 above then this can be ignored.
 
 $mailprog  = '/usr/lib/sendmail -t -oi -oem';
 
@@ -99,6 +99,9 @@ $long_date_fmt  = '%A, %B %d, %Y at %T (%Z)';
 $short_date_fmt = '%d/%m/%y %T %Z';
 
 # End configuration
+
+use vars qw($VERSION);
+$VERSION = ('$Revision: 1.38 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -185,7 +188,7 @@ use vars qw($comments);
 $comments = process_html($inputs{comments}, $line_breaks, $allow_html);
 
 # Generate versions of the inputs with HTML metacharacters
-# escaped - HTML should not # be allowed anywhere but the
+# escaped - HTML should not be allowed anywhere but the
 # comment.
 use vars qw(%escaped);
 %escaped = map {$_ => escape_html($inputs{$_})} keys %inputs;
@@ -242,20 +245,23 @@ rewrite_file($guestbookreal, sub
 
 write_log('entry') if $uselog;
 
+my $mailsafe_username = (check_email($inputs{username}) ? $inputs{username} : '');
+my $mailsafe_realname = cleanup_realname($inputs{realname});
+
 if ($mail) {
-   my $to = $recipient;
-   my $reply = "$inputs{username} ($inputs{realname})";
-   my $from   = "$inputs{username} ($inputs{realname})";
+   my $to      = $recipient;
+   my $from    = "$mailsafe_username ($mailsafe_realname)";
+   my $reply   = "$mailsafe_username ($mailsafe_realname)";
    my $subject = 'Entry to Guestbook';
    my $body    = 'You have a new entry in your guestbook:';
    do_mail($to, $from, $reply, $subject, $body );
 }
 
-if ($remote_mail && $inputs{username}) {
+if ($remote_mail && $mailsafe_username) {
 
-  my $to = $inputs{username};
-  my $from = $recipient;
-  my $reply = $recipient;
+  my $to      = $mailsafe_username;
+  my $from    = $recipient;
+  my $reply   = $recipient;
   my $subject = 'Entry to Guestbook';
   my $body    = 'Thank you for adding to my guestbook.';
   do_mail($to, $from, $reply, $subject, $body );
@@ -275,11 +281,11 @@ sub form_error {
   my ( $title, $heading, $text, $comments_field ) ;
 
   if ( $why eq 'no_name' ) {
-      $inputs{realname} = '';
-      $escaped{realname} = '';
-      $title = 'No Name';
-      $heading = 'Your Name appears to be blank';
-      $text =<<EOTEXT;
+     $inputs{realname} = '';
+     $escaped{realname} = '';
+     $title = 'No Name';
+     $heading = 'Your Name appears to be blank';
+     $text =<<EOTEXT;
 The Name Section in the guestbook fillout form appears to
 be blank and therefore your entry to the guestbook was not
 added.  Please add your name in the blank below.
@@ -289,32 +295,31 @@ EOTEXT
         <input type="hidden" name="comments" value="$escaped{comments}" />
         <input type="hidden" name="comments_encoded" value="1" />
 EOCOMMENT
-   }
-   elsif ( $why eq 'no_comments' ) {
-      $title = 'No Comments';
-      $heading = 'Your Comments appear to be blank';
-      $text =<<EOTEXT;
+  }
+  elsif ( $why eq 'no_comments' ) {
+    $title = 'No Comments';
+    $heading = 'Your Comments appear to be blank';
+    $text =<<EOTEXT;
 The comment section in the guestbook fillout form appears
 to be blank and therefore the Guestbook Addition was not
 added.  Please enter your comments below.
 EOTEXT
-      $comments_field =<<EOCOMMENT;
-      Comments:<br />
-      <textarea name="comments" cols="60" rows="4"></textarea>
+    $comments_field =<<EOCOMMENT;
+    Comments:<br />
+    <textarea name="comments" cols="60" rows="4"></textarea>
 EOCOMMENT
-   }
-   else {
-      $title = 'Unknown Error';
-      $heading = 'Something appears to be wrong with your submission';
-      $text    = 'Please check your input and resubmit';
-      $comments_field =<<EOCOMMENT;
-      Comments:<br />
-      <textarea name="comments" cols="60" rows="4">$escaped{comments}</textarea />
-      <input type="hidden" name="comments_encoded" value="1" />
+  }
+  else {
+    $title = 'Unknown Error';
+    $heading = 'Something appears to be wrong with your submission';
+    $text    = 'Please check your input and resubmit';
+    $comments_field =<<EOCOMMENT;
+    Comments:<br />
+    <textarea name="comments" cols="60" rows="4">$escaped{comments}</textarea />
+    <input type="hidden" name="comments_encoded" value="1" />
 EOCOMMENT
-   }
+  }
 
-  local $^W; # suppress warnings as we may have missing fields;
 
   print "Content-Type: text/html; charset=iso-8859-1\n\n";
   $done_headers++;
@@ -473,7 +478,13 @@ sub do_mail
 
   open (MAIL, "|$mailprog") || die "Can't open $mailprog - $!\n";
 
+  my $addr = remote_addr();
+  $addr =~ /^([\d\.]+)$/ or die "bad remote addr [$addr]";
+  $addr = $1;
+
   print MAIL <<EOMAIL;
+X-HTTP-Client: [$addr]
+X-Generated-By: NMS guestbook.pl v$VERSION
 To: $to
 Reply-to: $reply
 From: $from
@@ -515,35 +526,33 @@ sub strip_nonprintable {
 # Validity checks for various contexts.
 #
 
-# basic check on e-mail address - this is very crude and is better achieved
-# by the use of one of the modules
+sub cleanup_realname {
+  my ($realname) = @_;
+
+  return '' unless defined $realname;
+
+  $realname =~ s#\s+# #g;
+  $realname =~ tr# a-zA-Z0-9_\-,./'\241-377##dc;
+  return substr $realname, 0, 128;
+}
 
 sub check_email {
-  my $email = $_[0];
+  my ($email) = @_;
 
-  # If the e-mail address contains:
-  if ($email =~ /(@.*@)|(\.\.)|(@\.)|(\.@)|(^\.)/ ||
+  return 0 if $email =~ /^\s*$/;
 
-      # the e-mail address contains an invalid syntax.  Or, if the
-      # syntax does not match the following regular expression pattern
-      # it fails basic syntax verification.
+  return 0 unless $email =~ /^(.+)\@([a-z0-9_\.\-\[\]]+)$/is;
+  my ($user, $host) = ($1, $2);
 
-      $email !~ /^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z0-9]+)(\]?)$/) {
+  return 0 if $host =~ m#^\.|\.\.|\.$#;
+  return 0 if $user =~ /[^a-z0-9_\-\.\*\+\=]/i;
+  return 0 if length $user > 100;
+  return 0 if length $host > 100;
 
-    # Basic syntax requires:  one or more characters before the @ sign,
-    # followed by an optional '[', then any number of letters, numbers,
-    # dashes or periods (valid domain/IP characters) ending in a period
-    # and then 2 or 3 letters (for domain suffixes) or 1 to 3 numbers
-    # (for IP addresses).  An ending bracket is also allowed as it is
-    # valid syntax to have an email address like: user@[255.255.255.0]
+  return 1 if $host =~ /^\[\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\]$/;
+  return 1 if $host =~ /^[a-z0-9\-\.]+$/i;
 
-    # Return a false value, since the e-mail address did not pass valid
-    # syntax.
-    return 0;
-  } else {
-    # Return a true value, e-mail verification passed.
-    return 1;
-  }
+  return 0;
 }
 
 =head1 FILE MANIPULATION FUNCTIONS
@@ -1157,3 +1166,5 @@ sub unescape_html {
 # End of HTML handling code
 #
 ##################################################################
+
+
