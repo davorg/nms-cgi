@@ -10,6 +10,7 @@ use vars qw(@tests);
   [ 'img https' ,     q{<img src="https://foo.domain/foo.png" />}, q{<img src="https://foo.domain/foo.png" />} ],
   [ 'img badurl',     q{<img src="javascript:alert(1)" />}, q{<img />} ],
   [ 'img autoclose',  q{<img src=http://foo.foo/foo.png>}, q{<img src="http://foo.foo/foo.png" />} ],
+  [ 'img align',      q{<img align="left" src="http://foo.foo/foo.png" />}, q{<img align="left" src="http://foo.foo/foo.png" />} ],
   [ 'alt text',       q{<img src='http://foo.foo/foo.png' alt="This is a picture">},
                       q{<img src="http://foo.foo/foo.png" alt="This is a picture" />} ],
   [ 'alt nonprint',   qq{<img src='http://foo.foo/foo.png' alt="\001">},
