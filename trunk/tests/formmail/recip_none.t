@@ -25,9 +25,9 @@ sub install_tests
 
 sub rw_setup
 {
-   s|my\s+\@allow_mail_to\s*=.*?;|my \@allow_mail_to = ();|;
-   s|my\s+\@referers\s*=.*?;|my \@referers = qw(foo.domain bar\@foo.domain);|;
-   s|my\s+\@recipients\s*=.*?;|my \@recipients = ();|;
+   s|\s+\@allow_mail_to\s*=.*?;| \@allow_mail_to = ();|;
+   s|\s+\@referers\s*=.*?;| \@referers = qw(foo.domain bar\@foo.domain);|;
+   s|\s+\@recipients\s*=.*?;| \@recipients = ();|;
 }
 
 __END__

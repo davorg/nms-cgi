@@ -69,18 +69,18 @@ sub run_tests
 
 sub rw_setup
 {
-   s|my\s+\@recipients\s*=.*?;|my \@recipients = ('.*');|;
-   s|my\s+\@referers\s*=.*?;|my \@referers = ('foo.domain');|;
+   s|\s+\@recipients\s*=.*?;| \@recipients = ('.*');|;
+   s|\s+\@referers\s*=.*?;| \@referers = ('foo.domain');|;
 }
 
 sub rw_secure0
 {
-   s|my\s+\$secure\s*=.*?;|my \$secure = 0;|;
-   s|my\s+\$emulate_matts_code\s*=.*?;|my \$emulate_matts_code = 1;|;
+   s|\s+\$secure\s*=.*?;| \$secure = 0;|;
+   s|\s+\$emulate_matts_code\s*=.*?;| \$emulate_matts_code = 1;|;
 }
 
 sub rw_secure1
 {
-   s|my\s+\$secure\s*=.*?;|my \$secure = 1;|;
+   s|\s+\$secure\s*=.*?;| \$secure = 1;|;
 }
 

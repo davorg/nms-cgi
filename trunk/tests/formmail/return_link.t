@@ -59,8 +59,8 @@ foreach $secure (1, 0)
 
 sub rw_setup
 {
-   s|my\s+\@referers\s*=\s*qw\(.*?\)|my \@referers = qw(foo.domain)|;
-   s|my\s+\$secure\s*=.*?;|my \$secure = $secure;| or die;
-   s|my\s+\@allow_mail_to\s*=.*?;|my \@allow_mail_to = qw(foo\@foo.domain);|;
+   s|\s+\@referers\s*=\s*qw\(.*?\)| \@referers = qw(foo.domain)|;
+   s|\s+\$secure\s*=.*?;| \$secure = $secure;| or die;
+   s|\s+\@allow_mail_to\s*=.*?;| \@allow_mail_to = qw(foo\@foo.domain);|;
 }
 

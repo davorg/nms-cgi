@@ -54,9 +54,9 @@ sub LocalChecks::check_realname
 
 sub rw_setup
 {
-   s|my\s+\$secure\s*=.*?;|my \$secure = $secure;|;
-   s|my\s+\$send_confirmation_mail\s*=.*?;|my \$send_confirmation_mail = 1;|;
-   s|my\s+\@referers\s*=\s*qw\(.*?\)|my \@referers = qw(foo.domain)|;
-   s|my\s+\@allow_mail_to\s*=.*?;|my \@allow_mail_to = qw(foo\@foo.domain);|;
+   s|\s+\$secure\s*=.*?;| \$secure = $secure;|;
+   s|\s+\$send_confirmation_mail\s*=.*?;| \$send_confirmation_mail = 1;|;
+   s|\s+\@referers\s*=\s*qw\(.*?\)| \@referers = qw(foo.domain)|;
+   s|\s+\@allow_mail_to\s*=.*?;| \@allow_mail_to = qw(foo\@foo.domain);|;
 }
 

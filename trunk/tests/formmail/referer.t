@@ -52,6 +52,8 @@ $t = NMSTest::ScriptUnderTest->new(
 );
 run_tests($t, 0);
 
+0;
+
 sub run_tests
 {
    my ($t, $secure) = @_;
@@ -68,17 +70,17 @@ sub run_tests
 
 sub rw_setup
 {
-   s|my\s+\@referers\s*=\s*qw\(.*?\)|my \@referers = qw(foo.domain 127.0.0.1)|;
-   s|my\s+\@allow_mail_to\s*=.*?;|my \@allow_mail_to = qw(test\@test.domain);|;
+   s|\s+\@referers\s*=\s*qw\(.*?\)| \@referers = qw(foo.domain 127.0.0.1)|;
+   s|\s+\@allow_mail_to\s*=.*?;| \@allow_mail_to = qw(test\@test.domain);|;
 }
 
 sub rw_secure0
 {
-   s|my\s+\$secure\s*=.*?;|my \$secure = 0;|;
+   s|\s+\$secure\s*=.*?;| \$secure = 0;|;
 }
 
 sub rw_secure1
 {
-   s|my\s+\$secure\s*=.*?;|my \$secure = 1;|;
+   s|\s+\$secure\s*=.*?;| \$secure = 1;|;
 }
 
