@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.50 2002-10-21 21:10:18 nickjc Exp $
+# $Id: wwwboard.pl,v 1.51 2003-04-16 17:01:09 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.50 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.51 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.50 $
+# wwwboard.pl $Revision: 1.51 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -98,6 +98,17 @@ BEGIN
     ( $enable_preview ? ' <input type="submit" name="preview" value="Preview Post" />' : '');
 }
 
+sub html_header {
+    if ($CGI::VERSION >= 2.57) {
+        # This is the correct way to set the charset
+        print header('-type'=>'text/html', '-charset'=>$charset);
+    }
+    else {
+        # However CGI.pm older than version 2.57 doesn't have the
+        # -charset option so we cheat:
+        print header('-type' => "text/html; charset=$charset");
+    }
+}
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -125,7 +136,7 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n" unless $done_headers;
+      html_header() unless $done_headers;
 
       print <<EOERR;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -629,7 +640,7 @@ sub return_html {
   my ( $variables ) = @_;
   my $id = $variables->{id};
 
-  print header;
+  html_header();
   $done_headers++;
 
   my $html_url = $variables->{message_url} ? 
@@ -672,7 +683,7 @@ END_HTML
 sub preview_post {
   my ($variables) = @_;
 
-  print header;
+  html_header();
   $done_headers = 1;
 
   print <<END_HTML;
@@ -695,7 +706,7 @@ END_HTML
 sub error {
   my ($error, $variables) = @_;
 
-  print header;
+  html_header();
   $done_headers++;
 
   my ($html_error_message, $error_title);
