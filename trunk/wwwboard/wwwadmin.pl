@@ -1,8 +1,13 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.11 2002-03-03 10:55:14 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.12 2002-03-03 11:55:06 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/03/03 10:55:14  gellyfish
+# * Added POST_MAX etc
+# * File locking in wwwboard.pl
+# * Started on wwwadmin
+#
 # Revision 1.10  2002/02/27 09:04:30  gellyfish
 # * Added question about simple search and PDF to FAQ
 # * Suppressed output of headers in fatalsToBrowser if $done_headers
@@ -159,6 +164,8 @@ my %HTML;
     chomp;
     my ($k, $v) = split(/\n--\n/);
 
+    $v =~ s/<!-- STYLE -->/$style_element/;
+
     $HTML{$k} = $v;
   }
 }
@@ -171,6 +178,8 @@ $done_headers++;
 my $command = $ENV{QUERY_STRING};
 my $FORM = parse_form() unless $command;
 
+my @lines;
+
 if ($command eq 'remove') {
   my $html = $HTML{REMOVE_TOP};
   $html =~ s/(\$\w+)/$1/eeg;
@@ -178,7 +187,7 @@ if ($command eq 'remove') {
 
   open(MSGS, "$basedir/$mesgfile")
     || die $!;
-  my @lines = <MSGS>;
+  @lines = <MSGS>;
   close(MSGS);
 
   my ($min, $max);
@@ -608,8 +617,13 @@ HTML_DECL
 ==
 REMOVE_TOP
 --
-<html><head><title>Remove Messages From WWWBoard</title></head>
-<body><center><h1>Remove Messages From WWWBoard</h1></center>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Remove Messages From WWWBoard</title>
+<!-- STYLE -->
+</head>
+<body>
+<center><h1>Remove Messages From WWWBoard</h1></center>
 <p>Select below to remove those postings you wish to remove.
 Checking the Input Box on the left will remove the whole thread
 while checking the Input Box on the right to remove just that posting.</p>
@@ -618,12 +632,14 @@ which they appear in the $mesgfile page.  This will give you an idea of
 what the threads look like and is often more helpful than the sorted method.</p>
 <hr size=7 width=75%><p align="center"><font size=-1>
 [ <a href="$cgi_url?remove">Remove</a> ] [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] [ <a href="$baseurl/$mesgpage">$title</a> ]
-</font></p><hr size=7 width=75%><p>
-<form method=POST action="$cgi_url">
-<input type=hidden name="action" value="remove">
-<table border>
+</font></p><hr size="7" width="75%" /><p>
+<form method="POST" action="$cgi_url">
+<input type=hidden name="action" value="remove" />
+<table border="0" summary="">
 <tr>
-<th colspan=6>Username: <input type=text name="username"> -- Password: <input type=password name="password"></th>
+<th colspan="6">
+Username: <input type="text" name="username" /> -- 
+Password: <input type=password name="password" /></th>
 </tr><tr>
 <th>Post \# </th><th>Thread </th><th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
 ==
@@ -634,35 +650,45 @@ REMOVE_MID
 <td><input type=radio name="$id" value="single"> </td>
 <td><a href="$baseurl/$mesgdir/$id.$ext">$subject</a></td>
 <td>$author</td>
-<td>$date<br></td>
+<td>$date<br /></td>
 </tr>
 ==
 REMOVE_BOT
 --
 </table>
 
-<input type=hidden name="min" value="$min">
-<input type=hidden name="max" value="$max">
-<input type=hidden name="type" value="remove">
-<input type=submit value="Remove Messages"> <input type=reset>
+<input type="hidden" name="min" value="$min" />
+<input type="hidden" name="max" value="$max" />
+<input type="hidden" name="type" value="remove" />
+<input type="submit" value="Remove Messages" /> <input type="reset" />
 </form>
 </body></html>
 ==
 REM_NUM_TOP
 --
-<html><head><title>Remove Messages From WWWBoard By Number</title></head>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>Remove Messages From WWWBoard By Number</title>
+<!-- STYLE -->
+</head>
 <body><center><h1>Remove Messages From WWWBoard By Number</h1></center>
 <p>Select below to remove those postings you wish to remove.
 Checking the Input Box on the left will remove the whole thread
 while checking the Input Box on the right to remove just that posting.</p>
-<hr size=7 width=75%><center><font size=-1>
-[ <a href="$cgi_url?remove">Remove</a> ] [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] [ <a href="$baseurl/$mesgpage">$title</a> ]
-</font></center><hr size=7 width=75%><p>
-<form method=POST action="$cgi_url">
-<input type=hidden name="action" value="remove">
-<table border>
+<hr size="7" width="75%" />
+<center><font size="-1">
+[ <a href="$cgi_url?remove">Remove</a> ] 
+[ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
+[ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
+[ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
+[ <a href="$baseurl/$mesgpage">$title</a> ]
+</font></center><hr size="7" width="75%" /><p>
+<form method="POST" action="$cgi_url">
+<input type="hidden" name="action" value="remove" />
+<table border="0" summary="">
 <tr>
-<th colspan=6>Username: <input type=text name="username"> -- Password: <input type=password name="password"><br></th>
+<th colspan="6">
+Username: <input type="text" name="username" /> -- 
+Password: <input type="password" name="password" /><br /></th>
 </tr>
 <tr>
 <th>Post # </th><th>Thread </th><th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
@@ -670,8 +696,9 @@ while checking the Input Box on the right to remove just that posting.</p>
 REM_NUM_MID
 --
 <tr>
-<th><b>$id</b> </th><td><input type=radio name="$id" value="all"></td>
-<td><input type=radio name="$id" value="single"></td>
+<th><b>$id</b> </th><td>
+<input type="radio" name="$id" value="all" /></td>
+<td><input type="radio" name="$id" value="single" /></td>
 <td><a href="$baseurl/$mesgdir/$id.$ext">$subject</a></td>
 <td>$author</td>
 <td>$date</td>
@@ -681,33 +708,43 @@ REM_NUM_BOT
 --
 </table>
 <center><p>
-<input type=hidden name="min" value="$min">
-<input type=hidden name="max" value="$max">
-<input type=hidden name="type" value="remove">
-<input type=submit value="Remove Messages"> <input type=reset>
+<input type="hidden" name="min" value="$min" />
+<input type="hidden" name="max" value="$max" />
+<input type="hidden" name="type" value="remove" />
+<input type="submit" value="Remove Messages" /> <input type="reset" />
 </form>
 </body></html>
 ==
 REM_DATE_TOP
 --
-<html><head><title>Remove Messages From WWWBoard By Date</title></head>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Remove Messages From WWWBoard By Date</title>
+<!-- STYLE -->
+</head>
 <body><center><h1>Remove Messages From WWWBoard By Date</h1></center>
 Select below to remove those postings you wish to remove.
 Checking the input box beside a date will remove all postings 
 that occurred on that date.
 <p>
-<hr size=7 width=75%><center><font size=-1>
-[ <a href="$cgi_url\?remove">Remove</a> ] [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] [ <a hre
-f="$baseurl/$mesgpage">$title</a> ]
-</font></center><hr size=7 width=75%>
+<hr size="7" width="75%">
+<center><font size="-1">
+[ <a href="$cgi_url\?remove">Remove</a> ] 
+[ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
+[ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
+[ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
+[ <a href="$baseurl/$mesgpage">$title</a> ]
+</font></center><hr size="7" width="75%" />
 <p>
-<form method=POST action="$cgi_url">
-<input type=hidden name="action" value="remove_by_date_or_author">
-<input type=hidden name="type" value="remove_by_date">
+<form method="POST" action="$cgi_url">
+<input type="hidden" name="action" value="remove_by_date_or_author" />
+<input type="hidden" name="type" value="remove_by_date" />
 <center>
-<table border>
+<table border="0" summary="">
 <tr>
-<th colspan=4>Username: <input type=text name="username"> -- Password: <input type=password name="password"><br></th>
+<th colspan="4">
+Username: <input type="text" name="username"> -- 
+Password: <input type="password" name="password"><br /></th>
 </tr>
 <tr>
 <th>X </th>
@@ -718,7 +755,7 @@ f="$baseurl/$mesgpage">$title</a> ]
 REM_DATE_MID
 --
 <tr>
-<td><input type=checkbox name="$date" value="$ids"></td>
+<td><input type="checkbox" name="$date" value="$ids" /></td>
 <th>$date</th>
 <td>$count</td>
 <td>$links<br></td>
@@ -727,88 +764,107 @@ REM_DATE_MID
 REM_DATE_BOT
 --
 </table>
-<input type=hidden name="used_values" value="$dates">
-<input type=submit value="Remove Messages"> <input type=reset>
+<input type="hidden" name="used_values" value="$dates" />
+<input type="submit" value="Remove Messages"> <input type="reset" />
 </form></center>
 </body></html>
 ==
 REM_AUTH_TOP
 --
-<html><head><title>Remove Messages From WWWBoard By Author</title></head>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Remove Messages From WWWBoard By Author</title>
+<!-- STYLE -->
+</head>
 <body><center><h1>Remove Messages From WWWBoard By Author</h1></center>
 Checking the checkbox beside the name of an author will remove 
 all postings which that author has created.
 <p>
-<hr size=7 width=75%><center><font size=-1>
-[ <a href="$cgi_url?remove">Remove</a> ] [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] [ <a hre
-f="$baseurl/$mesgpage">$title</a> ]
-</font></center><hr size=7 width=75%>
+<hr size="7" width="75%"><center><font size="-1">
+[ <a href="$cgi_url?remove">Remove</a> ] 
+[ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
+[ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
+[ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
+[ <a href="$baseurl/$mesgpage">$title</a> ]
+</font></center><hr size="7" width="75%" />
 <p>
-<form method=POST action="$cgi_url">
-<input type=hidden name="action" value="remove_by_date_or_author">
-<input type=hidden name="type" value="remove_by_author">
+<form method="POST" action="$cgi_url">
+<input type="hidden" name="action" value="remove_by_date_or_author" />
+<input type="hidden" name="type" value="remove_by_author" />
 <center>
-<table border>
+<table border="0" summary="">
 <tr>
-<th colspan=4>Username: <input type=text name="username"> -- Password: <input type=password name="password"><br></th>
+<th colspan=4>
+Username: <input type="text" name="username" /> -- 
+Password: <input type="password" name="password" /><br /></th>
 </tr>
 <tr>
 <th>X </th><th>Author </th>
-<th># of Messages </th><th>Message #'s<br></th></tr>
+<th># of Messages </th><th>Message #'s<br /></th></tr>
 ==
 REM_AUTH_MID
 --
 <tr>
-<td><input type=checkbox name="$author" value="$ids"></td>
+<td><input type="checkbox" name="$author" value="$ids" /></td>
 <th>$author</th>
 <td>$count</td>
-<td>$links<br></td>
+<td>$links<br /></td>
 </tr>
 ==
 REM_AUTH_BOT
 --
 </table>
-<input type=hidden name="used_values" value="$authors">
-<input type=submit value="Remove Messages"> <input type=reset>
+<input type="hidden" name="used_values" value="$authors" />
+<input type="submit" value="Remove Messages" /> <input type="reset" />
 </form></center>
 </body></html>
 ==
 PASSWD
 --
-<html><head><title>Change WWWBoard Admin Password</title></head>
-<body><center><h1>Change WWWBoard Admin Password</h1></center>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>Change WWWBoard Admin Password</title>
+<!-- STYLE -->
+</head>
+<body>
+<center><h1>Change WWWBoard Admin Password</h1></center>
 Fill out the form below completely to change your password and user name.
-If new username is left blank, your old one will be assumed.<p><hr size=7 width=75%><p>
-<form method=POST action="$cgi_url">
-<input type=hidden name="action" value="change_passwd">
-<center><table border=0>
+If new username is left blank, your old one will be assumed.<p>
+<hr size="7" width="75%" /><p>
+<form method="POST" action="$cgi_url">
+<input type="hidden" name="action" value="change_passwd" />
+<center><table border="0" summary="">
 <tr>
-<th align=left>Username: </th>
-<td><input type=text name="username"><br></td>
+<th align="left">Username: </th>
+<td><input type="text" name="username" /><br /></td>
 </tr><tr>
-<th align=left>Password: </th>
-<td><input type=password name="password"><br></td>
+<th align="left">Password: </th>
+<td><input type=password name="password" /><br /></td>
 </tr><tr> </tr><tr>
-<th align=left>New Username: </th>
-<td><input type=text name="new_username"><br></td>
+<th align="left">New Username: </th>
+<td><input type="text" name="new_username" /><br /></td>
 </tr><tr>
-<th align=left>New Password: </th>
-<td><input type=password name="passwd_1"><br></td>
+<th align="left">New Password: </th>
+<td><input type="password" name="passwd_1" /><br /></td>
 </tr><tr>
-<th align=left>Re-type New Password: </th>
-<td><input type=password name="passwd_2"><br></td>
+<th align="left">Re-type New Password: </th>
+<td><input type="password" name="passwd_2" /><br /></td>
 </tr><tr>
-<td align=center><input type=submit value="Change Password"> </td>
-<td align=center><input type=reset></td>
+<td align="center">
+<input type="submit" value="Change Password" /> </td>
+<td align="center"><input type="reset" /></td>
 </tr></table></center>
 </form></body></html>
 ==
 DEFAULT
 --
-<html><head><title>WWWAdmin For WWWBoard</title></head>
-<body bgcolor="#FFFFFF" text="#000000"><center><h1>WWWAdmin For WWWBoard</h1></center>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>WWWAdmin For WWWBoard</title>
+<!-- STYLE -->
+</head>
+<body bgcolor="#FFFFFF" text="#000000"><center>
+<h1>WWWAdmin For WWWBoard</h1></center>
 <p>Choose your Method of modifying WWWBoard Below:</p>
-<hr size="7" width="75%"><br>
+<hr size="7" width="75%" /><br />
 <ul>
 <li>Remove Files
 <ul>
@@ -816,7 +872,7 @@ DEFAULT
 <li><a href="$cgi_url?remove_by_num">Remove Files by Mesage Number</a>
 <li><a href="$cgi_url?remove_by_date">Remove Files by Date</a>
 <li><a href="$cgi_url?remove_by_author">Remove Files by Author</a>
-</ul><br>
+</ul><br />
 <li>Password
 <ul>
 <li><a href="$cgi_url?change_passwd">Change Admin Password</a>
