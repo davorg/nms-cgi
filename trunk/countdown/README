@@ -15,7 +15,7 @@ script archive at  <http://nms-cgi.sourceforge.net/>
 
 SUMMARY
 
-Countdown is a a script which allows you to display the amount of time left
+Countdown is a script which allows you to display the amount of time left
 to a given date and time.
 
 FILES
@@ -82,6 +82,14 @@ INSTALLATION
 Countdown is installed simply by copying the file countdown.pl into your
 cgi-bin directory. If you don't know where your cgi-bin directory is, then
 please ask your system administrator.
+
+You may need to rename countdown.pl to countdown.cgi. Again, your system
+administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x countdown.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
 
 Countdown can work in two modes. You can either set it to always return
 a countdown from the same date or you can use a different date each time

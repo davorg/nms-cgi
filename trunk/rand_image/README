@@ -1,83 +1,89 @@
+COPYRIGHT
+
 Random Image Displayer Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
+
+LICENSE
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at <http://nms-cgi.sourceforge.net/>
+URL
 
-The Random Image Displayer will allow you to call on different images each 
-time your page is reloaded and accessed.  The Random Image Displayer consists 
-of two files, the rand_image.pl and README.
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>.
 
-     rand_image.pl - The perl script that calls on the random image.
-     README - This file (Installation instructions)
+SUMMARY
 
-This is one of my more simple scripts, yet still very useful for its purpose.  
-Below is a description of how to configure the files:
+rand_image chooses a random image from a set of predefined images and
+displays it on a webpage.
 
-RAND_IMAGE.PL -
-   This is the main file and the one that is called upon every time your 
-page is loaded.  You will need to place this file in your server's cgi-bin and 
-give users the permission to read/execute this file. (chmod 755 or chmod a+rx)  
-There are also several variables you will have to define:
+FILES
 
-   # Define Necessary Variables
-   $basedir = "";
-       This is the http address and base directory that your pictures
-       are placed in.  This is in url form.  The filenames you 
-       specify will be appended to this address.  Examples Below.
-       @files = ("","");
-       These are all of your files placed into array.  The filenames 
-       should be reflective of the location of the files relative 
-       to your $basedir. Examples Below.
+In this distribution, you will find three files:
 
-   # Choose Options
-   $uselog = 1;    # 1 = YES; 0 = NO
-       You can enable the usage of a short log, which will simply log 
-       the name of each file as it is accessed.  Not very fancy, but 
-       it can be useful.
-   $logfile = "";
-       The system path to your log file and where you want it kept.  
-       Keep in mind that this log file must be placed in a world 
-       writable directory.  If you don't create a log file, but 
-       point the path to a world writeable directory and give it a 
-       false filename, the script will create the file for you.  This 
-       is not a required variable if you turn off $uselog.
-________________________________________________________________
+rand_image.pl - The main perl script.
+README        - This file. Instructions on how to install and use rand_image.
+MANIFESTO     - List of files
 
-README -
-        All you have to do with this file is read it!  :)
-________________________________________________________________
+CONFIGURATION
 
-Example:
-Let's say I have 5 files.  They are  all in a root directory called: 
-/home/mattw/public_html/, but from there they branch out to:
-pics/funny.gif, nature/waterfalls.gif, pics/cool.gif, nature/tree.gif, and 
-pics/www.gif.  Where pics/ and nature/ are directories that these images are 
-located in.  Your variables should show as follows:
+There are a number of variables that you can change in rand_image.pl which
+alter the way that the program works.
 
-$basedir = "http://alpha.pr1.k12.co.us/~mattw/";
-@files = ("pics/funny.gif","nature/waterfalls.gif","pics/cool.gif",
-          "nature/tree.gif","pics/www.gif");
+$DEBUGGING    - This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
 
-It's that easy!
-________________________________________________________________
+$basedir      - The URL of the directory where your images are located. For
+                example: $basedir = 'http://your.host.com/images/'. This
+                value should end with a trailing '/'.
 
-How do I implement this in my pages?
-   This file can be used in your pages in one of the following syntaxes.  
-It can do backgrounds, or just plain image references.  To activate it do the 
-following:
-<img src="http://www.ser.ver/cgi-bin/rand_image.pl">
-   This is when you want it to call a random image.
-<body background="http://www.ser.ver/cgi-bin/rand_image.pl">
-   This is when you want it to call a random background.
+@files        - The lsit of image files that the random image is chosen from.
+                These filenames will be appended to the $basedir variable and 
+                thus should be relative to $basedir. For example,
 
-Things to be careful of:
-   If you are using it as a random background program, you will want to 
-make sure that all of your backgrounds will work with the specified colors.  
-In other words, if you have a dark and a light image in your random image path 
-it will be hard to find a text color to work in both instances.
+                @files = qw(logo.gif people/john.jpg animals/cat.png);
+
+                If you take the $basedir variable from the previous example, 
+                you would get a set of three images:
+
+                    http://your.host.com/images/logo.gif
+                    http://your.host.com/images/people/john.jpg
+                    http://your.host.com/images/animals/cat.png
+
+$uselog       - Set this value to 1 to log which image is returned each time
+                the program runs.
+
+$logfile      - The path to the logfile, only needed if $uselog = 1. This file
+                must be writable by the webserver. For example, 
+
+                    $logfile = "/tmp/randimages.log";
+
+INSTALLATION
+
+rand_image is installed simply by copying the file rand_image.pl.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator
+
+You may need to rename rand_image.pl to rand_image.cgi. Again, your system
+administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x rand_image.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+
+Then, edit your HTML files and change all the images that you want to
+be randomized to:
+
+<img src="http://your.host.com/cgi-bin/rand_image.pl" />
+
+This is just an example, so be sure to insert the correct URL of your
+rand_image.pl installation.
+
 
 SUPPORT
 
