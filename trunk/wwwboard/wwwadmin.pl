@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwadmin.pl,v 1.20 2002-09-14 23:02:42 nickjc Exp $
+# $Id: wwwadmin.pl,v 1.21 2002-09-15 09:15:26 nickjc Exp $
 #
 
 use strict;
@@ -12,11 +12,11 @@ use vars qw(
   $basedir $baseurl $cgi_url $mesgdir $datafile $mesgfile
   $passwd_file $ext $title $style $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.20 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.21 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.20 $
+# wwwadmin.pl $Revision: 1.21 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -396,66 +396,33 @@ sub parse_form {
 
 sub error {
   my ($error) = @_;
+
   my $args = {};
    if ($error eq 'bad_combo') {
       $args->{Title} = 'Bad Username - Password Combination';
-      $args->{Heading} = 'Bad Username - Password Combination';
       $args->{Body} = "You entered and invalid username password pair.  Please try again.";
    }
    elsif ($error eq 'passwd_file') {
       $args->{Title} = 'Could Not Open Password File For Reading';
-      $args->{Heading} = 'Could Not Open Password File For Reading';
       $args->{Body} = "Could not open the password file for reading!  Check permissions and try again.";
    }
    elsif ($error eq 'not_same') {
       $args->{Title} = 'Incorrect Password Type-In';
-      $args->{Heading} = 'Incorrect Password Type-In';
       $args->{Body} = "The passwords you typed in for your new password were not the same.\n";
       $args->{Body} .= "You may have mistyped, please try again.\n";
    }
    elsif ($error eq 'no_change') {
       $args->{Title} = 'Could Not Open Password File For Writing';
-      $args->{Heading} = 'Could Not Open Password File For Writing';
       $args->{Body} = 'Could not open the password file for writing!  Password not changed!';
    }
    else
    {
      $args->{Title}   = 'Unknown Error';
-     $args->{Heading} = 'Unknown Error';
-     $args->{Body}    = 'Unknown Error';
+     $args->{Body}    = "Unknown Error: $error";
    }
 
-   print passwd_error($args);
+   print $HTML{HTML_DECL}, template("ERROR_PAGE", $args);
    exit;
-}
-
-sub passwd_error
-{
-   my ( $args ) = @_;
-   return <<TUBBIES_SAY_EO;
-$HTML{HTML_DECL}
-<hr size="7" width="75%" />
-<html>
-  <head>
-    <title>$args->{Title}</title>
-    $html_style;
-    <body>
-     <center>
-       <h1>$args->{Heading}</a> 
-     </center>
-     <p>
-      $args->{Body}
-     </p> 
-     <center>
-       <font size="-1">
-         [ <a href="$cgi_url">NMS WWWAdmin</a> ] 
-         [ <a href="$baseurl/$mesgfile">$title</a> ]
-       </font>
-     </center>
-     <hr size="7" width="75%" />
-   </body>
-</html>
-TUBBIES_SAY_EO
 }
 
 sub check_passwd {
@@ -793,6 +760,25 @@ unless there is an error message stating otherwise.
 [ <a href=\"$cgi_url\?remove_by_num\">Remove by Message Number</a> ]
 [ <a href=\"$baseurl/$mesgfile\">$title</a> ]
 </font></center><hr size=7 width=75%>
+</body></html>
+END
+
+    ERROR_PAGE => <<"END",
+<head><title>[% Title %]</title>
+$html_style;
+</head>
+<body>
+<center><h1>[% Title %]</h1></center>
+<p>
+[% Body %]
+</p> 
+<center>
+<font size="-1">
+[ <a href="$cgi_url">NMS WWWAdmin</a> ] 
+[ <a href="$baseurl/$mesgfile">$title</a> ]
+</font>
+</center>
+<hr size="7" width="75%" />
 </body></html>
 END
 
