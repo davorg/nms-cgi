@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.46 2002-02-27 17:51:20 davorg Exp $
+# $Id: FormMail.pl,v 1.47 2002-02-28 08:51:05 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.46  2002/02/27 17:51:20  davorg
+# typo
+#
 # Revision 1.45  2002/02/27 09:04:28  gellyfish
 # * Added question about simple search and PDF to FAQ
 # * Suppressed output of headers in fatalsToBrowser if $done_headers
@@ -758,7 +761,8 @@ sub check_url_valid {
   return 1 if $url =~ m#^[a-z0-9_\-\.\,\+\/]+$#i;
 
   $url =~ m< ^ (?:ftp|http|https):// [\w\-\.]+ (?:\:\d+)?
-               (?: / [\w\-.!~*'(|);/?\@&=+\$,%#]* )?
+               (?: /  [\w\-.!~*'(|);/\@+\$,%#]*   )?
+               (?: \? [\w\-.!~*'(|);/\@&=+\$,%#]* )?
              $
            >x ? 1 : 0;
 }
