@@ -25,7 +25,8 @@
 FILES_IN_PKG_DIR = $(PKGFILES:%=.pkg/%)
 
 TARBALLS=../../.tarballs/$(NAME).tar.gz \
-	 ../../.tarballs/$(NAME).zip
+	 ../../.tarballs/$(NAME).zip    \
+	 ../../.tarballs/$(NAME).VER
 
 $(TARBALLS): $(FILES_IN_PKG_DIR) ../../buildtools/tarballs
 	mkdir -p ../../.tarballs

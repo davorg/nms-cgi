@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.2 $, 10, -1;
+$VERSION = substr q$Revision: 1.3 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -694,7 +694,8 @@ sub expand_list_config_items {
 =item substitute_forced_config_values ()
 
 Replaces form configuration values for which there is a forced value
-configuration setting with the forced value.
+configuration setting with the forced value.  Sets C<Hide_Recipient>
+true if the recipient config value is forced.
 
 =cut
 
@@ -704,6 +705,7 @@ sub substitute_forced_config_values {
   foreach my $k (keys %{ $self->{FormConfig} }) {
     if (exists $self->{CFG}{"force_config_$k"}) {
       $self->{FormConfig}{$k} = $self->{CFG}{"force_config_$k"};
+      $self->{Hide_Recipient} = 1 if $k eq 'recipient';
     }
   }
 }
@@ -866,9 +868,7 @@ Outputs the error page for a bad or missing recipient.
 sub bad_recipient_error_page {
   my ($self) = @_;
 
-  my $esc_rec = $self->escape_html( $self->{FormConfig}{recipient} );
-
-  $self->error_page( 'Error: Bad or Missing Recipient', <<END );
+  my $errhtml = <<END;
 <p>
   There was no recipient or an invalid recipient specified in the
   data sent to FormMail. Please make sure you have filled in the
@@ -877,11 +877,19 @@ sub bad_recipient_error_page {
   More information on filling in <tt>recipient/allow_mail_to</tt>
   form fields and variables can be found in the README file.
 </p>
+END
+
+  unless ($self->{CFG}{force_config_recipient}) {
+    my $esc_rec = $self->escape_html( $self->{FormConfig}{recipient} );
+    $errhtml .= <<END;
 <hr size="1" />
 <p>
  The recipient was: [ $esc_rec ]
 </p>
 END
+  }
+
+  $self->error_page( 'Error: Bad or Missing Recipient', $errhtml );
 }
 
 =item too_many_recipients_error_page ()

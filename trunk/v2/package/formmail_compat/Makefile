@@ -4,7 +4,7 @@
 # Makefile for the compatability FormMail package
 #
 
-NAME=formmail
+NAME = formmail_compat
 
 MODULES=CGI/NMS/Charset.pm         \
 	CGI/NMS/Validator.pm       \

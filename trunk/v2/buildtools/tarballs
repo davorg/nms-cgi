@@ -13,7 +13,11 @@ tarballs - generate NMS .tar.gz and .zip packages
 
 Builds .tar.gz and .zip archives of an NMS package, storing the
 archives as F<$TARBALL_DIR/$NAME.tar.gz> and
-F<$TARBALL_DIR/$NAME.zip>.  
+F<$TARBALL_DIR/$NAME.zip>.
+
+Also extracts the date of the most recent source file modification
+from the ChangeLog, and uses the date as a version number, which
+gets writen to the file F<$TARBALL_DIR/$NAME.VER>.
 
 The PACKAGE_FILE arguments list the files to go in the archive,
 relative to the current directory.  The first element in the path
@@ -27,9 +31,6 @@ archives.
 
 =cut
 
-my $tarball_dir = shift;
-$tarball_dir =~ m#^([\w\-\.\/]+)$# or die "bad TARBALL_DIR [$tarball_dir]";
-$tarball_dir = $1;
 
 my $name = shift;
 $name =~ /^([\w\-]+)$/ or die "bad NAME [$name]";
@@ -47,8 +48,24 @@ foreach (@files) {
     $_ = $1;
 }
 
-system('rm','-rf','--',"$tarball_dir/$name","$tarball_dir/$name.tar.gz","$tarball_dir/$name.zip")
+my $tarball_dir = shift;
+$tarball_dir =~ m#^([\w\-\.\/]+)$# or die "bad TARBALL_DIR [$tarball_dir]";
+$tarball_dir = $1;
+
+open CL, "<.pkg/ChangeLog" or die "open .pkg/ChangeLog: $!";
+my $line = <CL>;
+close CL;
+$line =~ /^((\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d)\s/ or
+   die "bad changelog first line: [$line]";
+my $version = "$1-$2-$2-$4$5";
+
+system('rm','-rf','--',"$tarball_dir/$name","$tarball_dir/$name.tar.gz",
+       "$tarball_dir/$name.zip", "$tarball_dir/$name.VER")
    and die "rm failed";
+
+open VER, ">$tarball_dir/$name.VER" or die "open $tarball_dir/$name.VER: $!";
+print VER "$version\n";
+close VER or die "close: $!";
 
 mkdir "$tarball_dir/$name", 0755 or die "mkdir $tarball_dir/$name: $!";
 

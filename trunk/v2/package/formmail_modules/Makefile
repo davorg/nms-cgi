@@ -29,7 +29,8 @@ SOURCE_FILES = \
 
 PKGFILES = FormMail.pl README EXAMPLES ChangeLog MANIFEST $(MODULES:%=lib/%)
 
-include ../../buildtools/modules_package.mak
+include ../../buildtools/package.mak
+include ../../buildtools/libfiles.mak
 
 .pkg/FormMail.pl: .pkg ../../src/formmail/FormMail.pl
 	cp ../../src/formmail/FormMail.pl .pkg/
