@@ -19,7 +19,7 @@ script looks like:
     $DEBUGGING         = 1;
     $emulate_matts_code= 0;
     $secure            = 1;
-    $allow_empty_ref   = 0;
+    $allow_empty_ref   = 1;
     $max_recipients    = 5;
     $mailprog          = '/usr/lib/sendmail -oi -t';
     @referers          = qw(dave.org.uk 209.207.222.64 localhost);
@@ -87,7 +87,7 @@ So the configuration section should now look like:
     $DEBUGGING         = 1;
     $emulate_matts_code= 0;
     $secure            = 1;
-    $allow_empty_ref   = 0;
+    $allow_empty_ref   = 1;
     $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
     @referers          = qw(www.your.domain);
@@ -241,7 +241,7 @@ collect target email addresses from web sites.
     $DEBUGGING         = 1;
     $emulate_matts_code= 0;
     $secure            = 1;
-    $allow_empty_ref   = 0;
+    $allow_empty_ref   = 1;
     $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
     @referers          = qw(www.your.domain);
@@ -359,7 +359,7 @@ script is now:
     $DEBUGGING         = 1;
     $emulate_matts_code= 0;
     $secure            = 1;
-    $allow_empty_ref   = 0;
+    $allow_empty_ref   = 1;
     $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
     @referers          = qw(www.your.domain);

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.74 2002-04-13 11:26:42 nickjc Exp $
+# $Id: FormMail.pl,v 1.75 2002-04-15 22:51:15 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.74 $
+# FormMail.pl $Revision: 1.75 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -41,7 +41,7 @@ BEGIN
   $DEBUGGING         = 1;
   $emulate_matts_code= 0;
   $secure            = 1;
-  $allow_empty_ref   = 0;
+  $allow_empty_ref   = 1;
   $max_recipients    = 5;
   $mailprog          = '/usr/lib/sendmail -oi -t';
   @referers          = qw(dave.org.uk 209.207.222.64 localhost);
@@ -65,7 +65,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.74 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.75 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -191,6 +191,10 @@ sub check_referer
   my $check_referer;
   my ($referer) = @_;
 
+  unless ($referer) {
+    return 1 if $allow_empty_ref or !$secure;
+  }
+
   if ($referer && ($referer =~ m!^https?://([^/]*\@)?([^/]+)!i)) {
     my $refHost;
 
@@ -215,7 +219,7 @@ sub check_referer
       }
     }
   } else {
-    $check_referer = ($secure && !$allow_empty_ref) ? 0 : 1;
+    return 0;
   }
 
   return $check_referer;
@@ -855,7 +859,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.74 $
+FormMail $Revision: 1.75 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
