@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.10 2002-01-11 22:37:22 nickjc Exp $
+# $Id: search.pl,v 1.11 2002-01-16 09:25:30 gellyfish Exp $
 #
 # Revision 1.8  2001/12/01 19:45:22  gellyfish
 # * Tested everything with 5.004.04
@@ -30,6 +30,12 @@
 
 use strict;
 use CGI qw(header param);
+
+# the "use subs 'File::Find::chdir'" is necessary here so that the
+# over-riding of the core chdir() works - see the note above the
+# File::Find::chdir subroutine
+
+use subs 'File::Find::chdir';
 use vars qw($DEBUGGING);
 use File::Find;
 
@@ -151,39 +157,10 @@ if ($terms)
     @term_list = split(/\s+/, $terms);
     ($wclist, $dirlist) = build_list(@files);
 
-    if ($old_file_find) {
-        #
-        # File::Find before Perl 5.6 doesn't have the no_chdir option,
-        # and will fail to enter subdirectories under taint checking
-        # because it doesn't detaint the directory names.
-        #
-        # We fake it by pruning subdirectories in the wanted() function
-        # and invoking find() again for each subdirectory so pruned.
-        #
-        # We need the eval and the Cwd stuff because find will also
-        # fail when it tries to chdir back to the saved cwd at the
-        # end, because that's tainted as well.
-        #
-        # Yuk.
-        #
-        my $oldcwd = detaint_dirname(Cwd::cwd());
-        my @dirs = ($basedir);
-        while (scalar @dirs) {
-            foreach my $dir (@dirs) {
-                $startdir = $dir;
-                $SIG{__DIE__} = sub {};
-                eval { find (\&do_search, $dir) };
-                $SIG{__DIE__} = \&fatalsToBrowser;
-                die $@ if $@ and $@ !~ /Insecure dependency in chdir/i;
-                delete $extra_basedirs{$dir};
-            }
-            @dirs = keys %extra_basedirs;
-        }
-        chdir $oldcwd or die "chdir $oldcwd: $!";
-    } else {
-        $startdir = $basedir;
-        find ({'wanted' => \&do_search, 'no_chdir' => 1}, $startdir);
-    }
+    # I have taken out the reimplementation hack ;-}
+
+    $startdir = $basedir;
+    find ( \&do_search, $startdir);
 }
 else
 {
@@ -343,6 +320,16 @@ sub end_of_html
  </body>
 </html>
 END_HTML
+}
+
+# This subroutine overrides the core chdir in order that detainting
+# can be done on the directory name before being passed to the real
+# one - newer File::Find can overcome this need but it is needed for
+# 5.004.04 - 5.005.03
+
+sub File::Find::chdir
+{
+   return CORE::chdir(main::detaint_dirname($_[0]);
 }
 
 sub detaint_dirname
