@@ -1,0 +1,16 @@
+[% MACRO link(page,link,text)
+                                                                                
+   IF (template.page == page);
+     "<p>$text</p>";
+   ELSE;
+     "<a href=\"$link\">$text</a>";
+   END -%]
+
+[% link('home', '/', 'Home') %]
+[% link('programs', 'scripts.shtml', 'Programs') %]
+[% link('support', 'support.html', 'Support') %]
+[% link('faqs', 'faqs_nms.html', 'FAQs') %]
+[% link('about', 'about.html', 'About') %]
+[% link('news', 'news.html', 'News') %]
+[% link('usage', 'usage.html', 'Usage') %]
+[% link('dev', 'devel.html', 'Get Involved') %]

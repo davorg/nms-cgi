@@ -1,0 +1,156 @@
+body {
+  background-color: #ccf;
+  font-family: arial, helvetica, sans-serif;
+  color: #000000;
+}
+
+.menu {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 120px;
+  margin-left: 0px;
+  margin-right: 0px;
+  font-weight: bold;
+  text-align: center;
+  border: #309 solid 3px;
+}
+
+.content {
+  position: absolute;
+  top: 20px;
+  left: 166px;
+  margin-right: 20px;
+  background-color: white;
+  color: black;
+  border: #309 solid 3px;
+  padding: 0 20px;
+  min-height: 95%;
+}
+
+.foot {
+}
+
+h1 {
+  margin: 0;
+  margin-top: 10px;
+  padding: 0;
+  padding-right: 5px;
+  font-size: 3em;
+  border-right: #309 solid 1px;
+}
+
+p.slogan {
+  text-align: right;
+  font-weight: bold;
+  color: #309;
+  padding: 3px;
+  margin: 0;
+  border-bottom: #309 solid 1px;
+  border-right: #309 solid 1px;
+}
+
+h2 {
+  border-bottom: #309 solid 1px;
+  border-right: #309 solid 1px;
+  padding-bottom: 3px;
+  padding-right: 3px;
+}  
+
+h1, h2, h3, h4, h5, h6 {
+  color: #990033;
+  text-align: right;
+}
+
+th {
+  text-align: left;
+  color: #990033;
+}
+
+ul.map {
+  margin-left: 100px;
+  margin-right: 100px;
+  list-style-image: url(star.png);
+}
+
+.map b {
+  color: #309;
+}
+
+.map li {
+  padding-bottom: 2px;
+}
+
+address {
+  font-style: normal;
+  font-size: smaller;
+}
+
+pre {
+  font-family: "Courier New", Courier, fixed;
+}
+
+a:link, a:active, a:visited {
+  text-decoration: none;
+  color: #990033;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.small 	{
+  font-size: smaller;
+}
+
+.right  {
+  text-align: right;
+}
+
+.quote	{
+  font-size: larger;
+  font-style: italic;
+  margin-left: 10%;
+  margin-right:10%;
+}
+
+.squote	{
+  font-style: italic;
+  margin-left: 10%;
+  margin-right:10%;
+}
+
+.attrib	{
+  font-style: italic;
+  margin-left: 40%;
+  text-align: right;
+}
+
+.nms {
+  font-size: 125%;
+  font-style: italic;
+  color: #330099;
+}
+
+.menu a {
+  color: #330099;
+  padding: 5px;
+  margin: 0;
+  display: block;
+  text-decoration: none;
+  background-color: #ccccff;
+}
+
+.menu a:hover {
+  color: #ccccff;
+  background-color: #330099;
+}
+
+.menu p {
+  color: #330099;
+  padding: 5px;
+  margin: 0;
+  border: 1px solid #ccccff;
+  background: white;
+}
+
