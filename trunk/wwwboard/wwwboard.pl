@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.28 2002-07-23 21:00:18 nickjc Exp $
+# $Id: wwwboard.pl,v 1.29 2002-08-18 20:10:20 nickjc Exp $
 #
 
 use strict;
@@ -390,7 +390,7 @@ sub new_file {
   my $img = $variables->{message_img} ?
     qq(<p align="center"><img src="$variables->{message_img}"></p>\n) : '';
   my $url = $variables->{message_url} ? 
-    qq(<ul><li><a href="$variables->{message_url}">$variables->{message_url_title}</a></li></ul><br>) :
+    qq(<ul><li><a href="$variables->{message_url}">$variables->{message_url_title}</a></li></ul><br />) :
       '';
 
   print NEWFILE <<END_HTML;
@@ -470,7 +470,7 @@ END_HTML
     print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject"value="$subject" size="50"></td></tr>\n);
   }
   print NEWFILE "<tr><td>Comments:</td>\n";
-  print NEWFILE qq(<td><textarea name="body" COLS="50" ROWS="10">\n);
+  print NEWFILE qq(<td><textarea name="body" cols="50" rows="10">\n);
   if ($quote_text) {
     print NEWFILE map { "$quote_char " . strip_html($_) . "\n" } 
                   split /\n/, $variables->{hidden_body};
@@ -765,7 +765,7 @@ EOMESS
   </head>
   <body><h1 align="center">ERROR: $error_title</h1>
     $error_message
-  <hr>
+  <hr />
 END_HTML
   rest_of_form($variables);
   exit;
@@ -779,7 +779,7 @@ sub rest_of_form {
 
   my %Form = %{$variables->{Form}};
 
-  if ($variables->{followup} == 1) {
+  if (defined $variables->{followup} and $variables->{followup} == 1) {
     print qq(<input type="hidden" name="origsubject" value="$Form{origsubject}" />\n);
     print qq(<input type="hidden" name="origname" value="$Form{origname}" />\n);
     print qq(<input type="hidden" name="origemail" value="$Form{origemail}" />\n);
@@ -797,12 +797,12 @@ sub rest_of_form {
   
   $Form{'body'} = escape_html($Form{'body'});
 
-  print "Message:<br>\n";
-  print qq(<textarea COLS="50" ROWS="10" name="body">\n);
+  print "Message:<br />\n";
+  print qq(<textarea cols="50" rows="10" name="body">\n);
 
   print "$Form{'body'}\n";
-  print "</textarea><p>\n";
-  print qq(Optional Link URL: <input type=text name="url" value="$Form{'url'}" size="45" /><br />\n);
+  print "</textarea><p />\n";
+  print qq(Optional Link URL: <input type="text" name="url" value="$Form{'url'}" size="45" /><br />\n);
   print qq(Link Title: <input type="text" name="url_title" value="$Form{'url_title'}" size="50" /><br />\n);
   print qq(Optional Image URL: <input type="text" name="img" value="$Form{'img'}" size="45" /><p />\n);
   print qq(<input type="submit" value="Post Message" /> <input type="reset" />\n);
