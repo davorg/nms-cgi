@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: icounter.pl,v 1.7 2001-12-01 19:45:22 gellyfish Exp $
+# $Id: icounter.pl,v 1.8 2002-02-14 10:46:50 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/12/01 19:45:22  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.6  2001/11/26 13:40:05  nickjc
 # Added \Q \E around variables in regexps where metacharacters in the
 # variables shouldn't be interpreted by the regex engine.
@@ -29,6 +33,12 @@ use CGI 'header';
 use Fcntl qw(:DEFAULT :flock);
 use POSIX 'strftime';
 use vars qw($DEBUGGING);
+
+# We don't need file uploads or POSTed data so switch them off
+# The strange locution is to stop a 'used once' warning.
+
+$CGI::POST_MAX = $CGI::POST_MAX = 0;
+$CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
 
 # Configuration
 
