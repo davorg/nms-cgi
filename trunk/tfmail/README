@@ -593,7 +593,7 @@ get_redirect               - Normally TFmail will only accept a 'POST' method
 get_template               - If this is set then it must specify a valid
                              template that will be used when a 'GET' request
                              is used, the template will be filled in the
-                             same was as the success page but no further
+                             same way as the success page but no further
                              action (such as sending mail or writing a log)
                              will be taken.  This might be useful when
                              creating a multipage form for example or if you 
@@ -601,6 +601,57 @@ get_template               - If this is set then it must specify a valid
                              form.  If both this and 'get_redirect' are
                              specified then the 'get_redirect' will take
                              precedence.
+
+address_style              - This will specify the style of the address that
+                             is used in the From: address of the main mail
+                             message.  The default (and the previous style
+                             before this option was added) is to create a
+                             form of "$email ($realname)", if it is set to
+                             a value of 1 then the address will be generated
+                             as "$realname <$email>".  You may want to use 
+                             this if you are using a mail client that takes
+                             the same address in the two perfectly valid
+                             styles to be different and you want to sort
+                             by From address, for instance.
+
+locale                     - This when set will determine the locale which is
+                             used when determining the names of months and
+                             days when using {= date =} template directive
+                             the default is to use the locale set on the
+                             server.  A few examples of locale codes are:
+
+                              Catalan           ca_ES
+                              Croatian          hr_HR
+                              Czech             cs_CZ
+                              Danish            da_DK
+                              Dutc              nl_NL
+                              Estonian          et_EE
+                              Finnish           fi_FI
+                              French            fr_FR
+                              Galician          gl_ES
+                              German            de_DE
+                              Greek             el_GR
+                              Hebrew            he_IL
+                              Hungarian         hu_HU
+                              Icelandic         is_IS
+                              Italian           it_IT
+                              Japanese          ja_JP
+                              Korean            ko_KR
+                              Lithuanian        lt_LT
+                              Norwegian         no_NO
+                              Polish            pl_PL
+                              Portuguese        pt_PT
+                              Romanian          ro_RO
+                              Russian           ru_RU
+                              Slovak            sk_SK
+                              Slovenian         sl_SI
+                              Spanish           es_ES
+                              Swedish           sv_SE
+                              Thai              th_TH
+                              Turkish           tr_TR
+
+                            This is not a complete list and your server may
+                            support a different set. 
 
 INLINE TEMPLATES
 

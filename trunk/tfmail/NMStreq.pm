@@ -4,11 +4,11 @@ use strict;
 use CGI;
 use Carp;
 use IO::File;
-use POSIX qw(strftime);
+use POSIX qw(locale_h strftime);
 use NMSCharset;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.13 $, 10, -1;
+$VERSION = substr q$Revision: 1.14 $, 10, -1;
 
 =head1 NAME
 
@@ -790,7 +790,9 @@ sub _interpolate
 
 =item _interpolate_date ( CONTEXT, CODEREF )
 
-Resolves a C<date> template directive.
+Resolves a C<date> template directive. Will use the date_fmt config to
+determine the format of the date and locale item if present to localize
+appropriate parts of the date string.
 
 =cut
 
@@ -799,10 +801,25 @@ sub _interpolate_date
    my ($self, $context, $coderef) = @_;
 
    my $date_fmt = $self->{r}{'config'}{date_fmt};
+   
+   my $old_locale;
+
+   
+   if ( my $locale = $self->config('locale') )
+   {
+      $old_locale = POSIX::setlocale( LC_TIME );
+      POSIX::setlocale(LC_TIME, $locale );
+   }
+
    defined $date_fmt or $date_fmt = $self->{opt}{DateFormat};
 
    my $date = strftime $date_fmt, localtime;
 
+   if ( $self->config('locale',0) )
+   {
+      POSIX::setlocale(LC_TIME, $old_locale);
+   }
+    
    # cache so that all date directives in a single request get the
    # same date.
    $self->{r}{date} = $date;

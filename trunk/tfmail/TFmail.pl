@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.24 2004-08-10 08:10:47 gellyfish Exp $
+# $Id: TFmail.pl,v 1.25 2004-08-11 08:05:00 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -69,7 +69,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.24 $, 10, -1;
+   $VERSION = substr q$Revision: 1.25 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -382,7 +382,7 @@ sub send_main_email
          my $realname = join ' ', map {$treq->param($_, '')} split /\s+/, $realname_input;
          $realname =~ tr#a-zA-Z0-9_\-\.\,\'\241-\377# #cs;
          $realname = substr $realname, 0, 100;
-         $from = "$from ($realname)" unless $realname =~ /^\s*$/;
+         $from = build_from_address($treq,$from,$realname);
       }
       my $by = $treq->config('by_submitter_by', 'by');
       $treq->install_directive('by_submitter', "$by $from ");
@@ -462,6 +462,39 @@ sub send_main_email
    send_email($msg);
 
    return $confto;
+}
+
+=item build_from_address ( TREQ , FROM, REALNAME )
+
+Will build the From: address as used in the mail email depending on the
+value of the address_style configuration item - the default is:
+$email ($realname), a value of 1 specifies "$realname <$email>".
+
+=cut
+
+sub build_from_address
+{
+   my ( $treq, $from, $realname ) = @_;
+
+   my $new_from;
+
+   if ( $realname !~ /^\s+$/ )
+   {
+      if ( $treq->config('address_style',0))
+      {
+         $new_from = "$realname <$from>";
+      }
+      else
+      {
+         $new_from = "$from ($realname)";
+      }
+   }
+   else
+   {
+      $new_from = $from;
+   }
+
+   return $new_from;
 }
 
 =item send_confirmation_email ( TREQ, CONFTO )
