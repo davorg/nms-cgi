@@ -32,7 +32,7 @@ sub check_xhtml
 
    if ($page eq 'OUT')
    {
-      s|^Content-type:[ \t]+text/html(; charset=iso-8859-1)?\r?\n\r?\n\s*||i or die
+      s%^Content-type:[ \t]+text/html(; charset=(iso-8859-1|utf-8))?\r?\n\r?\n\s*%%i or die
          "can't find text/html content-type\n";
    }
 
