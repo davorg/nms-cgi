@@ -1,8 +1,13 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.16 2002-03-02 14:54:05 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.17 2002-03-02 16:46:27 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2002/03/02 14:54:05  gellyfish
+# * Fixed the output of the new page to be valid XHTML
+# * Fixed 'In Reply To'
+# * Fixed link in wwwboard.html
+#
 # Revision 1.15  2002/03/02 13:26:19  gellyfish
 # * Fixed arguments to rest_of_form()
 # * (Followups in message still not working)
@@ -217,8 +222,6 @@ main_page($variables);
 thread_pages($variables);
 
 return_html($variables);
-increment_num($variables); # Is this necessary with the current implementation 
-                           # of get_number() ?
 
 sub get_number {
   sysopen(NUMBER, "$basedir/$datafile", O_RDWR|O_CREAT)
@@ -251,7 +254,6 @@ sub get_number {
 sub parse_form {
   my %Form;
 
-  # Are we sure this is valid syntax in 5.004.04 ?
 
   foreach my $param ( keys %max_len , 'followup' )
   {
@@ -300,12 +302,11 @@ sub get_variables {
 
     $variables->{followups} = \@followup_num;
     $variables->{num_followups} = scalar @followup_num;
-    $variables->{last_message} = pop(@{$variables->{followups}});
+    $variables->{last_message} = $followup_num[$#followup_num];
     $variables->{origdate} = $Form->{origdate};
     $variables->{origname} = $Form->{origname};
     $variables->{origsubject} = $Form->{origsubject};
   } else {
-    warn "No followups";
     $variables->{followup} = $variables->{num_followups} = 0;
   }
 
@@ -714,80 +715,37 @@ sub return_html {
 END_HTML
 }
 
-sub increment_num {
-  my ($variables) = @_;
-  open(NUM,">$basedir/$datafile") || die $!;
-  print NUM $id;
-  close(NUM);
-}
-
 sub error {
-  my $error = $_[0];
+  my ($error) = @_;
 
   print header;
   $done_headers++;
 
+  my ($error_message, $error_title);
   if ($error eq 'no_name') {
-    print <<END_HTML;
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title>$title ERROR: No Name</title>
-    $style_element
-  </head>
-  <body><h1 align="center">ERROR: No Name</h1>
+    $error_title = 'No Name';
+    $error_message =<<EOMESS;
   <p>You forgot to fill in the 'Name' field in your posting.  Correct it 
     below and re-submit.  The necessary fields are: Name, Subject and 
     Message.</p>
-  <hr>
-END_HTML
-    rest_of_form($variables);
+EOMESS
   } elsif ($error eq 'no_subject') {
-    print <<END_HTML;
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-  <head>
-    <title>$title ERROR: No Subject</title>
-    $style_element
-  </head>
-  <body><h1 align="center">ERROR: No Subject</h1>
+    $error_title = 'No Subject';
+    $error_message =<<EOMESS;
   <p>You forgot to fill in the 'Subject' field in your posting.  Correct it 
   below and re-submit.  The necessary fields are: Name, Subject and 
   Message.</p>
-  <hr>
-END_HTML
-    rest_of_form($variables);
+EOMESS
   } elsif ($error eq 'no_body') {
-    print <<END_HTML;
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-<head>
-<title>$title ERROR: No Message</title>
-$style_element
-</head>
-<body><align="center"><h1>ERROR: No Message</h1>
+    $error_title = 'No Message';
+    $error_message =<<EOMESS;
 <p>You forgot to fill in the 'Message' field in your posting.  Correct it
 below and re-submit.  The necessary fields are: Name, Subject and 
 Message.</p>
-<hr>
-END_HTML
-rest_of_form($variables);
-} elsif ($error eq 'field_size') {
-printf <<END_HTML;
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-  <head>
-    <title>$title ERROR: Field too Long</title>
-    $style_element
-  </head>
-  <body><h1 align="center">ERROR: Field too Long</h1>
+EOMESS
+   } elsif ($error eq 'field_size') {
+     $error_title = 'Field too Long';
+     $error_message =<<EOMESS;
   <p>One of the form fields in the message submission was too long.  The 
   following are the limits on the size of each field (in characters):</p>
   <ul>
@@ -800,12 +758,28 @@ printf <<END_HTML;
     <li>Image URL: $max_len{'img'}</li>
   </ul>
   <p>Please modify the form data and resubmit.</p>
+EOMESS
+   } else {
+     $error_title = 'Application error';
+     $error_message =<<EOMESS;
+<p>An error has occurred while your message was being submitted
+please use your back button and try again</p>
+EOMESS
+   }
+   print <<END_HTML;
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>$title ERROR: $error_title</title>
+    $style_element
+  </head>
+  <body><h1 align="center">ERROR: $error_title</h1>
+    $error_message
   <hr>
 END_HTML
-     rest_of_form($variables);
-   } else {
-     print "<p>ERROR!  Undefined.</p>";
-   }
+  rest_of_form($variables);
   exit;
 }
 
