@@ -247,7 +247,7 @@ To make use of it, you need to write an HTML form that refers to the
 FormMail script. Here's an example which will send mail to the address
 'feedback@your.domain' when someone submits the form:
 
-<form method="POST" action="http://your.domain/cgi-bin/FormMail.pl">
+<form method="post" action="http://your.domain/cgi-bin/FormMail.pl">
   <input type="hidden" name="recipient" value="feedback@your.domain" />
   <input type="text" name="feedback" /><br />
   Please enter your comments<br />

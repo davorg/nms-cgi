@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.76 2002-04-18 16:37:24 nickjc Exp $
+# $Id: FormMail.pl,v 1.77 2002-04-18 20:18:57 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.76 $
+# FormMail.pl $Revision: 1.77 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -65,7 +65,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.76 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.77 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -711,7 +711,7 @@ EOBODY
   If you are attempting to configure this form to run with FormMail,
   you need to set the request method to POST in the opening form tag,
   like this:
-  <tt>&lt;form action=&quot;/cgi-bin/FormMail.pl&quot; method=&quot;POST&quot;&gt;</tt>
+  <tt>&lt;form action=&quot;/cgi-bin/FormMail.pl&quot; method=&quot;post&quot;&gt;</tt>
 </p>
 EOBODY
  } elsif ($error eq 'no_recipient') {
@@ -857,7 +857,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.76 $
+FormMail $Revision: 1.77 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1157,7 +1157,7 @@ To make use of it, you need to write an HTML form that refers to the
 FormMail script. Here's an example which will send mail to the address
 'feedback@your.domain' when someone submits the form:
 
-  <form method="POST" action="http://your.domain/cgi-bin/FormMail.pl">
+  <form method="post" action="http://your.domain/cgi-bin/FormMail.pl">
     <input type="hidden" name="recipient" value="feedback@your.domain" />
     <input type="text" name="feedback" /><br />
     Please enter your comments<br />
