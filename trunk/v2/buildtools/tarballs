@@ -31,6 +31,9 @@ archives.
 
 =cut
 
+my $tarball_dir = shift;
+$tarball_dir =~ m#^([\w\-\.\/]+)$# or die "bad TARBALL_DIR [$tarball_dir]";
+$tarball_dir = $1;
 
 my $name = shift;
 $name =~ /^([\w\-]+)$/ or die "bad NAME [$name]";
@@ -48,9 +51,6 @@ foreach (@files) {
     $_ = $1;
 }
 
-my $tarball_dir = shift;
-$tarball_dir =~ m#^([\w\-\.\/]+)$# or die "bad TARBALL_DIR [$tarball_dir]";
-$tarball_dir = $1;
 
 open CL, "<.pkg/ChangeLog" or die "open .pkg/ChangeLog: $!";
 my $line = <CL>;
