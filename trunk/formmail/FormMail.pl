@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.59 2002-03-15 09:02:02 nickjc Exp $
+# $Id: FormMail.pl,v 1.60 2002-03-17 23:43:02 nickjc Exp $
 #
 
 use strict;
@@ -11,7 +11,7 @@ use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.59 $
+# FormMail.pl $Revision: 1.60 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -53,7 +53,7 @@ END_OF_CONFIRMATION
 # ----------------------------
 # (no user serviceable parts beyond here)
 
-my $VERSION = ('$Revision: 1.59 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+my $VERSION = ('$Revision: 1.60 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We don't need file uploads or very large POST requests.
 # Annoying locution to shut up 'used only once' warning in older perl
@@ -505,7 +505,7 @@ sub cleanup_realname {
 
   if ($secure) {
     # Allow no unusual characters and impose a length limit. We
-    # need to allow extented ASCII characters because they can
+    # need to allow extended ASCII characters because they can
     # occur in non-English names.
     $realname =~ tr# a-zA-Z0-9_\-,./'\200-377##dc;
     $realname = substr $realname, 0, 128;
@@ -836,7 +836,7 @@ __END__
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.59 $
+FormMail $Revision: 1.60 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -999,7 +999,7 @@ This is the URL of a CSS stylesheet which will be
 used for script generated messages.  This probably
 wants to be the same as the one that you use for all
 the other pages.  This should be a local absolute URI
-fragment.  Set $style to '0' or the emtpy string if
+fragment.  Set $style to '0' or the empty string if
 you do not want to use style sheets.
 
 =item $send_confirmation_mail
@@ -1210,7 +1210,7 @@ If this is set, it must be a URL, and the user
 will be redirected there if any of the fields
 listed in 'required' are left blank. Use this if
 you want finer control over the the error that
-the user see's if they miss out a field.
+the user sees if they miss out a field.
 
 =item env_report
 
@@ -1251,6 +1251,62 @@ it as the name part of the sender's email address in the email.
 
 =back
 
+=head1 COMMON PROBLEMS
+
+=over
+
+=item confusion over the qw operator
+
+In the configuration section at the top of FormMail, we set
+the default list of allowed referers with this line of code:
+
+   my @referers = qw(dave.org.uk 209.207.222.64 localhost);
+
+This use of the C<qw()> operator is one way to write lists of
+strings in Perl.  Another way is like this:
+
+   my @referers = ('dave.org.uk','209.207.222.64','localhost');
+
+We prefer the first version because it allows use to leave out
+the quote character, but the second version is perfectly valid
+and works exactly the same as the C<qw()> version.  You should
+use whichever version you feel most comfortable with.  Neither
+is better or worse than the other.
+
+What you must not do is try to mix the two, and end up with
+something like:
+
+   my @referers = qw('dave.org.uk','209.207.222.64','localhost');
+
+This will not work, and you will see unexpected behavior.  In
+the case of C<@referers>, the script will always display a
+"bad referer" error page.
+
+=item sendmail switches removed
+
+In the configuration section at the top of FormMail, we set
+the default mail program to sendmail with this code:
+
+   my $mailprog          = '/usr/lib/sendmail -oi -t';
+
+This is actually two different pieces of information; the
+location of the sendmail binary (F</usr/lib/sendmail>) and
+the command line switches that must be passed to it in order
+for it to read the list of message recipients from the 
+message header (C<-oi -t>).
+
+If your hosting provider or system administrator tells you that
+sendmail is F</usr/sbin/sendmail> on your system, then you must
+change the C<$mailprog> line to:
+
+   my $mailprog          = '/usr/sbin/sendmail -oi -t';
+
+and not:
+
+   my $mailprog          = '/usr/sbin/sendmail';
+
+=back
+
 =head1 SUPPORT
 
 For support of this script please email:
@@ -1260,6 +1316,9 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.59  2002/03/15 09:02:02  nickjc
+ return_link_url must be valid if $secure
+
  Revision 1.58  2002/03/15 00:33:51  nickjc
  * Put a limit on the subject length
 

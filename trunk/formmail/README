@@ -324,6 +324,59 @@ realname - If one of the things you're asking the user to fill in is their
            full name and you call that input 'realname', formmail will use
            it as the name part of the sender's email address in the email.
 
+COMMON PROBLEMS
+
+* Confusion over the qw operator
+
+In the configuration section at the top of FormMail, we set
+the default list of allowed referers with this line of code:
+
+   my @referers = qw(dave.org.uk 209.207.222.64 localhost);
+
+This use of the qw() operator is one way to write lists of
+strings in Perl.  Another way is like this:
+
+   my @referers = ('dave.org.uk','209.207.222.64','localhost');
+
+We prefer the first version because it allows use to leave out
+the quote character, but the second version is perfectly valid
+and works exactly the same as the qw() version.  You should
+use whichever version you feel most comfortable with.  Neither
+is better or worse than the other.
+
+What you must not do is try to mix the two, and end up with
+something like:
+
+   my @referers = qw('dave.org.uk','209.207.222.64','localhost');
+
+This will not work, and you will see unexpected behavior.  In
+the case of @referers, the script will always display a
+"bad referer" error page.
+
+* Sendmail switches removed
+
+In the configuration section at the top of FormMail, we set
+the default mail program to sendmail with this code:
+
+   my $mailprog          = '/usr/lib/sendmail -oi -t';
+
+This is actually two different pieces of information; the
+location of the sendmail binary (/usr/lib/sendmail) and
+the command line switches that must be passed to it in order
+for it to read the list of message recipients from the 
+message header (-oi -t).
+
+If your hosting provider or system administrator tells you that
+sendmail is /usr/sbin/sendmail on your system, then you must
+change the $mailprog line to:
+
+   my $mailprog          = '/usr/sbin/sendmail -oi -t';
+
+and not:
+
+   my $mailprog          = '/usr/sbin/sendmail';
+
+
 SUPPORT
 
 For support of this script please email:
