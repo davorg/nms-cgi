@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.66 2002-03-27 20:36:36 davorg Exp $
+# $Id: FormMail.pl,v 1.67 2002-03-28 14:14:03 nickjc Exp $
 #
 
 use strict;
@@ -16,7 +16,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.66 $
+# FormMail.pl $Revision: 1.67 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -62,7 +62,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.66 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.67 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -277,6 +277,14 @@ sub parse_form {
 
   $Config{env_report} = [ grep { $valid_ENV{$_} } @{$Config{env_report}} ];
 
+  if (defined $Config{'sort'}) {
+    if ($Config{'sort'} eq 'alphabetic') {
+      @field_order = sort @field_order;
+    } elsif ($Config{'sort'} =~ /^\s*order:\s*(.*)$/s) {
+      @field_order = split /\s*,\s*/, $1;
+    }
+  }
+
   return @field_order;
 }
 
@@ -348,7 +356,6 @@ sub check_recipient {
 
 sub return_html {
   my ($date, $Field_Order) = @_;
-  my ($key, $sort_order, $sorted_field);
 
   if ($Config{'redirect'}) {
     print redirect $Config{'redirect'};
@@ -380,27 +387,11 @@ sub return_html {
     <p><hr size="1" width="75%" /></p>
 EOHTML
 
-    my @sorted_fields;
-    if ($Config{'sort'}) {
-      if ($Config{'sort'} eq 'alphabetic') {
-        @sorted_fields = sort keys %Form;
-      } elsif ($Config{'sort'} =~ /^order:.*,.*/) {
-        $sort_order = $Config{'sort'};
-        $sort_order =~ s/(\s+|\n)?,(\s+|\n)?/,/g;
-        $sort_order =~ s/(\s+)?\n+(\s+)?//g;
-        $sort_order =~ s/order://;
-        @sorted_fields = split(/,/, $sort_order);
-      } else {
-        @sorted_fields = @$Field_Order;
-      }
-    } else {
-      @sorted_fields = @$Field_Order;
-    }
-
-    foreach (@sorted_fields) {
-      if ($Config{print_blank_fields} || $Form{$_} !~ /^\s*$/) {
+    foreach (@$Field_Order) {
+      my $val = (defined $Form{$_} ? $Form{$_} : '');
+      if ($Config{print_blank_fields} || $val !~ /^\s*$/) {
         print '<p><b>', escape_html($_), ':</b> ',
-                        escape_html($Form{$_}), "</p>\n";
+                        escape_html($val), "</p>\n";
       }
     }
 
@@ -488,25 +479,10 @@ EOMAIL
     }
   }
 
-  my @sorted_keys;
-  if ($Config{'sort'}) {
-    if ($Config{'sort'} eq 'alphabetic') {
-      @sorted_keys = sort keys %Form;
-    } elsif ($Config{'sort'} =~ /^order:.*,.*/) {
-      $Config{'sort'} =~ s/(\s+|\n)?,(\s+|\n)?/,/g;
-      $Config{'sort'} =~ s/(\s+)?\n+(\s+)?//g;
-      $Config{'sort'} =~ s/order://;
-      @sorted_keys = split(/,/, $Config{'sort'});
-    } else {
-      @sorted_keys = @$Field_Order;
-    }
-  } else {
-    @sorted_keys = @$Field_Order;
-  }
-
-  foreach (@sorted_keys) {
-    if ($Config{'print_blank_fields'} || $Form{$_} !~ /^\s*$/) {
-      print MAIL "$_: $Form{$_}\n\n";
+  foreach (@$Field_Order) {
+    my $val = (defined $Form{$_} ? $Form{$_} : '');
+    if ($Config{'print_blank_fields'} || $val !~ /^\s*$/) {
+      print MAIL "$_: $val\n\n";
     }
   }
 
@@ -859,7 +835,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.66 $
+FormMail $Revision: 1.67 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1062,7 +1038,7 @@ Perl 'here document' to allow us to configure it
 as a single block of text in the script. In the
 example below, everything between the lines
 
-  $confirmation_text = E<lt>E<lt>'END_OF_CONFIRMATION';
+  $confirmation_text = <<'END_OF_CONFIRMATION';
 
 and
 
