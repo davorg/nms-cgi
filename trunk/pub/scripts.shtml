@@ -69,7 +69,14 @@
 	<td><a href="guestbook.tar.gz">guestbook.tar.gz</a></td>
 	<td><a href="guestbook.zip">guestbook.zip</a></td>
  	<td><!--#flastmod file="guestbook.tar.gz"--></td>
-     </tr>
+      </tr>
+      <tr>
+	<td>Image Counter</td>
+	<td>Image counter</td>
+	<td><a href="imagecounter.tar.gz">imagecounter.tar.gz</a></td>
+	<td><a href="imagecounter.zip">imagecounter.zip</a></td>
+ 	<td><!--#flastmod file="imagecounter.tar.gz"--></td>
+      </tr>
       <tr>
 	<td><span class="nms">nms</span> sendmail</td>
 	<td>"sendmail" replacement</td>
