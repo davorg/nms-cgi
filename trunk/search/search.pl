@@ -1,8 +1,11 @@
 #!perl -wT
 #
-# $Id: search.pl,v 1.18 2002-02-05 03:42:39 jfryan Exp $
+# $Id: search.pl,v 1.19 2002-02-05 03:48:05 jfryan Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2002/02/05 03:42:39  jfryan
+# Added sorted results guarded by a $emulate_matts_code
+#
 # Revision 1.17  2002/02/03 22:06:29  dragonoe
 # Added header to script after log. Also cleaned up the pre-header (use & stuff)
 # information so it looks less confusing for newbies and aligned config values.
@@ -97,7 +100,7 @@ my $title               = "NMS Search Program";
 my $title_url           = 'http://cgi-nms.sourceforge.net';
 my $search_url          = 'http://localhost/search.html';
 my @blocked             = ();
-my $emulate_matts_code  = 0;
+my $emulate_matts_code  = 1;
 my $style               = '';
 #
 # USER CONFIGURATION << END >>
