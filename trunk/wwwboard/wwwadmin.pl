@@ -1,18 +1,22 @@
-#!/usr/bin/perl -wT
+#!/usr/bin/perl -Tw
 #
-# $Id: wwwadmin.pl,v 1.19 2002-09-11 19:30:24 nickjc Exp $
+# $Id: wwwadmin.pl,v 1.20 2002-09-14 23:02:42 nickjc Exp $
 #
 
 use strict;
 use CGI qw(:standard);
-use vars qw($DEBUGGING $done_headers);
-
-$CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
-$CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
+use Fcntl qw(:DEFAULT :flock);
+use POSIX qw(locale_h strftime);
+use vars qw(
+  $DEBUGGING $VERSION $done_headers $emulate_matts_code
+  $basedir $baseurl $cgi_url $mesgdir $datafile $mesgfile
+  $passwd_file $ext $title $style $locale $charset
+);
+BEGIN { $VERSION = substr q$Revision: 1.20 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.19 $ (part of wwwboard)
+# wwwadmin.pl $Revision: 1.20 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -22,35 +26,47 @@ $CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
 #
 # For a list of changes see CHANGELOG
 # 
-# For help on configuration or installation see README
+# For help on configuration or installation see ADMIN_README
 #
 # USER CONFIGURATION SECTION
 # --------------------------
 # Modify these to your own settings. You might have to
 # contact your system administrator if you do not run
 # your own web server. If the purpose of these
-# parameters seems unclear, please see the
-# ADMIN_README file.
+# parameters seems unclear, please see the README file.
 #
-BEGIN { $DEBUGGING      = 1;}
-my $emulate_matts_code  = 1;
-my $basedir             = '/var/www/html/wwwboard';
-my $baseurl             = 'http://localhost/wwwboard';
-my $cgi_url             = 'http://localhost/cgi-bin/wwwadmin.pl';
-my $mesgdir             = 'messages';
-my $datafile            = 'data.txt';
-my $mesgfile            = 'wwwboard.html';
-my $passwd_file         = 'passwd.txt';
-my $ext                 = 'html';
-my $title               = 'NMS WWWBoard Version 1.0';
-my $use_time            = 1;
-my $style               = '/css/nms.css';
+BEGIN
+{
+  $DEBUGGING           = 1;
+  $emulate_matts_code  = 1;
+  $basedir             = '/var/www/nms-test/wwwboard';
+  $baseurl             = 'http://nms-test/wwwboard';
+  $cgi_url             = 'http://nms-test/cgi-bin/wwwadmin.pl';
+  $mesgdir             = 'messages';
+  $datafile            = 'data.txt';
+  $mesgfile            = 'wwwboard.html';
+  $passwd_file         = 'passwd.txt';
+  $ext                 = 'html';
+  $title               = "NMS WWWBoard Version $VERSION";
+  $style               = '/css/nms.css';
+  $locale              = '';
+  $charset             = 'iso-8859-1';
+
 #
 # USER CONFIGURATION << END >>
 # ----------------------------
 # (no user serviceable parts beyond here)
 
 
+  eval { sub SEEK_SET() {0;} } unless defined(&SEEK_SET);
+
+  use vars qw($html_style);
+  $html_style = $style ?
+                qq%<link rel="stylesheet" type="text/css" href="$style" />%
+              : '';
+}
+
+$done_headers = 0;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -104,287 +120,238 @@ EOERR
    $SIG{__DIE__} = \&fatalsToBrowser;
 }   
 
-my $style_element = $style ?
-                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
-                  : '';
 
-my %HTML;
-{
-  local $/ = "==\n";
+use vars qw($cs);
+$cs = CGI::NMS::Charset->new($charset);
 
-  while (<DATA>) {
-    chomp;
-    my ($k, $v) = split(/\n--\n/);
-    $k =~ /^\s*(\w+)\s*$/ or die "bad HTML key [$k]";
-    $k = $1;
+# %E is a fake hash for escaping HTML metachars as things are
+# interploted into strings.
+use vars qw(%E);
+tie %E, __PACKAGE__;
+sub TIEHASH { bless {}, shift }
+sub FETCH { $cs->escape($_[1]) }
 
-    $v =~ s/<!-- STYLE -->/$style_element/;
 
-    $HTML{$k} = $v;
+# We don't need file uploads or very large POST requests.
+# Annoying locution to shut up 'used only once' warning in
+# older perl.  Localize these to avoid stomping on other
+# scripts that need file uploads under Apache::Registry.
+
+local ($CGI::DISABLE_UPLOADS, $CGI::POST_MAX);
+$CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX        = 1000000;
+
+
+# Empty the environment of potentially harmful variables,
+# and detaint the path.  We accept anything in the path
+# because $ENV{PATH} is trusted for a CGI script, and in
+# general we have no way to tell what should be there.
+
+delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
+$ENV{PATH} =~ /(.*)/ and $ENV{PATH} = $1;
+
+
+use vars qw(%HTML);
+
+print header;
+$done_headers = 1;
+
+
+if (request_method eq 'POST') {
+  my $FORM = parse_form();
+  check_passwd($FORM);
+
+  open LOCK, ">>$basedir/.lock" or die "open >>$basedir/.lock: $!";
+  flock LOCK, LOCK_EX or die "flock $basedir/.lock: $!";
+
+  run_command($FORM);
+
+  close LOCK; 
+}
+else {
+  my $command = $ENV{QUERY_STRING} || '';
+  if ($command =~ /^(\w+)$/) {
+    display_form($1);
+  }
+  else {
+    display_form('');
   }
 }
 
-print header;
-$done_headers++;
+sub display_form {
+  my ($command) = @_;
+  $command = uc $command;
+  defined $HTML{"TOP_$command"} or $command = 'DEFAULT';
 
-# should we be allowing this ISINDEX stuff ?
+  print $HTML{HTML_DECL};
+  print $HTML{"TOP_$command"};
+  return if $command =~ /DEFAULT|CHANGE_PASSWD/;
+  
+  my $messages = parse_message_list("$basedir/$mesgfile");
 
-my $command = $ENV{QUERY_STRING};
-my $FORM = parse_form() unless $command;
+  my $loop_over;
+  if ($command eq 'REMOVE') {
+    $loop_over = $messages;
+  }
+  elsif ($command eq 'REMOVE_BY_NUM') {
+    $loop_over = [ sort { $a->{id} <=> $b->{id} } @$messages ];
+  }
+  elsif ($command eq 'REMOVE_BY_DATE') {
+    foreach my $msg (@$messages) {
+      my $date = $msg->{date};
+      $date =~ /(\S+)$/ and $date = $1; # remove time part if present
+      $msg->{grouping_key} = $date;
+    }
+    $loop_over = group_messages($messages);
+  }
+  elsif ($command eq 'REMOVE_BY_AUTHOR') {
+    foreach my $msg (@$messages) {
+      $msg->{grouping_key} = $msg->{author};
+    }
+    $loop_over = group_messages($messages);
+  }
+  else {
+    die "invalid command [$command]";
+  }
 
-my @lines;
+  foreach my $item (@$loop_over) {
+     print template("MID_$command", $item);
+  }
+     
+  print $HTML{"BOT_$command"};
+}
 
-if ($command eq 'remove') {
-  my $html = $HTML{REMOVE_TOP};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
+sub group_messages {
+  my ($messages) = @_;
 
-  open(MSGS, "<$basedir/$mesgfile")
-    || die $!;
-  @lines = <MSGS>;
-  close(MSGS);
+  my %bykey = ();
+  foreach my $msg (@$messages) {
+    my $k = $msg->{grouping_key};
+    exists $bykey{$k} or $bykey{$k} = [];
+    push @{ $bykey{$k} }, $msg->{id};
+  }
+  
+  my @grouped = ();
+  foreach my $key (sort keys %bykey) {
 
-  my ($min, $max);
+    my @links = map { qq(<a href="$E{"$baseurl/$mesgdir/$_.$ext"}">$E{$_}</a>) }
+      @{ $bykey{$key} };
 
-  foreach my $line (@lines) {
-    if (my ($id, $subject, $author, $date) 
-        = $line =~ /<!--top: (.*)--><li><a href="\Q$mesgdir\E\/\1\Q.$ext\E">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>/) {
-      $min = $id if ! defined $min or $id < $min;
-      $max = $id if ! defined $max or $id > $max;
+    my $html_links = join ' ', @links;
+    my $ids = join '_', @{$bykey{$key}};
+    my $count = @{$bykey{$key}};
+  
+    push @grouped, { key        => $key,
+                     html_links => $html_links,
+                     ids        => $ids,
+                     count      => $count,
+                   };
+  }
+  
+  return \@grouped;
+}
+  
+sub run_command {
+  my ($FORM) = @_;
 
-      $html = $HTML{REMOVE_MID};
-      $html =~ s/(\$\w+)/$1/eeg;
-      print $html;
+  if ($FORM->{action} =~ /remove/) {
+    remove_messages($FORM);
+  }
+  elsif ($FORM->{action} eq 'change_passwd') {
+    change_passwd($FORM);
+  }
+  else {
+    display_form('');
+  }
+}
+ 
+sub remove_messages {
+  my ($FORM) = @_;
+
+  my (%del_id, %del_thread);
+
+  foreach my $key (keys %$FORM) {
+    if ($key =~ /^([\d_]+)$/ and $FORM->{$key} eq 'these') {
+      foreach my $id (split /_/, $1) {
+        $del_id{$id} = 1;
+      }
+    }
+    elsif ($key =~ /^(\d+)$/) {
+      $del_id{$1}     = 1 if $FORM->{$1} eq 'single';
+      $del_thread{$1} = 1 if $FORM->{$1} eq 'all';
     }
   }
 
-  $html = $HTML{REMOVE_BOT};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
+  my %to_delete = ();
 
-} elsif ($command eq 'remove_by_num') {
+  open MESG_IN, "<$basedir/$mesgfile" or die "open: $!";
+  open MESG_OUT, ">$basedir/$mesgfile.tmp" or die "open: $!";
+  local $_;
+  my $in_dead_thread = 0;
+  while(<MESG_IN>) {
 
-  my $html = $HTML{REM_NUM_TOP};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
+    if (/<!--(top|responses|insert|end):\s*(\d+)-->/) {
+      my ($marker, $id) = ($1, $2);
+      
+      if ($in_dead_thread) {
+        if ($marker eq 'end' and $id == $in_dead_thread) {
+          $in_dead_thread = 0;
+        }
+        $to_delete{$id} = 1;
+      }
+      elsif ($marker eq 'top' and exists $del_thread{$id}) {
+        $in_dead_thread = $id;
+        $to_delete{$id} = 1;
+      }
+      elsif (exists $del_id{$id}) {
+        $to_delete{$id} = 1;
+      }
+      else {
+        print MESG_OUT $_;
+      }
+    }
+    else {
+      print MESG_OUT $_;
+    }
 
-  open(MSGS,"<$basedir/$mesgfile") || die $!;
-  my @lines = <MSGS>;
-  close(MSGS);
+  }
 
-  my ($min, $max, @entries);
+  unless (close MESG_OUT) {
+    my $err = $@;
+    unlink "$basedir/$mesgfile.tmp";
+    die "close $basedir/$mesgfile.tmp: $!";
+  }
 
-  foreach my $line (@lines) {
-    if (my ($id, $subject, $author, $date)
-        = $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1.$ext">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>/) {
-      $min = $id if ! defined $min or $id < $min;
-      $max = $id if ! defined $max or $id > $max;
+  rename "$basedir/$mesgfile.tmp", "$basedir/$mesgfile"
+    or die "replace $basedir/$mesgfile: $!";
 
-      push @entries, {id => $1, subject => $2, author => $3, date => $4};
+  my @attempted = sort { $a <=> $b } keys %to_delete;
+  my (@not_removed, @no_file);
+  foreach my $file (@attempted) {
+    my $filename = "$basedir/$mesgdir/$file.$ext";
+    if (-e $filename) {
+      unlink($filename) || push @not_removed, $file;
+    } else {
+       push @no_file, $file;
     }
   }
 
-  foreach (sort { $a->{id} <=> $b->{id} } @entries ) {
-    my %entry = %$_;
-    my ($id, $subject, $author, $date) = @entry{qw(id subject author date)};
-
-    $html = $HTML{REM_NUM_MID};
-    $html =~ s/(\$\w+)/$1/eeg;
-    print $html;
+  my $html_report = "<b>Attempted to Remove:</b> $E{join(' ',@attempted)}<p>\n";
+  if (@not_removed) {
+    $html_report .= "<b>Files That Could Not Be Deleted:</b> $E{join(' ',@not_removed)}<p>\n";
+  }
+  if (@no_file) {
+    $html_report .= "<b>Files Not Found:</b> $E{join(' ',@no_file)}<p>\n";
   }
 
-  $html = $HTML{REM_NUM_BOT};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
+  print $HTML{HTML_DECL};
+  print template("REMOVE_RESULTS",
+                 { html_report => $html_report, remove_by => $FORM->{type} },
+                );
+}
 
-} elsif ($command eq 'remove_by_date') {
-
-  my $html = $HTML{REM_DATE_TOP};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
-
-  open(MSGS,"<$basedir/$mesgfile") || die $!;
-  my @lines = <MSGS>;
-  close(MSGS);
-
-  my %entries;
-  foreach my $line (@lines) {
-    if (my ($id, $date)
-        = $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1.$ext">.*<\/a> - <b>.*<\/b>\s+<i>(.*)<\/i>/) {
-
-      my $day;
-      if ($use_time) {
-        (undef, $day) = split(/\s+/, $date);
-      } else {
-        $day = $date;
-      }
-      push @{$entries{$day}}, $id;
-    }
-  }
-
-  foreach my $date (sort keys %entries) {
-
-    my @links = map { qq(<a href="$baseurl/$mesgdir/$_.$ext">$_</a>) }
-      @{$entries{$date}};
-
-    my $links = join ' ', @links;
-    my $ids = join ' ', @{$entries{$date}};
-    my $count = @{$entries{$date}};
-
-    my $html = $HTML{REM_DATE_MID};
-    $html =~ s/(\$\w+)/$1/eeg;
-    print $html;
-  }
-
-  my $dates = join ' ', keys %entries;
-
-  $html = $HTML{REM_DATE_BOT};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
-
-} elsif ($command eq 'remove_by_author') {
-
-  my $html = $HTML{REM_AUTH_TOP};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
-
-  open(MSGS,"<$basedir/$mesgfile") || die $!;
-  my @lines = <MSGS>;
-  close(MSGS);
-
-  my %entries;
-  foreach my $line (@lines) {
-    if (my ($id, $author)
-        = $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1\.$ext">.*<\/a> - <b>(.*)<\/b>\s+<i>.*<\/i>/) {
-      push @{$entries{$author}}, $id;
-    }
-  }
-
-  foreach my $author (sort keys %entries) {
-
-    my @links = map { qq(<a href="$baseurl/$mesgdir/$_.$ext">$_</a>) }
-      @{$entries{$author}};
-
-    my $links = join ' ', @links;
-    my $ids = join ' ', @{$entries{$author}};
-    my $count = @{$entries{$author}};
-
-    my $html = $HTML{REM_AUTH_MID};
-    $html =~ s/(\$\w+)/$1/eeg;
-    print $html;
-  }
-
-  my $authors = join ' ', keys %entries;
-
-  $html = $HTML{REM_AUTH_BOT};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
-
-} elsif ($command eq 'change_passwd') {
-
-  my $html = $HTML{PASSWD};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
-
-} elsif (defined $FORM->{action} and $FORM->{action} eq 'remove') {
-
-   check_passwd();
-
-   my (@all, @single);
-   foreach ($FORM->{'min'} .. $FORM->{'max'}) {
-      if ($FORM->{$_} eq 'all') {
-         push(@all, $_);
-      }
-      elsif ($FORM->{$_} eq 'single') {
-         push(@single, $_);
-      }
-   }
-
-   open(MSGS,"<$basedir/$mesgfile") || die $!;
-   my @lines = <MSGS>;
-   close(MSGS);
-
-   my (@attempted, @not_removed, @no_file, @top_bot);
-
-   foreach my $single (@single) {
-     foreach (0 .. $#lines) {
-       if ($lines[$_] =~ /<!--top: $single-->/) {
-         splice(@lines, $_, 3);
-         $_ -= 3;
-       } elsif ($lines[$_] =~ /<!--end: $single-->/) {
-         splice(@lines, $_, 1);
-         $_--;
-       }
-     }
-     my $filename = "$basedir/$mesgdir/$single.$ext";
-     if (-e $filename) {
-       unlink($filename) || push @not_removed, ,$single;
-      } else {
-         push @no_file, $single;
-      }
-      push @attempted, $single ;
-   }
-
-   foreach my $all (@all) {
-     my ($top,  $bottom, @delete);
-
-     foreach (my $j = 0; $j <= @lines; $j++) {
-       if ($lines[$j] =~ /<!--top: $all-->/) {
-         $top = $j;
-       } elsif ($lines[$j] =~ /<!--end: $all-->/) {
-         $bottom = $j;
-       }
-     }
-     if ($top && $bottom) {
-       my $diff = ($bottom - $top) + 1;
-       for (my $k = $top;$k <= $bottom;$k++) {
-         if ($lines[$k] =~ /<!--top: (.*)-->/) {
-           push(@delete, $1);
-         }
-       }
-       splice(@lines, $top, $diff);
-       foreach my $delete (@delete) {
-         my $filename = "$basedir/$mesgdir/$delete.$ext";
-         if (-e $filename) {
-           unlink($filename) || push @not_removed, $delete;
-         } else {
-           push @no_file, $delete;
-         }
-         push @attempted,$delete;
-       }
-     } else {
-       push(@top_bot, $all);
-     }
-   }
-
-   open(WWWBOARD,">$basedir/$mesgfile") || die $!;
-   print WWWBOARD @lines;
-   close(WWWBOARD);
-
-   return_html($FORM->{type});
-
-} elsif (defined $FORM->{action} and $FORM->{action} eq 'remove_by_date_or_author') {
-
-   check_passwd();
-
-   my (@attempted, @not_removed, @no_file, @top_bot);
-
-   my @single;
-   my @used_values = split(/\s/, $FORM->{used_values});
-   foreach my $used_value (@used_values) {
-      my @misc_values = split(/\s/,$FORM->{$used_value});
-      foreach my $misc_value (@misc_values) {
-         push(@single, $misc_value);
-      }
-   }
-
-   open(WWWBOARD,">$basedir/$mesgfile") || die $!;
-   print WWWBOARD @lines;
-   close(WWWBOARD);
-
-   return_html($FORM->{type});
-
-} elsif (defined $FORM->{action} and $FORM->{action} eq 'change_passwd') {
+sub change_passwd {
+  my ($FORM) = @_;
 
   open(PASSWD,"<$basedir/$passwd_file") || error('passwd_file');
   my $passwd_line = <PASSWD>;
@@ -393,33 +360,29 @@ if ($command eq 'remove') {
 
   my ($username, $passwd) = split(/:/,$passwd_line);
 
-  if (!($FORM->{passwd_1} eq $FORM->{passwd_2})) {
+  if ($FORM->{passwd_1} ne $FORM->{passwd_2}) {
     error('not_same');
   }
 
-  my $test_passwd = crypt($FORM->{password}, substr($passwd, 0, 2));
-  if ($test_passwd eq $passwd && $FORM->{username} eq $username) {
-    open(PASSWD,">$basedir/$passwd_file") || error('no_change');
-    my $new_password = crypt($FORM->{passwd_1}, substr($passwd, 0, 2));
-    my $new_username;
-    if ($FORM->{new_username}) {
-      $new_username = $FORM->{'new_username'};
-    } else {
-      $new_username = $username;
-    }
-    print PASSWD "$new_username:$new_password";
-    close(PASSWD);
+  open(PASSWD,">$basedir/$passwd_file.tmp") || error('no_change');
+  my $new_password = crypt($FORM->{passwd_1}, substr($passwd, 0, 2));
+  my $new_username;
+  if ($FORM->{new_username}) {
+    $new_username = $FORM->{'new_username'};
   } else {
-    error('bad_combo');
+    $new_username = $username;
   }
+  print PASSWD "$new_username:$new_password";
+  close(PASSWD) or die "close: $!";
 
-  return_html('change_passwd');
-} else {
-  my $html = $HTML{DEFAULT};
-  $html =~ s/(\$\w+)/$1/eeg;
-  print $html;
+  rename "$basedir/$passwd_file.tmp", "$basedir/$passwd_file"
+     or die "rename: $!";
+
+  print $HTML{HTML_DECL};
+  print template("CHANGE_PASSWD_RESULTS",
+                 { new_username => $new_username, new_password => $FORM->{passwd_1} }
+                );
 }
-
 
 sub parse_form {
 
@@ -429,59 +392,6 @@ sub parse_form {
   }
 
   return $FORM;
-}
-
-sub return_html {
-  my $type = $_[0];
-  my @NOT_REMOVED;
-  my @ATTEMPTED;
-  my @NO_FILE;
-  my ($mesgpage, $mesgdir, $new_username);
-
-   if ($type eq 'remove') {
-      print "<html><head><title>Results of Message Board Removal</title></head>\n";
-      print "<body><center><h1>Results of Message Board Removal</h1></center>\n";
-   }
-   elsif ($type eq 'remove_by_num') {
-      print "<html><head><title>Results of Message Board Removal by Number</title></head>\n";
-      print "<body><center><h1>Results of Message Board Removal by Number</h1></center>\n";
-   }
-   elsif ($type eq 'remove_by_date') {
-      print "<html><head><title>Results of Message Board Removal by Date</title></head>\n";
-      print "<body><center><h1>Results of Message Board Removal by Date</h1></center>\n";
-   }
-   elsif ($type eq 'remove_by_author') {
-      print "<html><head><title>Results of Message Board Removal by Author</title></head>\n";
-      print "<body><center><h1>Results of Message Board Removal by Author</h1></center>\n";
-   }
-   elsif ($type eq 'change_passwd') {
-      print "<html><head><title>WWWBoard WWWAdmin Password Changed</title></head>\n";
-      print "<body><center><h1>WWWBoard WWWAdmin Password Changed</h1></center>\n";
-      print "Your Password for WWWBoard WWWAdmin has been changed!  Results are below:<p><hr size=7 width=75%><p>\n";
-      print "<b>New Username: $new_username<p>\n";
-      print "New Password: $FORM->{'passwd_1'}</b><p>\n";
-      print "<hr size=7 width=75%><p>\n";
-      print "Do not forget these, since they are now encoded in a file, and not readable!.\n";
-      print "</body></html>\n";
-   }
-   if ($type =~ /^remove/) {
-      print "Below is a short summary of what messages were removed from $mesgpage and the\n";
-      print "$mesgdir directory.  All files that the script attempted to remove, were removed,\n";
-      print "unless there is an error message stating otherwise.<p><hr size=7 width=75%><p>\n";
- 
-      print "<b>Attempted to Remove:</b> @ATTEMPTED<p>\n";
-      if (@NOT_REMOVED) {
-         print "<b>Files That Could Not Be Deleted:</b> @NOT_REMOVED<p>\n";
-      }
-      if (@NO_FILE) {
-         print "<b>Files Not Found:</b> @NO_FILE<p>\n";
-      }
-      print "<hr size=7 width=75%><center><font size=-1>\n";
-      print "[ <a href=\"$cgi_url\?remove\">Remove</a> ] [ <a href=\"$cgi_url\?remove_by_date\">Remove by Date</a> ] [ <a href=\"$cgi_url\?remove_by_author\">Remove by Author</a> ] [ <a href=\"$cgi_url\?remove_by_num\">Remove by Message Number</a> ] [ <a 
-href=\"$baseurl/$mesgpage\">$title</a> ]\n";
-      print "</font></center><hr size=7 width=75%>\n";
-      print "</body></html>\n";
-   }
 }
 
 sub error {
@@ -528,7 +438,7 @@ $HTML{HTML_DECL}
 <html>
   <head>
     <title>$args->{Title}</title>
-    $style_element;
+    $html_style;
     <body>
      <center>
        <h1>$args->{Heading}</a> 
@@ -549,6 +459,8 @@ TUBBIES_SAY_EO
 }
 
 sub check_passwd {
+   my ($FORM) = @_;
+
    open(PASSWD,"<$basedir/$passwd_file") || error('passwd_file');
    my $passwd_line = <PASSWD>;
    chomp($passwd_line);
@@ -562,19 +474,48 @@ sub check_passwd {
    }
 }
 
-__END__
-HTML_DECL
---
+sub parse_message_list {
+  my $filename = shift;
+
+  my @messages = ();
+  local $_;
+
+  open MESG_IN, "<$filename" or die "open $filename: $!";
+  while(<MESG_IN>) {
+    if (/<!--top: (\d+)--><li><a href="[^"]+">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>/) {
+      my $msg = { id => $1, subject => $2, author => $3, date => $4 };
+      push @messages, $msg;
+    }
+  }
+  close MESG_IN;
+
+  return \@messages;
+}
+      
+sub template {
+  my ($template, $vars) = @_;
+
+  my $html = $HTML{$template} or die "no such template as [$template]";
+  $html =~ s#\[\% \s* (html_\w+) \s* \%\]#     $vars->{$1}   #gex;
+  $html =~ s#\[\% \s* (\w+)      \s* \%\]# $E{ $vars->{$1} } #gex;
+  return $html;
+}
+
+BEGIN
+{
+  %HTML = (
+
+    HTML_DECL => <<'END',
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-==
-REMOVE_TOP
---
 <html xmlns="http://www.w3.org/1999/xhtml">
+END
+
+    TOP_REMOVE => <<"END",
 <head>
 <title>Remove Messages From WWWBoard</title>
-<!-- STYLE -->
+$html_style
 </head>
 <body>
 <center><h1>Remove Messages From WWWBoard</h1></center>
@@ -585,7 +526,7 @@ while checking the Input Box on the right to remove just that posting.</p>
 which they appear in the $mesgfile page.  This will give you an idea of
 what the threads look like and is often more helpful than the sorted method.</p>
 <hr size=7 width=75%><p align="center"><font size=-1>
-[ <a href="$cgi_url?remove">Remove</a> ] [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] [ <a href="$baseurl/$mesgpage">$title</a> ]
+[ <a href="$cgi_url?remove">Remove</a> ] [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] [ <a href="$baseurl/$mesgfile">$title</a> ]
 </font></p><hr size="7" width="75%" /><p>
 <form method="POST" action="$cgi_url">
 <input type=hidden name="action" value="remove" />
@@ -596,33 +537,29 @@ Username: <input type="text" name="username" /> --
 Password: <input type=password name="password" /></th>
 </tr><tr>
 <th>Post # </th><th>Thread </th><th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
-==
-REMOVE_MID
---
-<tr>
-<th><b>$id</b> </th><td><input type=radio name="$id" value="all"></td>
-<td><input type=radio name="$id" value="single"> </td>
-<td><a href="$baseurl/$mesgdir/$id.$ext">$subject</a></td>
-<td>$author</td>
-<td>$date<br /></td>
-</tr>
-==
-REMOVE_BOT
---
-</table>
+END
 
-<input type="hidden" name="min" value="$min" />
-<input type="hidden" name="max" value="$max" />
-<input type="hidden" name="type" value="remove" />
+    MID_REMOVE => <<"END",
+<tr>
+<th><b>[% id %]</b> </th><td><input type=radio name="[% id %]" value="all"></td>
+<td><input type=radio name="[% id %]" value="single"> </td>
+<td><a href="$baseurl/$mesgdir/[% id %].$ext">[% subject %]</a></td>
+<td>[% author %]</td>
+<td>[% date %]<br /></td>
+</tr>
+END
+
+    BOT_REMOVE => <<"END",
+</table>
+<input type="hidden" name="type" value="" />
 <input type="submit" value="Remove Messages" /> <input type="reset" />
 </form>
 </body></html>
-==
-REM_NUM_TOP
---
-<html xmlns="http://www.w3.org/1999/xhtml">
+END
+
+    TOP_REMOVE_BY_NUM => <<"END",
 <head><title>Remove Messages From WWWBoard By Number</title>
-<!-- STYLE -->
+$html_style
 </head>
 <body><center><h1>Remove Messages From WWWBoard By Number</h1></center>
 <p>Select below to remove those postings you wish to remove.
@@ -634,7 +571,7 @@ while checking the Input Box on the right to remove just that posting.</p>
 [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
 [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
 [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
-[ <a href="$baseurl/$mesgpage">$title</a> ]
+[ <a href="$baseurl/$mesgfile">$title</a> ]
 </font></center><hr size="7" width="75%" /><p>
 <form method="POST" action="$cgi_url">
 <input type="hidden" name="action" value="remove" />
@@ -646,35 +583,32 @@ Password: <input type="password" name="password" /><br /></th>
 </tr>
 <tr>
 <th>Post # </th><th>Thread </th><th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
-==
-REM_NUM_MID
---
+END
+
+    MID_REMOVE_BY_NUM => <<"END",
 <tr>
-<th><b>$id</b> </th><td>
-<input type="radio" name="$id" value="all" /></td>
-<td><input type="radio" name="$id" value="single" /></td>
-<td><a href="$baseurl/$mesgdir/$id.$ext">$subject</a></td>
-<td>$author</td>
-<td>$date</td>
+<th><b>[% id %]</b> </th><td>
+<input type="radio" name="[% id %]" value="all" /></td>
+<td><input type="radio" name="[% id %]" value="single" /></td>
+<td><a href="$baseurl/$mesgdir/[% id %].$ext">[% subject %]</a></td>
+<td>[% author %]</td>
+<td>[% date %]</td>
 </tr>
-==
-REM_NUM_BOT
---
+END
+
+    BOT_REMOVE_BY_NUM => <<"END",
 </table>
 <center><p>
-<input type="hidden" name="min" value="$min" />
-<input type="hidden" name="max" value="$max" />
-<input type="hidden" name="type" value="remove" />
+<input type="hidden" name="type" value=" By NUmber" />
 <input type="submit" value="Remove Messages" /> <input type="reset" />
 </form>
 </body></html>
-==
-REM_DATE_TOP
---
-<html xmlns="http://www.w3.org/1999/xhtml">
+END
+
+    TOP_REMOVE_BY_DATE => <<"END",
 <head>
 <title>Remove Messages From WWWBoard By Date</title>
-<!-- STYLE -->
+$html_style
 </head>
 <body><center><h1>Remove Messages From WWWBoard By Date</h1></center>
 Select below to remove those postings you wish to remove.
@@ -687,12 +621,12 @@ that occurred on that date.
 [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
 [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
 [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
-[ <a href="$baseurl/$mesgpage">$title</a> ]
+[ <a href="$baseurl/$mesgfile">$title</a> ]
 </font></center><hr size="7" width="75%" />
 <p>
 <form method="POST" action="$cgi_url">
 <input type="hidden" name="action" value="remove_by_date_or_author" />
-<input type="hidden" name="type" value="remove_by_date" />
+<input type="hidden" name="type" value=" By Date" />
 <center>
 <table border="0" summary="">
 <tr>
@@ -705,30 +639,28 @@ Password: <input type="password" name="password"><br /></th>
 <th>Date </th>
 <th># of Messages </th>
 <th>Message Numbers<br></th></tr>
-==
-REM_DATE_MID
---
+END
+
+    MID_REMOVE_BY_DATE => <<"END",
 <tr>
-<td><input type="checkbox" name="$date" value="$ids" /></td>
-<th>$date</th>
-<td>$count</td>
-<td>$links<br></td>
+<td><input type="checkbox" name="[% ids %]" value="these" /></td>
+<th>[% key %]</th>
+<td>[% count %]</td>
+<td>[% html_links %]<br></td>
 </tr>
-==
-REM_DATE_BOT
---
+END
+
+    BOT_REMOVE_BY_DATE => <<"END",
 </table>
-<input type="hidden" name="used_values" value="$dates" />
 <input type="submit" value="Remove Messages"> <input type="reset" />
 </form></center>
 </body></html>
-==
-REM_AUTH_TOP
---
-<html xmlns="http://www.w3.org/1999/xhtml">
+END
+
+    TOP_REMOVE_BY_AUTHOR => <<"END",
 <head>
 <title>Remove Messages From WWWBoard By Author</title>
-<!-- STYLE -->
+$html_style
 </head>
 <body><center><h1>Remove Messages From WWWBoard By Author</h1></center>
 Checking the checkbox beside the name of an author will remove 
@@ -739,12 +671,12 @@ all postings which that author has created.
 [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
 [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
 [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
-[ <a href="$baseurl/$mesgpage">$title</a> ]
+[ <a href="$baseurl/$mesgfile">$title</a> ]
 </font></center><hr size="7" width="75%" />
 <p>
 <form method="POST" action="$cgi_url">
 <input type="hidden" name="action" value="remove_by_date_or_author" />
-<input type="hidden" name="type" value="remove_by_author" />
+<input type="hidden" name="type" value=" by Author" />
 <center>
 <table border="0" summary="">
 <tr>
@@ -755,29 +687,27 @@ Password: <input type="password" name="password" /><br /></th>
 <tr>
 <th>X </th><th>Author </th>
 <th># of Messages </th><th>Message #'s<br /></th></tr>
-==
-REM_AUTH_MID
---
+END
+
+    MID_REMOVE_BY_AUTHOR => <<"END",
 <tr>
-<td><input type="checkbox" name="$author" value="$ids" /></td>
-<th>$author</th>
-<td>$count</td>
-<td>$links<br /></td>
+<td><input type="checkbox" name="[% ids %]" value="these" /></td>
+<th>[% key %]</th>
+<td>[% count %]</td>
+<td>[% html_links %]<br /></td>
 </tr>
-==
-REM_AUTH_BOT
---
+END
+
+    BOT_REMOVE_BY_AUTHOR => <<"END",
 </table>
-<input type="hidden" name="used_values" value="$authors" />
 <input type="submit" value="Remove Messages" /> <input type="reset" />
 </form></center>
 </body></html>
-==
-PASSWD
---
-<html xmlns="http://www.w3.org/1999/xhtml">
+END
+
+    TOP_CHANGE_PASSWD => <<"END",
 <head><title>Change WWWBoard Admin Password</title>
-<!-- STYLE -->
+$html_style
 </head>
 <body>
 <center><h1>Change WWWBoard Admin Password</h1></center>
@@ -808,12 +738,11 @@ If new username is left blank, your old one will be assumed.<p>
 <td align="center"><input type="reset" /></td>
 </tr></table></center>
 </form></body></html>
-==
-DEFAULT
---
-<html xmlns="http://www.w3.org/1999/xhtml">
+END
+
+    TOP_DEFAULT => <<"END",
 <head><title>WWWAdmin For WWWBoard</title>
-<!-- STYLE -->
+$html_style
 </head>
 <body bgcolor="#FFFFFF" text="#000000"><center>
 <h1>WWWAdmin For WWWBoard</h1></center>
@@ -832,3 +761,416 @@ DEFAULT
 <li><a href="$cgi_url?change_passwd">Change Admin Password</a>
 </ul>
 </ul>
+</body></html>
+END
+
+    CHANGE_PASSWD_RESULTS => <<"END",
+<head><title>WWWBoard WWWAdmin Password Changed</title>
+$html_style
+</head>
+<body><center><h1>WWWBoard WWWAdmin Password Changed</h1></center>
+Your Password for WWWBoard WWWAdmin has been changed!  Results are below:<p><hr size=7 width=75%><p>
+<b>New Username: [% new_username %]<p>
+New Password: [% new_password %]</b><p>
+<hr size=7 width=75%><p>
+Do not forget these, since they are now encoded in a file, and not readable!.
+</body></html>
+END
+
+    REMOVE_RESULTS => <<"END",
+<head><title>Results of Message Board Removal[% remove_by %]</title>
+</head>
+<body><center><h1>Results of Message Board Removal[% remove_by %]</h1></center>
+Below is a short summary of what messages were removed from $mesgfile and the
+$mesgdir directory.  All files that the script attempted to remove, were removed,
+unless there is an error message stating otherwise.
+<p><hr size=7 width=75%><p>
+[% html_report %]
+<hr size=7 width=75%><center><font size=-1>
+[ <a href=\"$cgi_url\?remove\">Remove</a> ]
+[ <a href=\"$cgi_url\?remove_by_date\">Remove by Date</a> ]
+[ <a href=\"$cgi_url\?remove_by_author\">Remove by Author</a> ]
+[ <a href=\"$cgi_url\?remove_by_num\">Remove by Message Number</a> ]
+[ <a href=\"$baseurl/$mesgfile\">$title</a> ]
+</font></center><hr size=7 width=75%>
+</body></html>
+END
+
+  );
+}
+
+###################################################################
+
+BEGIN {
+  eval 'local $SIG{__DIE__} ; require CGI::NMS::Charset';
+  $@ and $INC{'CGI/NMS/Charset.pm'} = 1;
+  $@ and eval <<'END_CGI_NMS_CHARSET' || die $@;
+
+## BEGIN INLINED CGI::NMS::Charset
+package CGI::NMS::Charset;
+use strict;
+
+require 5.00404;
+
+use vars qw($VERSION);
+$VERSION = sprintf '%d.%.2d', (q$revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+
+=head1 NAME
+
+CGI::NMS::Charset - a charset-aware object for handling text strings
+
+=head1 SYNOPSIS
+
+   my $cs = CGI::NMS::Charset->new('iso-8859-1');
+
+   my $safe_to_put_in_html = $cs->escape($untrusted_user_input);
+
+   my $printable = &{ $cs->strip_nonprint_coderef }( $input );
+   my $escaped = &{ $cs->escape_html_coderef }( $printable );
+
+=head1 DESCRIPTION
+
+Each object of class C<CGI::NMS::Charset> is bound to a particular
+character set when it is created.  The object provides methods to
+generate coderefs to perform a couple of character set dependent
+operations on text strings.
+
+=cut
+
+=head1 CONSTRUCTORS
+
+=over
+
+=item new ( CHARSET )
+
+Creates a new C<CGI::NMS::Charset> object, suitable for handing text
+in the character set CHARSET.  The CHARSET parameter must be a
+character set string, such as C<us-ascii> or C<utf-8> for example.
+
+=cut
+
+sub new
+{
+   my ($pkg, $charset) = @_;
+
+   my $self = { CHARSET => $charset };
+
+   if ($charset =~ /^utf-8$/i)
+   {
+      $self->{SN} = \&_strip_nonprint_utf8;
+      $self->{EH} = \&_escape_html_utf8;
+   }
+   elsif ($charset =~ /^iso-8859/i)
+   {
+      $self->{SN} = \&_strip_nonprint_8859;
+      if ($charset =~ /^iso-8859-1$/i)
+      {
+         $self->{EH} = \&_escape_html_8859_1;
+      }
+      else
+      {
+         $self->{EH} = \&_escape_html_8859;
+      }
+   }
+   elsif ($charset =~ /^us-ascii$/i)
+   {
+      $self->{SN} = \&_strip_nonprint_ascii;
+      $self->{EH} = \&_escape_html_8859_1;
+   }
+   else
+   {
+      $self->{SN} = \&_strip_nonprint_weak;
+      $self->{EH} = \&_escape_html_weak;
+   }
+
+   return bless $self, $pkg;
+}
+
+=back
+
+=head1 METHODS
+
+=over
+
+=item charset ()
+
+Returns the CHARSET string that was passed to the constructor.
+
+=cut
+
+sub charset
+{
+   my ($self) = @_;
+
+   return $self->{CHARSET};
+}
+
+=item escape ( STRING )
+
+Returns a copy of STRING with runs of non-printable characters
+replaced with spaces and HTML metacharacters replaced with the
+equivalent entities.
+
+If STRING is undef then the empty string will be returned.
+
+=cut
+
+sub escape
+{
+   my ($self, $string) = @_;
+
+   return &{ $self->{EH} }(  &{ $self->{SN} }($string)  );
+}
+
+=item strip_nonprint_coderef ()
+
+Returns a reference to a sub to replace runs of non-printable
+characters with spaces, in a manner suited to the charset in
+use.
+
+The returned coderef points to a sub that takes a single readonly
+string argument and returns a modified version of the string.  If
+undef is passed to the function then the empty string will be
+returned.
+
+=cut
+
+sub strip_nonprint_coderef
+{
+   my ($self) = @_;
+
+   return $self->{SN};
+}
+
+=item escape_html_coderef ()
+
+Returns a reference to a sub to escape HTML metacharacters in
+a manner suited to the charset in use.
+
+The returned coderef points to a sub that takes a single readonly
+string argument and returns a modified version of the string.
+
+=cut
+
+sub escape_html_coderef
+{
+   my ($self) = @_;
+
+   return $self->{EH};
+}
+
+=back
+
+=head1 DATA TABLES
+
+=over
+
+=item C<%eschtml_map>
+
+The C<%eschtml_map> hash maps C<iso-8859-1> characters to the
+equivalent HTML entities.
+
+=cut
+
+use vars qw(%eschtml_map);
+%eschtml_map = ( 
+                 ( map {chr($_) => "&#$_;"} (0..255) ),
+                 '<' => '&lt;',
+                 '>' => '&gt;',
+                 '&' => '&amp;',
+                 '"' => '&quot;',
+               );
+
+=back
+
+=head1 PRIVATE FUNCTIONS
+
+These functions are returned by the strip_nonprint_coderef() and
+escape_html_coderef() methods and invoked by the escape() method.
+The function most appropriate to the character set in use will be
+chosen.
+
+=over
+
+=item _strip_nonprint_utf8
+
+Returns a copy of STRING with everything but printable C<us-ascii>
+characters and valid C<utf-8> multibyte sequences replaced with
+space characters.
+
+=cut
+
+sub _strip_nonprint_utf8
+{
+   my ($string) = @_;
+   return '' unless defined $string;
+
+   $string =~
+   s%
+    ( [\t\n\040-\176]               # printable us-ascii
+    | [\xC2-\xDF][\x80-\xBF]        # U+00000080 to U+000007FF
+    | \xE0[\xA0-\xBF][\x80-\xBF]    # U+00000800 to U+00000FFF
+    | [\xE1-\xEF][\x80-\xBF]{2}     # U+00001000 to U+0000FFFF
+    | \xF0[\x90-\xBF][\x80-\xBF]{2} # U+00010000 to U+0003FFFF
+    | [\xF1-\xF7][\x80-\xBF]{3}     # U+00040000 to U+001FFFFF
+    | \xF8[\x88-\xBF][\x80-\xBF]{3} # U+00200000 to U+00FFFFFF
+    | [\xF9-\xFB][\x80-\xBF]{4}     # U+01000000 to U+03FFFFFF
+    | \xFC[\x84-\xBF][\x80-\xBF]{4} # U+04000000 to U+3FFFFFFF
+    | \xFD[\x80-\xBF]{5}            # U+40000000 to U+7FFFFFFF
+    ) | .
+   %
+    defined $1 ? $1 : ' '
+   %gexs;
+
+   #
+   # U+FFFE, U+FFFF and U+D800 to U+DFFF are dangerous and
+   # should be treated as invalid combinations, according to
+   # http://www.cl.cam.ac.uk/~mgk25/unicode.html
+   #
+   $string =~ s%\xEF\xBF[\xBE-\xBF]% %g;
+   $string =~ s%\xED[\xA0-\xBF][\x80-\xBF]% %g;
+
+   return $string;
+}
+
+=item _escape_html_utf8 ( STRING )
+
+Returns a copy of STRING with any HTML metacharacters
+escaped.  Escapes all but the most commonly occurring C<us-ascii>
+characters and bytes that might form part of valid C<utf-8>
+multibyte sequences.
+
+=cut
+
+sub _escape_html_utf8
+{
+   my ($string) = @_;
+
+   $string =~ s|([^\w \t\r\n\-\.\,\x80-\xFD])| $eschtml_map{$1} |ge;
+   return $string;
+}
+
+=item _strip_nonprint_weak ( STRING )
+
+Returns a copy of STRING with sequences of NULL characters
+replaced with space characters.
+
+=cut
+
+sub _strip_nonprint_weak
+{
+   my ($string) = @_;
+   return '' unless defined $string;
+
+   $string =~ s/\0+/ /g;
+   return $string;
+}
+   
+=item _escape_html_weak ( STRING )
+
+Returns a copy of STRING with any HTML metacharacters escaped.
+In order to work in any charset, escapes only E<lt>, E<gt>, C<">
+and C<&> characters.
+
+=cut
+
+sub _escape_html_weak
+{
+   my ($string) = @_;
+
+   $string =~ s/[<>"&]/$eschtml_map{$1}/eg;
+   return $string;
+}
+
+=item _escape_html_8859_1 ( STRING )
+
+Returns a copy of STRING with all but the most commonly
+occurring printable characters replaced with HTML entities.
+Only suitable for C<us-ascii> or C<iso-8859-1> input.
+
+=cut
+
+sub _escape_html_8859_1
+{
+   my ($string) = @_;
+
+   $string =~ s|([^\w \t\r\n\-\.\,\/\:])| $eschtml_map{$1} |ge;
+   return $string;
+}
+
+=item _escape_html_8859 ( STRING )
+
+Returns a copy of STRING with all but the most commonly
+occurring printable C<us-ascii> characters and characters
+that might be printable in some C<iso-8859-*> charset
+replaced with HTML entities.
+
+=cut
+
+sub _escape_html_8859
+{
+   my ($string) = @_;
+
+   $string =~ s|([^\w \t\r\n\-\.\,\/\:\240-\377])| $eschtml_map{$1} |ge;
+   return $string;
+}
+
+=item _strip_nonprint_8859 ( STRING )
+
+Returns a copy of STRING with runs of characters that are not
+printable in any C<iso-8859-*> charset replaced with spaces.
+
+=cut
+
+sub _strip_nonprint_8859
+{
+   my ($string) = @_;
+   return '' unless defined $string;
+
+   $string =~ tr#\t\n\040-\176\240-\377# #cs;
+   return $string;
+}
+
+=item _strip_nonprint_ascii ( STRING )
+
+Returns a copy of STRING with runs of characters that are not
+printable C<us-ascii> replaced with spaces.
+
+=cut
+
+sub _strip_nonprint_ascii
+{
+   my ($string) = @_;
+   return '' unless defined $string;
+
+   $string =~ tr#\t\n\040-\176# #cs;
+   return $string;
+}
+
+=back
+
+=head1 MAINTAINERS
+
+The NMS project, E<lt>http://nms-cgi.sourceforge.net/E<gt>
+
+To request support or report bugs, please email
+E<lt>nms-cgi-support@lists.sourceforge.netE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2002 London Perl Mongers, All rights reserved
+
+=head1 LICENSE
+
+This module is free software; you are free to redistribute it
+and/or modify it under the same terms as Perl itself.
+
+=cut
+
+1;
+
+## END INLINED CGI::NMS::Charset
+END_CGI_NMS_CHARSET
+
+}
+
