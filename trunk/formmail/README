@@ -90,24 +90,24 @@ $mailprog           - The system command that the script should invoke to
                         $mailprog = '/usr/sbin/sendmail -oi -t';
 
                       If your web server lacks a sendmail binary, you can
-		      use an SMTP relay instead, by setting $mailhost like
-		      this:
+                      use an SMTP relay instead, by setting $mailprog like
+                      this:
 
-		        $mailhost = 'SMTP:mailhost.your.domain';
+                        $mailprog = 'SMTP:mailhost.your.domain';
 
                       You will need to replace mailhost.your.domain with
-		      the name or IP address of an SMTP server configured
-		      to relay mail for the web server.
+                      the name or IP address of an SMTP server configured
+                      to relay mail for the web server.
 
                       Your system administrator or hosting provider should
-		      be able to tell you either the path to sendmail on the
-		      web server or the name of a host that will act as an
-		      SMTP relay for the web server.
+                      be able to tell you either the path to sendmail on the
+                      web server or the name of a host that will act as an
+                      SMTP relay for the web server.
 
 $postmaster         - The envelope sender address to use for all emails
                       sent by the script.  This address will recieve bounce
-		      messages if any of the emails cannot be delivered.  If
-		      in doubt, put your own email address here.
+                      messages if any of the emails cannot be delivered.  If
+                      in doubt, put your own email address here.
 
 @referers           - A list of referring hosts. This should be a list of
                       the names or IP addresses of all the systems that
