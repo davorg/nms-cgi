@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.71 2002-04-08 17:20:26 proub Exp $
+# $Id: FormMail.pl,v 1.72 2002-04-09 20:02:37 nickjc Exp $
 #
 
 use strict;
@@ -9,14 +9,15 @@ use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
 use vars qw(
   $DEBUGGING $emulate_matts_code $secure
-  $allow_empty_ref $mailprog @referers @allow_mail_to
-  @recipients %recipient_alias @valid_ENV $date_fmt
-  $style $send_confirmation_mail $confirmation_text
+  $allow_empty_ref $max_recipients $mailprog @referers
+  @allow_mail_to @recipients %recipient_alias
+  @valid_ENV $date_fmt $style $send_confirmation_mail
+  $confirmation_text
 );
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.71 $
+# FormMail.pl $Revision: 1.72 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -41,6 +42,7 @@ BEGIN
   $emulate_matts_code= 0;
   $secure            = 1;
   $allow_empty_ref   = 0;
+  $max_recipients    = 5;
   $mailprog          = '/usr/lib/sendmail -oi -t';
   @referers          = qw(dave.org.uk 209.207.222.64 localhost);
   @allow_mail_to     = qw(you@your.domain some.one.else@your.domain localhost);
@@ -63,7 +65,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.71 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.72 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -312,6 +314,9 @@ sub check_required {
     }
 
     error('no_recipient') unless scalar @valid;
+    if ($max_recipients > 0 and not $emulate_matts_code) {
+      error('too_many_recipients') if scalar @valid > $max_recipients;
+    }
     $Config{recipient} = join ',', @valid;
 
   } else {
@@ -726,6 +731,18 @@ EOBODY
 </p>
 EOBODY
   }
+  elsif ( $error eq 'too_many_recipients' ) {
+    $title = 'Error: Too many Recipients';
+    $error_body =<<EOBODY;
+<p>
+  The number of recipients configured in the form exceeds the
+  maximum number of recipients configured in the script.  If
+  you are attempting to configure FormMail to run with this form
+  then you will need to increase the <tt>\$max_recipients</tt>
+  configuration setting in the script.
+</p>
+EOBODY
+  }
   elsif ( $error eq 'missing_fields' ) {
      if ( $Config{'missing_fields_redirect'} ) {
         print  redirect($Config{'missing_fields_redirect'});
@@ -838,7 +855,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.71 $
+FormMail $Revision: 1.72 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -924,6 +941,16 @@ this variable to 1 will stop the program from
 complaining about requests where no referer header
 was sent while leaving the rest of the security
 features intact.
+
+=item $max_recipients
+
+The maximum number of e-mail addresses that any single
+form should be allowed to send copies of the e-mail to.
+If none of your forms send e-mail to more than one
+recipient, then we recommend that you improve the
+security of FormMail by reducing this value to 1.
+Setting this variable to 0 removes all limits on the
+number of recipients of each e-mail.
 
 =item $mailprog
 

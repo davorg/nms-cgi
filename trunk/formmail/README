@@ -65,6 +65,14 @@ $allow_empty_ref    - Some web proxies and office firewalls may strip
                       was sent while leaving the rest of the security
                       features intact.  
 
+$max_recipients     - The maximum number of e-mail addresses that any
+                      single form should be allowed to send copies of the
+                      e-mail to.  If none of your forms send e-mail to more
+                      than one recipient, then we recommend that you
+                      improve the security of FormMail by reducing this
+                      value to 1.  Setting this variable to 0 removes all
+                      limits on the number of recipients of each e-mail.  
+
 $mailprog           - The system command that the script should invoke to
                       send an outgoing email. This should be the full path
                       to a program that will read a message from STDIN and

@@ -20,6 +20,7 @@ script looks like:
     $emulate_matts_code= 0;
     $secure            = 1;
     $allow_empty_ref   = 0;
+    $max_recipients    = 5;
     $mailprog          = '/usr/lib/sendmail -oi -t';
     @referers          = qw(dave.org.uk 209.207.222.64 localhost);
     @allow_mail_to     = qw(you@your.domain some.one.else@your.domain localhost);
@@ -87,6 +88,7 @@ So the configuration section should now look like:
     $emulate_matts_code= 0;
     $secure            = 1;
     $allow_empty_ref   = 0;
+    $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
     @referers          = qw(www.your.domain);
     @allow_mail_to     = qw(your-name@your.domain);
@@ -240,6 +242,7 @@ collect target email addresses from web sites.
     $emulate_matts_code= 0;
     $secure            = 1;
     $allow_empty_ref   = 0;
+    $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
     @referers          = qw(www.your.domain);
     @allow_mail_to     = qw(your-name@your.domain your-name@somewhere-else.domain);
@@ -357,6 +360,7 @@ script is now:
     $emulate_matts_code= 0;
     $secure            = 1;
     $allow_empty_ref   = 0;
+    $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
     @referers          = qw(www.your.domain);
     @allow_mail_to     = qw(
@@ -486,4 +490,10 @@ configuration variable set to 1.  It should be changed to 0
 once you have finished setting up your forms, in order to
 restrict the amount of information that a malicious person
 attacking your site can obtain.
+
+In all these examples, I've left the value of the
+$max_recipients configuration variable set to the default
+of 5.  Since the largest number of recipients used in any
+single form in these examples is 2, it could be reduced to
+2 and all of the examples would continue to work.
 
