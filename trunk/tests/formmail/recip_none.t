@@ -20,7 +20,7 @@ NMSTest::ScriptUnderTest->new(
 sub install_tests
 {
    s#^check_url\(\);#unitTest\(\);#m;
-   s#\z#$tests#;
+   s#(__END__|\z)#$tests$1#;
 }
 
 sub rw_setup
