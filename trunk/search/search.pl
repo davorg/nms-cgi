@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.30 2002-05-07 21:41:33 nickjc Exp $
+# $Id: search.pl,v 1.31 2002-05-08 08:01:03 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision: 1.30 $
+# search.pl $Revision: 1.31 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -114,6 +114,9 @@ EOERR
    $SIG{__DIE__} = \&fatalsToBrowser;
 }
 
+use vars qw(%E);
+tie %E, __PACKAGE__;
+
 my $style_element = $style ?
                     qq%<link rel="stylesheet" type="text/css" href="$style" />%
                   : '';
@@ -191,8 +194,17 @@ sub do_search
         if ("$dirname$basename" !~ /$dirlist/o) {
             $File::Find::prune = 1 unless (!$emulate_matts_code and $no_prune);
         }
+        foreach my $blocked (@blocked) {
+            if ($emulate_matts_code ) {
+                $File::Find::prune = 1 if "$dirname$basename" eq $blocked;
+            }
+            else {
+               $File::Find::prune = 1 if "$dirname$basename" =~ /$blocked/;
+            }
+        }
         return;
     }
+
     if (!$emulate_matts_code and $no_prune )
     {
        return unless $basename =~ /$wclist/io;
@@ -204,10 +216,10 @@ sub do_search
     return unless -r _;
     foreach my $blocked (@blocked) {
         if ($emulate_matts_code ) {
-           return if $File::Find::dir eq $blocked;
+           return if $_ eq $blocked;
         }
         else {
-           return if $File::Find::dir =~ /$blocked/;
+           return if /$blocked/;
         }
     }
 
@@ -304,7 +316,6 @@ sub detaint_dirname
 {
     my ($dirname) = @_;
 
-    # Pattern from File/Find.pm in Perl 5.6.1
     $dirname =~ m|^([:\\+@\w./-]*)$| or die "suspect directory name: $dirname";
     return $1;
 }
@@ -324,7 +335,7 @@ sub start_of_html
     $style_element
   </head>
   <body>
-    <h1 align="center">Results of Search in $title</h1>
+    <h1 align="center">Results of Search in $E{$title}</h1>
     <p>Below are the results of your Search in no particular order:</p>
     <hr size="7" width="75%" />
     <ul>
@@ -335,7 +346,7 @@ END_HTML
 sub print_result
 {
     my ($baseurl, $file, $title) = @_;
-    print qq(<li><a href="$baseurl/$file">$title</a></li>\n);
+    print qq(<li><a href="$E{"$baseurl/$file"}">$E{$title}</a></li>\n);
 }
 
 
@@ -347,14 +358,14 @@ sub end_of_html
     <hr size="7" width="75%" />
    <p>Search Information:</p>
    <ul>
-     <li><b>Terms:</b> $terms</li>
-     <li><b>Boolean Used:</b> $boolean</li>
-     <li><b>Case:</b> $case</li>
+     <li><b>Terms:</b> $E{$terms}</li>
+     <li><b>Boolean Used:</b> $E{$boolean}</li>
+     <li><b>Case:</b> $E{$case}</li>
    </ul>
    <hr size="7" width="75%" />
    <ul>
-     <li><a href="$search_url">Back to Search Page</a></li>
-     <li><a href="$title_url">$title</a></li>
+     <li><a href="$E{$search_url}">Back to Search Page</a></li>
+     <li><a href="$E{$title_url}">$E{$title}</a></li>
    </ul>
    <hr size="7" width="75%" />
    <p>Search Script (c) London Perl Mongers 2001 part of
@@ -362,4 +373,31 @@ sub end_of_html
  </body>
 </html>
 END_HTML
+}
+
+BEGIN
+{
+   use vars qw(%eschtml_map);
+   %eschtml_map = ( ( map {chr($_) => "&#$_;"} (0..255) ),
+                    '<' => '&lt;',
+                    '>' => '&gt;',
+                    '&' => '&amp;',
+                    '"' => '&quot;',
+                 );
+}
+
+sub escape_html
+{
+   my ($string) = @_;
+
+   $string =~ s|([^\w \t\r\n\-\.\,\:\/])| $eschtml_map{$1} |ge;
+   return $string;
+}
+
+sub TIEHASH { bless {}, shift }
+sub FETCH
+{
+   my ($self, $key) = @_;
+
+   return escape_html($key);
 }
