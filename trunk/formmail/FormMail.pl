@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.83 2002-05-06 19:32:40 nickjc Exp $
+# $Id: FormMail.pl,v 1.84 2002-05-09 21:28:30 gellyfish Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.83 $
+# FormMail.pl $Revision: 1.84 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -66,7 +66,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.83 $, 10, -1;
+  $VERSION = substr q$Revision: 1.84 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -459,9 +459,24 @@ sub send_mail {
   }
 
   my $xheader = '';
+
+  # This is more lenient than that in check_referer() because we
+  # want to know how people got this far if they are faking it
+  # however it is probably prudent to restrict to the characters
+  # valid in a URL - or what ?
+
+  if ( $secure and defined (my $referer = referer()) ) {
+    if ( $referer =~ /([\d\w.:@&%\/;?,-]+)/ ) {
+       $xheader .= "X-HTTP-Referer: [$1]\n";
+    }
+  }
+
+  # however if remote_addr() is not pukka then something
+  # really bad is going on here.
+
   if ( $secure and defined (my $addr = remote_addr()) ) {
     $addr =~ /^\[?([\d\.]+)\]?$/ or die "bad remote addr [$addr]";
-    $xheader = "X-HTTP-Client: [$1]\n"
+    $xheader .= "X-HTTP-Client: [$1]\n"
              . "X-Generated-By: NMS FormMail.pl v$VERSION\n";
   }
 
@@ -875,7 +890,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.83 $
+FormMail $Revision: 1.84 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
