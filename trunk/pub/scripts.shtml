@@ -165,6 +165,14 @@
 	<td><!--#include file="tfmail.VER"--></td>
 	<td><!--#flastmod file="tfmail.tar.gz"--></td>
       </tr>
+      <tr>
+	<td>wwwboard</td>
+	<td>WWW Message Board</td>
+	<td><a href="wwwboard.tar.gz">wwwboard.tar.gz</a></td>
+	<td><a href="wwwboard.zip">wwwboard.zip</a></td>
+	<td><!--#include file="wwwboard.VER"--></td>
+	<td><!--#flastmod file="wwwboard.tar.gz"--></td>
+      </tr>
     </table>
 	  
     <hr />
