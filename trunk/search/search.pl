@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.14 2002-01-27 12:40:41 gellyfish Exp $
+# $Id: search.pl,v 1.15 2002-02-01 22:50:28 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/01/27 12:40:41  gellyfish
+# Fixed typo
+#
 # Revision 1.13  2002/01/16 09:34:26  gellyfish
 # Put back the missing log messages
 #
@@ -167,8 +170,6 @@ start_of_html($title, $style);
 my @term_list = ();
 my ($wclist, $dirlist) = ('', '');
 
-my %extra_basedirs = ();
-my $old_file_find = ( $] < 5.006 ? 1 : 0 );
 my $startdir;
 
 if ($terms)
@@ -202,9 +203,6 @@ sub do_search
     my @stats = stat $File::Find::name;
     if (-d _) {
         if ("$dirname$basename" !~ /$dirlist/o) {
-            $File::Find::prune = 1;
-        } elsif ($old_file_find) {
-            $extra_basedirs{detaint_dirname($File::Find::name)} = 1;
             $File::Find::prune = 1;
         }
         return;
