@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.60 2002-03-17 23:43:02 nickjc Exp $
+# $Id: FormMail.pl,v 1.61 2002-03-19 23:20:46 nickjc Exp $
 #
 
 use strict;
@@ -11,7 +11,7 @@ use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.60 $
+# FormMail.pl $Revision: 1.61 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -53,7 +53,7 @@ END_OF_CONFIRMATION
 # ----------------------------
 # (no user serviceable parts beyond here)
 
-my $VERSION = ('$Revision: 1.60 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+my $VERSION = ('$Revision: 1.61 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We don't need file uploads or very large POST requests.
 # Annoying locution to shut up 'used only once' warning in older perl
@@ -647,7 +647,7 @@ sub error {
     $referer = '' if ! defined( $referer );
     my $escaped_referer = escape_html($referer);
 
-    if ( $referer =~ m|^https?://([\w\.]+)|i) {
+    if ( $referer =~ m|^https?://([\w\.\-]+)|i) {
        $host = $1;
        $title = 'Bad Referrer - Access Denied';
        $error_body =<<EOBODY;
@@ -836,7 +836,7 @@ __END__
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.60 $
+FormMail $Revision: 1.61 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1316,6 +1316,10 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.60  2002/03/17 23:43:02  nickjc
+ * typos
+ * added a Common Problems section to the FormMail docs
+
  Revision 1.59  2002/03/15 09:02:02  nickjc
  return_link_url must be valid if $secure
 
