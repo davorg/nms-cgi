@@ -1,5 +1,7 @@
-#!/usr/bin/perl -w
-
+#!/usr/bin/perl -wT
+#
+# $Id: perldiver.pl,v 1.2 2002-06-01 12:02:33 davorg Exp $
+#
 use strict;
 use File::Find;
 
@@ -9,7 +11,7 @@ my $inc        = join('<br />', @INC);
 
 my $dev = 'nms';
 my $program = 'perldiver';
-my $version = "1.1";
+my $version = sprintf "%d.%02d", '$Revision: 1.2 $ ' =~ /(\d+)\.(\d+)/;
 
 my $env;
 foreach (keys %ENV){
