@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.15 2001-12-01 19:45:21 gellyfish Exp $
+# $Id: FormMail.pl,v 1.16 2001-12-04 08:55:03 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/12/01 19:45:21  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.14  2001/11/29 14:18:38  nickjc
 # * Removed CGI::Carp::set_message (doesn't work under 5.00404)
 # * Added some very minimal input filtering
@@ -486,7 +490,7 @@ sub check_email {
       # syntax does not match the following regular expression pattern
       # it fails basic syntax verification.
 
-      $email !~ /^.+\@(\[?)[a-zA-Z0-9\-\.]+(\]?)$/) {
+      $email !~ /^(.+)\@(?:[a-zA-Z0-9\-\.]+|\[[0-9\.]+\])$/) {
 
     # Basic syntax requires:  one or more characters before the @ sign,
     # followed by an optional '[', then any number of letters, numbers,
@@ -499,6 +503,14 @@ sub check_email {
     # syntax.
     return 0;
   } else {
+    if ($secure) {
+      # An extra check on the local part: allow only those characters
+      # that RFC822 permits without quoting.
+      my $localpart = $1;
+      if ($localpart !~ /^[A-Za-z0-9_\Q!#\$\%&'*+-.\/=?^_`{|}~\E\200-\377]+$/) {
+        return 0;
+      }
+    }
     # Return a true value, e-mail verification passed.
     return 1;
   }
