@@ -1,8 +1,22 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.12 2002-01-16 09:26:40 gellyfish Exp $
+# $Id: search.pl,v 1.13 2002-01-16 09:34:26 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/01/16 09:26:40  gellyfish
+# Put the mysteriously dissapeared Log keyword
+#
+# Revision 1.11  2002/01/16 09:25:30  gellyfish
+# Refixed the File::Find tainting issue
+#
+# Revision 1.10  2002/01/11 22:37:22  nickjc
+# * nasty fix for File::Find/chdir/taint issue
+# * misc minor tweaks
+# * filename matching as documented in the README
+# * eliminate some warnings
+#
+# Revision 1.9  2001/12/02 10:20:28  gellyfish
+# Merged in changes from Joseph Ryan to use File::Find
 #
 # Revision 1.8  2001/12/01 19:45:22  gellyfish
 # * Tested everything with 5.004.04
