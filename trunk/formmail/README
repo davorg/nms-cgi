@@ -177,8 +177,7 @@ $postmaster         - The envelope sender address to use for all emails
                       <input type="hidden" name="recipient" value="2" />
 
 @valid_ENV          - A list of all the environment variables that you want
-                      to be able to include in the email. See 'env_report'
-                      below.
+                      to be able to include in the email. See 'env_report' below.
 
 $locale             - This determines the language that is used in the date - by
                       default this is blank and the language will probably be

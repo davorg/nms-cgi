@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.20 2002-11-21 06:39:42 nickjc Exp $
+# $Id: FormMail.pl,v 2.21 2003-01-27 21:02:01 nickjc Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.20 $
+# FormMail.pl $Revision: 2.21 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -74,7 +74,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.20 $, 10, -1;
+  $VERSION = substr q$Revision: 2.21 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -195,9 +195,10 @@ delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
 $ENV{PATH} =~ /(.*)/ and $ENV{PATH} = $1;
 
 
-use vars qw(%Config %Form);
+use vars qw(%Config %Form $checked_recipient);
 %Config = ();
 %Form = ();
+$checked_recipient = '';
 
 check_url();
 
@@ -366,12 +367,12 @@ sub check_required {
     if ($max_recipients > 0 and not $emulate_matts_code) {
       error('too_many_recipients') if scalar @valid > $max_recipients;
     }
-    $Config{recipient} = join ',', @valid;
+    $checked_recipient = join ',', @valid;
 
   } else {
     my @allow = grep {/\@/} @allow_mail_to;
     if (scalar @allow > 0 and not $emulate_matts_code) {
-      $Config{recipient} = $allow[0];
+      $checked_recipient = $allow[0];
       $hide_recipient = 1;
     } else {
       error('no_recipient')
@@ -495,7 +496,7 @@ sub send_mail {
     $email = 'nobody';
   }
 
-  if ("$Config{recipient}$email$realname$subject" =~ /\r|\n/) {
+  if ("$checked_recipient$email$realname$subject" =~ /\r|\n/) {
     die 'multiline variable in mail header, unsafe to continue';
   }
 
@@ -536,10 +537,10 @@ sub send_mail {
     email_end();
   }
 
-  email_start( $postmaster, split(/\s*,\s*/, $Config{recipient}) );
+  email_start( $postmaster, split(/\s*,\s*/, $checked_recipient) );
 
   email_data($xheader . <<EOMAIL);
-To: $Config{recipient}
+To: $checked_recipient
 From: $email$realname
 Subject: $subject
 
@@ -1033,7 +1034,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.20 $
+FormMail $Revision: 2.21 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
