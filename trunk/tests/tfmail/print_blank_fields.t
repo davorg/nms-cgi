@@ -5,12 +5,7 @@ use NMSTest::ScriptUnderTest;
 
 @LocalChecks::ISA = qw(NMSTest::OutputChecker);
 
-use vars qw($t);
-$t = NMSTest::ScriptUnderTest->new(
-  SCRIPT       => 'tfmail/TFmail.pl',
-  REWRITERS    => [ \&rw_setup ],
-  CHECKER      => 'LocalChecks',
-);
+use vars qw($t $use_mime_lite);
 
 my @tests = (
 
@@ -26,22 +21,32 @@ my @tests = (
 
 );
 
-foreach my $test (@tests)
+foreach my $uml (0, 1)
 {
-   my ($name, $val, $print_blank, $should_show) = @$test;
-
-   my $moggie = (length $val ? "moggie=$val" : "moggie");
-   my @args = ('foo=foo', $moggie );
-   if ( $print_blank )
-   {
-      push @args, '_config=pbf';
-   }
-
-   $t->run_test(
-     TEST_ID     => "blank field $name pbf=$print_blank",
-     CGI_ARGS    => \@args,
-     CHECKS      => ($should_show ? 'yes_moggie' : 'no_moggie').' xhtml nodie',
+   $use_mime_lite = $uml;
+   $t = NMSTest::ScriptUnderTest->new(
+     SCRIPT       => 'tfmail/TFmail.pl',
+     REWRITERS    => [ \&rw_setup ],
+     CHECKER      => 'LocalChecks',
    );
+
+   foreach my $test (@tests)
+   {
+      my ($name, $val, $print_blank, $should_show) = @$test;
+   
+      my $moggie = (length $val ? "moggie=$val" : "moggie");
+      my @args = ('foo=foo', $moggie );
+      if ( $print_blank )
+      {
+         push @args, '_config=pbf';
+      }
+   
+      $t->run_test(
+        TEST_ID     => "blank field $name pbf=$print_blank uml=$uml",
+        CGI_ARGS    => \@args,
+        CHECKS      => ($should_show ? 'yes_moggie' : 'no_moggie').' xhtml nodie',
+      );
+   }
 }
 
 sub LocalChecks::check_no_moggie
@@ -90,9 +95,10 @@ $SIG{__WARN__} = sub {
 END
    s|^(.*?\n)|$1$no_cgi_warn|;
 
-   s{(POSTMASTER\s*=>).*}  {$1 'postmaster\@post.master.domain';};
-   s{(LIBDIR\s*=>).*}      {$1 '$ENV{NMS_WORKING_COPY}/tfmail';};
-   s{(CONFIG_ROOT\s*=>).*} {$1 '$ENV{NMS_WORKING_COPY}/tests/tfmail';};
+   s{(POSTMASTER\s*=>).*}    {$1 'postmaster\@post.master.domain';};
+   s{(LIBDIR\s*=>).*}        {$1 '$ENV{NMS_WORKING_COPY}/tfmail';};
+   s{(CONFIG_ROOT\s*=>).*}   {$1 '$ENV{NMS_WORKING_COPY}/tests/tfmail';};
+   s{(USE_MIME_LITE\s*=>).*} {$1 $use_mime_lite;};
 
 }
 
