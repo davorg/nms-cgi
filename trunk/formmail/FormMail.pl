@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.2 2002-07-04 08:22:12 gellyfish Exp $
+# $Id: FormMail.pl,v 2.3 2002-07-08 08:23:48 gellyfish Exp $
 #
 
 use strict;
@@ -12,12 +12,12 @@ use vars qw(
   $allow_empty_ref $max_recipients $mailprog @referers
   @allow_mail_to @recipients %recipient_alias
   @valid_ENV $date_fmt $style $send_confirmation_mail
-  $confirmation_text $locale $charset
+  $confirmation_text $locale $charset $no_content
 );
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.2 $
+# FormMail.pl $Revision: 2.3 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -53,6 +53,7 @@ BEGIN
   $charset           = 'iso-8859-1';
   $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
   $style             = '/css/nms.css';
+  $no_content        = 0;
   $send_confirmation_mail = 0;
   $confirmation_text = <<'END_OF_CONFIRMATION';
 From: you@your.com
@@ -67,7 +68,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.2 $, 10, -1;
+  $VERSION = substr q$Revision: 2.3 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -190,7 +191,12 @@ check_required();
 
 send_mail($date, [@Field_Order]);
 
-return_html($date, [@Field_Order]);
+if ( $no_content ) {
+   print header(-Status => 204);
+}
+else {
+   return_html($date, [@Field_Order]);
+}
 
 sub check_url {
   my $check_referer = check_referer(referer());
@@ -921,7 +927,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.2 $
+FormMail $Revision: 2.3 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE

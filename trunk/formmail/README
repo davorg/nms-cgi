@@ -199,6 +199,14 @@ $locale             - This determines the language that is used in the date - by
 
 $charset            - The character set to use for output documents.
 
+$no_content         - If this is set to 1 then rather than returning the 
+                      HTML confirmation page or doing a redirect the script 
+                      will output a header that indicates that no content 
+                      will be returned and that the submitted form should 
+                      not be replaced.  This should be used carefully as an
+                      unwitting visitor may click the submit button several 
+                      times thinking that nothing has happened.
+
 @valid_ENV          - A list of all the environment variables that you want
                       to be able to include in the email. See 'env_report'
                       below.

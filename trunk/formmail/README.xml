@@ -287,6 +287,17 @@ alter the way that the program works.
       </description>
    </variable>
    <variable>
+      <var_name>$no_content</var_name>
+      <description>
+         If this is set to 1 then rather than returning the HTML confirmation
+         page or doing a redirect the script will output a header that
+         indicates that no content will be returned and that the submitted
+         form should not be replaced.  This should be used carefully as an
+         unwitting visitor may click the submit button several times thinking
+         that nothing has happened.
+      </description>
+   </variable>
+   <variable>
       <var_name>@valid_ENV</var_name>
       <description>
          <paragraph>
