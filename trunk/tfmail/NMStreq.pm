@@ -4,11 +4,12 @@ use strict;
 use CGI;
 use Carp;
 use IO::File;
+use File::Basename;
 use POSIX qw(locale_h strftime);
 use NMSCharset;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.14 $, 10, -1;
+$VERSION = substr q$Revision: 1.15 $, 10, -1;
 
 =head1 NAME
 
@@ -156,6 +157,11 @@ sub new
    my $cfg_name = $cgi->param('_config');
    defined $cfg_name or $cfg_name = 'default';
    $self->{r}{config} = $self->_read_config_file($cfg_name);
+
+   # cache location of the config file to find the templates
+   
+   $self->{r}{config_path} 
+                      = dirname($self->{opt}{ConfigRoot} . "/" . $cfg_name);
 
    $self->{r}{param} = {};
    my @param_list = ();
@@ -944,7 +950,15 @@ sub _open_file
 
    my $path = "$self->{opt}{ConfigRoot}/$filename$ext";
 
-   unless (-f $path)
+   my $file_exists = -f $path;
+
+   if ( $filetype =~ / template$/ and ! $file_exists)
+   {
+      $path = "$self->{r}{config_path}/$filename$ext";
+      $file_exists = -f $path; 
+   }
+
+   if ( !$file_exists)
    {
       $self->error("$filetype file not found: [$filename]");
    }

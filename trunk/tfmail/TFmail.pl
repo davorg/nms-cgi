@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.30 2004-09-17 09:56:29 gellyfish Exp $
+# $Id: TFmail.pl,v 1.31 2004-10-08 08:08:30 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -70,7 +70,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.30 $, 10, -1;
+   $VERSION = substr q$Revision: 1.31 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -121,6 +121,10 @@ sub main
          {
             my $stat = $treq->config('block_status','403 Forbidden');
             print header(-status => $stat);
+            if ( $treq->config('blocked_template',''))
+            {
+               html_page($treq,  $treq->config('blocked_template',''));
+            }
             exit;
          }
       }
@@ -382,11 +386,15 @@ sub bad_method
    if ( $treq->config('bad_method_status',0))
    {
       print $treq->cgi()->header(-status => "405 Request method not allowed");
+      if ( $treq->config('bad_method_template',''))
+      {
+         html_page($treq, $$treq->config('bad_method_template',''));
+      }
       exit;
    }
    else
    {
-      die "request method must be " . $message;
+      $treq->error("request method must be " . $message);
    }
 }
 

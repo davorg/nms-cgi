@@ -597,6 +597,10 @@ bad_method_status          - if this is set to 1 then TFmail will return the
                              default value is 0 meaning the default error page
                              will be displayed.
 
+bad_method_template        - If this is set then the template will be used as
+                             the content when bad_method_status = 1 and the
+                             request method is invalid (see above.)
+
 get_redirect               - Normally TFmail will only accept a 'POST' method
                              however if this is set to a valid URL then it
                              will redirect to the indicated page on a 'GET'
@@ -743,6 +747,11 @@ block_status               - This will set the status that is returned if one
                              you want to encourage the client to make further
                              requests in the belief that this one was
                              successfull.
+
+blocked_template           - If this is set to a valid template file (as
+                             described above) and block_lists is set then
+                             this will be displayed when the client is blocked.
+
                              
 INLINE TEMPLATES
 
