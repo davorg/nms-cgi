@@ -1,115 +1,166 @@
 COPYRIGHT
+---------
 
-Countdown Version 1.00
+Simple Search
 Copyright 2001 London Perl Mongers, All rights reserved
 
 LICENSE
+-------
 
-This script is free software; you are free to redistibute it
-and/or modify it under the same terms as Perl itself.
+This script is free software; you are free to redistibute it and/or
+modify it under the same terms as Perl itself.
 
 URL
+---
 
 The most up to date version of this script is available from the nms
-script archive at  <http://nms-cgi.sourceforge.net/>
+script archive at <http://nms-cgi.sourceforge.net/>
 
 SUMMARY
+-------
 
-Simple Search is a simple search engine designed for a quick search of
-a website.
+Simple Search is a simple search engine that performs a quick search of
+a website and displays links to files containing the text search for.
 
 FILES
+-----
 
 In this distribution, you will find four files:
 
-search.pl      - The main Perl script
-README         - This file. Instructions on how to install and use search
-countdown.html - A sample HTML document demonstrating how to use search
-MANIFEST       - List of files
+search.pl   - The Simple Search Perl script.
+README      - This file.  Instructions on how to configure and install
+              Simple Search.
+search.html - A sample HTML file demonstrating how to use Simple Search.
+MANIFEST    - List of files included with the Simple Search distribution.
 
 CONFIGURATION
+-------------
 
 There are a number of variables that you can change in search.pl which
-alter the way that the program works.
+alter the way that the program works.  $basedir and $baseurl are the two
+most important variables, and must be altered to refer to your website.
 
-$DEBUGGING          - This should be set to 1 whilst you are installing
-                      and testing the script. Once the script is live you
-                      should change it to 0. When set to 1, errors will
-                      be output to the browser. This is a security risk and
-                      should not be used when the script is live.
+    $DEBUGGING
 
-$basedir            - This is the base directory for the files you want to 
-                      search.  This should as closest as possible to the 
-                      root directory; it should encompass everything you 
-                      want searched.  Files and folders you want blocked 
-                      should be placed in the @blocked array; everything 
-                      else will be searched. Also note that this is a 
-                      directory on the server, not the web.
+        For debugging and/or testing purposes set this variable to 1;
+        otherwise set it to 0.  When set to 1, errors will be output
+        to the browser (however, this is a security risk, therefore it
+        should not be set to 1 when the script is ready for public use).
 
-$baseurl            - This is exactly equivalent to $basedir except that it 
-                      is a URL not a file path. In plain english, this 
-                      variable will be used in generating links to the results.
+    $basedir
 
-@files              - This array contains the file types to be searched. 
-                      There are a few markers you can use:
+        This is the base directory (where each search will start);
+        hence it should encompass everything you want searched.
+        Files and directories you want blocked from the search should
+        be placed in the @blocked array (described below); everything
+        else will be searched.  The base directory and all directories
+        below it (that you want searched) must be world readable and
+        executable.  For example, this variable might be set to
+        /home/larry/public_html/articles
 
-                          * - wildcard.  Use to fill in holes, such as: 
-                              sear*.html  
-                              Use it to tighten up the search criteria.
-                          / - directory marker.
-                          . - use to indicate file exstension.
+    $baseurl
 
-                      If there are no markers in the element, it will be 
-                      treated as a file extension; All files with that 
-                      file extension that match the search will be "found".
+        This is the base URL, which is the URL relative to $basedir
+        (mentioned above).  This variable will be used in generating
+        links (URLs) relative to the files found containing the text
+        search for.  For example, this variable might be set to
+        http://www.webhost.com/~larry/articles
 
-$title              - This is the title that you want displayed on the 
-                      search results page.
+    @files
 
-$title_url          - The title on the results page will be a link. This is 
-                      the URL that it links to.
+        This array contains the files to be searched.  There are a few
+        special symbols you can use to describe those files.
 
-$search_url         - The URL of your main search page. This is included on 
-                      the results page so that users can begin a new search.
+            *   The star is a wildcard symbol.  It matches zero or more
+                characters.  For example, '*.html' would match all files
+                ending with '.html', while a single '*' would match every
+                file.
 
-@blocked            - This is an array of files that will be blocked. Full 
-                      names, relative to $basedir are needed.  These files 
-                      will NEVER show up in any search.
+            /   The forward slash is a directory delimiter.  It is used
+                to separate directories of a single path.
+
+            .   The period is used to indicate a file exstension (usually
+                an acronym used to identify the contents of a file).  For
+                example, a file with the '.html' suffix usually contains
+                HTML (the language used to write webpages).
+
+        All files with a listed file extension that contain the text
+        searched for will be displayed in the result of the search.
+
+    $title
+
+        This is the title that will be displayed on the search results
+        page, and it will also be used as the text of the link intended
+        to point back to your main webpage.
+
+    $title_url
+
+        This variable is intended to be set to the URL of your main web-
+        page.  The associated hypertext will be the value of $title, and
+        it will be displayed on the results page.
+        so that users can link back to
+        the search page (to perform another search).
+
+    $search_url
+
+        The URL of search.html. This is included on the results page
+        so that users can link back to the search page to perform a new
+        search.
+
+    @blocked
+
+        This is an array of files that will be blocked.  Full names,
+        relative to $basedir are needed.  These files will NEVER show up
+        in any search results.
 
 INSTALLATION
+------------
 
-Simple Search is installed simply by copying the file search.pl into your
-cgi-bin directory. If you don't know where your cgi-bin directory is, then
-please ask your system administrator.
+Simple Search is installed simply by copying the file search.pl into
+your cgi-bin directory.  If you don't know the location of your cgi-bin
+directory, then please ask your system administrator.
 
-You may need to rename search.pl to search.cgi. Again, your system
-administrator will know if this is the case.
+Depending on how the HTTP server is configured, you may need to rename
+search.pl to search.cgi.  Again, your system administrator will know if
+this is the case.
 
-You will probably need to turn on execute permissions to the file. You can
-do this by running the command "chmod +x search.pl" from your command
-line. If you don't have command line access to your web server then there
-will probably be an equivalent function in your file transfer program.
+You will probably need to turn on execute permissions to the file
+search.pl.  If you have shell access to the HTTP server, you can do this
+by running the command `chmod +x search.pl` from the command line.
+If you don't have command line access then there will probably be an
+equivalent function (to change file mode) in your file transfer program.
 
-Simple Search will scan and search all directories and subdirectories from a
-start point.  There are 3 different parameters that can be passed to it:
-case, bool, and terms.
-$case  - can be Sensitive or Insensitive.  Default is Insensitive.
-$bool  - Type of search, although only affects searches with multiple terms.
-         Can be AND or OR.  Default is OR.
-$terms - the terms that will be searched.
+Simple Search will scan and search all directories and subdirectories
+from a start point (defined by $basedir).  There are 3 different
+parameters that can be passed to it:  case, bool, and terms.
 
-See the search.html example bundled with Simple Search of how to fully
-construct a form to use with simple search.  Also note that a small form
-can be embedded into a page using a construct similar to this:
+    $case
 
-   <form method="POST" action="/cgi-bin/search.pl">
-     <input type="text" name="terms" size="20" />
-     <input type="submit" />
-   </form>
+        This variable defines whether a search will be case-sensitive or
+        case-insensitive.  The default is case-insensitive.
+
+    $bool
+
+        If there is more then one term in the search query, this variable
+        defines whether the terms AND'ed or OR'ed.  The default is OR.
+
+    $terms
+
+        This variable contains the terms that will be searched.
+
+See the search.html file bundled with the Simple Search distriubtion for
+an example of how to fully construct a form to use with simple search.
+As an example, a small form can be embedded into a page using a construct
+similar to the following:
+
+    <form method="post" action="/cgi-bin/search.pl">
+        <input type="text" name="terms" size="40" />
+        <input type="submit" />
+    </form>
 
 SUPPORT
+-------
 
-For support of this script please email:
+For support with Simple Search please email:
 
-  <nms-cgi-support@lists.sourceforge.net>
-
+    <nms-cgi-support@lists.sourceforge.net>
