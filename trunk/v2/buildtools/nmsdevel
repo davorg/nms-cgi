@@ -82,7 +82,6 @@ sub upload {
         $ftp->put($pkg->archive_path . ".tar.gz") or die;
         $ftp->put($pkg->archive_path . ".zip") or die;
     }
-    $ftp->put("$package.zip") or die;
     $ftp->quit or die;
     print "ftp done\n";
 }
