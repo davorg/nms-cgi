@@ -23,4 +23,4 @@
 # For example:
 #DEFAULT (echo ""; id; echo %s; date; cat) >> $CVSROOT/CVSROOT/commitlog
 # or
-DEFAULT (echo ""; id; echo %{sVv}; date; cat) | mail -s "CVS Commit %s" nms-cgi-del@lists.sourceforge.net
+DEFAULT (echo ""; id; echo %{sVv}; date; cat) | mail -s "CVS Commit %s" nms-cgi-devel@lists.sourceforge.net
