@@ -1,17 +1,22 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.62 2002-03-26 09:01:03 gellyfish Exp $
+# $Id: FormMail.pl,v 1.63 2002-03-26 13:49:16 nickjc Exp $
 #
 
 use strict;
 use POSIX qw(strftime);
 use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
-use vars qw($DEBUGGING $done_headers);
+use vars qw(
+  $DEBUGGING $emulate_matts_code $secure
+  $allow_empty_ref $mailprog @referers @allow_mail_to
+  @recipients @valid_ENV $date_fmt $style
+  $send_confirmation_mail $confirmation_text
+);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.62 $
+# FormMail.pl $Revision: 1.63 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -30,19 +35,21 @@ use vars qw($DEBUGGING $done_headers);
 # your own web server. If the purpose of these
 # parameters seems unclear, please see the README file.
 #
-BEGIN { $DEBUGGING    = 1; }
-my $emulate_matts_code= 0;
-my $secure            = 1;
-my $allow_empty_ref   = 0;
-my $mailprog          = '/usr/lib/sendmail -oi -t';
-my @referers          = qw(dave.org.uk 209.207.222.64 localhost);
-my @allow_mail_to     = qw(you@your.domain some.one.else@your.domain localhost);
-my @recipients        = ();
-my @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
-my $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
-my $style             = '/css/nms.css';
-my $send_confirmation_mail = 0;
-my $confirmation_text = <<'END_OF_CONFIRMATION';
+BEGIN
+{
+  $DEBUGGING         = 1;
+  $emulate_matts_code= 0;
+  $secure            = 1;
+  $allow_empty_ref   = 0;
+  $mailprog          = '/usr/lib/sendmail -oi -t';
+  @referers          = qw(dave.org.uk 209.207.222.64 localhost);
+  @allow_mail_to     = qw(you@your.domain some.one.else@your.domain localhost);
+  @recipients        = ();
+  @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
+  $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
+  $style             = '/css/nms.css';
+  $send_confirmation_mail = 0;
+  $confirmation_text = <<'END_OF_CONFIRMATION';
 From: you@your.com
 Subject: form submission
 
@@ -54,20 +61,27 @@ END_OF_CONFIRMATION
 # ----------------------------
 # (no user serviceable parts beyond here)
 
-my $VERSION = ('$Revision: 1.62 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  use vars qw($VERSION);
+  $VERSION = ('$Revision: 1.63 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
-# We don't need file uploads or very large POST requests.
-# Annoying locution to shut up 'used only once' warning in older perl
+  # Merge @allow_mail_to and @recipients into a single list of regexps
+  push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
 
-$CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
-$CGI::POST_MAX = $CGI::POST_MAX = 1000000;
+  $secure = 0 if $emulate_matts_code;
 
+  use vars qw(%valid_ENV);
+  @valid_ENV{@valid_ENV} = (1) x @valid_ENV;
 
-my $hide_recipient = 0;
+  use vars qw($style_element);
+  $style_element = $style ?
+                   qq%<link rel="stylesheet" type="text/css" href="$style" />%
+                   : '';
+}
 
-
-# Merge @allow_mail_to and @recipients into a single list of regexps
-push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
+use vars qw($done_headers $hide_recipient $debug_warnings);
+$done_headers   = 0;
+$hide_recipient = 0;
+$debug_warnings = '';
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -80,7 +94,7 @@ BEGIN
    {
       my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
+      if ( $DEBUGGING )
       {
          $message =~ s/</&lt;/g;
          $message =~ s/>/&gt;/g;
@@ -118,43 +132,49 @@ EOERR
      die @_;
    };
 
-   $SIG{__DIE__} = \&fatalsToBrowser;
+   # Don't stomp on global SIG{__DIE__} if we're sharing an
+   # interpreter under Apache::Registry
+   unless (exists $ENV{MOD_PERL}) {
+     $SIG{__DIE__} = \&fatalsToBrowser;
+   }
 }
+local $SIG{__DIE__} = \&fatalsToBrowser;
 
-if ( $emulate_matts_code )
-{
-   $secure = 0; # ;-}
-}
 
-my $debug_warnings = '';
+# We don't need file uploads or very large POST requests.
+# Annoying locution to shut up 'used only once' warning in
+# older perl.  Localize these to avoid stomping on other
+# scripts that need file uploads under Apache::Registry.
 
-#  Empty the environment of potentially harmful variables
-#  This might cause problems if $mail_prog is a shell script :)
+local ($CGI::DISABLE_UPLOADS, $CGI::POST_MAX);
+$CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX        = 1000000;
+
+
+# Empty the environment of potentially harmful variables,
+# and detaint the path.  We accept anything in the path
+# because $ENV{PATH} is trusted for a CGI script, and in
+# general we have no way to tell what should be there.
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
+$ENV{PATH} =~ /(\S*)/ and $ENV{PATH} = $1;
 
-$ENV{PATH} = '/bin:/usr/bin';
 
-my %valid_ENV;
-
-@valid_ENV{@valid_ENV} = (1) x @valid_ENV;
-
-my $style_element = $style ?
-                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
-                    : '';
+use vars qw(%Config %Form);
+%Config = ();
+%Form = ();
 
 check_url();
 
 my $date = strftime($date_fmt, localtime);
 
-my (%Config, %Form);
 my @Field_Order = parse_form();
 
 check_required();
 
-send_mail();
+send_mail($date, [@Field_Order]);
 
-return_html();
+return_html($date, [@Field_Order]);
 
 sub check_url {
   my $check_referer = check_referer(referer());
@@ -327,6 +347,7 @@ sub check_recipient {
 }
 
 sub return_html {
+  my ($date, $Field_Order) = @_;
   my ($key, $sort_order, $sorted_field);
 
   if ($Config{'redirect'}) {
@@ -370,10 +391,10 @@ EOHTML
         $sort_order =~ s/order://;
         @sorted_fields = split(/,/, $sort_order);
       } else {
-        @sorted_fields = @Field_Order;
+        @sorted_fields = @$Field_Order;
       }
     } else {
-      @sorted_fields = @Field_Order;
+      @sorted_fields = @$Field_Order;
     }
 
     foreach (@sorted_fields) {
@@ -407,6 +428,7 @@ END_HTML_FOOTER
 }
 
 sub send_mail {
+  my ($date, $Field_Order) = @_;
 
   my $dashes = '-' x 75;
 
@@ -476,10 +498,10 @@ EOMAIL
       $Config{'sort'} =~ s/order://;
       @sorted_keys = split(/,/, $Config{'sort'});
     } else {
-      @sorted_keys = @Field_Order;
+      @sorted_keys = @$Field_Order;
     }
   } else {
-    @sorted_keys = @Field_Order;
+    @sorted_keys = @$Field_Order;
   }
 
   foreach (@sorted_keys) {
@@ -833,11 +855,11 @@ sub escape_html {
   return $str;
 }
 
-__END__
+# No __END__ here because that breaks under Apache::Registry
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.62 $
+FormMail $Revision: 1.63 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1025,7 +1047,7 @@ Perl 'here document' to allow us to configure it
 as a single block of text in the script. In the
 example below, everything between the lines
 
-  my $confirmation_text = E<lt>E<lt>'END_OF_CONFIRMATION';
+  $confirmation_text = E<lt>E<lt>'END_OF_CONFIRMATION';
 
 and
 
@@ -1036,7 +1058,7 @@ before the first blank line is taken as part of
 the email header, and everything after the first
 blank line is the body of the email.
 
-  my $confirmation_text = <<'END_OF_CONFIRMATION';
+    $confirmation_text = <<'END_OF_CONFIRMATION';
   From: you@your.com
   Subject: form submission
 
@@ -1261,12 +1283,12 @@ it as the name part of the sender's email address in the email.
 In the configuration section at the top of FormMail, we set
 the default list of allowed referers with this line of code:
 
-   my @referers = qw(dave.org.uk 209.207.222.64 localhost);
+   @referers = qw(dave.org.uk 209.207.222.64 localhost);
 
 This use of the C<qw()> operator is one way to write lists of
 strings in Perl.  Another way is like this:
 
-   my @referers = ('dave.org.uk','209.207.222.64','localhost');
+   @referers = ('dave.org.uk','209.207.222.64','localhost');
 
 We prefer the first version because it allows use to leave out
 the quote character, but the second version is perfectly valid
@@ -1277,7 +1299,7 @@ is better or worse than the other.
 What you must not do is try to mix the two, and end up with
 something like:
 
-   my @referers = qw('dave.org.uk','209.207.222.64','localhost');
+   @referers = qw('dave.org.uk','209.207.222.64','localhost');
 
 This will not work, and you will see unexpected behavior.  In
 the case of C<@referers>, the script will always display a
@@ -1288,7 +1310,7 @@ the case of C<@referers>, the script will always display a
 In the configuration section at the top of FormMail, we set
 the default mail program to sendmail with this code:
 
-   my $mailprog          = '/usr/lib/sendmail -oi -t';
+   $mailprog          = '/usr/lib/sendmail -oi -t';
 
 This is actually two different pieces of information; the
 location of the sendmail binary (F</usr/lib/sendmail>) and
@@ -1300,11 +1322,11 @@ If your hosting provider or system administrator tells you that
 sendmail is F</usr/sbin/sendmail> on your system, then you must
 change the C<$mailprog> line to:
 
-   my $mailprog          = '/usr/sbin/sendmail -oi -t';
+   $mailprog          = '/usr/sbin/sendmail -oi -t';
 
 and not:
 
-   my $mailprog          = '/usr/sbin/sendmail';
+   $mailprog          = '/usr/sbin/sendmail';
 
 =back
 
@@ -1317,6 +1339,9 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.62  2002/03/26 09:01:03  gellyfish
+ Added $allow_empty_ref to FormMail configuration
+
  Revision 1.61  2002/03/19 23:20:46  nickjc
  error message fix from Dave Baker
 
