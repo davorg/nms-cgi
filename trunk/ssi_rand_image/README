@@ -1,12 +1,10 @@
-
 SSI Random Images Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at  <http://www.dave.org.uk/scripts/nms/>
-
+Scripts Archive at <http://nms-cgi.sourceforge.net/>
 
 This script is provided to allow you to have a random image appear on your 
 page every time it is reloaded.  The server side includes version offers you 
@@ -99,4 +97,10 @@ changing your .html files to .shtml.
 check out a great tutorial that NCSA has developed;  located at:
 
     http://hoohoo.ncsa.uiuc.edu/docs/tutorials/includes.html
+
+SUPPORT
+
+For support of this script please email:
+
+  <nms-cgi-support@lists.sourceforge.net>
 

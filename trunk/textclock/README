@@ -1,12 +1,10 @@
-
 Text Clock Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at  <http://www.dave.org.uk/scripts/nms/>
-
+Scripts Archive at <http://nms-cgi.sourceforge.net/>
 
 TextClock is a Perl CGI script which is meant to be run from Server Side 
 Includes. When this script is implemented, it can be used to show browsers 
@@ -74,4 +72,9 @@ Server Side Include call, such as:
 
 	<!--#exec cgi="/url/path/to/textclock.cgi"-->
 
+SUPPORT
+
+For support of this script please email:
+
+  <nms-cgi-support@lists.sourceforge.net>
 

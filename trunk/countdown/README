@@ -5,7 +5,7 @@ Copyright 2001 London Perl Mongers, All rights reserved
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at  <http://www.dave.org.uk/scripts/nms/>
+Scripts Archive at  <http://nms-cgi.sourceforge.net/>
 
 
 The Countdown script is a somewhat simple script, which takes the time you give 
@@ -109,3 +109,10 @@ in @from_date you can do the following:
    (This concept is also mentioned above).  You can substitute in 'XX' for any 
    amount of time you don't want. (Be it year, month, day, hour, minute, or
    second)
+
+SUPPORT
+
+For support of this script please email:
+
+  <nms-cgi-support@lists.sourceforge.net>
+

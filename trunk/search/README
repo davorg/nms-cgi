@@ -4,7 +4,7 @@ Copyright 2001 London Perl Mongers, All rights reserved
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at  <http://www.dave.org.uk/scripts/nms/
+Scripts Archive at <http://nms-cgi.sourceforge.net/>
 
 The simple search script was written to allow people to set up a search of 
 their site, so their users could enter keywords and find all documents 
@@ -92,3 +92,10 @@ README
 
 Just read it!
 ------------------------------------------------------------------------------
+
+SUPPORT
+
+For support of this script please email:
+
+  <nms-cgi-support@lists.sourceforge.net>
+

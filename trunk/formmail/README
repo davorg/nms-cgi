@@ -4,7 +4,7 @@ Copyright 2001 London Perl Mongers, All rights reserved
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at  <http://www.dave.org.uk/scripts/nms/>
+Scripts Archive at  <http://nms-cgi.sourceforge.net/>
 
 
 FormMail is a universal WWW form to E-mail gateway.  There is only one
@@ -485,4 +485,10 @@ Some of the possible uses of this script are:
    allow all users to run off of it.
 3) Want to have one script to parse all of your html forms and mail them 
    to you.
+
+SUPPORT
+
+For support of this script please email:
+
+  <nms-cgi-support@lists.sourceforge.net>
 

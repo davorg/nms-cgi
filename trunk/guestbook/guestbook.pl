@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.4 2001-11-14 19:39:14 davorg Exp $
+# $Id: guestbook.pl,v 1.5 2001-11-14 22:21:17 davorg Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/11/14 19:39:14  davorg
+# Fixed stupid bug getting CGI parameters
+#
 # Revision 1.3  2001/11/13 20:35:14  gellyfish
 # Added the CGI::Carp workaround
 #
@@ -225,28 +228,37 @@ sub no_comments {
   print <<END_FORM;
 Content-type: text/html
 
-
-<html><head><title>No Comments</title></head>
-<body><h1>Your Comments appear to be blank</h1>
-<p>The comment section in the guestbook fillout form appears
-to be blank and therefore the Guestbook Addition was not
-added.  Please enter your comments below.</p>
-<form method=POST action="$cgiurl">
-<p>Your Name:<input type=text name="realname" size=30
-           value="$realname"><br>
-E-Mail: <input type=text name="username"
-         value="$username" size=40><br>
-City: <input type=text name="city" value="$city'" 
-       size=15>, 
-State: <input type=text name="state" 
-        value="$state" size=15> 
-Country: <input type=text name="country" 
-          value="$country" size=15></p>
-<p>Comments:<br>
-<textarea name="comments" COLS=60 ROWS=4></textarea></p>
-<p><input type=submit> * <input type=reset></p></form><hr>
-<p>Return to the <a href="$guestbookurl">Guestbook</a>.</p>
-</body></html>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>i
+  <head>
+    <title>No Comments</title>
+  </head>
+  <body>
+    <h1>Your Comments appear to be blank</h1>
+    <p>The comment section in the guestbook fillout form appears
+      to be blank and therefore the Guestbook Addition was not
+      added.  Please enter your comments below.</p>
+    <form method="post" action="$cgiurl">
+      <p>Your Name:<input type="text" name="realname" size="30"
+                          value="$realname" /><br />
+        E-Mail: <input type=text name="username"
+                       value="$username" size="40" /><br />
+        City: <input type="text" name="city" value="$city" 
+                     size="15" />, 
+        State: <input type="text" name="state" 
+                      value="$state" size="15" /> 
+        Country: <input type="text" name="country" 
+                        value="$country" size="15" /></p>
+      <p>Comments:<br>
+        <textarea name="comments" cols="60" rows="4"></textarea></p>
+      <p><input type="submit" /> * <input type="reset" /></p>
+    </form>
+    <hr />
+    <p>Return to the <a href="$guestbookurl">Guestbook</a>.</p>
+  </body>
+</html>
 END_FORM
 
   # Log The Error

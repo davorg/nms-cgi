@@ -1,12 +1,10 @@
-
-Test Counter  Version 1.00
+Text Counter  Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at  <http://www.dave.org.uk/scripts/nms/>
-
+Scripts Archive at <http://nms-cgi.sourceforge.net/>
 
 TextCounter is a simple program which allows you to include a text counter 
 on any page.  You can also include the date since it began counting, a link 
@@ -192,3 +190,10 @@ script. :-D (Yah right!)  But please, before you ask for help, follow the
 steps at the top of this document.  You probably won't get an answer from 
 myself or the help staff if your answer is in the Frequently Asked 
 Questions at my site.
+
+SUPPORT
+
+For support of this script please email:
+
+  <nms-cgi-support@lists.sourceforge.net>
+

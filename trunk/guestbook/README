@@ -1,12 +1,10 @@
-
 Guestbook Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at <http://www.dave.org.uk/scripts/nms/>
-
+Scripts Archive at  <http://nms-cgi.sourceforge.net/>
 
 There are five files included in the Guestbook package.  Below is a brief 
 summary of them:
@@ -154,4 +152,10 @@ you want :-) ) I left the log file so that newest entries are added at the
 bottom.  This should be apparent though since the entries all come with a 
 short date added.  You can get around using this by changing the option 
 $uselog in the guestbook.pl file.
+
+SUPPORT
+
+For support of this script please email:
+
+  <nms-cgi-support@lists.sourceforge.net>
 
