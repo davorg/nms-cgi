@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.17 2002-10-10 08:00:15 nickjc Exp $
+# $Id: FormMail.pl,v 2.18 2002-11-17 09:11:15 nickjc Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.17 $
+# FormMail.pl $Revision: 2.18 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -73,7 +73,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.17 $, 10, -1;
+  $VERSION = substr q$Revision: 2.18 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -96,6 +96,18 @@ use vars qw($done_headers $hide_recipient $debug_warnings);
 $done_headers   = 0;
 $hide_recipient = 0;
 $debug_warnings = '';
+
+sub html_header {
+    if ($CGI::VERSION >= 2.57) {
+        # This is the correct way to set the charset
+        print header('-type'=>'text/html', '-charset'=>$charset);
+    }
+    else {
+        # However CGI.pm older than version 2.57 doesn't have the
+        # -charset option so we cheat:
+        print header('-type' => "text/html; charset=$charset");
+    }
+}
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -125,7 +137,7 @@ BEGIN
       
       $charset = 'iso-8859-1' unless $charset;
 
-      print "Content-Type: text/html; charset=$charset\n\n" unless $done_headers;
+      html_header() unless $done_headers;
 
       print <<EOERR;
 <?xml version="1.0" encoding="$charset"?>
@@ -396,8 +408,8 @@ sub return_html {
   if ($Config{'redirect'}) {
     print redirect $Config{'redirect'};
   } else {
-    print "Content-Type: text/html; charset=$charset\n\n";
-    $done_headers++;
+    html_header();
+    $done_headers = 1;
 
     my $title = escape_html( $Config{'title'} || 'Thank You' );
     my $torecipient = 'to ' . escape_html($Config{'recipient'});
@@ -872,8 +884,8 @@ EOBODY
      }
   }
 
-  print header();
-  $done_headers++;
+  html_header();
+  $done_headers = 1;
   print <<END_ERROR_HTML;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -951,7 +963,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.17 $
+FormMail $Revision: 2.18 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
