@@ -99,7 +99,7 @@ sub srcpath {
 sub version_string {
     my ($self) = @_;
 
-    "$self->{MAJOR}.$self->{MINOR}$self->{PKGSTR}$self->{PKGVER}";
+    sprintf '%d.%.2d%s%s', $self->{MAJOR}, $self->{MINOR}, $self->{PKGSTR}, $self->{PKGVER};
 }
 
 sub sourcefiles {
