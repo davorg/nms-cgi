@@ -1,8 +1,16 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.10 2002-01-31 23:50:04 nickjc Exp $
+#  $Id: ffa.pl,v 1.11 2002-02-01 09:18:48 gellyfish Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.10  2002/01/31 23:50:04  nickjc
+#  * start_html syntax fix
+#  * file locking review
+#  * handle write errors better
+#  * escape_html before the first place HTML could be displayed
+#  * silence some warnings
+#  * minor XHTML fixes
+#
 #  Revision 1.9  2002/01/30 09:21:04  lertl
 #  *) redone error checking for no_url() and no_title()
 #  *) added escape_html function from FormMail.pl
@@ -52,12 +60,11 @@ use Fcntl qw(:flock);
 
 use vars qw($DEBUGGING);
 
-# We don't need file uploads or very large POST requests.  Double
-# each line to prevent a 'variable used only once' warning.
-$CGI::DISABLE_UPLOADS = 1;
-$CGI::DISABLE_UPLOADS = 1;
-$CGI::POST_MAX = 1000000;
-$CGI::POST_MAX = 1000000;
+# We don't need file uploads or very large POST requests.
+# Annoying locution to shut up 'used only once' warning in older perl
+
+$CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX = $CGI::POST_MAX = 1000000;
 
 # sanitize the environment.
 
