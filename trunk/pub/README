@@ -1,0 +1,31 @@
+OK, so here's how the new stuff works.
+
+You'll need to install the Template Toolkit. This can be as simple as
+
+  $ perl -MCPAN -e'install Template'
+
+Now you've got all of the input pages in ./in and a handful of library
+templates in ./lib. We'll use this to build the output files (i.e. the
+web site) in ./out. To do this we use a program called 'ttree' which
+comes with TT. 'ttree' needs a config file to tell it which directories
+to use. There's a .ttreerc included in the project. To tell 'ttree' to
+use this on instead of one in your home directory (which is its default
+action) you need to see the TTREERC variable like this:
+
+  $ export TTREERC=./.ttreerc
+
+This works in a modern bash-like shell. For other things, you're on your
+own!
+
+Now, you can rebuild the site from the input templates jsut be typing
+
+  $ ttree
+
+See how it told you what it was doing.
+
+That's really all there is to it right now. Let me know (dave@dave.org.uk)
+if you have any questions.
+
+Now I need to thing about how I'm going to get the FAQ pages to fit into
+this framework.
+
