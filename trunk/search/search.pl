@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.28 2002-04-09 20:26:32 nickjc Exp $
+# $Id: search.pl,v 1.29 2002-04-09 20:27:44 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision $
+# search.pl $Revision: 1.29 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
