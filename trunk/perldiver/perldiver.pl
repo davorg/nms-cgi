@@ -1,9 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: perldiver.pl,v 1.2 2002-06-01 12:02:33 davorg Exp $
+# $Id: perldiver.pl,v 1.3 2002-06-01 12:14:54 davorg Exp $
 #
 use strict;
 use File::Find;
+
+$ENV{PATH} = '/bin:/usr/bin';
 
 my $plocation  = join('<br />', split(' ', `whereis perl`));
 my $sendmail   = join('<br />', split(' ', `whereis sendmail`));
@@ -11,7 +13,7 @@ my $inc        = join('<br />', @INC);
 
 my $dev = 'nms';
 my $program = 'perldiver';
-my $version = sprintf "%d.%02d", '$Revision: 1.2 $ ' =~ /(\d+)\.(\d+)/;
+my $version = sprintf "%d.%02d", '$Revision: 1.3 $ ' =~ /(\d+)\.(\d+)/;
 
 my $env;
 foreach (keys %ENV){
@@ -19,7 +21,7 @@ foreach (keys %ENV){
 }
 
 my @foundmods;
-find(\&wanted, @INC);
+find({wanted => \&wanted, untaint => 1}, @INC);
 
 my %found;
 ++$found{$_} foreach @foundmods;
