@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-07-10 20:24:15 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-07-18 22:58:58 $ )
 
 =head1 DESCRIPTION
 
@@ -321,7 +321,7 @@ The above comes with no warranty whatsoever.
 
 Well for one thing you could tell them that you are using the NMS FormMail
 and that is secure from all of the known problems with earlier Form to Email
-programs and more besides :)  On the other hand they every right to be
+programs and more besides :)  On the other hand they have every right to be
 sceptical of that claim.
 
 Part of the problem is that there are other Form to E-Mail programs that
