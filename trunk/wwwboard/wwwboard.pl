@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.15 2002-03-02 13:26:19 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.16 2002-03-02 14:54:05 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2002/03/02 13:26:19  gellyfish
+# * Fixed arguments to rest_of_form()
+# * (Followups in message still not working)
+#
 # Revision 1.14  2002/02/27 09:04:30  gellyfish
 # * Added question about simple search and PDF to FAQ
 # * Suppressed output of headers in fatalsToBrowser if $done_headers
@@ -229,7 +233,7 @@ sub get_number {
     $num = 0;
   }
 
-  if ($num == 999999 || $num !~ /^\d+$/)  {
+  if ($num == 999999 )  {
     $num = 1;
   } else {
     $num++;
@@ -414,6 +418,11 @@ sub new_file {
         $pr_follow .=  
          qq(<a href="$variables->{origemail}">$variables->{origname}</a>) ;
       }
+      else
+      {
+        $pr_follow .= $variables->{origname};
+      }
+      $pr_follow .= '</p>';
   }
 
   my $img = $variables->{message_img} ?
@@ -444,16 +453,18 @@ sub new_file {
   <hr />
   <p>Posted by $print_name $ip on $variables->{date}</p>
 
-  $variables->{followup} $img
+  $pr_follow 
+
+  $img
 
   $variables->{'body'}<br />$url
 
   <hr />
-  <p><a name="followups">Follow Ups:</a><br />
+  <p><a id="followups" name="followups">Follow Ups:</a></p>
   <ul><!--insert: $variables->{id}-->
   </ul><!--end: $variables->{id}-->
   <br /><hr />
-  <p><a name="postfp">Post a Followup</a></p>
+  <p><a id="postfp" name="postfp">Post a Followup</a></p>
   <form method=POST action="$cgi_url">
 END_HTML
 
@@ -473,7 +484,7 @@ END_HTML
   print NEWFILE <<END_HTML;
 <input type="hidden" name="origsubject" value="$variables->{subject}" />
 <input type="hidden" name="origdate" value="$variables->{date}" />
-<table>
+<table summary="">
 <tr>
 <td>Name:</td>
 <td><input type="text" name="name" size="50" /></td>
@@ -499,7 +510,8 @@ END_HTML
   print NEWFILE "<tr><td>Comments:</td>\n";
   print NEWFILE qq(<td><textarea name="body" COLS="50" ROWS="10">\n);
   if ($quote_text) {
-    print NEWFILE map { "$quote_char $_\n" } split /\n/, $variables->{hidden_body};
+    print NEWFILE map { "$quote_char " . strip_html($_) . "\n" } 
+                  split /\n/, $variables->{hidden_body};
     print NEWFILE "\n";
   }
   print NEWFILE "</textarea></td></tr>\n";
@@ -520,6 +532,8 @@ END_HTML
 <td colspan="2"><input type="submit" value="Submit Follow Up" /> 
 <input type="reset" /></td>
 </tr>
+</table>
+</form>
 <hr />
 <p align="center">
    [ <a href="#followups">Follow Ups</a> ] 
@@ -577,7 +591,7 @@ END_HTML
 <ul><!--insert: $id-->
 </ul><!--end: $id-->
 END_HTML
-      } elsif (/\(<!--responses: (.*)-->(.*)\)/) {
+      } elsif (/\(<!--responses: (\d+?)-->(\d+?)\)/) {
         my $response_num = $1;
         my $num_responses = $2;
         $num_responses++;
@@ -635,7 +649,7 @@ sub thread_pages {
 <ul><!--insert: $id-->
 </ul><!--end: $id-->
 END_HTML
-      } elsif (/\(<!--responses: (\d*)-->(\d*)\)/) {
+      } elsif (/\(<!--responses: (\d+?)-->(\d+?)\)/) {
         my $response_num = $1;
         my $num_responses = $2;
         $num_responses++;
@@ -861,7 +875,7 @@ sub strip_html
 
    # mop up any stray start or end of comment tags.
 
-   $comments = "<!-- -->$comments<!-- -->";
+   $comments = "<!-- -->$comments<!-- -->" if $allow_html;
 
    return $comments;
 }
