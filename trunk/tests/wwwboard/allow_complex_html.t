@@ -39,8 +39,6 @@ $html =~ s/\%/&#37;/g;
 $html =~ s/\?/&#63;/g;
 $html =~ s/\@/&#64;/g;
 
-warn $html;
-
 NMSTest::ScriptUnderTest->new(
    SCRIPT      => 'wwwboard/wwwboard.pl',
    REWRITERS   => [ \&rw_setup ],
