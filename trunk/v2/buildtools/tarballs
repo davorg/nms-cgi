@@ -3,11 +3,11 @@ use strict;
 
 =head1 NAME
 
-tarballs.pl - generate NMS .tar.gz and .zip packages
+tarballs - generate NMS .tar.gz and .zip packages
 
 =head1 SYNOPSYS
 
-  tarballs.pl <TARBALL_DIR> <NAME> <PACKAGE_FILE, ...>
+  tarballs <TARBALL_DIR> <NAME> <PACKAGE_FILE, ...>
 
 =head1 DESCRIPTION
 
