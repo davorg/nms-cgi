@@ -53,6 +53,7 @@ Edit it to add modules and scripts.
 my @scripts = qw(
 
    wwwboard/wwwboard.pl
+   wwwboard/wwwadmin.pl
 
 );
 
