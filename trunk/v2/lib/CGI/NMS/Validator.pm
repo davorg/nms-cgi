@@ -43,7 +43,7 @@ sub validate_abs_url {
   $url = "http://$url" unless $url =~ /:/;
   $url =~ s#^(\w+://)# lc $1 #e;
 
-  $url =~ m< ^ ( (?:ftp|http|https):// [\w\-\.]{1,100} (?:\:\d{1,5})? ) (.*) $ >mx
+  $url =~ m< ^ ( (?:ftp|http|https):// [\w\-\.]{1,100} (?:\:\d{1,5})? ) ( /* (?:[^\./].*)? ) $ >mx
     or return '';
 
   my ($prefix, $path) = ($1, $2);
@@ -65,8 +65,8 @@ a query string.  The empty string is considered to be a valid URI fragment.
 sub validate_local_abs_uri_frag {
   my ($self, $frag) = @_;
 
-  $frag =~ m< ^ ( (?: /  [\w\-.!~*'(|);/\@+\$,%#&=]* )?
-                  (?: \? [\w\-.!~*'(|);/\@+\$,%#&=]* )?
+  $frag =~ m< ^ ( (?: \.* /  [\w\-.!~*'(|);/\@+\$,%#&=]* )?
+                  (?: \?     [\w\-.!~*'(|);/\@+\$,%#&=]* )?
                 )
               $
            >x ? $1 : '';
