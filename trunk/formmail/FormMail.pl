@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.35 2002-02-13 23:33:52 nickjc Exp $
+# $Id: FormMail.pl,v 1.36 2002-02-13 23:36:46 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.35  2002/02/13 23:33:52  nickjc
+# *** empty log message ***
+#
 # Revision 1.34  2002/02/03 21:32:47  dragonoe
 # Indent configuration variables so they are all aligned. Made sure that it fits in 80 characters.
 #
@@ -313,11 +316,11 @@ sub check_referer
         if ( my $ref_host = inet_aton($refHost) ) {
           $ref_host = unpack "l", $ref_host;
           if ( my $test_ref_ip = inet_aton($test_ref) ) {
-             $test_ref_ip = unpack "l", $test_ref_ip;
-             if ( $test_ref_ip == $ref_host ) {
-                $check_referer = 1;
-                last;
-             }
+            $test_ref_ip = unpack "l", $test_ref_ip;
+            if ( $test_ref_ip == $ref_host ) {
+              $check_referer = 1;
+              last;
+            }
           }
         }
       }
