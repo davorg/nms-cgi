@@ -130,7 +130,7 @@
 	<td>Improved Form Mail</td>
 	<td><a href="tfmail.tar.gz">tfmail.tar.gz</a></td>
 	<td><a href="tfmail.zip">tfmail.zip</a></td>
-	<td><!--#flastmod file="tfmail..tar.gz"--></td>
+	<td><!--#flastmod file="tfmail.tar.gz"--></td>
       </tr>
     </table>
 	  
