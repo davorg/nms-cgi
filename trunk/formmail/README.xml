@@ -147,9 +147,16 @@ alter the way that the program works.
                       the names or IP addresses of all the systems that
                       will host HTML forms that refer to this formmail
                       script. Only these hosts will be allowed to use the
-                      formmail script. This is needed to prevent others
-                      from hijacking your formmail script for their own use
-                      by linking to it from their own HTML forms.
+                      formmail script. This can be used to prevent others
+                      from linking to FormMail.pl from their own HTML
+                      forms.
+         </paragraph>
+         <paragraph>
+                      If you wish to turn off referer checking so that forms
+                      that use this FormMail.pl can reside on any web server
+                      then make this array empty, like this:
+
+                        @referers = ();
          </paragraph>
       </description>
    </variable>
