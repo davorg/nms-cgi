@@ -1,8 +1,11 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.24 2001-12-20 08:57:54 nickjc Exp $
+# $Id: guestbook.pl,v 1.25 2001-12-21 08:53:24 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2001/12/20 08:57:54  nickjc
+# tidying and adding comments
+#
 # Revision 1.23  2001/12/19 23:12:23  nickjc
 # HTML filter fixes
 #
@@ -832,8 +835,8 @@ BEGIN
   %tag_is_empty = ( 'hr' => 1, 'br' => 1, 'basefont' => 1 );
   %auto_deinterleave = map {$_,1} qw(
     tt i b big small u s strike font basefont
-    em strong dfn code q sub sup
-    samp kbd var cite abbr acronym
+    em strong dfn code q sub sup samp kbd var
+    cite abbr acronym span
   );
   $auto_deinterleave_pattern = join '|', keys %auto_deinterleave;
   my %attr = ( 'style' => \&cleanup_attr_style );
@@ -1070,7 +1073,7 @@ sub cleanup_tag
 
   my $t = $safe_tags->{$tag};
   my $safe_attrs = '';
-  while ($attrs =~ s#^\s*(\w+)(?:=(?:([^"'>\s]+)|"([^"]*)"|'([^']*)'))?##) {
+  while ($attrs =~ s#^\s*(\w+)(?:\s*=\s*(?:([^"'>\s]+)|"([^"]*)"|'([^']*)'))?##) {
     my $attr = lc $1;
     my $val = ( defined $2 ? $2                :
                 defined $3 ? unescape_html($3) :
