@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.15 2002-06-24 20:35:20 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.16 2002-06-25 20:53:17 nickjc Exp $
 #
 
 use strict;
@@ -12,7 +12,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.15 $ (part of wwwboard)
+# wwwadmin.pl $Revision: 1.16 $ (part of wwwboard)
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -137,7 +137,7 @@ if ($command eq 'remove') {
   $html =~ s/(\$\w+)/$1/eeg;
   print $html;
 
-  open(MSGS, "$basedir/$mesgfile")
+  open(MSGS, "<$basedir/$mesgfile")
     || die $!;
   @lines = <MSGS>;
   close(MSGS);
@@ -166,7 +166,7 @@ if ($command eq 'remove') {
   $html =~ s/(\$\w+)/$1/eeg;
   print $html;
 
-  open(MSGS,"$basedir/$mesgfile") || die $!;
+  open(MSGS,"<$basedir/$mesgfile") || die $!;
   my @lines = <MSGS>;
   close(MSGS);
 
@@ -201,7 +201,7 @@ if ($command eq 'remove') {
   $html =~ s/(\$\w+)/$1/eeg;
   print $html;
 
-  open(MSGS,"$basedir/$mesgfile") || die $!;
+  open(MSGS,"<$basedir/$mesgfile") || die $!;
   my @lines = <MSGS>;
   close(MSGS);
 
@@ -246,7 +246,7 @@ if ($command eq 'remove') {
   $html =~ s/(\$\w+)/$1/eeg;
   print $html;
 
-  open(MSGS,"$basedir/$mesgfile") || die $!;
+  open(MSGS,"<$basedir/$mesgfile") || die $!;
   my @lines = <MSGS>;
   close(MSGS);
 
@@ -298,7 +298,7 @@ if ($command eq 'remove') {
       }
    }
 
-   open(MSGS,"$basedir/$mesgfile") || die $!;
+   open(MSGS,"<$basedir/$mesgfile") || die $!;
    my @lines = <MSGS>;
    close(MSGS);
 
@@ -384,7 +384,7 @@ if ($command eq 'remove') {
 
 } elsif ($FORM->{action} eq 'change_passwd') {
 
-  open(PASSWD,"$basedir/$passwd_file") || error('passwd_file');
+  open(PASSWD,"<$basedir/$passwd_file") || error('passwd_file');
   my $passwd_line = <PASSWD>;
   chomp($passwd_line);
   close(PASSWD);
@@ -547,7 +547,7 @@ TUBBIES_SAY_EO
 }
 
 sub check_passwd {
-   open(PASSWD,"$basedir/$passwd_file") || error('passwd_file');
+   open(PASSWD,"<$basedir/$passwd_file") || error('passwd_file');
    my $passwd_line = <PASSWD>;
    chomp($passwd_line);
    close(PASSWD);

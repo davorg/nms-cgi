@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.25 2002-06-24 10:43:48 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.26 2002-06-25 20:53:17 nickjc Exp $
 #
 
 use strict;
@@ -522,7 +522,7 @@ sub main_page {
   flock(MAIN_LOCK,LOCK_EX) ||
     die "Flock: $! [$basedir/$mesgfile.lck]";
 
-  open(MAIN,"$basedir/$mesgfile") ||
+  open(MAIN,"<$basedir/$mesgfile") ||
     die "Open: $! [$basedir/$mesgfile]";
 
   my @main = <MAIN>;
@@ -610,7 +610,7 @@ sub thread_pages {
 
     flock FOLLOWUP_LOCK, LOCK_EX or die "Can't lock $!\n";
 
-    open(FOLLOWUP, "$basedir/$mesgdir/$followup_num.$ext")
+    open(FOLLOWUP, "<$basedir/$mesgdir/$followup_num.$ext")
       || die "$!";
 
     my @followup_lines = <FOLLOWUP>;
