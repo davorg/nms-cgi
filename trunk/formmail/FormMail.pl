@@ -1,195 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.48 2002-02-28 21:14:10 nickjc Exp $
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.47  2002/02/28 08:51:05  nickjc
-# Allowed pathless URLs with query strings in check_url_valid
-#
-# Revision 1.46  2002/02/27 17:51:20  davorg
-# typo
-#
-# Revision 1.45  2002/02/27 09:04:28  gellyfish
-# * Added question about simple search and PDF to FAQ
-# * Suppressed output of headers in fatalsToBrowser if $done_headers
-# * Suppressed output of '<link rel...' if not $style
-# * DOCTYPE in fatalsToBrowser
-# * moved redirects until after possible cause of failure
-# * some small XHTML fixes
-#
-# Revision 1.44  2002/02/26 22:30:49  proub
-# Updated no-recipients-defined error message -- we now suggest both
-# @allow_mail_to and @recipients as places to add valid emails.
-#
-# Revision 1.43  2002/02/26 22:13:20  proub
-# Removed commented-out unit-tests (unit tests now live in /tests/formail)
-#
-# Revision 1.42  2002/02/26 08:50:15  nickjc
-# Hide the recipient when it comes directly from @allow_mail_to and
-# isn't in $recipient, to prevent SPAM harvesting
-#
-# Revision 1.41  2002/02/24 21:54:41  nickjc
-# * DOCTYPE declarations on all output pages
-#
-# Revision 1.40  2002/02/22 12:08:30  nickjc
-# * removed stray ';' from output HTML
-#
-# Revision 1.39  2002/02/21 09:17:29  gellyfish
-# Stylesheet elements will not be added if $style is empty
-#
-# Revision 1.38  2002/02/14 08:45:04  nickjc
-# * fixed silly error in body attribute checking
-#
-# Revision 1.37  2002/02/14 01:33:20  proub
-# Updated unit tests to reflect new check_email behavior (specifically,
-#   disallowing % in names when emulate_matts_code is in effect)
-#
-# Revision 1.36  2002/02/13 23:36:46  nickjc
-# (This is the log message for the previous checkin)
-# * reworked check_email
-# * made it produce debugging output when rejecting recipients
-# * sort order: doc correction
-# * doc typo
-# * added a way to keep the email address out of the form (user request)
-# * POST_MAX and DISABLE_UPLOADS stuff
-# * restricted the body attribute inputs to sane values
-# * squished a couple of warnings
-# * allowed relative URLs in check_url_valid
-#
-# Revision 1.35  2002/02/13 23:33:52  nickjc
-# *** empty log message ***
-#
-# Revision 1.34  2002/02/03 21:32:47  dragonoe
-# Indent configuration variables so they are all aligned. Made sure that it fits in 80 characters.
-#
-# Revision 1.33  2002/02/03 20:47:06  dragonoe
-# Added header to script after the cvs log.
-#
-# Revision 1.32  2002/01/31 17:26:43  proub
-# no longer accepting email addresses with % characters in the name portion
-#   (to avoid spoofing sendmail addressing on some systems) - revert
-#   to old behavior when $emulate_matts_code is true
-# when $emulate_matts_code is true, verify email addresses in a
-#   case-insensitive manner.
-#
-# Revision 1.31  2002/01/30 19:04:45  proub
-# now properly handling referer URLs involving authentication info (e.g.
-#   http://www.dave.org.uk@actual.referer.com, or
-#   http://someuser@dave.org.uk)
-# cleared up warnings when no referer is present
-#
-# Revision 1.30  2002/01/29 00:05:01  nickjc
-# * typo
-# * added X-HTTP-Client header to the confirmation email.
-#
-# Revision 1.29  2002/01/27 16:00:04  nickjc
-# allow_mail_to: explicit $ rather than depend on the one that's added
-# unless $emulate_matts_code.
-#
-# Revision 1.28  2002/01/27 14:45:11  nickjc
-# * re-wrote README
-# * added @allow_mail_to config option
-#
-# Revision 1.27  2002/01/27 13:59:08  gellyfish
-# Issues from  http://www.monkeys.com/anti-spam/formmail-advisory.pdf
-# * Left anchored regex to check referer
-# * If $secure and no referer supplied then croak
-#
-# Revision 1.26  2002/01/21 21:58:00  gellyfish
-# Checkbox fix from Chris Benson
-#
-# Revision 1.25  2002/01/20 14:52:02  nickjc
-# added a warning about the risks of turning on the confirmation email
-#
-# Revision 1.24  2002/01/19 23:44:28  nickjc
-# Added the option to send a confirmation email to the submitter, in
-# response to a user request.
-#
-# Revision 1.23  2002/01/14 08:54:10  nickjc
-# Took out a warn statement left over from a debugging session
-#
-# Revision 1.22  2002/01/04 08:55:31  nickjc
-# tightened valid url regex
-#
-# Revision 1.21  2002/01/02 21:21:45  gellyfish
-# Altered regex in check_valid_url to deal with server port number
-#
-# Revision 1.20  2002/01/01 01:22:27  nickjc
-# error message fix from Paul Sharpe
-#
-# Revision 1.19  2001/12/15 22:42:00  nickjc
-# * Added a validity check on the redirect URLs
-# * Moved the nonprintable character striping code to a sub
-#
-# Revision 1.18  2001/12/09 22:31:22  nickjc
-# * anchor recipient checks at end (as per README) unless $emulate_matts_code
-# * move repeated check_email call out one loop level
-#
-# Revision 1.17  2001/12/05 14:28:24  nickjc
-# * Don't do things on GET if $secure
-# * Eliminate some warnings in send_email
-# * Restrict realname slightly if $secure
-#
-# Revision 1.16  2001/12/04 08:55:03  nickjc
-# stricter check_email if $secure
-#
-# Revision 1.15  2001/12/01 19:45:21  gellyfish
-# * Tested everything with 5.004.04
-# * Replaced the CGI::Carp with local variant
-#
-# Revision 1.14  2001/11/29 14:18:38  nickjc
-# * Removed CGI::Carp::set_message (doesn't work under 5.00404)
-# * Added some very minimal input filtering
-#
-# Revision 1.13  2001/11/26 17:36:43  nickjc
-# * Allow domain names without '.' so that user@localhost works.
-# * Don't overwrite $Config{recipient} with the empty string before
-#   displaying it on the error page.
-# * Fixed a couple of minor errors.
-#
-# Revision 1.12  2001/11/26 13:40:05  nickjc
-# Added \Q \E around variables in regexps where metacharacters in the
-# variables shouldn't be interpreted by the regex engine.
-#
-# Revision 1.11  2001/11/26 09:20:20  gellyfish
-# Tidied up the error() subroutine
-#
-# Revision 1.10  2001/11/25 16:07:40  gellyfish
-# A couple of nits
-#
-# Revision 1.9  2001/11/25 11:39:38  gellyfish
-# * add missing use vars qw($DEBUGGING) from most of the files
-# * sundry other compilation failures
-#
-# Revision 1.8  2001/11/24 11:59:58  gellyfish
-# * documented strfime date formats is various places
-# * added more %ENV cleanup
-# * spread more XHTML goodness and CSS stylesheet
-# * generalization in wwwadmin.pl
-# * sundry tinkering
-#
-# Revision 1.7  2001/11/23 13:57:36  nickjc
-# * added -T switch
-# * Escape metachars in input variables when outputing HTML
-#
-# Revision 1.6  2001/11/20 17:39:20  nickjc
-# * Fixed a problem with %Config initialisation
-# * Reduced the scope for SPAM relaying
-#
-# Revision 1.5  2001/11/14 09:10:11  gellyfish
-# Added extra check on the referer.
-#
-# Revision 1.4  2001/11/13 21:40:46  gellyfish
-# Changed all of the sub calls to be without '&'
-#
-# Revision 1.3  2001/11/13 20:35:14  gellyfish
-# Added the CGI::Carp workaround
-#
-# Revision 1.2  2001/11/11 17:55:27  davorg
-# Small amount of post-import tidying :)
-#
-# Revision 1.1.1.1  2001/11/11 16:48:47  davorg
-# Initial import
+# $Id: FormMail.pl,v 1.49 2002-03-06 14:48:53 proub Exp $
 #
 
 use strict;
@@ -212,6 +23,432 @@ use vars qw($DEBUGGING $done_headers);
 #
 # For help on configuration or installation see README
 #
+
+=head1 COPYRIGHT
+
+FormMail Version 1.00
+Copyright 2001 London Perl Mongers, All rights reserved
+
+=head1 LICENSE
+
+This script is free software; you are free to redistribute it
+and/or modify it under the same terms as Perl itself.
+
+=head1 URL
+
+The most up to date version of this script is available from the nms
+script archive at  E<lt>http://nms-cgi.sourceforge.net/E<gt>
+
+=head1 SUMMARY
+
+formmail is a script which allows you to receive the results of an
+HTML form submission via an email message.
+
+=head1 FILES
+
+In this distribution, you will find three files:
+
+=over
+
+=item FormMail.pl
+
+The main Perl script
+
+=item README
+
+This file. Instructions on how to install and use formmail
+
+=item MANIFEST
+
+List of files
+
+=back
+
+
+=head1 CONFIGURATION
+
+There are a number of variables that you can change in formmail.pl which
+alter the way that the program works.
+
+=over
+
+=item $DEBUGGING
+
+This should be set to 1 whilst you are installing
+and testing the script. Once the script is live you
+should change it to 0. When set to 1, errors will
+be output to the browser. This is a security risk and
+should not be used when the script is live.
+
+=item $emulate_matts_code
+
+When this variable is set to a true value (e.g. 1)
+formmail will work in exactly the same way as its
+counterpart at Matt's Script Archive. If it is set
+to a false value (e.g. 0) then more advanced features
+are switched on. We do not recommend changing this
+variable to 1, as the resulting drop in security
+may leave your formmail open to use as a SPAM relay.
+
+=item $secure
+
+When this variable is set to a true value (e.g. 1)
+many additional security features are turned on.  We
+do not recommend changing this variable to 0, as the
+resulting drop in security may leave your formmail
+open to use as a SPAM relay.
+
+=item $mailprog
+
+The system command that the script should invoke to
+send an outgoing email. This should be the full path
+to a program that will read a message from STDIN and
+determine the list of message recipients from the
+message headers. Any switches that the program
+requires should be provided here. Your hosting
+provider or system administrator should be able to
+tell you what to set this variable to.
+
+=item @referers
+
+A list of referring hosts. This should be a list of
+the names or IP addresses of all the systems that
+will host HTML forms that refer to this formmail
+script. Only these hosts will be allowed to use the
+formmail script. This is needed to prevent others
+from hijacking your formmail script for their own use
+by linking to it from their own HTML forms.
+
+=item @allow_mail_to
+
+A list of the email addresses that formmail can send
+email to. The elements of this list can be either
+simple email addresses (like 'you@your.domain') or
+domain names (like 'your.domain'). If it's a domain
+name then *any* address at the domain will be allowed.
+
+Example: to allow mail to be sent to 'you@your.domain'
+or any address at the host 'mail.your.domain', you
+would set:
+
+C<@allow_mail_to = qw(you@your.domain mail.your.domain);>
+
+=item @recipients
+
+A list of Perl regular expression patterns that
+determine who the script will allow mail to be sent
+to in addition to those set in @allow_mail_to. This is
+present only for compatibility with the original
+formmail script.  We strongly advise against having
+anything in @recipients as it's easy to make a mistake
+with the regular expression syntax and turn your
+formmail into an open SPAM relay.
+
+There is an implicit $ at the end of the regular
+expression, but you need to include the ^ if you want
+it anchored at the start.  Note also that since '.' is
+a regular expression metacharacter, you'll need to
+escape it before using it in domain names.
+
+If that last paragraph makes no sense to you then
+please don't put anything in @recipients, stick to
+using the less error prone @allow_mail_to.
+
+=item @valid_ENV
+
+A list of all the environment variables that you want
+to be able to include in the email. See L<env_report|/item_env_report>
+below.
+
+=item $date_fmt   
+
+The format that the date will be displayed in. This
+is a string that contains a number of different 'tags'.
+Each tag consists of a % character followed by a letter.
+Each tag represents one way of displaying a particular
+part of the date or time. Here are some common tags:
+
+ %Y - four digit year (2002)
+ %y - two digit year (02)
+ %m - month of the year (01 to 12)
+ %b - short month name (Jan to Dec)
+ %B - long month name (January to December)
+ %d - day of the month (01 to 31)
+ %a - short day name (Sun to Sat)
+ %A - long day name (Sunday to Saturday)
+ %H - hour in 24 hour clock (00 to 23)
+ %I - hour in 12 hour clock (01 to 12)
+ %p - AM or PM
+ %M - minutes (00 to 59)
+ %S - seconds (00 to 59)
+
+=item $style
+
+This is the URL of a CSS stylesheet which will be
+used for script generated messages.  This probably
+wants to be the same as the one that you use for all
+the other pages.  This should be a local absolute URI
+fragment.  Set $style to '0' or the emtpy string if
+you do not want to use style sheets.
+
+=item $send_confirmation_mail
+
+If this flag is set to 1 then an additional email
+will be sent to the person who submitted the
+form.
+
+B<CAUTION:> with this feature turned on it's
+possible for someone to put someone else's email
+address in the form and submit it 5000 times,
+causing this script to send a flood of email to a
+third party.  This third party is likely to blame
+you for the email flood attack.
+
+=item $confirmation_text
+
+The header and body of the confirmation email
+sent to the person who submits the form, if the
+$send_confirmation_mail flag is set. We use a
+Perl 'here document' to allow us to configure it
+as a single block of text in the script. In the
+example below, everything between the lines
+
+  my $confirmation_text = E<lt>E<lt>'END_OF_CONFIRMATION';
+
+and
+
+  END_OF_CONFIRMATION
+
+is treated as part of the email. Everything
+before the first blank line is taken as part of
+the email header, and everything after the first
+blank line is the body of the email.
+
+  my $confirmation_text = <<'END_OF_CONFIRMATION';
+  From: you@your.com
+  Subject: form submission
+
+  Thankyou for your form submission.
+
+  END_OF_CONFIRMATION
+
+=back
+
+=head1 INSTALLATION
+
+Formmail is installed simply by copying the file FormMail.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator.
+
+You may need to rename FormMail.pl to FormMail.cgi. Again, your system
+administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x FormMail.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+
+To make use of it, you need to write an HTML form that refers to the
+FormMail script. Here's an example which will send mail to the address
+'feedback@your.domain' when someone submits the form:
+
+  <form method="POST" action="http://your.domain/cgi-bin/FormMail.pl">
+    <input type="hidden" name="recipient" value="feedback@your.domain" />
+    <input type="text" name="feedback" /><br />
+    Please enter your comments<br />
+    <input type="submit" />
+  </form>
+
+=head1 FORM CONFIGURATION
+
+See how the hidden 'recipient' input in the example above told formmail who
+to send the mail to? This is how almost all of formmail's configuration
+works. Here's the full list of things you can set with hidden form inputs:
+
+=over
+
+=item recipient  
+
+The email address to which the form submission
+should be sent. If you would like it copied to
+more than one recipient then you can separate
+multiple email addresses with commas, for
+example:
+
+ <input type="hidden" name="recipient"
+        value="you@your.domain,me@your.domain" />
+
+If you leave the 'recipient' field out of the
+form, formmail will send to the first address
+listed in the @allow_mail_to configuration
+variable (see above).  This allows you to avoid
+putting your email address in the form, which
+might be desirable if you're concerned about
+address harvesters collecting it and sending
+you SPAM. This feature is disabled if the
+emulate_matts_code configuration variable is
+set to 0.
+
+=item subject
+
+The subject line for the email. For example:
+
+ <input type="hidden" name="subject"
+        value="From the feedback form" />
+
+=item redirect
+
+If this value is present it should be a URL, and
+the user will be redirected there after a
+successful form submission.  For example:
+
+ <input type="hidden" name="redirect"
+        value="http://www.your.domain/foo.html" />
+
+If you don't specify a redirect URL then instead
+of redirecting formmail will generate a success
+page telling the user that their submission was
+successful.
+
+=item bgcolor
+
+The background color for the success page.
+
+=item background
+
+The URL of the background image for the success
+page.
+
+=item text_color
+
+The  text color for the success page.
+
+=item link_color
+
+The link color for the success page.
+
+=item vlink_color
+
+The vlink color for the success page.
+
+=item alink_color
+
+The alink color for the success page.
+
+=item title
+
+The title for the success page.
+
+=item return_link_url
+
+The target URL for a link at the end of the
+success page. This is normally used to provide
+a link from the success page back to your main
+page or back to the page with the form on. For
+example:
+
+ <input type="hidden" name="return_link_url"
+        value="/home.html" />
+
+=item return_link_title
+
+The label for the return link.  For example:
+
+ <input type="hidden" name="return_link_title"
+        value="Back to my home page" />
+
+=item sort
+
+This sets the order in which the submitted form
+inputs will appear in the email and on the
+success page.  It can be the string 'alphabetic'
+for alphabetic order, or the string "order:"
+followed by a comma separated list of the input
+names, for example:
+
+ <input type="hidden" name="sort"
+        value="order:name,email,age,comments">
+
+=item print_config
+
+This is mainly used for debugging, and if set it
+causes formmail to include a dump of the
+specified configuration settings in the email.
+
+For example:
+
+ <input type="hidden" name="print_config"
+        value="title,sort">
+
+... will include whatever values you set for
+title' and 'sort' (if any) in the email.
+
+=item required
+
+This is a list of fields that the user must fill
+in before they submit the form. If they leave
+any of these fields blank then they will be sent
+back to the form to try again.  For example:
+
+ <input type="hidden" name="required"
+        value="name,comments">
+
+=item missing_fields_redirect
+
+If this is set, it must be a URL, and the user
+will be redirected there if any of the fields
+listed in 'required' are left blank. Use this if
+you want finer control over the the error that
+the user see's if they miss out a field.
+
+=item env_report
+
+This is a list of the CGI environment variables
+that should be included in the email.  This is
+useful for recording things like the IP address
+of the user in the email. Any environment
+variables that you want to use in 'env_report' in
+any of your forms will need to be in the
+valid_ENV configuration variable described
+above.
+
+=item print_blank_fields
+
+If this is set then fields that the user left
+blank will be included in the email.  Normally,
+blank fields are suppressed to save space.
+
+=back
+
+As well as all these hidden inputs, there are a couple of non-hidden
+inputs which get special treatment:
+
+=over
+
+=item email
+
+If one of the things you're asking the user to fill in is their
+email address and you call that input 'email', formmail will use
+it as the address part of the sender's email address in the
+email.
+
+=item realname
+
+If one of the things you're asking the user to fill in is their
+full name and you call that input 'realname', formmail will use
+it as the name part of the sender's email address in the email.
+
+=back
+
+=head1 SUPPORT
+
+For support of this script please email:
+
+nms-cgi-support@lists.sourceforge.net
+
+=cut
+
+
 # USER CONFIGURATION SECTION
 # --------------------------
 # Modify these to your own settings. You might have to
@@ -990,3 +1227,196 @@ sub escape_html {
 }
 
 
+# $Log: not supported by cvs2svn $
+# Revision 1.48  2002/02/28 21:14:10  nickjc
+# * warning fix
+# * fixed print_blank_fields bug
+#
+# Revision 1.47  2002/02/28 08:51:05  nickjc
+# Allowed pathless URLs with query strings in check_url_valid
+#
+# Revision 1.46  2002/02/27 17:51:20  davorg
+# typo
+#
+# Revision 1.45  2002/02/27 09:04:28  gellyfish
+# * Added question about simple search and PDF to FAQ
+# * Suppressed output of headers in fatalsToBrowser if $done_headers
+# * Suppressed output of '<link rel...' if not $style
+# * DOCTYPE in fatalsToBrowser
+# * moved redirects until after possible cause of failure
+# * some small XHTML fixes
+#
+# Revision 1.44  2002/02/26 22:30:49  proub
+# Updated no-recipients-defined error message -- we now suggest both
+# @allow_mail_to and @recipients as places to add valid emails.
+#
+# Revision 1.43  2002/02/26 22:13:20  proub
+# Removed commented-out unit-tests (unit tests now live in /tests/formail)
+#
+# Revision 1.42  2002/02/26 08:50:15  nickjc
+# Hide the recipient when it comes directly from @allow_mail_to and
+# isn't in $recipient, to prevent SPAM harvesting
+#
+# Revision 1.41  2002/02/24 21:54:41  nickjc
+# * DOCTYPE declarations on all output pages
+#
+# Revision 1.40  2002/02/22 12:08:30  nickjc
+# * removed stray ';' from output HTML
+#
+# Revision 1.39  2002/02/21 09:17:29  gellyfish
+# Stylesheet elements will not be added if $style is empty
+#
+# Revision 1.38  2002/02/14 08:45:04  nickjc
+# * fixed silly error in body attribute checking
+#
+# Revision 1.37  2002/02/14 01:33:20  proub
+# Updated unit tests to reflect new check_email behavior (specifically,
+#   disallowing % in names when emulate_matts_code is in effect)
+#
+# Revision 1.36  2002/02/13 23:36:46  nickjc
+# (This is the log message for the previous checkin)
+# * reworked check_email
+# * made it produce debugging output when rejecting recipients
+# * sort order: doc correction
+# * doc typo
+# * added a way to keep the email address out of the form (user request)
+# * POST_MAX and DISABLE_UPLOADS stuff
+# * restricted the body attribute inputs to sane values
+# * squished a couple of warnings
+# * allowed relative URLs in check_url_valid
+#
+# Revision 1.35  2002/02/13 23:33:52  nickjc
+# *** empty log message ***
+#
+# Revision 1.34  2002/02/03 21:32:47  dragonoe
+# Indent configuration variables so they are all aligned. Made sure that it fits in 80 characters.
+#
+# Revision 1.33  2002/02/03 20:47:06  dragonoe
+# Added header to script after the cvs log.
+#
+# Revision 1.32  2002/01/31 17:26:43  proub
+# no longer accepting email addresses with % characters in the name portion
+#   (to avoid spoofing sendmail addressing on some systems) - revert
+#   to old behavior when $emulate_matts_code is true
+# when $emulate_matts_code is true, verify email addresses in a
+#   case-insensitive manner.
+#
+# Revision 1.31  2002/01/30 19:04:45  proub
+# now properly handling referer URLs involving authentication info (e.g.
+#   http://www.dave.org.uk@actual.referer.com, or
+#   http://someuser@dave.org.uk)
+# cleared up warnings when no referer is present
+#
+# Revision 1.30  2002/01/29 00:05:01  nickjc
+# * typo
+# * added X-HTTP-Client header to the confirmation email.
+#
+# Revision 1.29  2002/01/27 16:00:04  nickjc
+# allow_mail_to: explicit $ rather than depend on the one that's added
+# unless $emulate_matts_code.
+#
+# Revision 1.28  2002/01/27 14:45:11  nickjc
+# * re-wrote README
+# * added @allow_mail_to config option
+#
+# Revision 1.27  2002/01/27 13:59:08  gellyfish
+# Issues from  http://www.monkeys.com/anti-spam/formmail-advisory.pdf
+# * Left anchored regex to check referer
+# * If $secure and no referer supplied then croak
+#
+# Revision 1.26  2002/01/21 21:58:00  gellyfish
+# Checkbox fix from Chris Benson
+#
+# Revision 1.25  2002/01/20 14:52:02  nickjc
+# added a warning about the risks of turning on the confirmation email
+#
+# Revision 1.24  2002/01/19 23:44:28  nickjc
+# Added the option to send a confirmation email to the submitter, in
+# response to a user request.
+#
+# Revision 1.23  2002/01/14 08:54:10  nickjc
+# Took out a warn statement left over from a debugging session
+#
+# Revision 1.22  2002/01/04 08:55:31  nickjc
+# tightened valid url regex
+#
+# Revision 1.21  2002/01/02 21:21:45  gellyfish
+# Altered regex in check_valid_url to deal with server port number
+#
+# Revision 1.20  2002/01/01 01:22:27  nickjc
+# error message fix from Paul Sharpe
+#
+# Revision 1.19  2001/12/15 22:42:00  nickjc
+# * Added a validity check on the redirect URLs
+# * Moved the nonprintable character striping code to a sub
+#
+# Revision 1.18  2001/12/09 22:31:22  nickjc
+# * anchor recipient checks at end (as per README) unless $emulate_matts_code
+# * move repeated check_email call out one loop level
+#
+# Revision 1.17  2001/12/05 14:28:24  nickjc
+# * Don't do things on GET if $secure
+# * Eliminate some warnings in send_email
+# * Restrict realname slightly if $secure
+#
+# Revision 1.16  2001/12/04 08:55:03  nickjc
+# stricter check_email if $secure
+#
+# Revision 1.15  2001/12/01 19:45:21  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
+# Revision 1.14  2001/11/29 14:18:38  nickjc
+# * Removed CGI::Carp::set_message (doesn't work under 5.00404)
+# * Added some very minimal input filtering
+#
+# Revision 1.13  2001/11/26 17:36:43  nickjc
+# * Allow domain names without '.' so that user@localhost works.
+# * Don't overwrite $Config{recipient} with the empty string before
+#   displaying it on the error page.
+# * Fixed a couple of minor errors.
+#
+# Revision 1.12  2001/11/26 13:40:05  nickjc
+# Added \Q \E around variables in regexps where metacharacters in the
+# variables shouldn't be interpreted by the regex engine.
+#
+# Revision 1.11  2001/11/26 09:20:20  gellyfish
+# Tidied up the error() subroutine
+#
+# Revision 1.10  2001/11/25 16:07:40  gellyfish
+# A couple of nits
+#
+# Revision 1.9  2001/11/25 11:39:38  gellyfish
+# * add missing use vars qw($DEBUGGING) from most of the files
+# * sundry other compilation failures
+#
+# Revision 1.8  2001/11/24 11:59:58  gellyfish
+# * documented strfime date formats is various places
+# * added more %ENV cleanup
+# * spread more XHTML goodness and CSS stylesheet
+# * generalization in wwwadmin.pl
+# * sundry tinkering
+#
+# Revision 1.7  2001/11/23 13:57:36  nickjc
+# * added -T switch
+# * Escape metachars in input variables when outputing HTML
+#
+# Revision 1.6  2001/11/20 17:39:20  nickjc
+# * Fixed a problem with %Config initialisation
+# * Reduced the scope for SPAM relaying
+#
+# Revision 1.5  2001/11/14 09:10:11  gellyfish
+# Added extra check on the referer.
+#
+# Revision 1.4  2001/11/13 21:40:46  gellyfish
+# Changed all of the sub calls to be without '&'
+#
+# Revision 1.3  2001/11/13 20:35:14  gellyfish
+# Added the CGI::Carp workaround
+#
+# Revision 1.2  2001/11/11 17:55:27  davorg
+# Small amount of post-import tidying :)
+#
+# Revision 1.1.1.1  2001/11/11 16:48:47  davorg
+# Initial import
+#
