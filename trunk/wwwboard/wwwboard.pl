@@ -1,8 +1,15 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.5 2001-11-24 11:59:58 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.6 2001-11-24 20:01:22 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/11/24 11:59:58  gellyfish
+# * documented strfime date formats is various places
+# * added more %ENV cleanup
+# * spread more XHTML goodness and CSS stylesheet
+# * generalization in wwwadmin.pl
+# * sundry tinkering
+#
 # Revision 1.4  2001/11/19 09:21:44  gellyfish
 # * added allow_html functionality
 # * fixed potential for pre lock clobbering in guestbook
@@ -39,9 +46,9 @@ BEGIN
    $DEBUGGING = 1;
 }
    
-my $basedir = '/var/www/html/wwwboard';
-my $baseurl = 'http://tma2/wwwboard';
-my $cgi_url = 'http://tma2/cgi-bin/wwwboard.pl';
+my $basedir = '/var/www/nms-test/wwwboard';
+my $baseurl = 'http://nms-test/wwwboard';
+my $cgi_url = 'http://nms-test/cgi-bin/wwwboard.pl';
 
 my $mesgdir  = 'messages';
 my $datafile = 'data.txt';
@@ -49,6 +56,8 @@ my $mesgfile = 'wwwboard.html';
 my $faqfile  = 'faq.html';
 
 my $ext = 'html';
+
+# $title is the title that will be displayed on the program generated pages
 
 my $title = "NMS WWWBoard Version $VERSION";
 
@@ -70,14 +79,60 @@ my $emulate_matts_code = 1;
 
 my $show_faq     = 1;
 my $allow_html   = 1;
+
+# If $quote_text is set to 1 then the text of the original message will
+# be placed in the "Post Followup" text box
+
 my $quote_text   = 1;
+
+# $quote_char is the string that will be prepended to each quoted line
+# if $quote_text described above is set to 1
+
+my $quote_char  = ':';
+
+# If $quote_html is set to 1 then if $quote_text is set to 1 above the
+# original HTML in the post will be retained in the followup - otherwise
+# it will be removed
+
+my $quote_html = 0; 
+
 my $subject_line = 0;	# 0 = Quote Subject Editable
                         # 1 = Quote Subject UnEditable; 
                         # 2 = Don't Quote Subject, Editable.
+
+# If $use_time is set to 1 then the dates will be displayed as
+# "$time_fmt $date_fmt" - see note below about date formats
+
 my $use_time        = 1;
 
+# $date_fmt and $time_fmt describe the format of the dates that
+# will output - the replacement parameters you can use here are:
+#
+# %A - the full name of the weekday according to the current locale
+# %B - the full name of the month according to the current local
+# %m - the month as a number
+# %d - the day of the month as a number
+# %D - the date in the form %m/%d/%y (i.e. the US format )
+# %y - the year as a number without the century
+# %Y - the year as a number including the century
+# %H - the hour as number in the 24 hour clock
+# %M - the minute as a number
+# %S - the seconds as a number
+# %T - the time in 24 hour format (%H:%M:%S)
+# %Z - the time zone (full name or abbreviation)
+
+my $date_fmt = '%d/%m/%y';
+my $time_fmt = '%T';
+
+# $show_poster_ip determines whether the client IP address of the poster
+# is displayed in the message.
+
 my $show_poster_ip  = 1;
+
 my $enforce_max_len = 0;   # 2 = YES, error; 1 = YES, truncate; 0 = NO
+
+# These are the maximum lengths of the data allowed in the various
+# fields - they must be supplied if $enforce_max_len is not 0
 
 my %max_len = (name        => 50,
 	       email       => 70,
@@ -104,6 +159,10 @@ BEGIN
   set_message($error_message);
 }   
 
+if ( $use_time ) {
+   $date_fmt = "$time_fmt $date_fmt";
+}
+
 # Nasty global variables. Need to localise them
 my ($date, $followup, $subject, @followup_num, $message_img, $origemail,
     $origname, $origdate, $long_date, $name, @followups, $num_followups,
@@ -121,7 +180,8 @@ if ($num_followups >= 1) {
 }
 
 return_html();
-increment_num(); 
+increment_num(); # Is this necessary with the current implementation of
+                 # get_number() ?
 
 sub get_number {
   sysopen(NUMBER, "$basedir/$datafile", O_RDWR|O_CREAT)
@@ -153,6 +213,8 @@ sub get_number {
 
 sub parse_form {
   my %Form;
+
+  # Are we sure this is valid syntax in 5.004.04 ?
 
   $Form{$_} = param($_) || '' foreach keys %max_len, 'followup';
 
@@ -230,11 +292,11 @@ sub get_variables {
 
   if ($Form{body}) {
     $body = $Form{body};
-    $body =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs unless $allow_html; 
+    $body = strip_html($body) unless $allow_html; 
     $body = "<p>$body</p>";
     $body =~ s/\cM//g;
     $body =~ s|\n\n|</p><p>|g;
-    $body =~ s/\n/<br>/g;
+    $body =~ s%\n%<br />%g;
 
     # I'm not entirely sure if this is what is actually meant :
     # it would allow someone to subvert $allow_html by putting escaped stuff
@@ -248,18 +310,21 @@ sub get_variables {
     error('no_body');
   }
 
-  if ($quote_text) {
+  if ($quote_text) 
+  {
     $hidden_body = $body;
-    $hidden_body =~ s/</&lt;/g;
-    $hidden_body =~ s/>/&gt;/g;
-    $hidden_body =~ s/\"/&quot;/g;
+    if ( $quote_html ) 
+    {
+       $hidden_body = escape_html($hidden_body);
+    }
+    else 
+    {
+       $hidden_body = strip_html($hidden_body);
+    }
+   
    }
 
-  if ($use_time) {
-    $date = strftime('%H:%M:%S %Y-%m-%d', localtime);
-  } else {
-    $date = strftime('%Y-%m-%d', localtime);
-  }
+   $date = strftime($date_fmt , localtime());
 }
 
 #####################
@@ -271,7 +336,7 @@ sub new_file {
 
   my $faq = $show_faq ? qq( [ <a href="$baseurl/$faqfile">FAQ</a> ]) : '';
   my $print_name = $email ? qq(<a href="mailto:$email">$name</a> ) : $name;
-  my $ip = $show_poster_ip ? "($ENV{REMOTE_ADDR}" : '';
+  my $ip = $show_poster_ip ? "($ENV{REMOTE_ADDR})" : '';
   my $pr_follow = $followup ? 
     qq(<p>In Reply to:
        <a href="$last_message.$ext">$origsubject</a> posted by ) .
@@ -318,10 +383,10 @@ END_HTML
 
   my $follow_ups = @followup_num ? map { "$_," } @followup_num : '';
 
-  print NEWFILE qq(<input type="hidden" name="followup" value="$follow_ups$id">);
+  print NEWFILE qq(<input type="hidden" name="followup" value="$follow_ups$id" />);
 
-  print NEWFILE qq(<input type=hidden name="origname" value="$name">);
-  print NEWFILE qq(<input type=hidden name="origemail" value="$email">)
+  print NEWFILE qq(<input type=hidden name="origname" value="$name" />);
+  print NEWFILE qq(<input type=hidden name="origemail" value="$email" />)
     if $email;
 
   print NEWFILE <<END_HTML;
@@ -341,7 +406,7 @@ END_HTML
   $subject = 'Re: ' . $subject unless $subject =~ /^Re:/i;
 
   if ($subject_line == 1) {
-    print NEWFILE qq(<input type="hidden" name="subject" value="$subject">\n);
+    print NEWFILE qq(<input type="hidden" name="subject" value="$subject" />\n);
     print NEWFILE "<tr><td>Subject:</td><td><b>$subject</b></td></tr>\n";
   } elsif ($subject_line == 2) {
     print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject" size="50"></td></tr>\n);
@@ -351,33 +416,36 @@ END_HTML
   print NEWFILE "<tr><td>Comments:</td>\n";
   print NEWFILE qq(<td><textarea name="body" COLS="50" ROWS="10">\n);
   if ($quote_text) {
-    print NEWFILE map { "> $_\n" } split /\n/, $hidden_body;
+    print NEWFILE map { "$quote_char $_\n" } split /\n/, $hidden_body;
     print NEWFILE "\n";
   }
   print NEWFILE "</textarea></td></tr>\n";
   print NEWFILE <<END_HTML;
 <tr>
 <td>Optional Link URL:</td>
-<td><input type="text" name="url" size="50"></td>
+<td><input type="text" name="url" size="50" /></td>
 </tr>
 <tr>
 <td>Link Title:</td>
-<td><input type="text" name="url_title" size="48"></td>
+<td><input type="text" name="url_title" size="48" /></td>
 </tr>
 <tr>
 <td>Optional Image URL:</td>
-<td><input type="text" name="img" size="49"></td>
+<td><input type="text" name="img" size="49" /></td>
 </tr>
 <tr>
-<td colspan="2"><input type="submit" value="Submit Follow Up"> 
-<input type="reset"></td>
+<td colspan="2"><input type="submit" value="Submit Follow Up" /> 
+<input type="reset" /></td>
 </tr>
-<hr>
-<p align="center">[ <a href="#followups">Follow Ups</a> ] 
-[ <a href="#postfp">Post Followup</a> ] 
-[ <a href="$baseurl/$mesgfile">$title</a> ] 
-$faq
-</body></html>
+<hr />
+<p align="center">
+   [ <a href="#followups">Follow Ups</a> ] 
+   [ <a href="#postfp">Post Followup</a> ] 
+   [ <a href="$baseurl/$mesgfile">$title</a> ] 
+   $faq
+</p>
+</body>
+</html>
 END_HTML
   close(NEWFILE);
 }
@@ -633,11 +701,12 @@ sub rest_of_form {
   } else {
     print qq(Subject: <input type="text" name="subject" value="$Form{subject}" size="50"><p>\n);
    }
+  
+  $Form{body} = escape_html($Form{body});
+
   print "Message:<br>\n";
   print qq(<textarea COLS="50" ROWS="10" name="body">\n);
-  $Form{body} =~ s/</&lt;/g;
-  $Form{body} =~ s/>/&gt;/g;
-  $Form{body} =~ s/\"/&quot;/g;
+
   print "$Form{body}\n";
   print "</textarea><p>\n";
   print qq(Optional Link URL: <input type=text name="url" value="$Form{url}" size="45"><br>\n);
@@ -653,3 +722,36 @@ sub rest_of_form {
   }
   print "</body></html>\n";
 }
+
+# subroutine to remove HTML from a string.
+# Ideally one would use something like HTML::Parser but we make not have
+# that luxury.
+
+sub strip_html
+{
+   my ( $text ) = @_;
+   $text =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs;
+   return $text;
+}
+
+# subroutine to escape the necessary characters to the appropriate HTML
+# entities
+
+use vars qw(%escape_html_map);
+
+BEGIN
+{
+   %escape_html_map = ( '&' => '&amp;',
+                        '<' => '&lt;',
+                        '>' => '&gt;',
+                        '"' => '&quot;',
+                        "'" => '&#39;',
+                      );
+}
+
+sub escape_html {
+  my $str = shift;
+  $str =~ s/([&<>"'])/$escape_html_map{$1}/g;
+  return $str;
+}
+
