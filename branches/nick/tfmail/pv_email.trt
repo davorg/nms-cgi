@@ -1,0 +1,3 @@
+%% NMS email template file %%
+{= name =}: {= value =}
+
