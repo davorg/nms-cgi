@@ -1,6 +1,6 @@
 #! /usr/bin/perl -Tw
 #
-# $Id: rand_link.pl,v 1.13 2004-10-07 12:28:50 gellyfish Exp $
+# $Id: rand_link.pl,v 1.14 2004-10-08 08:05:39 gellyfish Exp $
 #
 
 use strict;
@@ -17,15 +17,14 @@ use vars qw($DEBUGGING $done_headers);
 # This should almost certainly be set to 0 when the program is 'live'
 #
 
-BEGIN
-{
-   $DEBUGGING = 1;
+BEGIN {
+    $DEBUGGING = 1;
 }
-   
+
 my $linkfile = '/path/to/links/database';
 
 #
-# If $use_multi_file is set to 1 then $linkfile will be ignored 
+# If $use_multi_file is set to 1 then $linkfile will be ignored
 # if the 'collection' parameter is passed to the program
 # $linkdir must be the path to a directory containing the files and
 # $link_ext must be a common extension for all the files - this will
@@ -35,7 +34,6 @@ my $linkfile = '/path/to/links/database';
 my $use_multi_file = 0;
 my $linkdir        = '';
 my $link_ext       = '.txt';
-
 
 # If $uselog is set to 1 then the redirections will be logged to the file
 # set in $logfile
@@ -65,7 +63,7 @@ my $logfile = '/path/to/rand_log';
 
 my $date_format = '%Y-%m-%d %H:%M:%S';
 
-my $locale      = '';
+my $locale = '';
 
 # End configuration
 
@@ -74,30 +72,27 @@ my $locale      = '';
 # This is basically the same as what CGI::Carp does inside but simplified
 # for our purposes here.
 
-BEGIN
-{
-   sub fatalsToBrowser
-   {
-      my ( $message ) = @_;
+BEGIN {
 
-      if ( $DEBUGGING )
-      {
-         $message =~ s/</&lt;/g;
-         $message =~ s/>/&gt;/g;
-      }
-      else
-      {
-         $message = '';
-      }
-      
-      my ( $pack, $file, $line, $sub ) = caller(0);
-      my ($id ) = $file =~ m%([^/]+)$%;
+    sub fatalsToBrowser {
+        my ($message) = @_;
 
-      return undef if $file =~ /^\(eval/;
+        if ($DEBUGGING) {
+            $message =~ s/</&lt;/g;
+            $message =~ s/>/&gt;/g;
+        }
+        else {
+            $message = '';
+        }
 
-      print "Content-Type: text/html\n\n" unless $done_headers;
+        my ( $pack, $file, $line, $sub ) = caller(0);
+        my ($id) = $file =~ m%([^/]+)$%;
 
-      print <<EOERR;
+        return undef if $file =~ /^\(eval/;
+
+        print "Content-Type: text/html\n\n" unless $done_headers;
+
+        print <<EOERR;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -115,55 +110,48 @@ BEGIN
   </body>
 </html>
 EOERR
-     die @_;
-   };
+        die @_;
+    }
 
-   $SIG{__DIE__} = \&fatalsToBrowser;
-}   
-
-if ($use_multi_file and param('collection'))
-{
-   my $filename = param('collection');
-
-   unless ( $filename =~ /^([a-zA-Z0-9_]{1,100})$/ )
-   {
-      die "Invalid collection name\n";
-   }
-   $filename = $1;
-
-   if ($linkdir)
-   {
-      $linkdir .= '/' if ($linkdir !~ m#/$# );
-      $linkfile = $linkdir + $filename + $link_ext;
-   }
+    $SIG{__DIE__} = \&fatalsToBrowser;
 }
 
-open (LINKS, "<$linkfile")
+if ( $use_multi_file and param('collection') ) {
+    my $filename = param('collection');
+
+    unless ( $filename =~ /^([a-zA-Z0-9_]{1,100})$/ ) {
+        die "Invalid collection name\n";
+    }
+    $filename = $1;
+
+    if ($linkdir) {
+        $linkdir .= '/' if ( $linkdir !~ m#/$# );
+        $linkfile = $linkdir + $filename + $link_ext;
+    }
+}
+
+open( LINKS, "<$linkfile" )
   or die "Can't open link file: $!\n";
 
 my @links = <LINKS>;
 
 chomp @links;
-my $link = $links[rand @links];
+my $link = $links[ rand @links ];
 close LINKS;
-
 
 if ($uselog) {
 
-  eval
-  {
-       strftime(LC_TIME, $locale) if $locale;
-  };
+    eval { setlocale( LC_TIME, $locale ) if $locale; };
 
-  my $date = strftime($date_format, localtime());
+    my $date = strftime( $date_format, localtime() );
 
-  sysopen (LOG, $logfile, O_RDWR|O_APPEND|O_CREAT)
-    or die "Can't open logfile: $!\n";
-  flock(LOG, LOCK_EX)
-    or die "Can't lock logfile: $!\n";
-   print LOG "$ENV{REMOTE_HOST} - [$date]\n";
-  close (LOG)
-    or die "Can't close logfile: $!\n";
+    sysopen( LOG, $logfile, O_RDWR | O_APPEND | O_CREAT )
+      or die "Can't open logfile: $!\n";
+    flock( LOG, LOCK_EX )
+      or die "Can't lock logfile: $!\n";
+    print LOG "$ENV{REMOTE_HOST} - [$date]\n";
+    close(LOG)
+      or die "Can't close logfile: $!\n";
 }
 
 print redirect($link);
