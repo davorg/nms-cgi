@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-01-28 09:19:33 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-02-23 15:04:09 $ )
 
 =head1 DESCRIPTION
 
@@ -283,3 +283,9 @@ almost certainly going to be too difficult to install unless you are the
 administrator of the server yourself.
 
 
+Blat is available from  http://gepasi.dbs.aber.ac.uk/softw/Blat.html
+
+Microsofts sendmail port is at 
+ftp://ftp.microsoft.com/developr/drg/unix-to-windows/ports/sendmail/sm1121.zip
+
+=cut

@@ -1,10 +1,3 @@
-NOTICE
-
-Please note that some (most) of these sections are incomplete. We hope to get them
-replaced before Monday 28th Jan 2001. In the meantime please consult the appropriate
-README files from Matt's Script Archive <http://www.worldwidemart.com/scripts/> for
-futher details.
-
 COPYRIGHT
 
 Countdown Version 1.00
@@ -22,7 +15,8 @@ script archive at  <http://nms-cgi.sourceforge.net/>
 
 SUMMARY
 
-Simple Search is a simple search engine designed for a quick search of a website.
+Simple Search is a simple search engine designed for a quick search of
+a website.
 
 FILES
 
@@ -44,41 +38,43 @@ $DEBUGGING          - This should be set to 1 whilst you are installing
                       be output to the browser. This is a security risk and
                       should not be used when the script is live.
 
-$basedir            - This is the base directory for the files you want to search.  
-                      This should as closest as possible to the root directory; it 
-                      should encompass everything you want searched.  Files and folders 
-                      you want blocked should be placed in the @blocked array; 
-                      everything else will be searched. Also note that this is a 
+$basedir            - This is the base directory for the files you want to 
+                      search.  This should as closest as possible to the 
+                      root directory; it should encompass everything you 
+                      want searched.  Files and folders you want blocked 
+                      should be placed in the @blocked array; everything 
+                      else will be searched. Also note that this is a 
                       directory on the server, not the web.
 
-$baseurl            - This is exactly equivalent to $basedir except that it is a URL
-                      not a file path. In plain english, this variable will be used in 
-                      generating links to the results.
+$baseurl            - This is exactly equivalent to $basedir except that it 
+                      is a URL not a file path. In plain english, this 
+                      variable will be used in generating links to the results.
 
-@files              - This array contains the file types to be searched. There are a 
-                      few markers you can use:
+@files              - This array contains the file types to be searched. 
+                      There are a few markers you can use:
 
-                          * - wildcard.  Use to fill in holes, such as: sear*.html  
+                          * - wildcard.  Use to fill in holes, such as: 
+                              sear*.html  
                               Use it to tighten up the search criteria.
                           / - directory marker.
                           . - use to indicate file exstension.
 
-                      If there are no markers in the element, it will be treated as a 
-                      file extension; All files with that file extension that match the 
-                      search will be "found".
+                      If there are no markers in the element, it will be 
+                      treated as a file extension; All files with that 
+                      file extension that match the search will be "found".
 
-$title              - This is the title that you want displayed on the search results
-                      page.
+$title              - This is the title that you want displayed on the 
+                      search results page.
 
-$title_url          - The title on the results page will be a link. This is the URL
-                      that it links to.
+$title_url          - The title on the results page will be a link. This is 
+                      the URL that it links to.
 
-$search_url         - The URL of your main search page. This is included on the 
-                      results page so that users can begin a new search.
+$search_url         - The URL of your main search page. This is included on 
+                      the results page so that users can begin a new search.
 
-@blocked            - This is an array of files that will be blocked. Full names, 
-                      relative to $basedir are needed.  These files will NEVER show up 
-                      in any search.
+@blocked            - This is an array of files that will be blocked. Full 
+                      names, relative to $basedir are needed.  These files 
+                      will NEVER show up in any search.
 
 INSTALLATION
 
@@ -102,14 +98,14 @@ $bool  - Type of search, although only affects searches with multiple terms.
          Can be AND or OR.  Default is OR.
 $terms - the terms that will be searched.
 
-See the search.html example bundled with Simple Search of how to fully construct
-a form to use with simple search.  Also note that a small form can be embedded into
-a page using a construct similar to this:
+See the search.html example bundled with Simple Search of how to fully
+construct a form to use with simple search.  Also note that a small form
+can be embedded into a page using a construct similar to this:
 
-<form method="POST" action="/cgi-bin/search.pl">
-<input type="text" name="terms" size="20" />
-<input type="submit" />
-</form>
+   <form method="POST" action="/cgi-bin/search.pl">
+     <input type="text" name="terms" size="20" />
+     <input type="submit" />
+   </form>
 
 SUPPORT
 

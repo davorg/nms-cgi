@@ -64,7 +64,7 @@ $logfile      - The path to the logfile, only needed if $uselog = 1. This file
 
 INSTALLATION
 
-rand_image is installed simply by copying the file rand_image.pl.pl into your
+rand_image is installed simply by copying the file rand_image.pl into your
 cgi-bin directory. If you don't know where your cgi-bin directory is, then
 please ask your system administrator
 
