@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.40 2002-02-22 12:08:30 nickjc Exp $
+# $Id: FormMail.pl,v 1.41 2002-02-24 21:54:41 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.40  2002/02/22 12:08:30  nickjc
+# * removed stray ';' from output HTML
+#
 # Revision 1.39  2002/02/21 09:17:29  gellyfish
 # Stylesheet elements will not be added if $style is empty
 #
@@ -251,7 +254,9 @@ BEGIN
       print "Content-Type: text/html\n\n";
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -493,7 +498,9 @@ sub return_html {
     my $attr = body_attributes(); # surely this should be done with CSS
 
     print <<EOHTML;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
      <title>$title</title>
      $style_element
