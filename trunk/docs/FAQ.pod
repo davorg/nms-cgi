@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-06-14 09:30:43 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-07-10 20:24:15 $ )
 
 =head1 DESCRIPTION
 
@@ -259,7 +259,7 @@ Firstly, because Net::SMTP is not available as part of the core Perl
 distribution except for in the development version leading to Perl 5.8.
 
 Secondly, because the I<nms> developers feel that it is better to use
-the queuing, MX lookup and retry capabilities of the local message transfer
+the queueing, MX lookup and retry capabilities of the local message transfer
 agent (MTA) to deliver mail messages - the Net::SMTP module does not do
 any of these things and the code to support them is likely to run into
 hundreds of lines and require several other modules.  Also Net::SMTP requires
@@ -346,7 +346,7 @@ well then it will work perfectly fine.
 The '-T' turns on Perl's taint checking, this basically means that data
 coming from outside the program is marked as 'tainted' (untrustworthy) and
 attempts to use that data in certain ways will result in an error in the
-program unless the data is checked carefullly.  All secure CGI programs
+program unless the data is checked carefully.  All secure CGI programs
 should use taint checking, as the internet is a fundamentally insecure
 medium.
 
@@ -395,5 +395,17 @@ you have to.  Of course if you remove tainting and then make alterations
 to the program such that new data is introduced or existing data is used
 in a different way then you may be unwittingly introducing a new
 vulnerability.
+
+=head2 I'm getting 'Missing Referrer - Access Denied' with FormMail
+
+This happens if your browser doesn't send the HTTP 'referer' header,
+preventing FormMail from checking that the referring page is on the
+allowed list.  Some personal firewalls cause this problem, by removing
+the referer header from all outgoing HTTP requests.
+
+The fix is to set the '$allow_empty_ref' configuration variable to 1 in
+the FormMail script.  If the copy of FormMail.pl that you're using
+doesn't have $allow_empty_ref, then you need to grab a newer version 
+from E<lt>http://nms-cgi.sourceforge.net/scripts.shtmlE<gt>.
 
 =cut
