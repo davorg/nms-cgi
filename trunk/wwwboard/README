@@ -1,44 +1,41 @@
-NMS WWWBoard Version 1.0
-
+COPYRIGHT:
+----------
+wwwboard.pl Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
 
-This script is free software; you are free to redistibute it
+LICENSE:
+--------
+This script is free software; you are free to redistribute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at <http://nms-cgi.sourceforge.net/>
+URL:
+----
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>
 
+SUMMARY:
+--------
+wwwboard is a script which allows you to create and maintain a discussion
+forum on the web. On the forum, people will be able to post and reply to
+posts.
 
-WWWBoard is the Version 1.0 of my Bulletin Board Message System.  I think 
-that the name is much better, and a lot fewer characters.  Version 2.0 
-has many enhancements, which were never put into version 1.0.  MANY of 
-the bugs in version 1.0 were fixed, although I am sure you will probably 
-find more.  
+FILES:
+------
+In this distribution, you will find these files:
+  README        - Configuration and installation instructions. This file
+  wwwboard.pl   - Script containing the config and making everything work
+  wwwboard.html - The HTML web board file that users will see
+  faq.html      - A FAQ file for users of wwwboard
+  data.txt      - Where the file number is stored
+  messages/     - Where the discussion messages will be created and stored
+  wwwadmin.pl   - An administration tool to delete messages
+  passwd.txt    - The encoded password and username for wwwadmin
+  ADMIN_README  - wwwadmin README file.
 
-This version of the message system is a complete re-write over the last 
-one, and is not at all backwards compatible.  To use this new version, 
-you will just need to remove all past messages and start again.  I think 
-it is definitely worth it.
-
-WWWBoard Version 2.0 has managed to reduce the number of scripts required 
-to run the bulletin board from three down t one.  This makes it much more 
-efficient.
-
-The following files should have come with WWWBoard Version 2.0 ALPHA 2:
-
-        a.  ALPHA-2       - READ THIS.
-	1.  README	  - The necessary Install Instructions.  This file.
-	2.  wwwboard.pl   - The Perl CGI script that runs everything.
-	3.  wwwboard.html - The HTML WWWBoard file that users will see.
-	4.  faq.html	  - An FAQ file displayed for users of wwwboard.
-	5.  data.txt	  - Where the file number is stored.
-	6.  messages/	  - Where the messages will be created and stored.
-	7.  wwwadmin.pl	  - An Admin tool to delete messages.
-	8.  passwd.txt    - The encoded password and username for WWWAdmin
-        9.  ADMIN_README  - WWWAdmin README file.
-
-You will need to edit by hand several of the files that come with 
-WWWBoard Version 2.0.  Below is a description of how to modify all of the 
-necessary files:
+CONFIGURATION:
+--------------
+There are a number of variables that you can change in formmail.pl which
+alter the way that the program works.
 ___________________________________________________________________________
 
 				WWWBOARD.PL
