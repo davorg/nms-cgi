@@ -83,6 +83,10 @@ attackers.
 
 Default: 0
 
+=item C<name_and_version>
+
+The name and version of the NMS script, as a single string.
+
 =item C<emulate_matts_code>
 
 When this variable is set to a true value (e.g. 1) the script will work
@@ -368,6 +372,18 @@ sub format_date {
   else {
     return strftime $format_string, localtime;
   }
+}
+
+=item name_and_version ()
+
+Returns the NMS script version string that was passed to the constructor.
+
+=cut
+
+sub name_and_version {
+    my ($self) = @_;
+
+    return $self->{CFG}{name_and_version};
 }
 
 =back

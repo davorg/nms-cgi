@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.4 $, 10, -1;
+$VERSION = substr q$Revision: 1.5 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -1023,7 +1023,7 @@ sub send_main_email {
   my ($self, $date, $email, $realname) = @_;
 
   my $mailer = $self->mailer;
-  $mailer->newmail("NMS FormMail.pm v$VERSION", $self->{CFG}{postmaster}, @{ $self->{Recipients} });
+  $mailer->newmail($self->name_and_version, $self->{CFG}{postmaster}, @{ $self->{Recipients} });
 
   $self->send_main_email_header($email, $realname);
   $mailer->print("\n");
@@ -1059,7 +1059,7 @@ sub send_main_email_header {
   my $from = (length $realname ? "$email ($realname)" : $email);
 
   $self->mailer->print(<<END);
-X-Mailer: NMS FormMail.pm v$VERSION
+X-Mailer: ${\( $self->name_and_version )}
 To: $to
 From: $from
 Subject: $subject
