@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.75 2002-04-15 22:51:15 nickjc Exp $
+# $Id: FormMail.pl,v 1.76 2002-04-18 16:37:24 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.75 $
+# FormMail.pl $Revision: 1.76 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -65,7 +65,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.75 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.76 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -296,10 +296,8 @@ sub check_required {
 
   defined $Config{subject} or $Config{subject} = '';
   defined $Config{recipient} or $Config{recipient} = '';
-  if ($Config{subject} =~ /[\n\r]/m ||
-      $Config{recipient} =~ /[\n\r]/m) {
-    error('no_recipient');
-  }
+  $Config{subject}   =~ s/[\r\n]+/ /g;
+  $Config{recipient} =~ s/[\r\n]+/ /g;
 
   if (length $Config{recipient}) {
     my @valid;
@@ -859,7 +857,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.75 $
+FormMail $Revision: 1.76 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
