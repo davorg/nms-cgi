@@ -4,7 +4,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = '0.01';
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 use CGI::NMS::Charset;
 
