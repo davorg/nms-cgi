@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.28 2002-01-27 14:45:11 nickjc Exp $
+# $Id: FormMail.pl,v 1.29 2002-01-27 16:00:04 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2002/01/27 14:45:11  nickjc
+# * re-wrote README
+# * added @allow_mail_to config option
+#
 # Revision 1.27  2002/01/27 13:59:08  gellyfish
 # Issues from  http://www.monkeys.com/anti-spam/formmail-advisory.pdf
 # * Left anchored regex to check referer
@@ -210,7 +214,7 @@ END_OF_CONFIRMATION
 # End configuration
 
 # Merge @allow_mail_to and @recipients into a single list of regexps
-push @recipients, map { /\@/ ? "^\Q$_\E" : "\@\Q$_\E" } @allow_mail_to;
+push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
