@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.38 2002-09-15 12:19:23 nickjc Exp $
+# $Id: search.pl,v 1.39 2002-09-20 08:07:25 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision: 1.38 $
+# search.pl $Revision: 1.39 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -198,9 +198,13 @@ sub do_search
     my ($dirname, $basename) = ($1, $2);
     $dirname =~ s#^/+##;
 
-    return if($basename =~ /^\./);
-
     my @stats = stat $File::Find::name;
+    if (-d _ and $basename =~ /^\./) {
+        $File::Find::prune = 1;
+    }
+       
+    return if $basename =~ /^\./;
+
     if (-d _) {
         if ("$dirname$basename" !~ /$dirlist/o) {
             $File::Find::prune = 1 unless (!$emulate_matts_code and $no_prune);
