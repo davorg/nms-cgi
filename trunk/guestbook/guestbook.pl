@@ -1,8 +1,12 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.19 2001-12-15 22:22:59 nickjc Exp $
+# $Id: guestbook.pl,v 1.20 2001-12-16 11:46:14 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/12/15 22:22:59  nickjc
+# * added $url validity check
+# * misc minor fixes and tidying
+#
 # Revision 1.18  2001/12/15 00:19:25  nickjc
 # Added a whitelist-based HTML filter to strip out unsafe constructs
 # when $allow_html is 1
@@ -944,7 +948,7 @@ sub cleanup_html {
     (?: <[?!].*?>                                  ) |
     (?: <([a-zA-Z]+)((?:[^>'"]|"[^"]*"|'[^']*')*)> ) |
     (?: </([a-zA-Z]+)>                             ) |
-    (?: (<?[^<]+)                                  )
+    (?: (.[^<]*)                                   )
   ][
     defined $1 ? cleanup_tag(lc $1, $2)            :
     defined $3 ? cleanup_close(lc $3)              :
