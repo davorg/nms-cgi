@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.32 2002-06-18 20:26:41 gellyfish Exp $
+# $Id: search.pl,v 1.33 2002-06-19 08:57:58 gellyfish Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision: 1.32 $
+# search.pl $Revision: 1.33 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -390,7 +390,13 @@ sub escape_html
 {
    my ($string) = @_;
 
-   $string =~ s%(?:(&)(?!#?[\w\d]+;)|([^\w \t\r\n.,;&:/-]))% $eschtml_map{$1 || $2} %ge;
+   $string =~ s% ( & (?!\#?\w+;)          
+                | [^\w\ \t\r\n.,;&#:/-]
+                 )
+               % 
+                  $eschtml_map{$1}
+               %gex;
+
    return $string;
 }
 
