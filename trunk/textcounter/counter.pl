@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.16 2002-06-02 10:05:27 nickjc Exp $
+# $Id: counter.pl,v 1.17 2002-07-23 20:23:13 nickjc Exp $
 #
 
 use strict;
@@ -81,7 +81,7 @@ BEGIN
          $message = '';
       }
       
-      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ( $pack, $file, $line, $sub ) = caller(0);
       my ($id ) = $file =~ m%([^/]+)$%;
 
       return undef if $file =~ /^\(eval/;
@@ -125,6 +125,8 @@ check_uri($count_page) || die "bad URI : '$count_page'\n";
 
 $count_page =~ s|/$||;
 $count_page =~ s/[^\w]/_/g;
+$count_page =~ /^(\w+)$/ or die 'failed to wordify count_page';
+$count_page = $1;
 
 my ($date, $count);
 
