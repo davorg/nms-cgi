@@ -33,9 +33,9 @@ include ../../buildtools/package.mak
 
 .pkg/FormMail.pl: ../../src/formmail/FormMail.pl ../../buildtools/inline $(MODULES:%=../../lib/%) .pkg/VERSION
 	../../buildtools/inline ../../lib ../../src/formmail/FormMail.pl >.pkg/FormMail.pl.in
-	../../buildtools/template .pkg/FormMail.pl.in >.plg/FormMail.pl
+	../../buildtools/template .pkg/FormMail.pl.in >$@
 	rm .pkg/FormMail.pl.in
-	chmod 755 .pkg/FormMail.pl
+	chmod 755 $@
 
 .pkg/README: ../../src/formmail/README README.manifest README.install .pkg/VERSION
 	../../buildtools/template ../../src/formmail/README >$@
