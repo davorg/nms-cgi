@@ -1,0 +1,18 @@
+=head1 Information to become a developer:
+
+We're pretty inclusive on this project. Anyone can become a developer. All you 
+need to do is to register with SourceForge at
+
+https://sourceforge.net/account/register.php
+
+and then drop me an email (C<dave@dave.org.uk>) with your new SourceForge 
+username. I'll then add you to the list of nms developers and you'll then be able 
+to contribute directly by accessing the code in our CVS repository.
+
+It is also strongly recommended to join the developers' mailing list at
+
+L<http://lists.sourceforge.net/mailman/listinfo/nms-cgi-devel>
+
+-Dave Cross, Project Manager
+
+=cut

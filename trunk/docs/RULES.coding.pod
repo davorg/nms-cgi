@@ -1,0 +1,38 @@
+=head1 Coding guidelines that must be followed:
+
+=over 4
+
+=item *
+
+All code must run under Perl 5.004_04.
+
+=item *
+
+Only standard modules included with Perl 5.004_04 should be used.
+
+=item *
+
+All code should run under "use strict" and "-wT" without errors.
+
+=item *
+
+If you want to enhance or extend Matt's original functionality, then please
+use a variable called $emulate_matts_code. If this variable is set to a
+true value then your new functinoality should be switched off.
+
+=item *
+
+Keep the docs up to date.
+
+=item *
+
+If you have any ideas of new work that you'd like to do on any of the scripts
+then please announce it here first. After announcing it, please wait at 
+least 24 hours before starting. If, after 24 hours, no-one has objected to
+your suggestions then please go ahead. As a corollary to that, if you see 
+someone suggesting something here that you don't agree with, then please
+speak up.
+
+=back
+
+=cut
