@@ -129,7 +129,7 @@ sub _smtp_getline {
   return $line;
 }
 
-=itme _smtp_response ()
+=item _smtp_response ()
 
 Reads a command response from the SMTP socket, and returns it as
 a single string.  A multiline responses is returned as a multiline
