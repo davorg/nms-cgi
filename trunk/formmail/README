@@ -134,6 +134,7 @@ $date_fmt           - The format that the date will be displayed in. This
                       %p - AM or PM
                       %M - minutes (00 to 59)
                       %S - seconds (00 to 59)
+                      %Z - the name of the local timezone
 
 $style              - This is the URL of a CSS stylesheet which will be
                       used for script generated messages.  This probably

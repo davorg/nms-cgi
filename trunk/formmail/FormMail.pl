@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.63 2002-03-26 13:49:16 nickjc Exp $
+# $Id: FormMail.pl,v 1.64 2002-03-26 13:58:26 nickjc Exp $
 #
 
 use strict;
@@ -16,7 +16,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.63 $
+# FormMail.pl $Revision: 1.64 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -62,7 +62,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.63 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.64 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -859,7 +859,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.63 $
+FormMail $Revision: 1.64 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1015,6 +1015,7 @@ part of the date or time. Here are some common tags:
  %p - AM or PM
  %M - minutes (00 to 59)
  %S - seconds (00 to 59)
+ %Z - the name of the local timezone
 
 =item $style
 
@@ -1339,6 +1340,9 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.63  2002/03/26 13:49:16  nickjc
+ * play nicely under Apache::Registry
+
  Revision 1.62  2002/03/26 09:01:03  gellyfish
  Added $allow_empty_ref to FormMail configuration
 
