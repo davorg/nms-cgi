@@ -51,7 +51,7 @@ $Display_Time_Zone
 
 INSTALLATION
 
-textclock is installed simply by copying the file textclock.pl.pl into your
+textclock is installed simply by copying the file textclock.pl into your
 cgi-bin directory. If you don't know where your cgi-bin directory is, then
 please ask your system administrator
 
