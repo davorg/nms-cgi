@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.12 2001-11-26 13:40:05 nickjc Exp $
+# $Id: FormMail.pl,v 1.13 2001-11-26 17:36:43 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/11/26 13:40:05  nickjc
+# Added \Q \E around variables in regexps where metacharacters in the
+# variables shouldn't be interpreted by the regex engine.
+#
 # Revision 1.11  2001/11/26 09:20:20  gellyfish
 # Tidied up the error() subroutine
 #
@@ -213,7 +217,7 @@ sub parse_form {
                   missing_fields_redirect
                  );
 
-  @Config{@fields} = () x @fields; # make it undef rather than empty string
+  @Config{@fields} = (undef) x @fields; # make it undef rather than empty string
 
   my @field_order;
 
@@ -261,9 +265,10 @@ sub check_required {
 	}
       }
     }
+
+    error('no_recipient') unless scalar @valid;
     $Config{recipient} = join ',', @valid;
 
-    error('no_recipient') unless $Config{recipient};
   } else {
     if (%Form) {
       error('no_recipient')
@@ -428,7 +433,7 @@ sub check_email {
       # syntax does not match the following regular expression pattern
       # it fails basic syntax verification.
 
-      $email !~ /^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z0-9]+)(\]?)$/) {
+      $email !~ /^.+\@(\[?)[a-zA-Z0-9\-\.]+(\]?)$/) {
 
     # Basic syntax requires:  one or more characters before the @ sign,
     # followed by an optional '[', then any number of letters, numbers,
@@ -457,7 +462,7 @@ sub body_attributes {
   my $attr = '';
 
   foreach (keys %attrs) {
-    $attr .= qq( $attrs{$_}="), escape_html($Config{$_}), '"' if $Config{$_};
+    $attr .= qq( $attrs{$_}=") . escape_html($Config{$_}) . '"' if $Config{$_};
   }
 
   return $attr;
@@ -524,7 +529,8 @@ EOBODY
         exit;
       }
       else {        
-        my $missing_field_list = map { '<li>' . escape_html($_) . "</li>\n" }
+        my $missing_field_list = join '',
+	                         map { '<li>' . escape_html($_) . "</li>\n" }
                                  @error_fields;
         $title = 'Error: Blank Fields';
         $heading = $title;
