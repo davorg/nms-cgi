@@ -15,8 +15,8 @@ script archive at  <http://nms-cgi.sourceforge.net/>
 
 SUMMARY
 
-Countdown is a script which allows you to display the amount of time left
-to a given date and time.
+CookieLib is a library which contains subroutines for the manipulation of
+cookies.
 
 FILES
 
@@ -70,13 +70,14 @@ USAGE
       GetCookies (@cookies)
             Will retrieve the cookies listed in @cookies and put their values
             in %Cookies, a hash in the main program.  Only the cookies listed
-            in the array will be returned.  The function returns true for success,
-            0 for failure
+            in the array will be returned.  The function returns true for 
+            success, 0 for failure
 
       SetCookies (%new_cookies)
-            Will set new cookies listed in %new_cookies.  Each element a name/value pair.
-            This has to be done before finishing the Content-type header with the 2nd newline,
-            such as:
+            Will set new cookies listed in %new_cookies.  Each element a 
+            name/value pair. This has to be done before finishing the 
+            Content-type header with the 2nd newline, such as:
+
             print "Content-type\n";
             SetCookies (%Cookies)
             print "\n";
@@ -85,9 +86,9 @@ USAGE
             Exactly like GetCookies, but kept for backwards compatibility
 
       SetCompressedCookies (@cookies)
-            Will set multiple cookies as a single cookie; useful if the domain you are on is running
-            out of cookie space (a single domain may only use up to 20 cookies).  Use it similarly to
-            SetCookies.
+            Will set multiple cookies as a single cookie; useful if the 
+            domain you are on is running out of cookie space (a single domain 
+            may only use up to 20 cookies).  Use it similarly to SetCookies.
 
 SUPPORT
 
