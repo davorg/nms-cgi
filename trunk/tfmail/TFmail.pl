@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.1.1.1 2002-04-30 08:02:15 nickjc Exp $
+# $Id: TFmail.pl,v 1.2 2002-04-30 12:44:08 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -52,7 +52,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.1.1.1 $, 10, -1;
+  $VERSION = substr q$Revision: 1.2 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -211,12 +211,13 @@ sub send_emails
    my $template = $treq->config('email_template', 'email');
 
    my $msg = MIME::Lite->new(
-      To      => $recipients,
-      From    => $from,
-      Subject => $treq->config('subject', 'WWW Form Submission'),
-      Type    => 'TEXT',
-      Data    => $treq->process_template($template, 'email', undef),
-      Date    => '',
+      To       => $recipients,
+      From     => $from,
+      Subject  => $treq->config('subject', 'WWW Form Submission'),
+      Type     => 'TEXT',
+      Data     => $treq->process_template($template, 'email', undef),
+      Date     => '',
+      Encoding => 'quoted-printable',
    );
 
    if (ENABLE_UPLOADS)
