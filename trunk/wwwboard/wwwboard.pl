@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.6 2001-11-24 20:01:22 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.7 2001-11-25 09:45:25 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/11/24 20:01:22  gellyfish
+# Sundry refactoring
+#
 # Revision 1.5  2001/11/24 11:59:58  gellyfish
 # * documented strfime date formats is various places
 # * added more %ENV cleanup
@@ -77,7 +80,16 @@ my $style = '/css/nms.css';
 
 my $emulate_matts_code = 1;
 
+# If $show_faq is set to 1 then the link for the WWWBoard FAQ will be shown
+# on the generated pages.
+
 my $show_faq     = 1;
+
+# If $allow_html is set to 1 then HTML will not be removed from the body of
+# the message.  Be warned however that setting this is a possible security
+# risk allowing malicious defacement of the page and possible cross page
+# scripting attacks on this or other site.
+
 my $allow_html   = 1;
 
 # If $quote_text is set to 1 then the text of the original message will
@@ -145,6 +157,18 @@ my %max_len = (name        => 50,
 	       origname    => 50,
 	       origemail   => 70,
 	       origdate    => 50);
+
+# $strict_image if set to 1 will require that an image url if supplied
+# must end in one of the common suffixes as defined in @image_suffixes
+
+my $strict_image = 1;
+
+# @images_suffixes is a list of the extensions that the image URL must end
+# with if $strict_image above is set to 1 - this is to minimize a potential
+# for the entry of entry of a malicious URL that may be used to attack
+# another host or disfigure this web page.
+
+my @image_suffixes = qw(png jpe?g gif);
 
 # End configuration
 
@@ -274,9 +298,7 @@ sub get_variables {
   }
 
   if ($Form{subject}) {
-    $subject = $Form{subject};
-    $subject =~ s/&/&amp;/g;
-    $subject =~ s/\"/&quot;/g;
+    $subject = escape_html($Form{subject});
   } else {
     error('no_subject');
   }
@@ -286,7 +308,15 @@ sub get_variables {
     $message_url_title = $Form{url_title};
   }
 
-  if ($Form{img} =~ /.*tp:\/\/.*\..*/) {
+  my $image_suffixes = '.+';
+
+  if ( $strict_image )
+  {
+     $image_suffixes = join '|', @image_suffixes;
+
+     $image_suffixes = "($image_suffixes)";
+  }
+  if ($Form{img} =~ m%^.+tp://.*\.image_suffixes$%) {
     $message_img = $Form{img};
   }
 
@@ -302,9 +332,7 @@ sub get_variables {
     # it would allow someone to subvert $allow_html by putting escaped stuff
     # in the message and having the script expand it.
 
-    $body =~ s/&lt;/</g;
-    $body =~ s/&gt;/>/g;
-    $body =~ s/&quot;/\"/g;
+    $body = unescape_html($body);
      
   } else {
     error('no_body');
@@ -360,10 +388,12 @@ sub new_file {
   <body>
     <h1 align="center">$subject</h1>
     <hr />
-    <p align="center">[ <a href="#followups">Follow Ups</a> ]
-    [ <a href="#postfp">Post Followup</a> ]
-    [ <a href="$baseurl/$mesgfile">$title</a> ]
-    $faq</p>
+    <p align="center">
+      [ <a href="#followups">Follow Ups</a> ]
+      [ <a href="#postfp">Post Followup</a> ]
+      [ <a href="$baseurl/$mesgfile">$title</a> ]
+      $faq
+    </p>
 
   <hr />
   <p>Posted by $print_name $ip on $date</p>
@@ -687,19 +717,19 @@ sub rest_of_form {
   print qq(<form method="POST" action="$cgi_url">\n);
 
   if ($followup == 1) {
-    print qq(<input type="hidden" name="origsubject" value="$Form{origsubject}">\n);
-    print qq(<input type="hidden" name="origname" value="$Form{origname}">\n);
-    print qq(<input type="hidden" name="origemail" value="$Form{origemail}">\n);
-    print qq(<input type="hidden" name="origdate" value="$Form{origdate}">\n);
-    print qq(<input type="hidden" name="followup" value="$Form{followup}">\n);
+    print qq(<input type="hidden" name="origsubject" value="$Form{origsubject}" />\n);
+    print qq(<input type="hidden" name="origname" value="$Form{origname}" />\n);
+    print qq(<input type="hidden" name="origemail" value="$Form{origemail}" />\n);
+    print qq(<input type="hidden" name="origdate" value="$Form{origdate}" />\n);
+    print qq(<input type="hidden" name="followup" value="$Form{followup}" />\n);
   }
-  print qq(Name: <input type="text" name="name" value="$Form{name}" size="50"><br>\n);
-  print qq(E-Mail: <input type="text" name="email" value="$Form{email}" size="50"><p>\n);
+  print qq(Name: <input type="text" name="name" value="$Form{name}" size="50" /><br />\n);
+  print qq(E-Mail: <input type="text" name="email" value="$Form{email}" size="50" /><p />\n);
   if ($subject_line == 1) {
-    print qq(<input type="hidden" name="subject" value="$Form{subject}">\n);
-    print qq(Subject: <b>$Form{subject}</b><p>\n);
+    print qq(<input type="hidden" name="subject" value="$Form{subject}" />\n);
+    print qq(Subject: <b>$Form{subject}</b><p />\n);
   } else {
-    print qq(Subject: <input type="text" name="subject" value="$Form{subject}" size="50"><p>\n);
+    print qq(Subject: <input type="text" name="subject" value="$Form{subject}" size="50" /><p />\n);
    }
   
   $Form{body} = escape_html($Form{body});
@@ -709,12 +739,12 @@ sub rest_of_form {
 
   print "$Form{body}\n";
   print "</textarea><p>\n";
-  print qq(Optional Link URL: <input type=text name="url" value="$Form{url}" size="45"><br>\n);
-  print qq(Link Title: <input type="text" name="url_title" value="$Form{url_title}" size="50"><br>\n);
-  print qq(Optional Image URL: <input type="text" name="img" value="$Form{img}" size="45"><p>\n);
-  print qq(<input type="submit" value="Post Message"> <input type="reset">\n);
+  print qq(Optional Link URL: <input type=text name="url" value="$Form{url}" size="45" /><br />\n);
+  print qq(Link Title: <input type="text" name="url_title" value="$Form{url_title}" size="50" /><br />\n);
+  print qq(Optional Image URL: <input type="text" name="img" value="$Form{img}" size="45" /><p />\n);
+  print qq(<input type="submit" value="Post Message" /> <input type="reset" />\n);
   print "</form>\n";
-  print qq(<br><hr size="7" width="75%">\n);
+  print qq(<br /><hr size="7" width="75%" />\n);
   if ($show_faq) {
     print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$baseurl/$mesgfile">$title</a> ] [ <a href="$baseurl/$faqfile">FAQ</a> ]</center>\n);
   } else {
@@ -737,7 +767,7 @@ sub strip_html
 # subroutine to escape the necessary characters to the appropriate HTML
 # entities
 
-use vars qw(%escape_html_map);
+use vars qw(%escape_html_map %unescape_html_map);
 
 BEGIN
 {
@@ -747,11 +777,23 @@ BEGIN
                         '"' => '&quot;',
                         "'" => '&#39;',
                       );
+
+   while ( my ( $key, $value ) = each %escap_html_map )
+   {
+      $unescape_html_map{$value} = $key;
+   }
 }
 
 sub escape_html {
   my $str = shift;
-  $str =~ s/([&<>"'])/$escape_html_map{$1}/g;
+  my $chars = join '', keys %escape_html;
+  $str =~ s/([$chars])/$escape_html_map{$1}/g;
   return $str;
 }
 
+sub unescape_html {
+  my $str = shift;
+  my $pattern = join '|', map { quotemeta($_) } keys(%unescape_html_map);
+  $str =~ s/($pattern)/$unescape_html_map{$1}/g;
+  return $str;
+}
