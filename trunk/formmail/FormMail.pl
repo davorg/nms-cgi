@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.33 2002-02-03 20:47:06 dragonoe Exp $
+# $Id: FormMail.pl,v 1.34 2002-02-03 21:32:47 dragonoe Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.33  2002/02/03 20:47:06  dragonoe
+# Added header to script after the cvs log.
+#
 # Revision 1.32  2002/01/31 17:26:43  proub
 # no longer accepting email addresses with % characters in the name portion
 #   (to avoid spoofing sendmail addressing on some systems) - revert
@@ -157,16 +160,16 @@ use vars qw($DEBUGGING);
 # your own web server. If the purpose of these
 # parameters seems unclear, please see the README file.
 #
-BEGIN { $DEBUGGING = 1; }
-my $emulate_matts_code = 0;
-my $secure = 1;
-my $mailprog = '/usr/lib/sendmail -oi -t';
-my @referers = qw(dave.org.uk 209.207.222.64 localhost);
-my @allow_mail_to = qw(you@your.domain some.one.else@your.domain localhost);
-my @recipients = ();
-my @valid_ENV = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
-my $date_fmt = '%A, %B %d, %Y at %H:%M:%S';
-my $style = '/css/nms.css';
+BEGIN { $DEBUGGING    = 1; }
+my $emulate_matts_code= 0;
+my $secure            = 1;
+my $mailprog          = '/usr/lib/sendmail -oi -t';
+my @referers          = qw(dave.org.uk 209.207.222.64 localhost);
+my @allow_mail_to     = qw(you@your.domain some.one.else@your.domain localhost);
+my @recipients        = ();
+my @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
+my $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
+my $style             = '/css/nms.css';
 my $send_confirmation_mail = 0;
 my $confirmation_text = <<'END_OF_CONFIRMATION';
 From: you@your.com
@@ -291,8 +294,8 @@ sub check_referer
     
     foreach my $test_ref (@referers) {
       if ($refHost =~ m|\Q$test_ref\E$|i) {
-	$check_referer = 1;
-	last;
+        $check_referer = 1;
+        last;
       }
       elsif ( $secure && $test_ref =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/ ) {
         if ( my $ref_host = inet_aton($refHost) ) {
@@ -457,15 +460,15 @@ EOHTML
     my @sorted_fields;
     if ($Config{'sort'}) {
       if ($Config{'sort'} eq 'alphabetic') {
-	@sorted_fields = sort keys %Form;
+        @sorted_fields = sort keys %Form;
       } elsif ($Config{'sort'} =~ /^order:.*,.*/) {
-	$sort_order = $Config{'sort'};
-	$sort_order =~ s/(\s+|\n)?,(\s+|\n)?/,/g;
-	$sort_order =~ s/(\s+)?\n+(\s+)?//g;
-	$sort_order =~ s/order://;
-	@sorted_fields = split(/,/, $sort_order);
+        $sort_order = $Config{'sort'};
+        $sort_order =~ s/(\s+|\n)?,(\s+|\n)?/,/g;
+        $sort_order =~ s/(\s+)?\n+(\s+)?//g;
+        $sort_order =~ s/order://;
+        @sorted_fields = split(/,/, $sort_order);
       } else {
-	@sorted_fields = @Field_Order;
+        @sorted_fields = @Field_Order;
       }
     } else {
       @sorted_fields = @Field_Order;
@@ -473,7 +476,7 @@ EOHTML
 
     foreach (@sorted_fields) {
       if ($Config{print_blank_fields} || $Form{$_}) {
-	print '<p><b>', escape_html($_), ':</b> ', 
+        print '<p><b>', escape_html($_), ':</b> ', 
                         escape_html($Form{$_}), "</p>\n";
       }
     }
@@ -651,11 +654,11 @@ sub strip_nonprintable {
 
 sub body_attributes {
   my %attrs = (bgcolor     => 'bgcolor',
-	       background  => 'background',
-	       link_color  => 'link',
-	       vlink_color => 'vlink',
-	       alink_color => 'alink',
-	       text_color  => 'text');
+               background  => 'background',
+               link_color  => 'link',
+               vlink_color => 'vlink',
+               alink_color => 'alink',
+               text_color  => 'text');
 
   my $attr = '';
 
@@ -749,7 +752,7 @@ EOBODY
       }
       else {        
         my $missing_field_list = join '',
-	                         map { '<li>' . escape_html($_) . "</li>\n" }
+                                 map { '<li>' . escape_html($_) . "</li>\n" }
                                  @error_fields;
         $title = 'Error: Blank Fields';
         $heading = $title;
@@ -893,29 +896,29 @@ sub escape_html {
 #
 #     if ($emulate) 
 #     {
-#  	$secure = 0;
-#  	$emulate_matts_code = 1;
-#  	$secureMsg = 'insecure';
+#       $secure = 0;
+#       $emulate_matts_code = 1;
+#       $secureMsg = 'insecure';
 #     }
 #     else
 #     {
-#  	$secure = 1;
-#  	$emulate_matts_code = 0;
-#  	$secureMsg = 'secure';
+#       $secure = 1;
+#       $emulate_matts_code = 0;
+#       $secureMsg = 'secure';
 #     }
 #
 #     if ($shouldBeGood)
 #     {
 #         if ((! check_email($recip)) or (! check_recipient($recip)))
 #         {
-#  	 warn "$recip should be good ($secureMsg)";
+#        warn "$recip should be good ($secureMsg)";
 #         }
 #     }
 #     else
 #     {
 #         if (check_email($recip) and check_recipient($recip))
 #         {
-#  	   warn "$recip should be bad ($secureMsg)";
+#          warn "$recip should be bad ($secureMsg)";
 #         }
 #     }
 #  }
@@ -947,21 +950,21 @@ sub escape_html {
 #
 #     if ($emulate) 
 #     {
-#  	$secure = 0;
-#  	$secureMsg = 'insecure';
+#       $secure = 0;
+#       $secureMsg = 'insecure';
 #     }
 #     else
 #     {
-#  	$secure = 1;
-#  	$secureMsg = 'secure';
+#       $secure = 1;
+#       $secureMsg = 'secure';
 #     }
-#	
+#       
 #     if ($shouldBeGood)
 #     {
-#  	warn "$referer should be good ($secureMsg)" if ! check_referer($referer);
+#       warn "$referer should be good ($secureMsg)" if ! check_referer($referer);
 #     }
 #     else
 #     {
-#  	warn "$referer should be bad ($secureMsg)" if check_referer($referer);
+#       warn "$referer should be bad ($secureMsg)" if check_referer($referer);
 #     }
 #  }
