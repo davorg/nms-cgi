@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.33 2002-08-25 08:36:01 nickjc Exp $
+# $Id: wwwboard.pl,v 1.34 2002-08-25 20:52:01 nickjc Exp $
 #
 
 use strict;
@@ -8,7 +8,7 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_headers);
-my $VERSION = substr q$Revision: 1.33 $, 10, -1;
+my $VERSION = substr q$Revision: 1.34 $, 10, -1;
 
 BEGIN
 { 
@@ -250,8 +250,7 @@ sub get_variables {
       $fcheck{$fn}++;
     }
 
-
-    @followup_num = keys %fcheck;
+    @followup_num = sort {$a <=> $b} keys %fcheck;
 
     # truncate the list of followups so that a vandal can't followup
     # to every existing message on the site.
@@ -264,7 +263,6 @@ sub get_variables {
         @followup_num = @followup_num[$start_followups .. $#followup_num];
     }
     
-
     $variables->{followups} = \@followup_num;
     $variables->{num_followups} = scalar @followup_num;
     $variables->{last_message} = $followup_num[$#followup_num];
@@ -853,7 +851,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.33 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.34 $ =~ /(\d+)\.(\d+)/);
 
 =head1 NAME
 
