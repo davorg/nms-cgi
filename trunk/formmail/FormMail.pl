@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.50 2002-03-07 23:00:05 nickjc Exp $
+# $Id: FormMail.pl,v 1.51 2002-03-10 01:05:11 nickjc Exp $
 #
 
 use strict;
@@ -835,12 +835,7 @@ sub send_mail {
 
   my $realname = $Config{realname};
   if (defined $realname) {
-    if ($secure) {
-      # A transform to eliminate some potential problem characters
-      $realname =~ tr#()\\#{}/#;
-      $realname =~ s#\s+# #g;
-    }
-    $realname = " ($realname)";
+    $realname = ' (' . cleanup_realname($realname) . ')';
   } else {
     $realname = $Config{realname} = '';
   }
@@ -919,6 +914,28 @@ EOMAIL
   }
 
   close (MAIL) || die $!;
+}
+
+sub cleanup_realname {
+  my ($realname) = @_;
+
+  return '' unless defined $realname;
+
+  $realname =~ s#\s+# #g;
+
+  if ($secure) {
+    # Allow no unusual characters and impose a length limit. We
+    # need to allow extented ASCII characters because they can
+    # occur in non-English names.
+    $realname =~ tr# a-zA-Z0-9_\-,./'\200-377##dc;
+    $realname = substr $realname, 0, 128;
+  } else {
+    # Be as generous as possible without opening any known or
+    # strongly suspected relaying holes.
+    $realname =~ tr#()\\#{}/#;
+  }
+
+  return $realname;
 }
 
 sub check_email {
@@ -1228,6 +1245,11 @@ sub escape_html {
 
 
 # $Log: not supported by cvs2svn $
+# Revision 1.50  2002/03/07 23:00:05  nickjc
+# * eliminated the remaining path for nonprintable characters to get into
+#   the email body.
+# * added a test for that.
+#
 # Revision 1.49  2002/03/06 14:48:53  proub
 # Inserted README text, in POD format.
 # Moved Log messages to the end of the file.
