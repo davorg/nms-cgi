@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.57 2004-10-15 08:35:33 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.58 2004-10-18 12:12:19 gellyfish Exp $
 #
 
 use strict;
@@ -17,11 +17,11 @@ use vars qw(
   %max_len $strict_image @image_suffixes $locale $charset @bannedwords
   $bannedwords $bannednets @use_rbls
 );
-BEGIN { $VERSION = substr q$Revision: 1.57 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.58 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.57 $
+# wwwboard.pl $Revision: 1.58 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -376,6 +376,8 @@ sub get_variables
     length $Form->{name} or error( 'no_name', $variables );
 
     check_banned( $Form->{name} ) or error('invalid');
+
+    $variables->{name} = $Form->{name};
 
     if ( $Form->{email} =~ /(.*\@.*\..*)/ )
     {
