@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.45 2002-09-09 20:29:59 uid68644 Exp $
+# $Id: wwwboard.pl,v 1.46 2002-09-24 21:13:39 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.45 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.46 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.45 $
+# wwwboard.pl $Revision: 1.46 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -197,22 +197,37 @@ my $variables = get_variables($Form);
 if ( param('preview') ) {
   preview_post($variables);
 }
+else {
+  open LOCK, ">>$basedir/.lock" or die "open >>$basedir/.lock: $!";
+  flock LOCK, LOCK_EX or die "flock $basedir/.lock: $!";
 
-open LOCK, ">>$basedir/.lock" or die "open >>$basedir/.lock: $!";
-flock LOCK, LOCK_EX or die "flock $basedir/.lock: $!";
+  my $ft = File::Transaction->new;
 
-$variables->{id} = get_number();
+  eval { 
+    local $SIG{__DIE__};
 
-new_file($variables);
-main_page($variables);
+    $variables->{id} = get_number($ft);
 
-thread_pages($variables);
+    new_file($ft, $variables);
+    main_page($ft, $variables);
 
-close LOCK;
+    thread_pages($ft, $variables);
+  };
 
-return_html($variables);
+  if ($@) {
+    $ft->revert;
+    close LOCK;
+    die $@;
+  }
+  else {
+    $ft->commit;
+    close LOCK;
+    return_html($variables);
+  }
+}
 
 sub get_number {
+  my ($ft) = @_;
   my $num = 0;
   my $file = "$basedir/$datafile";
 
@@ -229,7 +244,8 @@ sub get_number {
   open NUMBER, ">$file.tmp" or die "open >$file.tmp: $!";
   print NUMBER $num;
   close NUMBER or die "close $file.tmp: $!";
-  rename "$file.tmp", $file or die "rename $file.tmp -> $file: $!";
+
+  $ft->addfile($file, "$file.tmp");
 
   return $num;
 }
@@ -276,15 +292,16 @@ sub get_variables {
 
     my %fcheck;
     foreach my $fn (@followup_num) {
-      error('followup_data',{Form => $Form}) if $fn !~ /^\d+$/ || $fcheck{$fn};
-      $fcheck{$fn}++;
+      if ($fcheck{$fn} or $fn !~ /^(\d+)$/) {
+        error('followup_data',{Form => $Form});
+      } else {
+        $fn = $1;
+        $fcheck{$fn} = 1;
+      }
     }
-
-    @followup_num = sort {$a <=> $b} keys %fcheck;
 
     # truncate the list of followups so that a vandal can't followup
     # to every existing message on the site.
-
     if ( !$emulate_matts_code && $max_followups && 
                                  $max_followups < @followup_num ) {
 
@@ -382,14 +399,14 @@ sub get_variables {
 
 sub new_file {
 
-  my ($variables) = @_;
+  my ($ft, $variables) = @_;
 
   my $md = "$basedir/$mesgdir";
   my $file = "$md/$variables->{id}.$ext";
   -r $file and die "refusing to overwrite [$file]";
 
   -d $md or mkdir $md, 0755 or die "mkdir $md: $!";
-  open(NEWFILE,">$file") || die "Open [$file]: $!";
+  open(NEWFILE,">$file.tmp") || die "Open [$file.tmp]: $!";
 
   my $html_faq = $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
   my $html_print_name = $variables->{email} ? 
@@ -419,9 +436,16 @@ sub new_file {
 
   my $html_img = $variables->{message_img} ?
     qq(<p align="center"><img src="$E{$variables->{message_img}}" /></p>\n) : '';
+  my $html_email_input = $variables->{email} ?
+    qq(<input type="hidden" name="origemail" value="$E{$variables->{email}}" />) : '';
   my $html_url = $variables->{message_url} ? 
     qq(<ul><li><a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></li></ul><br />) :
       '';
+
+  my $followups = $variables->{id};
+  if (defined $variables->{followups}) {
+    $followups = join(',', @{$variables->{followups}}, $followups);
+  }
 
   print NEWFILE <<END_HTML;
 <?xml version="1.0" encoding="$charset"?>
@@ -458,33 +482,20 @@ sub new_file {
   <br /><hr />
   <p><a id="postfp" name="postfp">Post a Followup</a></p>
   <form method="post" action="$E{$cgi_url}">
-END_HTML
-
-  my $follow_ups = ( defined $variables->{followups} )  ? 
-                     join( ',', @{$variables->{followups}}) : '';
-
-  $follow_ups .= ',' if length($follow_ups);
-
-  my $id = $variables->{id};
-
-  print NEWFILE qq(<input type="hidden" name="followup" value="$E{"$follow_ups$id"}" />);
-
-  print NEWFILE qq(<input type="hidden" name="origname" value="$E{$variables->{name}}" />);
-  print NEWFILE qq(<input type="hidden" name="origemail" value="$E{$variables->{email}}" />)
-    if $variables->{email};
-
-  print NEWFILE <<END_HTML;
-<input type="hidden" name="origsubject" value="$E{$variables->{subject}}" />
-<input type="hidden" name="origdate" value="$E{$variables->{date}}" />
-<table summary="">
-<tr>
-<td>Name:</td>
-<td><input type="text" name="name" size="50" /></td>
-</tr>
-<tr>
-<td>E-Mail:</td>
-<td><input type="text" name="email" size="50" /></td>
-</tr>
+  <input type="hidden" name="followup" value="$E{$followups}" />
+  <input type="hidden" name="origname" value="$E{$variables->{name}}" />
+  $html_email_input
+  <input type="hidden" name="origsubject" value="$E{$variables->{subject}}" />
+  <input type="hidden" name="origdate" value="$E{$variables->{date}}" />
+  <table summary="">
+  <tr>
+  <td>Name:</td>
+  <td><input type="text" name="name" size="50" /></td>
+  </tr>
+  <tr>
+  <td>E-Mail:</td>
+  <td><input type="text" name="email" size="50" /></td>
+  </tr>
 END_HTML
 
   my $subject = $variables->{subject};
@@ -538,144 +549,81 @@ END_HTML
 END_HTML
 
   unless (close NEWFILE) {
-    my $err = "close $file: $!";
-    unlink $file;
+    my $err = "close $file.tmp: $!";
+    unlink "$file.tmp";
     die $err;
   }
+
+  $ft->addfile($file, "$file.tmp");
 }
 
 ###############################
 # Main WWWBoard Page Subroutine
 
 sub main_page {
+  my ($ft, $variables) = @_;
 
-   my ( $variables ) = @_;
-
-  open(MAIN,"<$basedir/$mesgfile") ||
-    die "Open: $! [$basedir/$mesgfile]";
-
-  my @main = <MAIN>;
-  close(MAIN);
-
-  open(MAIN_OUT,">$basedir/$mesgfile.tmp") || die $!;
-
-  my $id = $variables->{id};
-  my $name = $variables->{name};
-  my $subject = $variables->{subject};
-  my $date = $variables->{date};
-
-  if ($variables->{followup} == 0) {
-    foreach (@main) {
-      if (/<!--begin-->/) {
-        print MAIN_OUT <<END_HTML;
-<!--begin-->
-<!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
-(<!--responses: $E{$id}-->0)
-<ul><!--insert: $E{$id}-->
-</ul><!--end: $E{$id}--></li>
-END_HTML
-      } else {
-        print MAIN_OUT $_;
-      }
-    }
+  if ($variables->{followup}) {
+    insert_followup($ft, $variables, "$basedir/$mesgfile");
   } else {
-    foreach (@main) {
-      my $work = 0;
-      if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/) {
-        print MAIN_OUT <<END_HTML;
-<ul><!--insert: $E{$variables->{last_message}}-->
+    $ft->linewise_rewrite("$basedir/$mesgfile", sub {
+      if (/<!--begin-->/) {
+        $_ .= html_message_line($variables);
+      }
+    });
+  }
+}
+
+sub insert_followup {
+  my ($ft, $v, $file) = @_;
+
+  my %is_followup_to = map {$_=>1} @{$variables->{followups}};
+
+  $ft->linewise_rewrite($file, sub {
+
+    if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/) {
+      $_ .= html_message_line($variables);
+    } elsif (m#\(<!--responses: (\d+?)-->(\d+?)\)#) {
+      my ($respto, $respcount) = ($1, $2);
+      if (exists $is_followup_to{$respto}) {
+        $respcount++;
+        s#\(<!--responses: \d+-->\d+\)#(<!--responses: $respto-->$respcount)#
+            or die "unexpected s/// failure";
+      }
+    }
+
+  });
+}
+  
+sub html_message_line {
+  my ($variables) = @_;
+
+  my $id      = $variables->{id};
+  my $subject = $variables->{subject};
+  my $name    = $variables->{name};
+  my $date    = $variables->{date};
+
+  return <<END_HTML;
 <!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
 (<!--responses: $E{$id}-->0)
 <ul><!--insert: $E{$id}-->
 </ul><!--end: $E{$id}--></li>
 END_HTML
-      } elsif (/\(<!--responses: (\d+?)-->(\d+?)\)/) {
-        my $response_num = $1;
-        my $num_responses = $2;
-        $num_responses++;
-        foreach my $followup_num (@{$variables->{followups}}) {
-          if ($followup_num == $response_num) {
-            print MAIN_OUT "(<!--responses: $E{$followup_num}-->$E{$num_responses})\n";
-            $work = 1;
-          }
-        }
-        if ($work != 1) {
-          print MAIN_OUT $_;
-        }
-      } else {
-        print MAIN_OUT $_;
-      }
-    }
-  }
 
-  unless(close(MAIN_OUT)) {
-     unlink "$basedir/$mesgfile.tmp";
-     die "write to : $basedir/$mesgfile.tmp - $!";
-  }
-
-  rename "$basedir/$mesgfile.tmp", "$basedir/$mesgfile"
-   or die "rename $basedir/$mesgfile.tmp => $basedir/$mesgfile - $!";
 }
 
 ############################################
 # Add Followup Threading to Individual Pages
 sub thread_pages {
 
-  my ($variables) = @_;
+  my ($ft, $variables) = @_;
 
   return unless $variables->{num_followups};
 
-  my $id = $variables->{id};
-  my $subject = $variables->{subject};
-  my $name    = $variables->{name};
-  my $date    = $variables->{date};
-
   foreach my $followup_num (@{$variables->{followups}}) {
-
-    open(FOLLOWUP, "<$basedir/$mesgdir/$followup_num.$ext")
-      || die "$!";
-
-    my @followup_lines = <FOLLOWUP>;
-    close(FOLLOWUP);
-
-    open(FOLLOWUP, ">$basedir/$mesgdir/$followup_num.tmp") || die "$!"; 
-
-    foreach (@followup_lines) {
-      my $work = 0;
-      if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/) {
-        print FOLLOWUP<<END_HTML;
-<ul><!--insert: $E{$variables->{last_message}}-->
-<!--top: $E{$id}--><li><a href="$E{"$id\.$ext"}">$E{$subject}</a> <b>$E{$name}</b> <i>$E{$date}</i>
-(<!--responses: $E{$id}-->0)
-<ul><!--insert: $E{$id}-->
-</ul><!--end: $E{$id}--></li>
-END_HTML
-      } elsif (/\(<!--responses: (\d+?)-->(\d+?)\)/) {
-        my $response_num = $1;
-        my $num_responses = $2;
-        $num_responses++;
-        foreach $followup_num (@{$variables->{followups}}) {
-          if ($followup_num == $response_num) {
-            print FOLLOWUP "(<!--responses: $E{$followup_num}-->$E{$num_responses})\n";
-            $work = 1;
-          }
-        }
-        if ($work != 1) {
-          print FOLLOWUP $_;
-        }
-      } else {
-        print FOLLOWUP $_;
-      }
-    }
-
-    unless (close(FOLLOWUP)) {
-       unlink "$basedir/$mesgdir/$followup_num.tmp";
-       die "write $basedir/$mesgdir/$followup_num.tmp $!";
-    }
-    rename "$basedir/$mesgdir/$followup_num.tmp",
-            "$basedir/$mesgdir/$followup_num.$ext"
-     or die "rename : $followup_num.tmp => $followup_num.$ext - $!";
+    insert_followup($ft, $variables, "$basedir/$mesgdir/$followup_num.$ext");
   }
+    
 }
 
 sub return_html {
@@ -744,7 +692,6 @@ sub preview_post {
   <hr />
 END_HTML
   rest_of_form($variables);
-  exit;
 }
 
 sub error {
@@ -875,9 +822,219 @@ sub filter_html
    return $filter->filter($comments, 'Flow');
 }
 
-###################################################################
+###############################################################
 
 BEGIN {
+  eval 'local $SIG{__DIE__} ; require File::Transaction';
+  $@ and $INC{'File/Transaction.pm'} = 1;
+  $@ and eval <<'END_FILE_TRANSACTION' || die $@;
+
+## BEGIN INLINED File::Transaction
+package File::Transaction;
+use strict;
+
+use vars qw($VERSION);
+$VERSION = '0.04';
+
+use IO::File;
+
+=head1 NAME
+
+File::Transaction - transactional change to a set of files
+
+=head1 SYNOPSIS
+
+  #
+  # In this example, we wish to replace the word 'foo' with the
+  # word 'bar' in several files, and we wish to minimize the risk
+  # of ending up with the replacement done in some files but not
+  # in others.
+  #
+
+  use File::Transaction;
+
+  my $ft = File::Transaction->new;
+
+  eval {
+      foreach my $file (@list_of_file_names) {
+          $ft->linewise_rewrite($file, sub {
+               s#\bfoo\b#bar#g;
+          });
+      }
+  };
+
+  if ($@) {
+      $ft->revert;
+      die "update aborted: $@";
+  }
+  else {
+      $ft->commit;
+  }
+
+=head1 DESCRIPTION
+
+A C<File::Transaction> object encapsulates a change to a set of files,
+performed by writing out a new version of each file first and then
+swapping all of the new versions in.  The set of files can only end up
+in an inconsistent state if a C<rename> system call fails or if the
+Perl process is interrupted during the commit().
+
+Files will be committed in the order in which they are added to the
+transaction.  This order should be chosen with care to limit the
+damage to your data if the commit() fails part way through.  If there
+is no order that renders a partial commit acceptable then consider
+using L<File::Transaction::Atomic> instead.
+
+=head1 CONSTRUCTORS
+
+=over
+
+=item new ( [TMPEXT] )
+
+Creates a new empty C<File::Transaction> object.
+
+The TMPEXT parameter gives the string to append to a filename to make
+a temporary filename for the new version.  The default is C<.tmp>.
+
+=cut
+
+sub new {
+    my ($pkg, $tmpext) = @_;
+    defined $tmpext or $tmpext = '.tmp';
+
+    return bless { FILES => [], TMPEXT => $tmpext }, $pkg;
+}
+
+=back
+
+=head1 METHODS
+
+=over
+
+=item linewise_rewrite ( OLDFILE, CALLBACK )
+
+Writes out a new version of the file OLDFILE and adds it to the
+transaction, invoking the coderef CALLBACK once for each line of the
+file, with the line in C<$_>.  The name of the new file is generated
+by appending the TMPEXT passed to new() to OLDFILE, and this file is
+overwritten if it already exists.
+
+The callback must not invoke the commit() or revert() methods of the
+C<File::Transaction> object that calls it.
+
+This method calls die() on error, without first reverting any other
+files in the transaction.
+
+=cut
+
+sub linewise_rewrite {
+    my ($self, $oldfile, $callback) = @_;
+    my $tmpfile = $oldfile . $self->{TMPEXT};
+
+    my $in  = IO::File->new("<$oldfile");
+    my $out = IO::File->new(">$tmpfile") or die "open >$tmpfile: $!";
+
+    $self->addfile($oldfile, $tmpfile);
+
+    local $_;
+    while( defined $in and defined ($_ = <$in>) ) {
+        &{ $callback }();
+        next unless length $_;
+        $out->print($_) or die "write to $tmpfile: $!";
+    }
+
+    $out->close or die "close >$tmpfile: $!";
+}
+
+=item addfile ( OLDFILE, TMPFILE )
+
+Adds an update to a single file to the transaction.  OLDFILE is the
+name of the old version of the file, and TMPFILE is the name of the
+temporary file to which the new version has been written.
+
+OLDFILE will be replaced with TMPFILE on commit(), and TMPFILE will be
+unlinked on revert().  OLDFILE need not exist.
+
+=cut
+
+sub addfile {
+    my ($self, $oldfile, $tmpfile) = @_;
+
+    push @{ $self->{FILES} }, { OLD => $oldfile, TMP => $tmpfile };
+}
+
+=item revert ()
+
+Deletes any new versions of files that have been created with the
+addfile() method so far.   Dies on error.
+
+=cut
+
+sub revert {
+    my ($self) = @_;
+
+    foreach my $file (@{ $self->{FILES} }) {
+        unlink $file->{TMP} or die "unlink $file->{TMP}: $!";
+    }
+
+    $self->{FILES} = [];
+}
+
+=item commit ()
+
+Swaps all new versions that have been created so far into place.
+Dies on error.
+
+=cut
+
+sub commit {
+    my ($self) = @_;
+
+    foreach my $file (@{ $self->{FILES} }) {
+        rename $file->{TMP}, $file->{OLD} or die "update $file->{OLD}: $!";
+    }
+
+    $self->{FILES} = [];
+}
+
+=back
+
+=head1 BUGS
+
+=over
+
+=item *
+
+If a rename fails or the Perl process is interrupted in the commit()
+method then some files will be updated but others will not.  See
+L<File::Transaction::Atomic> if that's a problem for you.
+
+=back
+
+=head1 SEE ALSO
+
+L<File::Transaction::Atomic>
+
+=head1 AUTHOR
+
+Nick Cleaton E<lt>nick@cleaton.netE<gt>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2002 Nick Cleaton.  All Rights Reserved.
+
+This module is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
+
+1;
+
+## END INLINED File::Transaction
+END_FILE_TRANSACTION
+
+###################################################################
+
   eval 'local $SIG{__DIE__} ; require CGI::NMS::Charset';
   $@ and $INC{'CGI/NMS/Charset.pm'} = 1;
   $@ and eval <<'END_CGI_NMS_CHARSET' || die $@;
