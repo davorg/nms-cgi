@@ -1,6 +1,6 @@
 COPYRIGHT
 
-FormMail Version [% INCLUDE .pkg/VERSION %]
+FormMail Version [% INCLUDE '.pkg/VERSION' -%]
 Copyright 2001-2003 London Perl Mongers, All rights reserved
 
 LICENSE

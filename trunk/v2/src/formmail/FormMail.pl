@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# NMS FormMail Version [% INCLUDE .pkg/VERSION -%]
+# NMS FormMail Version [% INCLUDE '.pkg/VERSION' -%]
 #
 
 use strict;
@@ -15,7 +15,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl Version [% INCLUDE .pkg/VERSION -%]
+# FormMail.pl Version [% INCLUDE '.pkg/VERSION' -%]
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
