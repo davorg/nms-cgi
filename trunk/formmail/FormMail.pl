@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.69 2002-04-06 16:12:18 nickjc Exp $
+# $Id: FormMail.pl,v 1.70 2002-04-08 07:36:52 nickjc Exp $
 #
 
 use strict;
@@ -10,13 +10,13 @@ use CGI qw(:standard);
 use vars qw(
   $DEBUGGING $emulate_matts_code $secure
   $allow_empty_ref $mailprog @referers @allow_mail_to
-  @recipients @valid_ENV $date_fmt $style
-  $send_confirmation_mail $confirmation_text
+  @recipients %recipient_alias @valid_ENV $date_fmt
+  $style $send_confirmation_mail $confirmation_text
 );
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.69 $
+# FormMail.pl $Revision: 1.70 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -45,6 +45,7 @@ BEGIN
   @referers          = qw(dave.org.uk 209.207.222.64 localhost);
   @allow_mail_to     = qw(you@your.domain some.one.else@your.domain localhost);
   @recipients        = ();
+  %recipient_alias   = ();
   @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
   $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
   $style             = '/css/nms.css';
@@ -62,7 +63,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.69 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.70 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -299,8 +300,13 @@ sub check_required {
     error('no_recipient');
   }
 
-  if ($Config{recipient}) {
+  if (length $Config{recipient}) {
     my @valid;
+
+    if (exists $recipient_alias{$Config{recipient}}) {
+      $Config{recipient} = $recipient_alias{$Config{recipient}};
+      $hide_recipient = 1;
+    }
 
     foreach (split /,/, $Config{recipient}) {
       next unless check_email($_);
@@ -837,7 +843,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.69 $
+FormMail $Revision: 1.70 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -979,6 +985,30 @@ escape it before using it in domain names.
 If that last paragraph makes no sense to you then
 please don't put anything in @recipients, stick to
 using the less error prone @allow_mail_to.
+
+=item %recipient_alias
+
+A hash for predefining a list of recipients in the script,
+and then choosing between them using the recipient form
+field, while keeping all the email addresses out of the
+HTML so that they don't get collected by address
+harvesters and sent junk email.
+
+For example, suppose you have three forms on your site,
+and you want each to submit to a different email address
+and you want to keep the addresses hidden.  You might
+set up C<%recipient_alias> like this:
+
+  %recipient_alias = (
+                       '1' => 'one@your.domain',
+                       '2' => 'two@your.domain',
+                       '3' => 'three@your.domain',
+                     );
+
+In the HTML form that should submit to the recipient
+'two@your.domain', you would then set the recipient with:
+
+  <input type="hidden" name="recipient" value="2" />
 
 =item @valid_ENV
 

@@ -111,6 +111,29 @@ $mailprog           - The system command that the script should invoke to
                       please don't put anything in @recipients, stick to
                       using the less error prone @allow_mail_to.
 
+%recipient_alias    - A hash for predefining a list of recipients in the
+                      script, and then choosing between them using the
+                      recipient form field, while keeping all the email
+                      addresses out of the HTML so that they don't get
+                      collected by address harvesters and sent junk email.
+
+                      For example, suppose you have three forms on your
+                      site, and you want each to submit to a different email
+                      address and you want to keep the addresses hidden.
+                      You might set up %recipient_alias like this:
+
+                      %recipient_alias = ( 
+                        '1' => 'one@your.domain',
+                        '2' => 'two@your.domain',
+                        '3' => 'three@your.domain',
+                      );
+
+                      In the HTML form that should submit to the recipient
+                      'two@your.domain', you would then set the recipient
+                      with:
+
+                      <input type="hidden" name="recipient" value="2" />
+
 @valid_ENV          - A list of all the environment variables that you want
                       to be able to include in the email. See 'env_report'
                       below.
