@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.22 2003-02-21 13:55:24 nickjc Exp $
+# $Id: FormMail.pl,v 2.23 2004-02-26 08:48:29 gellyfish Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.22 $
+# FormMail.pl $Revision: 2.23 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -74,7 +74,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.22 $, 10, -1;
+  $VERSION = substr q$Revision: 2.23 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -972,17 +972,26 @@ EOBODY
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>$title</title>
-    $style_element
     <style type="text/css">
     <!--
        body {
               background-color: #FFFFFF;
               color: #000000;
              }
+       table {
+               background-color: #9C9C9C;
+             }
        p.c2 {
               font-size: 80%;
               text-align: center;
             }
+       tr.title_row  {
+                        background-color: #9C9C9C;
+                      }
+       tr.body_row   {
+                         background-color: #CFCFCF;
+                      }
+
        th.c1 {
                text-align: center;
                font-size: 143%;
@@ -991,13 +1000,14 @@ EOBODY
        div.c2 {margin-left: 2em}
      -->
     </style>
+    $style_element
   </head>
   <body>$debug_warnings
-    <table border="0" width="600" bgcolor="#9C9C9C" summary="">
-      <tr bgcolor="#9C9C9C">
+    <table border="0" width="600" summary="">
+      <tr class="title_row">
         <th class="c1">$title</th>
       </tr>
-      <tr bgcolor="#CFCFCF">
+      <tr class="body_row">
         <td>
           $error_body
           <hr size="1" />
@@ -1043,7 +1053,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.22 $
+FormMail $Revision: 2.23 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
