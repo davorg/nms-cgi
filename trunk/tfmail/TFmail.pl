@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.11 2002-05-30 19:45:30 nickjc Exp $
+# $Id: TFmail.pl,v 1.12 2002-06-09 08:43:39 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -68,7 +68,7 @@ BEGIN
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.11 $, 10, -1;
+  $VERSION = substr q$Revision: 1.12 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -309,19 +309,22 @@ sub send_main_email
       my $cgi = $treq->cgi;
       foreach my $param ($treq->param_list)
       {
-         next if $param =~ /[^\w]/;
+         next if $param !~ /^(\w+)$/;
+         $param = $1;
 
          my @goodext = split /\s+/, $treq->config("upload_$param", '');
          next unless scalar @goodext;
          my %goodext = map {lc $_=>$_} @goodext;
 
-         my $filehandle = $cgi->upload($param);
-         next unless defined $filehandle;
-
          my $filename = $cgi->param($param);
          my $info = $cgi->uploadInfo($filename);
          next unless defined $info;
          my $ct = $info->{'Content-Type'} || $info->{'Content-type'} || '';
+
+         my $filehandle = $cgi->param($param);
+         next unless defined $filehandle;
+         my $data;
+         { local $/; $data = <$filehandle> }
 
          my $bestext = $goodext[-1];
          if ( $filename =~ m#\.(\w{1,8})$# and exists $goodext{lc $1} )
@@ -333,10 +336,17 @@ sub send_main_email
             $bestext = $goodext{lc $1};
          }
 
+         # Some versions of MIME::Lite can loop forever in some circumstances
+         # when fed on tainted data.
+         $data =~ /^(.*)$/s or die;
+         $data = $1;
+         $bestext =~ /^([\w\-]+)$/ or die "suspect file extension [$bestext]";
+         $bestext = $1;
+
          push @{ $msg->{attach} }, {
             Type        => 'application/octet-stream',
             Filename    => "$param.$bestext",
-            FH          => $filehandle,
+            Data        => $data,
             Disposition => 'attachment',
             Encoding    => 'base64',
          };
@@ -430,7 +440,7 @@ sub send_email
 
       foreach my $a (@{ $msg->{attach} || [] })
       {
-         $ml->attach( $a );
+         $ml->attach( %$a );
       }
 
       $ml->print(\*SENDMAIL);
