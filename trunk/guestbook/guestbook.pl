@@ -1,8 +1,11 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.23 2001-12-19 23:12:23 nickjc Exp $
+# $Id: guestbook.pl,v 1.24 2001-12-20 08:57:54 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.23  2001/12/19 23:12:23  nickjc
+# HTML filter fixes
+#
 # Revision 1.22  2001/12/18 22:21:13  nickjc
 # * minor HTML filter fixes
 # * started on allowing the style attribute
@@ -258,10 +261,10 @@ form_error('no_comments') unless $comments;
 
 $comments = unescape_html($comments) if $encoded_comments;
 
-# crudely Strip out HTML unless we are allowing it
-# strip_html should take care of everything.
+# Strip out HTML unless we are allowing it
+# process_html should take care of everything.
 
-$comments = strip_html($comments, $allow_html);
+$comments = process_html($comments, $line_breaks, $allow_html);
 
 form_error('no_name')     unless $realname;
 
@@ -647,8 +650,51 @@ sub check_email {
   }
 }
 
-# check the validity of a URL.
+##################################################################
+#
+# HTML handling code
+#
+# The code below provides some functions for manipulating HTML.
+#
+#  check_url ( URL )
+#
+#    Returns 1 if the string URL is a valid http, https or ftp
+#    URL, 0 otherwise.
+#
+#  process_html ( INPUT [,LINE_BREAKS [,ALLOW]] )
+#
+#    Returns a modified version of the HTML string INPUT, with
+#    any potentially malicious HTML constructs (such as java,
+#    javascript and IMG tags) removed.
+#
+#    If the LINE_BREAKS parameter is present and true then
+#    line breaks in the input will be converted to html <br />
+#    tags in the output.
+#
+#    If the ALLOW parameter is present and true then most
+#    harmless tags will be left in, otherwise all tags will be
+#    removed.
+#
+#  escape_html ( INPUT )
+#
+#    Returns a copy of the string INPUT with any HTML
+#    metacharacters replaced with character escapes.
+#
+#  unescape_html ( INPUT )
+#
+#    Returns a copy of the string INPUT with HTML character
+#    entities converted to literal characters where possible.
+#    Note that some entites have no 8-bit character equivalent,
+#    see "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent"
+#    for some examples.  unescape_html() leaves these entities
+#    in their encoded form.
+#
 
+use vars qw(%html_entities $html_safe_chars %escape_html_map);
+use vars qw(%safe_tags %safe_style %tag_is_empty $convert_nl
+            %auto_deinterleave $auto_deinterleave_pattern);
+
+# check the validity of a URL.
 sub check_url {
   my $url = shift;
 
@@ -658,13 +704,14 @@ sub check_url {
            >x ? 1 : 0;
 }
 
-##############################################################
-#
-# HTML handling routines
-#
-use vars qw(%html_entities $html_safe_chars %escape_html_map);
-use vars qw(%safe_tags %safe_style %tag_is_empty
-            %auto_deinterleave $auto_deinterleave_pattern);
+sub process_html {
+  my ($text, $line_breaks, $allow_html) = @_;
+
+  cleanup_html( $text,
+                $line_breaks,
+                ($allow_html ? \%safe_tags : {})
+              );
+}
 
 BEGIN
 {
@@ -985,23 +1032,9 @@ sub cleanup_attr_trules {
   /^(none|groups|rows|cols|all)$/i ? lc $1 : undef;
 }
 
-# subroutine to crudely strip html from a text string
-# ideally we would want to use HTML::Parser or somesuch.
-# we will also implement any selective tag replacement here
-# thus all user supplied input that will be displayed should
-# be passed through this before being displayed.
-
-sub strip_html {
-  my ( $comments,$allow_html ) = @_;
-
-  $allow_html = defined $allow_html ? $allow_html : 0;
-
-  return cleanup_html( $comments, ($allow_html ? \%safe_tags : {}) );
-}
-
-use vars qw(@stack $safe_tags);
+use vars qw(@stack $safe_tags $convert_nl);
 sub cleanup_html {
-  local ($_, $safe_tags) = @_;
+  local ($_, $convert_nl, $safe_tags) = @_;
   local @stack = ();
 
   s[
@@ -1113,8 +1146,8 @@ sub cleanup_cdata {
      defined $1 ? "&$1;" : $escape_html_map{$2}
   ]gesx;
 
-  # substitute newlines in the comments for html line breaks if required.
-  s%\cM\n%<br />\n%g if $line_breaks;
+  # substitute newlines in the input for html line breaks if required.
+  s%\cM\n%<br />\n%g if $convert_nl;
 
   return $_;
 }
@@ -1146,3 +1179,7 @@ sub unescape_html {
   return $str;
 }
 
+#
+# End of HTML handling code
+#
+##################################################################
