@@ -26,7 +26,7 @@ In this distribution, you will find three files:
 
 counter.pl   - The main perl script.
 README       - This file. Instructions on how to install and use Text Counter.
-MANIFESTO    - List of files
+MANIFEST     - List of files
 
 CONFIGURATION
 
@@ -66,9 +66,9 @@ $pad_size     - The minimum size of the number displayed. For example, if
 
 INSTALLATION
 
-textcounter is installed simply by copying the file textcounter.pl.pl into your
+textcounter is installed simply by copying the file textcounter.pl into your
 cgi-bin directory. If you don't know where your cgi-bin directory is, then
-please ask your system administrator
+please ask your system administrator.
 
 You may need to rename textcounter.pl to textcounter.cgi. Again, your system
 administrator will know if this is the case.
