@@ -19,6 +19,58 @@
       <h1><span class="nms">nms</span></h1>
       <p>Web scripts written by experts</p>
 
+    <h2>Latest News</h2>
+
+    <h3><span class="nms">nms</span> included in Debian Linux</h3>
+
+    <p><a href="http://www.debian.org">Debian</a> is one of the best-known
+      and well-respected distributions of Linux. Thanks to the efforts of
+      Christoph Martin, prepacked versions of many 
+      <span class="nms">nms</span> programs are amongst the packages 
+      included in their current
+      <a href="http://packages.debian.org/testing/web/">testing</a>
+      release. This is the version that will be released as the next
+      stable release in due course.</p>
+
+    <p>Many thanks to Christoph for arranging this.</p>
+
+    <h3>ISPs Switch to <span class="nms">nms</span></h3>
+
+    <p>A number of ISPs have started to replace versions of Matt Wright's
+      scripts with the <span class="nms">nms</span> equivalents. This is
+      happening most commonly with <b>formmail</b>. This is almost certainly
+      the result of the recent increases in spam email sent via insecure
+      versions of <b>formmail</b>.</p>
+
+    <p>ISPs making the switch include:</p>
+
+    <ul>
+      <li><a href="http://www.verio.com/support/view_article.cfm?doc_id=1088">Verio</a></li>
+      <li><a href="http://www.netbenefit.com/ontouch/?issue=3#5">NetBenefit</a></li>
+      <li><a href="http://www.pwebtech.com/support.html#formmail">Pegasus Web TEchnology</a></li>
+    </ul>
+
+    <p>If you know of any other ISPs or web hosting companies who are 
+      switching to <span class="nms">nms</span>, then please let
+      <a href="mailto:davorg@users.sourceforge.net">us</a> know.</p>
+
+    <h3><span class="nms">nms</span> Articles</h3>
+
+    <p><span class="nms">nms</span> has been mentioned in a couple of 
+      articles. <a href="http://www.perl.com/">perl.com</a> ran an article
+      by Dave Cross called
+      <a href="http://www.perl.com/pub/a/2002/01/23/cgi.html">Finding CGI
+        Scripts</a> about the problems of finding good CGI programs on the
+      Internet. UK magazine 
+      <a href="http://www.linuxformat.co.uk/">Linux Format</a> mentioned
+      <span class="nms">nms</span> in its <a href="art.html">Help Wanted</a>
+      column.</p>
+
+    <p>If you know of any other articles mentioning 
+      <span class="nms">nms</span> or would be interested in an article for
+      your publication, please 
+      <a href="mailto:davorg@users.sourceforge.net">us</a> know.</p>
+
     <h2>What is <span class="nms">nms</span>?</h2>
 
     <p><span class="nms">nms</span> is a set of CGI scripts that are intended
@@ -158,11 +210,11 @@
     <h2>How can I tell people what I think of your programs?</h2>
 
     <p>One nice way would be to rate our programs at the
-      <a href="cgi.resourceindex.com">CGI Resource Index</a>. You can
+      <a href="http://cgi.resourceindex.com">CGI Resource Index</a>. You can
       use the form below to register your rating.</p>
 
 <form method="post" action="http://cgi-resources.com/rate/index.cgi">
-<table width="300" cellspacing="0" cellpadding="0" border="1">
+<table width="300" cellspacing="0" cellpadding="0" border="0">
 <tr>
 <td colspan="3"><img src="http://cgi-resources.com/images/rate/remote_red.gif" width="300" height="11" 
            alt="Rate this Script @ The CGI Resource Index!" /></td></tr>
@@ -225,7 +277,7 @@
             Cross</a></address>
 <!-- Created: Sat Aug 11 16:11:48 BST 2001 -->
 <!-- hhmts start -->
-Last modified: Tue Apr  9 16:30:55 BST 2002
+Last modified: Tue Apr 16 19:57:59 BST 2002
 <!-- hhmts end --><br />
 <a href="http://validator.w3.org/check/referer"><img
         src="http://www.w3.org/Icons/valid-xhtml10"
