@@ -51,6 +51,18 @@ $secure             - When this variable is set to a true value (e.g. 1)
                       resulting drop in security may leave your formmail
                       open to use as a SPAM relay.
 
+$allow_empty_ref    - Some web proxies and office firewalls may strip
+                      certain headers from the HTTP request that is sent
+                      by a browser.  Among these is the HTTP_REFERER that
+                      the program uses as an additional check of the 
+                      requests validity - this will cause the program to
+                      fail with a 'bad referer' message even though the
+                      configuration seems fine.  In these cases setting
+                      this variable to 1 will stop the program from 
+                      complaining about requests where no referer header
+                      was sent while leaving the rest of the security
+                      features intact.  
+
 $mailprog           - The system command that the script should invoke to
                       send an outgoing email. This should be the full path
                       to a program that will read a message from STDIN and

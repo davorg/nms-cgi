@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.61 2002-03-19 23:20:46 nickjc Exp $
+# $Id: FormMail.pl,v 1.62 2002-03-26 09:01:03 gellyfish Exp $
 #
 
 use strict;
@@ -11,7 +11,7 @@ use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.61 $
+# FormMail.pl $Revision: 1.62 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -33,6 +33,7 @@ use vars qw($DEBUGGING $done_headers);
 BEGIN { $DEBUGGING    = 1; }
 my $emulate_matts_code= 0;
 my $secure            = 1;
+my $allow_empty_ref   = 0;
 my $mailprog          = '/usr/lib/sendmail -oi -t';
 my @referers          = qw(dave.org.uk 209.207.222.64 localhost);
 my @allow_mail_to     = qw(you@your.domain some.one.else@your.domain localhost);
@@ -53,7 +54,7 @@ END_OF_CONFIRMATION
 # ----------------------------
 # (no user serviceable parts beyond here)
 
-my $VERSION = ('$Revision: 1.61 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+my $VERSION = ('$Revision: 1.62 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We don't need file uploads or very large POST requests.
 # Annoying locution to shut up 'used only once' warning in older perl
@@ -195,7 +196,7 @@ sub check_referer
       }
     }
   } else {
-    $check_referer = $secure ? 0 : 1;
+    $check_referer = ($secure && !$allow_empty_ref) ? 0 : 1;
   }
 
   return $check_referer;
@@ -836,7 +837,7 @@ __END__
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.61 $
+FormMail $Revision: 1.62 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1316,6 +1317,9 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.61  2002/03/19 23:20:46  nickjc
+ error message fix from Dave Baker
+
  Revision 1.60  2002/03/17 23:43:02  nickjc
  * typos
  * added a Common Problems section to the FormMail docs
