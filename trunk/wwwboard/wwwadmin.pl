@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.14 2002-03-27 20:36:40 davorg Exp $
+# $Id: wwwadmin.pl,v 1.15 2002-06-24 20:35:20 gellyfish Exp $
 #
 
 use strict;
@@ -12,7 +12,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl v1.9 (part of wwwboard)
+# wwwadmin.pl $Revision: 1.15 $ (part of wwwboard)
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -593,7 +593,7 @@ what the threads look like and is often more helpful than the sorted method.</p>
 Username: <input type="text" name="username" /> -- 
 Password: <input type=password name="password" /></th>
 </tr><tr>
-<th>Post \# </th><th>Thread </th><th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
+<th>Post # </th><th>Thread </th><th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
 ==
 REMOVE_MID
 --
@@ -681,7 +681,7 @@ that occurred on that date.
 <p>
 <hr size="7" width="75%">
 <center><font size="-1">
-[ <a href="$cgi_url\?remove">Remove</a> ] 
+[ <a href="$cgi_url?remove">Remove</a> ] 
 [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
 [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
 [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
