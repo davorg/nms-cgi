@@ -27,16 +27,34 @@
     CGI programs.</p>
 
     <p>Before sending an email to the support list, have you checked
-      if your problem is answered in our <a href="FAQ.html">FAQ</a>?</p>
+      if your problem is answered in our <a href="faq_prob.html">FAQ</a>?</p>
+
+    <p>When reporting an error to us, simply saying "it doesn't work"
+      is not very much help. Please tell us exactly what errors you see
+      (including any from the web server error log).</p>
+
+    <p>It's a good idea to send us the configuration section of the
+      script that you are trying to use. Please don't send us the rest
+      of the script as we already know what that looks like :)</p>
+
+    <p>It's also worth checking the support mailing list 
+      <a href="https://sourceforge.net/mailarchive/forum.php?forum_id=4965">archives</a>
+      as someone else may have already experienced your problem.</p>
 
     <p>This is almost certainly not the place to be reporting a problem
        you may be having using a form on someone else's site as the
        <span class="nms">nms</span> support team are not able to fix these.
        Please contact the owner of the web site directly</p>
 
+    <p>If you don't want to use this form, you can also contact the
+      support team by sending an email to 
+      <a href="mailto:nms-cgi-support@lists.sourceforge.net">nms-cgi-support@lists.sourceforge.net</a>.</p>
+
     <p>This is a demonstration of our Formmail script.</p>
 
-    <form method="post" action="/cgi-bin/FormMail.pl">
+    <form method="post" action="http://cleaton.net/perl/FormMail.pl">
+    <!-- local copy commented out temporarily -->
+    <!-- <form method="post" action="/cgi-bin/FormMail.pl"> -->
       <input type="hidden" 
              name="recipient"
              value="nms-cgi-support@lists.sourceforge.net" /> 
