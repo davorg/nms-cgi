@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.8 2001-12-01 19:45:21 gellyfish Exp $
+#  $Id: ffa.pl,v 1.9 2002-01-30 09:21:04 lertl Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.8  2001/12/01 19:45:21  gellyfish
+#  * Tested everything with 5.004.04
+#  * Replaced the CGI::Carp with local variant
+#
 #  Revision 1.7  2001/11/26 13:40:05  nickjc
 #  Added \Q \E around variables in regexps where metacharacters in the
 #  variables shouldn't be interpreted by the regex engine.
@@ -39,6 +43,10 @@ use Fcntl qw(:flock);
 
 use vars qw($DEBUGGING);
 
+# We don't need file uploads or very large POST requests.
+$CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX = 1000000;
+
 # sanitize the environment.
 
 delete @ENV{qw(ENV BASH_ENV IFS PATH)};
@@ -62,7 +70,7 @@ BEGIN
 # must be set for all configurations
 
 # $directory is the full filesystem path to the files that are associated
-# with this program.
+# with this program. The webserver needs write permissions for this path.
 
 my $directory  = '/usr/local/apache/htdocs/links';
 
@@ -197,16 +205,37 @@ EOERR
 }   
 
 my $linkscgi   = url();
-my $url        = param('url')     || no_url();
-my $title      = param('title')   || no_title();
+my $url        = param('url')     || undef;
+my $title      = param('title')   || undef;
 my $section    = param('section') || $default_section;
 my $host_added = remote_host();
 
-no_url() if ($url eq 'http://' || $url !~ m#^(f|ht)tp://[-\w.]+?/?# );
+# Don't waste time with jokers who just hit the submit button.
+unless ($url or $title) {
+    print redirect($linksurl);
+    exit;
+}
 
+no_url()   unless $url;
+no_title() unless $title;
 
-open(FILE,$filename) || die "Cant open $filename (read) - $!\n";
-flock(FILE,LOCK_SH) || die "Couldnt lock $filename (shared) - $!\n";
+no_url() if ($url eq 'http://' || $url !~ m#^(f|ht)tps?://[-\w.]+?/?# );
+
+# Remove non-printable characters
+$url     = strip_nonprintable($url);
+$title   = strip_nonprintable($title);
+$section = strip_nonprintable($section);
+
+# Escape HTML
+$url     = escape_html($url);
+$title   = escape_html($title);
+$section = escape_html($section);
+
+open(LOCK, ">$filename.lck") || die "Can't open $filename.lck (write) - $!\n";
+flock(LOCK, LOCK_EX)         || die "Can't lock $filename.lck (excl) - $!\n";
+
+open(FILE,$filename) || die "Can't open $filename (read) - $!\n";
+flock(FILE,LOCK_SH)  || die "Couldn't lock $filename (shared) - $!\n";
 my @lines = <FILE>;
 close(FILE);
 
@@ -223,14 +252,14 @@ foreach my $line (@lines)
 
 my $tmpnam = "$directory/@{[rand(time)]}${$}.tmp";
 
-open (FILE,">$tmpnam") || die "$tmpnam - $!\n";
-flock(FILE,LOCK_EX) || die "Cant lock $tmpnam (Exclusive) - $!\n";
+open (FILE,">$tmpnam") || die "Can't open $tmpnam (write) - $!\n";
+flock(FILE,LOCK_EX)    || die "Can't lock $tmpnam (excl) - $!\n";
 
 foreach my $line (@lines) 
 { 
    if ($line =~ /<!--time-->/) 
    {
-      print FILE "<!--time--><b>Last link was added",datestamp(),"</b><hr />\n";
+      print FILE "<!--time--><b>Last link was added ",datestamp(),"</b><hr />\n";
    }
    elsif ($line =~ /<!--number-->/) 
    {
@@ -255,15 +284,17 @@ foreach my $line (@lines)
 
 close (FILE);
 
-rename( $tmpnam, $filename) || die "Cant rename $tmpnam - $!\n";
+rename( $tmpnam, $filename) || die "Can't rename $tmpnam - $!\n";
+
+close (LOCK);
 
 print redirect($linksurl);
 
 
 if ($usedatabase) 
 {
-    open (DATABASE,">>$database") || die "Cant open $database - $!\n";
-    flock(DATABASE,LOCK_EX) || die "Can't flock $database (exc) - $!\n";
+    open (DATABASE,">>$database") || die "Can't open $database - $!\n";
+    flock(DATABASE,LOCK_EX)       || die "Can't flock $database (excl) - $!\n";
     print DATABASE "$section|$url|$title|@{[time]}|$host_added\n";
     close(DATABASE);
 }
@@ -387,8 +418,31 @@ You cannot add this URL to it again. </p>
 <p>
 <a href="$linksurl">$linkstitle</a>
 </p>
-</body></html>\n";
+</body></html>
 EIEIO
 
    exit;
+}
+
+sub strip_nonprintable {
+   my $text = shift;
+   $text=~ tr#\011\012\040-\176\200-\377##dc;
+   return $text;
+}
+
+sub escape_html {
+   my $str = shift;
+
+   my %escape_html_map = (
+      '&' => '&amp;',
+      '<' => '&lt;',
+      '>' => '&gt;',
+      '"' => '&quot;',
+      "'" => '&#39;',
+   );
+
+   my $chars = join '', keys %escape_html_map;
+
+   $str =~ s/([\Q$chars\E])/$escape_html_map{$1}/g;
+   return $str;
 }
