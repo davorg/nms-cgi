@@ -1,66 +1,78 @@
-Random Link Version 1.00
+COPYRIGHT
+
+Random Link Displayer Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
+
+LICENSE
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at <http://nms-cgi.sourceforge.net/>
+URL
 
-There are three files included in this package.  They are:
-        README          - This file
-        rand_link.pl    - The Perl File that calls the Random Link
-        rand_link.html  - An Example HTML of how to call the script
-        rand_log        - A blank log file
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>.
 
-=====================================================================
+SUMMARY
 
-This is one of the more simple scripts that I have written and it only has one 
-variable that you must set up and another if you choose to use the logging 
-option.
+rand_link chooses a random link from a set of predefined links and
+displays it on a webpage.
 
-RAND_LINK.PL
-   This file must be placed in the cgi-bin of your server and chmoded to 
-755, so that it is readable and executable by all users.  There is one 
-variable in here, described below:
+FILES
 
-   # Variables
-   $linkfile = "";
-       This is the database of links.  Links must be
-       placed in this database, without any markup,
-       one per line.
+In this distribution, you will find three files:
 
-   # Options
-   $uselog = "";
-       This determines whether you want to use the
-       log or not.  If you do you will simply get a
-       log of the Remote Host and the time they took
-       the random link.  If you set this to '1' it
-       turns logging on, otherwise it is off by
-       default.  If you do turn this option on you
-       must also fill in $logfile below.
-   $logfile = "";
-       This is the actual file system location of
-       your log file.  It must be chmoded read/write
-       (666) for everyone and placed in a directory
-       with like permissions.
+rand_link.pl   - The main perl script.
+README         - This file. Instructions on how to install and use rand_link.
+MANIFESTO      - List of files.
+rand_link.html - A sample HTML file.
 
-When you are done configuring these options you can move to the rand_link.html 
-file.
+CONFIGURATION
 
-----------------
+There are a number of variables that you can change in rand_link.pl which
+alter the way that the program works.
 
-RAND_LINK.HTML
-    This is just an example of a random link html file.  You can do 
-whatever you want with it, hack it up, remove it, etc.  It simply shows how 
-you can call the script.  The whole file really wasn't even necessary for me 
-to place in this package.  I could have just explained all you now need to do 
-is point your html browser to the rand_link.pl file.  So I could let users 
-take a random link simply by having the line in my html file:
+$DEBUGGING    - This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
 
-<a href="http://worldwidemart.com/cgi-bin/rand_link.pl">Take a random 
-link!</a>
+$linkfile     - The path to the file where you store your links.Links
+                are stored in this file, one per line. Only the URL of
+                the link should be stored.
 
-Its as simple as that.
+$uselog       - Set this value to 1 to log which link is returned each time
+                the program runs.
+
+$logfile      - The path to the logfile, only needed if $uselog = 1. This file
+                must be writable by the webserver. For example,
+
+                    $logfile = "/tmp/randlinks.log";
+
+
+INSTALLATION
+
+rand_link is installed simply by copying the file rand_link.pl.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator
+
+You may need to rename rand_link.pl to rand_link.cgi. Again, your system
+administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x rand_link.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+
+Then, edit your HTML files and change all the links that you want to
+be randomized to:
+
+<a href="http://your.host.com/cgi-bin/rand_link.pl">A mystery tour</a>
+
+This is just an example, so be sure to insert the correct URL of your
+rand_link.pl installation.
+
 
 SUPPORT
 
