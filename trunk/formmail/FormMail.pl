@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.58 2002-03-15 00:33:51 nickjc Exp $
+# $Id: FormMail.pl,v 1.59 2002-03-15 09:02:02 nickjc Exp $
 #
 
 use strict;
@@ -11,7 +11,7 @@ use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.58 $
+# FormMail.pl $Revision: 1.59 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -53,7 +53,7 @@ END_OF_CONFIRMATION
 # ----------------------------
 # (no user serviceable parts beyond here)
 
-my $VERSION = ('$Revision: 1.58 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+my $VERSION = ('$Revision: 1.59 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We don't need file uploads or very large POST requests.
 # Annoying locution to shut up 'used only once' warning in older perl
@@ -234,6 +234,7 @@ sub parse_form {
     if (exists $Config{$_}) {
       my $val = strip_nonprintable(param($_));
       next if /redirect$/ and not check_url_valid($val);
+      next if /^return_link_url$/ and $secure and not check_url_valid($val);
       $Config{$_} = $val;
     } else {
       my @vals = map {strip_nonprintable($_)} param($_);
@@ -835,7 +836,7 @@ __END__
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.58 $
+FormMail $Revision: 1.59 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1259,6 +1260,9 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.58  2002/03/15 00:33:51  nickjc
+ * Put a limit on the subject length
+
  Revision 1.57  2002/03/13 23:52:52  nickjc
  * Better diagnostics when referrer is malformed or missing
 
