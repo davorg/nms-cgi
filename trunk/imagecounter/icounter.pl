@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: icounter.pl,v 1.4 2001-11-13 20:35:14 gellyfish Exp $
+# $Id: icounter.pl,v 1.5 2001-11-25 11:39:38 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/11/13 20:35:14  gellyfish
+# Added the CGI::Carp workaround
+#
 # Revision 1.3  2001/11/13 09:15:22  gellyfish
 # Added CGI::Carp
 #
@@ -18,6 +21,7 @@ use CGI 'header';
 use CGI::Carp qw(fatalsToBrowser set_message);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX 'strftime';
+use vars qw($DEBUGGING);
 
 # Configuration
 
@@ -45,7 +49,6 @@ BEGIN
 {
    my $error_message = sub {
                              my ($message ) = @_;
-                             print "Content-Type: text/html\n\n";
                              print "<h1>It's all gone horribly wrong</h1>";
                              print $message if $DEBUGGING;
                             };
@@ -59,7 +62,6 @@ check_uri();
 $count_page =~ s|/$||;
 $count_page =~ s/[^\w]/_/g;
 
-my $lock_file = "$count_page.lock";
 
 my $count;
 if (-e "$data_dir$count_page") {
@@ -72,7 +74,7 @@ if (-e "$data_dir$count_page") {
    close(COUNT);
    $count = $line;
 } elsif ($auto_create) {
-   &create;
+   create();
 } else {
    die "Count file not found\n";
 }

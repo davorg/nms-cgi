@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: ssi_rand_image.pl,v 1.4 2001-11-13 20:35:14 gellyfish Exp $
+# $Id: ssi_rand_image.pl,v 1.5 2001-11-25 11:39:39 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/11/13 20:35:14  gellyfish
+# Added the CGI::Carp workaround
+#
 # Revision 1.3  2001/11/13 09:18:20  gellyfish
 # Added CGI::Carp
 #
@@ -14,10 +17,11 @@
 #
 
 use strict;
-use POSIX 'strftime';
+use POSIX qw(strftime);
 use CGI qw(header img a);
 use CGI::Carp qw(fatalsToBrowser set_message);
 use Fcntl qw(:DEFAULT :flock);
+use vars qw($DEBUGGING);
 
 # Configuration
 
@@ -61,7 +65,6 @@ BEGIN
 {
    my $error_message = sub {
                              my ($message ) = @_;
-                             print "Content-Type: text/html\n\n";
                              print "<h1>It's all gone horribly wrong</h1>";
                              print $message if $DEBUGGING;
                             };
@@ -71,6 +74,7 @@ BEGIN
 my $img = $images[rand(@images)];
 
 # Print Out Header With Random Filename and Base Directory
+
 print header;
 
 my $output = img({-src => $img->{file},

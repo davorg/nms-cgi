@@ -1,8 +1,15 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.5 2001-11-24 11:59:58 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.6 2001-11-25 11:39:40 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/11/24 11:59:58  gellyfish
+# * documented strfime date formats is various places
+# * added more %ENV cleanup
+# * spread more XHTML goodness and CSS stylesheet
+# * generalization in wwwadmin.pl
+# * sundry tinkering
+#
 # Revision 1.4  2001/11/19 09:21:44  gellyfish
 # * added allow_html functionality
 # * fixed potential for pre lock clobbering in guestbook
@@ -72,7 +79,6 @@ BEGIN
 {
    my $error_message = sub {
                              my ($message ) = @_;
-                             print "Content-Type: text/html\n\n";
                              print "<h1>It's all gone horribly wrong</h1>";
                              print $message if $DEBUGGING;
                             };

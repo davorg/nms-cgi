@@ -1,8 +1,15 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.8 2001-11-24 11:59:58 gellyfish Exp $
+# $Id: FormMail.pl,v 1.9 2001-11-25 11:39:38 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/11/24 11:59:58  gellyfish
+# * documented strfime date formats is various places
+# * added more %ENV cleanup
+# * spread more XHTML goodness and CSS stylesheet
+# * generalization in wwwadmin.pl
+# * sundry tinkering
+#
 # Revision 1.7  2001/11/23 13:57:36  nickjc
 # * added -T switch
 # * Escape metachars in input variables when outputing HTML
@@ -111,7 +118,6 @@ BEGIN
 {
    my $error_message = sub {
                              my ($message ) = @_;
-                             print "Content-Type: text/html\n\n";
                              print "<h1>It's all gone horribly wrong</h1>";
                              print escape_html($message) if $DEBUGGING;
                             };

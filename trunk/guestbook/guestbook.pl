@@ -1,8 +1,15 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.9 2001-11-24 11:59:58 gellyfish Exp $
+# $Id: guestbook.pl,v 1.10 2001-11-25 11:39:38 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/11/24 11:59:58  gellyfish
+# * documented strfime date formats is various places
+# * added more %ENV cleanup
+# * spread more XHTML goodness and CSS stylesheet
+# * generalization in wwwadmin.pl
+# * sundry tinkering
+#
 # Revision 1.8  2001/11/19 09:21:44  gellyfish
 # * added allow_html functionality
 # * fixed potential for pre lock clobbering in guestbook
@@ -38,6 +45,10 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 use Fcntl qw(:DEFAULT :flock :seek);
 
 use vars qw($DEBUGGING);
+
+# sanitize the environment
+
+delete @ENV{qw(ENV BASH_ENV IFS PATH)};
 
 # Configuration
 
@@ -123,7 +134,6 @@ BEGIN
 {
    my $error_message = sub {
                              my ($message ) = @_;
-                             print "Content-Type: text/html\n\n";
                              print "<h1>It's all gone horribly wrong</h1>";
                              print $message if $DEBUGGING;
                             };
@@ -153,7 +163,7 @@ $comments =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs unless $allow_html;
 
 # substitute newlines in the comments for html line breaks if required.
 
-$comments =~ s/\cM\n/<br />\n/ if $line_breaks;
+$comments =~ s%\cM\n%<br />\n%g if $line_breaks;
 
 
 open (GUEST, "+<$guestbookreal")
@@ -223,7 +233,7 @@ foreach (@lines) {
 close (GUEST);
 
 if ($uselog) {
-   log('entry');
+   write_log('entry');
 }
 
 if ($mail) {
@@ -330,7 +340,7 @@ END_FORM
 
   # Log The Error
   if ($uselog) {
-    log('no_comments');
+    write_log('no_comments');
   }
 
   exit;
@@ -376,14 +386,14 @@ END_FORM
 
   # Log The Error
   if ($uselog) {
-    log('no_name');
+    write_log('no_name');
   }
 
   exit;
 }
 
 # Log the Entry or Error
-sub log {
+sub write_log {
   my $log_type = $_[0];
   open(LOG, ">>$guestlog")
     or die "Can't open log file: $!\n";

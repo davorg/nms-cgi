@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.7 2001-11-25 09:45:25 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.8 2001-11-25 11:39:40 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/11/25 09:45:25  gellyfish
+# * Added stub FAQ (no answers just questions)
+# * More toshing on wwwboard.pl
+#
 # Revision 1.6  2001/11/24 20:01:22  gellyfish
 # Sundry refactoring
 #
@@ -176,7 +180,6 @@ BEGIN
 {
    my $error_message = sub {
                              my ($message ) = @_;
-                             print "Content-Type: text/html\n\n";
                              print "<h1>It's all gone horribly wrong</h1>";
                              print $message if $DEBUGGING;
                             };
@@ -778,7 +781,7 @@ BEGIN
                         "'" => '&#39;',
                       );
 
-   while ( my ( $key, $value ) = each %escap_html_map )
+   while ( my ( $key, $value ) = each %escape_html_map )
    {
       $unescape_html_map{$value} = $key;
    }
@@ -786,7 +789,7 @@ BEGIN
 
 sub escape_html {
   my $str = shift;
-  my $chars = join '', keys %escape_html;
+  my $chars = join '', keys %escape_html_map;
   $str =~ s/([$chars])/$escape_html_map{$1}/g;
   return $str;
 }

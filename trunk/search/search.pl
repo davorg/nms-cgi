@@ -1,8 +1,11 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.5 2001-11-20 08:43:56 nickjc Exp $
+# $Id: search.pl,v 1.6 2001-11-25 11:39:38 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/11/20 08:43:56  nickjc
+# security fix on file open
+#
 # Revision 1.4  2001/11/13 20:35:14  gellyfish
 # Added the CGI::Carp workaround
 #
@@ -17,6 +20,14 @@
 use strict;
 use CGI qw(header param);
 use CGI::Carp qw(fatalsToBrowser set_message);
+use vars qw($DEBUGGING);
+
+# sanitize the environment
+
+$ENV{PATH} = '/bin:/usr/bin';
+
+delete @ENV{qw(ENV BASH_ENV IFS)};
+
 
 # Configuration
 
@@ -35,9 +46,25 @@ BEGIN
 my $basedir = '/home/dave';
 my $baseurl = 'http://worldwidemart.com/scripts/';
 my @files = ('*.txt','*.html','*.dat', 'src');
-my $title = "Matt's Script Archive";
+my $title = "NMS Search Program";
 my $title_url = 'http://worldwidemart.com/scripts/';
 my $search_url = 'http://worldwidemart.com/scripts/demos/search/search.html';
+
+# $emulate_matts_code determines whether the program should behave exactly
+# like the original guestbook program.  It should be set to 1 if you
+# want to emulate the original program - this is recommended if you are
+# replacing an existing installation with this program.  If it is set to 0
+# then potentially it will not work with files produced by the original
+# version - this is recommended for people installing this for the first time.
+
+my $emulate_matts_code = 1;
+
+# $style is the URL of a CSS stylesheet which will be used for script
+# generated messages.  This probably want's to be the same as the one
+# that you use for all the other pages.  This should be a local absolute
+# URI fragment.
+
+my $style = '/css/nms.css';
 
 # end config
 
@@ -46,7 +73,6 @@ BEGIN
 {
    my $error_message = sub {
                              my ($message ) = @_;
-                             print "Content-Type: text/html\n\n";
                              print "<h1>It's all gone horribly wrong</h1>";
                              print $message if $DEBUGGING;
                             };
@@ -138,7 +164,7 @@ sub search {
 	}
       }
     }
-    if ($string =~ /<title>(.*)<\/title>/i) {
+    if ($string =~ /<title>(.*)<\/title>/is) {
       $files{title}{$_} = $1;
     } else {
       $files{title}{$_} = $_;
@@ -153,40 +179,43 @@ sub return_html {
 
   print header;
   print <<END_HTML;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Results of Search</title>
+    <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body>
     <h1 align="center">Results of Search in $title</h1>
     <p>Below are the results of your Search in no particular order:</p>
-    <hr size=7 width=75%>
+    <hr size="7" width="75%" />
     <ul>
 END_HTML
 
   foreach (keys %{$files{include}}) {
     if ($files{include}{$_}) {
-      print qq(<li><a href="$baseurl$_">$files{title}{$_}</a>\n);
+      print qq(<li><a href="$baseurl$_">$files{title}{$_}</a></li>\n);
       }
    }
 
   print <<END_HTML;
     </ul>
-    <hr size=7 width=75%>
+    <hr size="7" width="75%" />
    <p>Search Information:</p>
    <ul>
      <li><b>Terms:</b> $terms</li>
      <li><b>Boolean Used:</b> $FORM{boolean}</li>
      <li><b>Case:</b> $FORM{case}</li>
    </ul>
-   <hr size=7 width=75%>
+   <hr size="7" width="75%" />
    <ul>
      <li><a href="$search_url">Back to Search Page</a></li>
      <li><a href="$title_url">$title</a>
    </ul>
-   <hr size=7 width=75%>
-   <p>Search Script written by Matt Wright and ca1n be found at 
-   <a href="http://www.worldwidemart.com/scripts/">Matt\'s Script Archive</a>
+   <hr size="7" width="75%" />
+   <p>Search Script (c) London Perl Mongers 2001 part of
+   <a href="http://nms-cgi.sourceforge.net/">NMS Project</a>
  </body>
 </html>
 END_HTML
