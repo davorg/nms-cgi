@@ -1,8 +1,16 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.14 2002-02-27 09:04:30 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.15 2002-03-02 13:26:19 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2002/02/27 09:04:30  gellyfish
+# * Added question about simple search and PDF to FAQ
+# * Suppressed output of headers in fatalsToBrowser if $done_headers
+# * Suppressed output of '<link rel...' if not $style
+# * DOCTYPE in fatalsToBrowser
+# * moved redirects until after possible cause of failure
+# * some small XHTML fixes
+#
 # Revision 1.13  2002/02/04 21:13:31  dragonoe
 # Added header to script and aligned values of parameter settings.
 #
@@ -721,7 +729,7 @@ sub error {
     Message.</p>
   <hr>
 END_HTML
-    rest_of_form();
+    rest_of_form($variables);
   } elsif ($error eq 'no_subject') {
     print <<END_HTML;
 <?xml version="1.0" encoding="UTF-8"?>
@@ -738,7 +746,7 @@ END_HTML
   Message.</p>
   <hr>
 END_HTML
-    rest_of_form();
+    rest_of_form($variables);
   } elsif ($error eq 'no_body') {
     print <<END_HTML;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -754,7 +762,7 @@ below and re-submit.  The necessary fields are: Name, Subject and
 Message.</p>
 <hr>
 END_HTML
-rest_of_form();
+rest_of_form($variables);
 } elsif ($error eq 'field_size') {
 printf <<END_HTML;
 <?xml version="1.0" encoding="UTF-8"?>
@@ -780,7 +788,7 @@ printf <<END_HTML;
   <p>Please modify the form data and resubmit.</p>
   <hr>
 END_HTML
-     rest_of_form();
+     rest_of_form($variables);
    } else {
      print "<p>ERROR!  Undefined.</p>";
    }
