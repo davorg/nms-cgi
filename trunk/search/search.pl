@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.29 2002-04-09 20:27:44 nickjc Exp $
+# $Id: search.pl,v 1.30 2002-05-07 21:41:33 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision: 1.29 $
+# search.pl $Revision: 1.30 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -354,7 +354,7 @@ sub end_of_html
    <hr size="7" width="75%" />
    <ul>
      <li><a href="$search_url">Back to Search Page</a></li>
-     <li><a href="$title_url">$title</a>
+     <li><a href="$title_url">$title</a></li>
    </ul>
    <hr size="7" width="75%" />
    <p>Search Script (c) London Perl Mongers 2001 part of
