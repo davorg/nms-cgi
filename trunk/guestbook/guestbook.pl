@@ -1,8 +1,11 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.21 2001-12-17 23:01:52 nickjc Exp $
+# $Id: guestbook.pl,v 1.22 2001-12-18 22:21:13 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2001/12/17 23:01:52  nickjc
+# HTML filter fixes
+#
 # Revision 1.20  2001/12/16 11:46:14  nickjc
 # Ensure regexp matches all text in cleanup_html()
 #
@@ -774,23 +777,27 @@ BEGIN
   # text "<b>bb<i>bi</i></b>ii", because *both* "b" and "i" are
   # in %auto_deinterleave.
   #
-  %tag_is_empty = ( 'hr' => 1, 'br' => 1 );
+  %tag_is_empty = ( 'hr' => 1, 'br' => 1, 'basefont' => 1 );
   %auto_deinterleave = map {$_,1} qw(
     tt i b big small u s strike font basefont
     em strong dfn code q sub sup
     samp kbd var cite abbr acronym
   );
   $auto_deinterleave_pattern = join '|', keys %auto_deinterleave;
+  my %attr = ( 'style' => \&cleanup_attr_style );
   my %font_attr = (
-    size  => sub { /^(-?\d{1,3})$/       ? $1 : undef },
+    %attr,
+    size  => sub { /^([-+]?\d{1,3})$/    ? $1 : undef },
     face  => sub { /^([\w\-, ]{2,100})$/ ? $1 : undef },
     color => \&cleanup_attr_color,
   );
   my %insdel_attr = (
+    %attr,
     'cite'     => \&cleanup_attr_uri,
     'datetime' => \&cleanup_attr_text,
   );
   my %texta_attr = (
+    %attr,
     align => sub { s/middle/center/i;
                    /^(left|center|right)$/i ? lc $1 : undef
                  },
@@ -808,13 +815,15 @@ BEGIN
                     /^(top|middle|bottom|baseline)$/i ? lc $1 : undef
                   },
   );
-  my %cellhv_attr = ( %cellha_attr, %cellva_attr );
+  my %cellhv_attr = ( %attr, %cellha_attr, %cellva_attr );
   my %col_attr = (
+    %attr,
     width => \&cleanup_attr_multilength,
     span =>  \&cleanup_attr_number,
     %cellhv_attr,
   );
   my %thtd_attr = (
+    %attr,
     abbr    => \&cleanup_attr_text,
     axis    => \&cleanup_attr_text,
     headers => \&cleanup_attr_text,
@@ -831,30 +840,30 @@ BEGIN
   %safe_tags = (
     'br'         => { 'clear' => sub { /^(left|right|all|none)$/i ? lc $1 : undef }
                     },
-    'em'         => $none,
-    'strong'     => $none,
-    'dfn'        => $none,
-    'code'       => $none,
-    'samp'       => $none,
-    'kbd'        => $none,
-    'var'        => $none,
-    'cite'       => $none,
-    'abbr'       => $none,
-    'acronym'    => $none,
-    'q'          => { 'cite' => \&cleanup_attr_uri },
-    'blockquote' => { 'cite' => \&cleanup_attr_uri },
-    'sub'        => $none,
-    'sup'        => $none,
-    'tt'         => $none,
-    'i'          => $none,
-    'b'          => $none,
-    'big'        => $none,
-    'small'      => $none,
-    'u'          => $none,
-    's'          => $none,
-    'basefont'   => \%font_attr,
+    'em'         => \%attr,
+    'strong'     => \%attr,
+    'dfn'        => \%attr,
+    'code'       => \%attr,
+    'samp'       => \%attr,
+    'kbd'        => \%attr,
+    'var'        => \%attr,
+    'cite'       => \%attr,
+    'abbr'       => \%attr,
+    'acronym'    => \%attr,
+    'q'          => { %attr, 'cite' => \&cleanup_attr_uri },
+    'blockquote' => { %attr, 'cite' => \&cleanup_attr_uri },
+    'sub'        => \%attr,
+    'sup'        => \%attr,
+    'tt'         => \%attr,
+    'i'          => \%attr,
+    'b'          => \%attr,
+    'big'        => \%attr,
+    'small'      => \%attr,
+    'u'          => \%attr,
+    's'          => \%attr,
     'font'       => \%font_attr,
-    'table'      => { 'frame'       => \&cleanup_attr_tframe,
+    'table'      => { %attr,
+                      'frame'       => \&cleanup_attr_tframe,
                       'rules'       => \&cleanup_attr_trules,
                       %texta_attr,
                       'bgcolor'     => \&cleanup_attr_color,
@@ -864,21 +873,25 @@ BEGIN
                       'border'      => \&cleanup_attr_number,
                       'summary'     => \&cleanup_attr_text,
                     },
-    'caption'    => { 'align' => sub { /^(top|bottom|left|right)$/i ? lc $1 : undef },
+    'caption'    => { %attr,
+                      'align' => sub { /^(top|bottom|left|right)$/i ? lc $1 : undef },
                     },
     'colgroup'   => \%col_attr,
     'col'        => \%col_attr,
     'thead'      => \%cellhv_attr,
     'tfoot'      => \%cellhv_attr,
     'tbody'      => \%cellhv_attr,
-    'tr'         => { bgcolor => \&cleanup_attr_color,
+    'tr'         => { %attr,
+                      bgcolor => \&cleanup_attr_color,
                       %cellhv_attr,
                     },
     'th'         => \%thtd_attr,
     'td'         => \%thtd_attr,
     'ins'        => \%insdel_attr,
     'del'        => \%insdel_attr,
-    'a'          => { href => \&cleanup_attr_uri },
+    'a'          => { %attr,
+                      href => \&cleanup_attr_uri,
+                    },
     'h1'         => \%texta_attr,
     'h2'         => \%texta_attr,
     'h3'         => \%texta_attr,
@@ -887,23 +900,36 @@ BEGIN
     'h6'         => \%texta_attr,
     'p'          => \%texta_attr,
     'div'        => \%texta_attr,
-    'ul'         => { 'type'    => sub { /^(disc|square|circle)$/i ? lc $1 : undef },
+    'span'       => \%texta_attr,
+    'ul'         => { %attr,
+                      'type'    => sub { /^(disc|square|circle)$/i ? lc $1 : undef },
                       'compact' => undef,
                     },
-    'ol'         => { 'type'    => \&cleanup_attr_text,
+    'ol'         => { %attr,
+                      'type'    => \&cleanup_attr_text,
                       'compact' => undef,
                       'start'   => \&cleanup_attr_number,
                     },
-    'li'         => { 'type'  => \&cleanup_attr_text,
+    'li'         => { %attr,
+                      'type'  => \&cleanup_attr_text,
                       'value' => \&cleanup_no_number,
                     },
-    'dl'         => { 'compact' => undef },
-    'dt'         => $none,
-    'dd'         => $none,
-    'address'    => $none,
-    'pre'        => { 'width' => \&cleanup_attr_number },
-    'center'     => $none,
+    'dl'         => { %attr, 'compact' => undef },
+    'dt'         => \%attr,
+    'dd'         => \%attr,
+    'address'    => \%attr,
+    'pre'        => { %attr, 'width' => \&cleanup_attr_number },
+    'center'     => \%attr,
+    'nobr'       => $none,
   );
+}
+sub cleanup_attr_style {
+  # XXX TODO: there are many more safe style constructs in the
+  # CSS spec, build up a reasonable subset here.
+  $_ = join ' ',
+     m[ (?: color:[#][0-9a-f]{6} ) |
+        (?: color:\w{2,20}       )
+      ]gxi;
 }
 sub cleanup_attr_number {
   /^(\d+)$/ ? $1 : undef;
