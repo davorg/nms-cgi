@@ -335,4 +335,141 @@ modified so that no mail will really be sent) at:
 
    http://cleaton.net/tfmail/inline.html
 
+EXAMPLE 4 - USING A CONFIRMATION PAGE BEFORE SUBMITTING THE FORM
 
+You may want to have the user check what they have put in the form
+before finally submitting the form and sending the e-mail. The simplest
+way that this can be done, only requiring a single configuration file,
+is to use the get_template configuration directive.  You create a form like:
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>What is your favorite animal ?</title>
+</head>
+<body>
+   <form method="GET" action="/cgi-bin/TFmail.pl">
+    <table>
+      <tr>
+        <td>What is your name ?</td>
+        <td><input type="text" name="message" /></td>
+      </tr>
+      <tr>
+        <td>What is your favorite animal ?</td>
+        <td><input type="text" name="animal" /></td>
+      </tr>
+      <tr>
+        <td colspan="2"><input type="submit" /></td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>
+
+Note that the 'method' of the form is GET in the above html.  You then
+can have a configuration file like:
+
+%% NMS configuration file %%
+
+recipient: jns@localhost
+
+get_template: gpage
+
+
+(of course you will have another recipient and possibly other settings too).
+The get_template configuration directive specifies a template that will be
+used when the request method is 'GET' rather than the usual 'POST'.
+You then can create a gpage.trt file in the same directory as you have your
+.trc files like:
+
+%% NMS html template file %%
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Confirmation</title>
+  </head>
+  <body>
+   <form method="POST" >
+      This is what you entered, please check and press OK
+      or press 'Back' to amend your answers:
+      <input type="hidden" name="message" value="{= param.message =}" />
+      <p>Name: {= param.message =}</p>
+      <input type="hidden" name="animal" value ="{= param.animal =}"/>
+      <p>Animal: {= param.animal =}</p>
+      <input type="submit" value="OK" />
+   </form>
+  </body>
+</html>
+
+Note that in the above template the method of the form is 'POST'.  This 
+template creates the actual form that does the submission with the
+form values in hidden fields, when the user presses the 'OK' button
+they will be presented with the success page and the e-mail will be sent.
+When the template defined in get_template is displayed as the result of a
+'GET' request, no other action (such as sending an e-mail or writing a
+logfile) is taken, so it is perfectly safe to allow the user to choose
+between pressing 'OK' or using the back button to fix a mistake.
+
+If you have more complicated needs or a large amount of data then you
+may need to use multiple configuration files rather than the simpler
+get_template technique - the example below achieves a similar affect as
+that above but using two configuration files - this time your form will
+be like:
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>What is your favorite animal ?</title>
+</head>
+<body>
+   <form method="POST" action="/cgi-bin/TFmail.pl">
+      <input type="hidden" name="_config" value="confirm" />
+    <table>
+      <tr>
+        <td>What is your name ?</td>
+        <td><input type="text" name="message" /></td>
+      </tr>
+      <tr>
+        <td>What is your favorite animal ?</td>
+        <td><input type="text" name="animal" /></td>
+      </tr>
+      <tr>
+        <td colspan="2"><input type="submit" /></td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>
+
+Note that this time the method is 'POST' and there is now a hidden field
+called '_config' .  You now need a new configuration file 'confirm.trc'
+which in this example is like:
+
+%% NMS configuration file %%
+
+no_email: 1
+success_page_template: confirm
+
+The 'no_email' directive in the above tells TFmail that you don't want any
+mail to be sent (otherwise it would complain that no recipient was 
+specified). Because you haven't specified any log-file it will take no
+other action than display the confirm.trt template, which is the same as
+the earlier one:
+
+%% NMS html template file %%
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Confirmation</title>
+  </head>
+  <body>
+   <form method="post" >
+      This is what you entered, please check and press OK
+      or press 'Back' to amend your answers:
+      <input type="hidden" name="message" value="{= param.message =}" />
+      <p>Name: {= param.message =}</p>
+      <input type="hidden" name="animal" value ="{= param.animal =}"/>
+      <p>Animal: {= param.animal =}</p>
+      <input type="submit" />
+   </form>
+  </body>
+</html>
+
+The above template then uses the settings in your default.trc configuration
+but you can specify '_config' if you require it.
