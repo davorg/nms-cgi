@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.41 2003-01-30 22:41:37 nickjc Exp $
+# $Id: search.pl,v 1.42 2003-02-01 00:18:50 nickjc Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision: 1.41 $
+# search.pl $Revision: 1.42 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -152,9 +152,10 @@ my $seldir = $directory && $directory < @subdirs ?
 
 start_of_html($title, $style);
 
-use vars qw(@term_list @paths @hits @titles);
-use vars qw($wclist $dirlist $termlist);
+use vars qw(@term_list @paths @hits @titles $wclist $dirlist $termlist);
+local (@term_list,@paths,@hits,@titles,$wclist,$dirlist,$termlist);
 use vars qw($startdir);
+local $startdir;
 
 use vars qw($mess_with_file_find_chdir);
 BEGIN { $mess_with_file_find_chdir = 0; }
