@@ -1,8 +1,11 @@
-#!perl -wT
+#!perl -Tw
 #
-# $Id: search.pl,v 1.20 2002-02-05 04:24:38 jfryan Exp $
+# $Id: search.pl,v 1.21 2002-02-13 15:09:20 jfryan Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2002/02/05 04:24:38  jfryan
+# Added $hit_threshhold config var and also moved output functions to end
+#
 # Revision 1.19  2002/02/05 03:48:05  jfryan
 # Accidentally left $emulate_matts_code off by default :(
 #
@@ -327,7 +330,7 @@ sub detaint_dirname
     my ($dirname) = @_;
 
     # Pattern from File/Find.pm in Perl 5.6.1
-    $dirname =~ m|^([-+@\w./]*)$| or die "suspect directory name: $dirname";
+    $dirname =~ m|^([:\-+@\w./]*)$| or die "suspect directory name: $dirname";
     return $1;
 }
 
