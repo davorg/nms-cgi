@@ -25,7 +25,8 @@ In this distribution you will find 13 files :
 
 README        - This file
 icounter.pl   - The main program file
-digits/*.gif  - The sample image files
+digits/*.gif  - The sample image files in GIF format
+digits/*.png  - The sample image files in PNG format
 MANIFEST      - A list of all the files
 
 
@@ -71,7 +72,7 @@ $ssi_emit_cgi_headers - This should normally be set to 1.  You may need to
 
 INSTALLATION
 
-icounter is installed simply by copying the file icounter.pl into your
+Image Counter is installed simply by copying the file icounter.pl into your
 cgi-bin directory. If you don't know where your cgi-bin directory is, then
 please ask your system administrator.
 
@@ -88,11 +89,13 @@ insert the following:
 
      <!--#exec cgi="/cgi-bin/icounter.pl"-->
 
-Note: As this is a "Server Side Include" you will need to ensure that your
-web server has been configured to support SSI. Also, it's possible that you
-may need to rename any files that include SSI calls to give them a different
-extension. A common choice is .shtml. Your system administrator will be able
-to help you with these details.
+Note: As this is a "Server Side Include" you will need to ensure that
+your web server has been configured to support SSI. Also, it's possible
+that you may need to rename any files that include SSI calls to give them
+a different extension. A common choice is .shtml. An alternative with
+some web server software is that the files need to be made executable
+in order for the SSI to be recognised.  Your system administrator will
+be able to help you with these details.
 
 Some server software does not expect a program run by a server side include
 to output any headers even though it is being run with 'exec cgi' as
@@ -107,9 +110,22 @@ the program will adjust its own behaviour in those cases, however if you
 know of one we have  not identified please e-mail the support list below
 with the details.
 
+Finally you will need to upload the appropriate image files to a directory on
+your web server.  You can use the supplied images or you can make some
+yourself with your favourite graphics software.  There are two sets of digits
+provided, in GIF and PNG formats, but the images are otherwise the same and 
+you only need to upload those files of the format that you choose and
+change the configuration variable $digit_ext as appropriate.  The reason
+for providing two sets of images is that some people prefer not to use GIF
+images due to a patent on the compression method that is used, once the
+NMS developers are happy that the PNG images work on the majority of browsers
+then the .gif files will probably be removed. 
+
+The image files need only to be readable by the webserver so it is quite
+safe to change their mode to 0644. 
+
 SUPPORT
 
 For support of this script please email:
 
   <nms-cgi-support@lists.sourceforge.net>
-
