@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.3 2001-11-13 20:35:14 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.4 2001-11-19 09:21:44 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/11/13 20:35:14  gellyfish
+# Added the CGI::Carp workaround
+#
 # Revision 1.2  2001/11/11 17:55:27  davorg
 # Small amount of post-import tidying :)
 #
@@ -11,9 +14,11 @@
 use strict;
 use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser set_message);
-use Fcntl qw(:DEFAULT :flock);
+use Fcntl qw(:DEFAULT :flock :seek);
 use POSIX 'strftime';
 #use diagnostics;
+
+use vars qw($DEBUGGING);
 
 my $VERSION = '1.0';
 
@@ -86,18 +91,18 @@ my ($date, $followup, $subject, @followup_num, $message_img, $origemail,
     $body, $last_message, $origsubject, $message_url_title, $hidden_body,
     $email, $message_url);
 
-my $id = &get_number;
-my %Form = &parse_form;
-&get_variables;
-&new_file;
-&main_page;
+my $id = get_number();
+my %Form = parse_form();
+get_variables();
+new_file();
+main_page();
 
 if ($num_followups >= 1) {
-  &thread_pages;
+  thread_pages();
 }
 
-&return_html;
-&increment_num;
+return_html();
+increment_num(); 
 
 sub get_number {
   sysopen(NUMBER, "$basedir/$datafile", O_RDWR|O_CREAT)
@@ -118,7 +123,7 @@ sub get_number {
     $num++;
   }
 
-  seek(NUMBER, 0, 0);
+  seek(NUMBER, SEEK_SET, 0);
   truncate NUMBER, 0;
   print NUMBER $num;
 
@@ -205,14 +210,21 @@ sub get_variables {
   }
 
   if ($Form{body}) {
-    $body = "<p>$Form{body}</p>";
+    $body = $Form{body};
+    $body =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs unless $allow_html; 
+    $body = "<p>$body</p>";
     $body =~ s/\cM//g;
     $body =~ s|\n\n|</p><p>|g;
     $body =~ s/\n/<br>/g;
 
+    # I'm not entirely sure if this is what is actually meant :
+    # it would allow someone to subvert $allow_html by putting escaped stuff
+    # in the message and having the script expand it.
+
     $body =~ s/&lt;/</g;
     $body =~ s/&gt;/>/g;
     $body =~ s/&quot;/\"/g;
+     
   } else {
     error('no_body');
   }
@@ -259,24 +271,24 @@ sub new_file {
   </head>
   <body>
     <h1 align="center">$subject</h1>
-    <hr>
+    <hr />
     <p align="center">[ <a href="#followups">Follow Ups</a> ]
     [ <a href="#postfp">Post Followup</a> ]
     [ <a href="$baseurl/$mesgfile">$title</a> ]
     $faq</p>
 
-  <hr>
+  <hr />
   <p>Posted by $print_name $ip on $date</p>
 
   $followup $img
 
-  $body<br>$url
+  $body<br />$url
 
-  <hr>
-  <p><a name="followups">Follow Ups:</a><br>
+  <hr />
+  <p><a name="followups">Follow Ups:</a><br />
   <ul><!--insert: $id-->
   </ul><!--end: $id-->
-  <br><hr>
+  <br /><hr />
   <p><a name="postfp">Post a Followup</a></p>
   <form method=POST action="$cgi_url">
 END_HTML
@@ -290,16 +302,16 @@ END_HTML
     if $email;
 
   print NEWFILE <<END_HTML;
-<input type="hidden" name="origsubject" value="$subject">
-<input type="hidden" name="origdate" value="$date">
+<input type="hidden" name="origsubject" value="$subject" />
+<input type="hidden" name="origdate" value="$date" />
 <table>
 <tr>
 <td>Name:</td>
-<td><input type="text" name="name" size="50"></td>
+<td><input type="text" name="name" size="50" /></td>
 </tr>
 <tr>
 <td>E-Mail:</td>
-<td><input type="text" name="email" size="50"></td>
+<td><input type="text" name="email" size="50" /></td>
 </tr>
 END_HTML
 
@@ -505,7 +517,7 @@ sub error {
     Message.</p>
   <hr>
 END_HTML
-    &rest_of_form;
+    rest_of_form();
   } elsif ($error eq 'no_subject') {
     print <<END_HTML;
 <html>
@@ -518,7 +530,7 @@ END_HTML
   Message.</p>
   <hr>
 END_HTML
-    &rest_of_form;
+    rest_of_form();
   } elsif ($error eq 'no_body') {
     print <<END_HTML;
 <html>
@@ -531,7 +543,7 @@ END_HTML
   Message.</p>
   <hr>
 END_HTML
-    &rest_of_form;
+    rest_of_form();
    } elsif ($error eq 'field_size') {
      printf <<END_HTML;
 <html>

@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.7 2001-11-16 09:06:53 gellyfish Exp $
+# $Id: guestbook.pl,v 1.8 2001-11-19 09:21:44 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2001/11/16 09:06:53  gellyfish
+# Had forgotten to declare $DEBUGGING
+#
 # Revision 1.6  2001/11/14 23:00:13  davorg
 # More XHTML fixes.
 #
@@ -27,7 +30,7 @@ use strict;
 use POSIX 'strftime';
 use CGI qw(param);
 use CGI::Carp qw(fatalsToBrowser set_message);
-use Fcntl qw(:DEFAULT :flock);
+use Fcntl qw(:DEFAULT :flock :seek);
 
 use vars qw($DEBUGGING);
 
@@ -45,10 +48,10 @@ BEGIN
    $DEBUGGING = 1;
 }
    
-my $guestbookurl = 'http://your.host.com/~yourname/guestbook.html';
+my $guestbookurl  = 'http://your.host.com/~yourname/guestbook.html';
 my $guestbookreal = '/home/yourname/public_html/guestbook.html';
-my $guestlog = '/home/yourname/public_html/guestlog.html';
-my $cgiurl = 'http://your.host.com/cgi-bin/guestbook.pl';
+my $guestlog      = '/home/yourname/public_html/guestlog.html';
+my $cgiurl        = 'http://your.host.com/cgi-bin/guestbook.pl';
 
 my $mail        = 0;
 my $uselog      = 1;
@@ -60,10 +63,10 @@ my $remote_mail = 0;
 my $allow_html  = 1;
 my $line_breaks = 0;
 
-my $mailprog = '/usr/lib/sendmail';
+my $mailprog  = '/usr/lib/sendmail';
 my $recipient = 'you@your.com';
 
-my $long_date_fmt = '%A, %B %d, %Y at %T (%Z)';
+my $long_date_fmt  = '%A, %B %d, %Y at %T (%Z)';
 my $short_date_fmt = '%D %T %Z';
 
 # End configuration
@@ -80,8 +83,8 @@ BEGIN
   set_message($error_message);
 }   
 
-my @now = localtime;
-my $date = strftime($long_date_fmt, @now);
+my @now       = localtime();
+my $date      = strftime($long_date_fmt, @now);
 my $shortdate = strftime($short_date_fmt, @now);
 
 my ($username, $realname, $comments)
@@ -93,17 +96,27 @@ my ($city, $state, $country)
 my ($url)
   = param('url');
 
-&no_comments unless $comments;
-&no_name unless $realname;
+no_comments() unless $comments;
+no_name()     unless $realname;
 
-open (GUEST, "+>$guestbookreal")
+# crudely Strip out HTML unless we are allowing it
+# usually one would use HTML::Parser
+
+$comments =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs unless $allow_html;
+
+# substitute newlines in the comments for html line breaks if required.
+
+$comments =~ s/\cM\n/<br />\n/ if $line_breaks;
+
+
+open (GUEST, "+<$guestbookreal")
   || die "Can't Open $guestbookreal: $!\n";
 flock GUEST, LOCK_EX
   || die "Can't lock $guestbookreal: $!\n";
 
 my @lines = <GUEST>;
 
-seek GUEST, 0, 0;
+seek GUEST, SEEK_SET, 0;
 truncate GUEST, 0;
 
 foreach (@lines) {
@@ -113,11 +126,8 @@ foreach (@lines) {
        print GUEST "<!--begin-->\n";
      }
 
-     if ($line_breaks == 1) {
-       $comments =~ s/\cM\n/<br>\n/g;
-     }
 
-     print GUEST "<b>$comments</b><br>\n";
+     print GUEST "<b>$comments</b><br />\n";
 
      if ($url) {
        print GUEST qq(<a href="$url">$realname</a>);
@@ -134,7 +144,7 @@ foreach (@lines) {
        }
      }
 
-     print GUEST "<br>\n";
+     print GUEST "<br />\n";
 
      if ($city){
        print GUEST "$city, ";
@@ -149,9 +159,9 @@ foreach (@lines) {
      }
 
      if ($separator) {
-       print GUEST " - $date<hr>\n\n";
+       print GUEST " - $date<hr />\n\n";
      } else {
-       print GUEST " - $date<p>\n\n";
+       print GUEST " - $date<p />\n\n";
      }
 
      unless ($entry_order) {
@@ -166,7 +176,7 @@ foreach (@lines) {
 close (GUEST);
 
 if ($uselog) {
-   &log('entry');
+   log('entry');
 }
 
 if ($mail) {
@@ -229,7 +239,7 @@ if ($remote_mail && $username) {
 if ($redirection) {
   print "Location: $guestbookurl\n\n";
 } else {
-  &no_redirection;
+  no_redirection();
 }
 
 sub no_comments {
@@ -271,7 +281,7 @@ END_FORM
 
   # Log The Error
   if ($uselog) {
-    &log('no_comments');
+    log('no_comments');
   }
 
   exit;
@@ -316,7 +326,7 @@ END_FORM
 
   # Log The Error
   if ($uselog) {
-    &log('no_name');
+    log('no_name');
   }
 
   exit;

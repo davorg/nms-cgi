@@ -1,8 +1,11 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.3 2001-11-13 20:35:14 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.4 2001-11-19 09:21:44 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/11/13 20:35:14  gellyfish
+# Added the CGI::Carp workaround
+#
 # Revision 1.2  2001/11/11 17:55:27  davorg
 # Small amount of post-import tidying :)
 #
@@ -11,6 +14,7 @@
 use strict;
 use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser set_message);
+use vars qw($DEBUGGING);
 
 # Configuration
 
