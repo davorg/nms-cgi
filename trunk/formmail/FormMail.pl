@@ -1,8 +1,14 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.13 2001-11-26 17:36:43 nickjc Exp $
+# $Id: FormMail.pl,v 1.14 2001-11-29 14:18:38 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/11/26 17:36:43  nickjc
+# * Allow domain names without '.' so that user@localhost works.
+# * Don't overwrite $Config{recipient} with the empty string before
+#   displaying it on the error page.
+# * Fixed a couple of minor errors.
+#
 # Revision 1.12  2001/11/26 13:40:05  nickjc
 # Added \Q \E around variables in regexps where metacharacters in the
 # variables shouldn't be interpreted by the regex engine.
@@ -52,7 +58,7 @@ use strict;
 use POSIX qw(strftime);
 use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
-use CGI::Carp qw(fatalsToBrowser set_message);
+use CGI::Carp qw(fatalsToBrowser);
 use vars qw($DEBUGGING);
 
 # Configuration
@@ -127,16 +133,6 @@ if ( $emulate_matts_code )
 {
    $secure = 0; # ;-}
 }
-
-BEGIN
-{
-   my $error_message = sub {
-                             my ($message ) = @_;
-                             print "<h1>It's all gone horribly wrong</h1>";
-                             print $message if $DEBUGGING;
-                            };
-  set_message($error_message);
-}   
 
 #  Empty the environment of potentially harmful variables
 #  This might cause problems if $mail_prog is a shell script :)
@@ -224,8 +220,12 @@ sub parse_form {
   foreach (param()) {
     if (exists $Config{$_}) {
       $Config{$_} = param($_);
+      $Config{$_} =~ tr#\011\012\040-\176\200-\377##dc;
     } else {
       my @vals = param($_);
+      foreach my $v (@vals) {
+        $v =~ tr#\011\012\040-\176\200-\377##dc;
+      }
       $Form{$_} = @vals == 1 ? $vals[0] : [@vals];
       push @field_order, $_;
     }
