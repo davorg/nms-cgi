@@ -1,8 +1,11 @@
 #!/usr/bin/perl -w
 #
-# $Id: search.pl,v 1.4 2001-11-13 20:35:14 gellyfish Exp $
+# $Id: search.pl,v 1.5 2001-11-20 08:43:56 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.4  2001/11/13 20:35:14  gellyfish
+# Added the CGI::Carp workaround
+#
 # Revision 1.3  2001/11/13 09:17:59  gellyfish
 # Added CGI::Carp
 #
@@ -98,7 +101,7 @@ sub search {
 
   foreach (@files) {
 
-    open(FILE, $_) or die "Can't open $_: $!\n";
+    open(FILE, "<$_") or die "Can't open $_: $!\n";
     my $string = do { local $/; <FILE> };
     close(FILE);
 
