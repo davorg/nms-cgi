@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.54 2002-03-12 23:46:17 nickjc Exp $
+# $Id: FormMail.pl,v 1.55 2002-03-12 23:58:57 nickjc Exp $
 #
 
 use strict;
@@ -11,7 +11,7 @@ use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.54 $
+# FormMail.pl $Revision: 1.55 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -821,7 +821,7 @@ __END__
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.54 $
+FormMail $Revision: 1.55 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -851,7 +851,8 @@ The main Perl script
 
 =item README
 
-This file. Instructions on how to install and use formmail
+This documentation. Instructions on how to install and use
+formmail
 
 =item MANIFEST
 
@@ -1244,6 +1245,9 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.54  2002/03/12 23:46:17  nickjc
+ * moved the POD to the end, and put the changelog inside the POD
+
  Revision 1.53  2002/03/12 19:43:02  nickjc
  * Duplicate input name display bug fix.
  * Better diagnostics when $mailprog exits nonzero.
