@@ -35,51 +35,50 @@ MANIFEST       - List of files
 
 CONFIGURATION
 
-This script is the one that you will need to define what files you want to
-be searched and the locations of those files.  First you need to define the
-variables:
+There are a number of variables that you can change in search.pl which
+alter the way that the program works.
 
-  $basedir = '';
-    This is the base directory to the files you will want to search.  This should
-    be the closest as possible to the root directory as you can; it should
-    encompass everything you want searched.  Files and folders you want blocked
-    should be placed in the @blocked array; everything else will be searched.
-    Also note that this is a directory on the server, not the web.
+$DEBUGGING          - This should be set to 1 whilst you are installing
+                      and testing the script. Once the script is live you
+                      should change it to 0. When set to 1, errors will
+                      be output to the browser. This is a security risk and
+                      should not be used when the script is live.
 
-  $baseurl = '';
-    This is very similar to the basedir variable except that it will be used
-    as a base reference to the files you want to search in terms of the web.
-    In plain english, this variable will be used in generating links to the
-    results.  Think of it as the equivalant to $basedir, but instead of a
-    directory on the server, its the directory on the web.
+$basedir            - This is the base directory for the files you want to search.  
+                      This should as closest as possible to the root directory; it 
+                      should encompass everything you want searched.  Files and folders 
+                      you want blocked should be placed in the @blocked array; 
+                      everything else will be searched. Also note that this is a 
+                      directory on the server, not the web.
 
-  @files = ();
-    This is an array of file types searched.  You have a few markers you can use:
-    * - wildcard.  Use to fill in holes, such as: sear*.html  Use it to tighten up the search criteria.
-    / - directory marker.
-    . - use to indicate file exstension.
-    If there are no markers in the element, it will be treated as a file extension;
-    All files with that file extention that match the search will be "found".
+$baseurl            - This is exactly equivalent to $basedir except that it is a URL
+                      not a file path. In plain english, this variable will be used in 
+                      generating links to the results.
 
-  $title = "";
-    This variable is used to display the title of your page in the search
-    results and used to link back to your main page.
+@files              - This array contains the file types to be searched. There are a 
+                      few markers you can use:
 
-  $title_url = '';
-    This is the url that would link to the page $title.
+                          * - wildcard.  Use to fill in holes, such as: sear*.html  
+                              Use it to tighten up the search criteria.
+                          / - directory marker.
+                          . - use to indicate file exstension.
 
-  $search_url = '';
-    This is the url to the search.html page you set up, so that it can be
-    referenced from in the results page if users want to make another search.
+                      If there are no markers in the element, it will be treated as a 
+                      file extension; All files with that file extension that match the 
+                      search will be "found".
 
-  @blocked = ();
-    This is an array of files that will be blocked.  Full names, relative
-    to $basedir are needed.  These files will NEVER show up in any search.
+$title              - This is the title that you want displayed on the search results
+                      page.
 
-That is all of the variables that need to be configured in your script. You
-must also chmod this script to 755 so that all users can execute it and place
-it in your cgi-bin or change the name to search.cgi.  Now you simply have to
-edit the search.html page and you are ready to go!
+$title_url          - The title on the results page will be a link. This is the URL
+                      that it links to.
+
+$search_url         - The URL of your main search page. This is included on the 
+                      results page so that users can begin a new search.
+
+@blocked            - This is an array of files that will be blocked. Full names, 
+                      relative to $basedir are needed.  These files will NEVER show up 
+                      in any search.
 
 INSTALLATION
 
@@ -91,7 +90,7 @@ You may need to rename search.pl to search.cgi. Again, your system
 administrator will know if this is the case.
 
 You will probably need to turn on execute permissions to the file. You can
-do this by running the command "chmod +x countdown.pl" from your command
+do this by running the command "chmod +x search.pl" from your command
 line. If you don't have command line access to your web server then there
 will probably be an equivalent function in your file transfer program.
 
