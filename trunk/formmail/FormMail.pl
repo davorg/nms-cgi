@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.29 2002-01-27 16:00:04 nickjc Exp $
+# $Id: FormMail.pl,v 1.30 2002-01-29 00:05:01 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.29  2002/01/27 16:00:04  nickjc
+# allow_mail_to: explicit $ rather than depend on the one that's added
+# unless $emulate_matts_code.
+#
 # Revision 1.28  2002/01/27 14:45:11  nickjc
 # * re-wrote README
 # * added @allow_mail_to config option
@@ -164,7 +168,7 @@ my @allow_mail_to = qw(you@your.domain some.one.else@your.domain localhost);
 
 # The recipients array is the old way of adding to the list of allowed
 # destination email addresses.  It still works (for compatibility with
-# older versions) but it's use should be avoided.  See the README for
+# older versions) but its use should be avoided.  See the README for
 # more details.
 
 my @recipients = ();
@@ -529,21 +533,23 @@ sub send_mail {
     die 'multiline variable in mail header, unsafe to continue';
   }
 
+  my $xheader = '';
+  if ( $secure and defined (my $addr = remote_addr()) ) {
+    $addr =~ /^([\d\.]+)$/ or die "bad remote addr [$addr]";
+    $xheader = "X-HTTP-Client: [$1]\n";
+  }
+
   if ( $send_confirmation_mail ) {
     open(CMAIL,"|$mailprog")
       || die "Can't open $mailprog\n";
-    print CMAIL "To: $email$realname\n$confirmation_text";
+    print CMAIL $xheader, "To: $email$realname\n$confirmation_text";
     close CMAIL;
   }
 
   open(MAIL,"|$mailprog")
     || die "Can't open $mailprog\n";
 
-  if ( $secure and defined (my $addr = remote_addr()) ) {
-    print MAIL "X-HTTP-Client: [$addr]\n";
-  }
-
-  print MAIL <<EOMAIL;
+  print MAIL $xheader, <<EOMAIL;
 To: $Config{recipient}
 From: $email$realname
 Subject: $subject
