@@ -29,7 +29,46 @@
         with me</a>.</p>
 
     <p>Files are available in Unix .tar.gz and DOS/Windows .zip formats.</p>
+
+    <h2>FormMail</h2>
+
+    <p><span class="nms">NMS</span> FormMail is a drop-in replacement for Matt
+    Wright's FormMail script.   It converts an HTML form submission to an email
+    message.</p>
+
+    <p>Several alternative <span class="nms">NMS</span> FormMail packages are
+    available.  The <code>compat</code> packages are the easiest to install,
+    while the <code>modules</code> packages are targeted at more expert users.</p>
+
+    <table border="1">
+      <tr>
+	<th>Package</th><th>Description</th><th>.tar.gz</th><th>.zip</th>
+	<th>Browse</th><th>Version</th><th>Last Update</th>
+      </tr>
+      <tr>
+        <td>compat</td>
+	<td>Compatibility package, recommended for most users</td>
+        <td><a href="formmail_compat-<!--#include file="formmail_compat.VERSION"-->.tar.gz">tar.gz archive</a></td>
+	<td><a href="formmail_compat-<!--#include file="formmail_compat.VERSION"-->.zip">zip archive</a></td>
+	<td><a href="formmail_compat-<!--#include file="formmail_compat.VERSION"-->/">browse package</a></td>
+	<td><!--#include file="formmail_compat.VERSION"--></td>
+	<td><!--#include file="formmail_compat.LASTMOD"--></td>
+      </tr> 
+      <tr>
+        <td>modules</td>
+        <td>Modular package, recommended for expert users</td>
+        <td><a href="formmail_modules-<!--#include file="formmail_modules.VERSION"-->.tar.gz">tar.gz archive</a></td>
+	<td><a href="formmail_modules-<!--#include file="formmail_modules.VERSION"-->.zip">zip archive</a></td>
+	<td><a href="formmail_modules-<!--#include file="formmail_modules.VERSION"-->/">browse package</a></td>
+	<td><!--#include file="formmail_modules.VERSION"--></td>
+	<td><!--#include file="formmail_modules.LASTMOD"--></td>
+      </tr> 
+    </table>
+
+    <h2>Other Scripts</h2>
+
     <!--#config timefmt="%d %b %Y %H:%M"-->
+
     <table border="1">
       <tr>
 	<th>Script</th><th>Description</th><th>.tar.gz</th><th>.zip</th>
@@ -59,13 +98,12 @@
 	<td><!--#include file="ffa.VER"--></td>
 	<td><!--#flastmod file="ffa.tar.gz"--></td>
       </tr>
-      <tr>
-	<td>Formmail</td>
+        <td>Formmail</td>
 	<td>Send emails from web forms</td>
-	<td><a href="formmail.tar.gz">formmail.tar.gz</a></td>
-	<td><a href="formmail.zip">formmail.zip</a></td>
-	<td><!--#include file="formmail.VER"--></td>
-	<td><!--#flastmod file="formmail.tar.gz"--></td>
+        <td><a href="formmail_compat-<!--#include file="formmail_compat.VERSION"-->.tar.gz">formmail.tar.gz</a></td>
+	<td><a href="formmail_compat-<!--#include file="formmail_compat.VERSION"-->.zip">formmail.zip</a></td>
+	<td><!--#include file="formmail_compat.VERSION"--></td>
+	<td><!--#include file="formmail_compat.LASTMOD"--></td>
       </tr>
       <tr>
 	<td>Guestbook</td>
@@ -180,17 +218,12 @@
       <tr>
         <td align="left" valign="top">
           <address>
+              General Enquiries: 
+	      <a href="mailto:davorg@users.sourceforge.net">Dave Cross</a>
+              <br />
               Support:
               <a href="mailto:nms-cgi-support@lists.sourceforge.net">nms-cgi-support@lists.sourceforge.net</a>
-              <br />
-              General Enquiries: 
-	      <a href="mailto:davorg@users.sourceforge.net">Dave Cross</a> 
-              (please do not use this address for support)
           </address>
-<!-- Created: Sat Aug 11 16:11:48 BST 2001 -->
-<!-- hhmts start -->
-Last modified: Sat Sep 14 17:24:38 BST 2002
-<!-- hhmts end --><br />
 <a href="http://validator.w3.org/check/referer"><img
         src="http://www.w3.org/Icons/valid-xhtml10"
         alt="Valid XHTML 1.0!" height="31" width="88" border="0" /></a>
