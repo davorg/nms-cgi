@@ -54,6 +54,7 @@ my @scripts = qw(
 
    wwwboard/wwwboard.pl
    wwwboard/wwwadmin.pl
+   search/search.pl
 
 );
 
