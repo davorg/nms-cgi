@@ -202,6 +202,8 @@ During the following you will be guided through the configuration and installati
                             entry of a malicious URL that may be used to attack
                             another host or disfigure this web page.
 
+      $charset            - The character set to use for output documents.
+
    Installation
       You must upload this file to your server's cgi-bin or in a directory where
       CGI execution is allowed. Make sure the directory and path match the

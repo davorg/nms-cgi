@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.30 2002-08-21 21:20:23 nickjc Exp $
+# $Id: wwwboard.pl,v 1.31 2002-08-24 08:26:25 nickjc Exp $
 #
 
 use strict;
@@ -8,7 +8,7 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_headers);
-my $VERSION = substr q$Revision: 1.30 $, 10, -1;
+my $VERSION = substr q$Revision: 1.31 $, 10, -1;
 
 BEGIN
 { 
@@ -82,11 +82,23 @@ my %max_len             = ('name'        => 50,
 my $strict_image        = 1;
 my @image_suffixes      = qw(png jpe?g gif);
 my $locale              = '';
+my $charset             = 'iso-8859-1';
 
 #
 # USER CONFIGURATION << END >>
 # ----------------------------
 # (no user serviceable parts beyond here)
+
+
+use vars qw($cs);
+$cs = CGI::NMS::Charset->new($charset);
+
+# %E is a fake hash for escaping HTML metachars as things are
+# interploted into strings.
+use vars qw(%E);
+tie %E, __PACKAGE__;
+sub TIEHASH { bless {}, shift }
+sub FETCH { $cs->escape($_[1]) }
 
 
 # We need finer control over what gets to the browser and the CGI::Carp
@@ -264,10 +276,7 @@ sub get_variables {
   }
 
   if (my $name = $Form->{name}) {
-    $name =~ s/\"//g;
-    $name =~ s/<//g;
-    $name =~ s/>//g;
-    $name =~ s/\&//g;
+    $name =~ tr/"<>&/ /s;
 
     $variables->{name} = $name;
   } else {
@@ -310,12 +319,6 @@ sub get_variables {
     $body =~ s/\cM//g;
     $body =~ s|\n\n|</p><p>|g;
     $body =~ s%\n%<br />%g;
-
-    # I'm not entirely sure if this is what is actually meant :
-    # it would allow someone to subvert $allow_html by putting escaped stuff
-    # in the message and having the script expand it.
-
-    $variables->{'body'} = unescape_html($body);
      
   } else {
     error('no_body',{Form => $Form});
@@ -327,7 +330,7 @@ sub get_variables {
 
     if ( $quote_html ) 
     {
-       $hidden_body = escape_html($hidden_body);
+       $hidden_body = $cs->escape($hidden_body);
     }
     else 
     {
@@ -361,10 +364,10 @@ sub new_file {
   flock(NEWFILE,LOCK_EX)
     || die "Flock: $! [$basedir/$mesgdir/$variables->{id}.$ext]";
 
-  my $faq = $show_faq ? qq( [ <a href="$baseurl/$faqfile">FAQ</a> ]) : '';
+  my $faq = $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
   my $print_name = $variables->{email} ? 
-            qq(<a href="mailto:$variables->{email}">$variables->{name}</a> ) : 
-            $variables->{name};
+            qq(<a href="$E{"mailto:$variables->{email}"}">$E{$variables->{name}}</a> ) : 
+            $E{$variables->{name}};
   my $ip = $show_poster_ip ? "($ENV{REMOTE_ADDR})" : '';
 
   my $pr_follow = '';
@@ -373,47 +376,47 @@ sub new_file {
   {
      $pr_follow = 
     qq(<p>In Reply to:
-       <a href="$variables->{last_message}.$ext">$variables->{origsubject}</a> posted by ); 
+       <a href="$E{"$variables->{last_message}.$ext"}">$E{$variables->{origsubject}}</a> posted by ); 
 
       if ( $variables->{origemail} )
       {
         $pr_follow .=  
-         qq(<a href="$variables->{origemail}">$variables->{origname}</a>) ;
+         qq(<a href="$E{$variables->{origemail}}">$E{$variables->{origname}}</a>) ;
       }
       else
       {
-        $pr_follow .= $variables->{origname};
+        $pr_follow .= $E{$variables->{origname}};
       }
       $pr_follow .= '</p>';
   }
 
   my $img = $variables->{message_img} ?
-    qq(<p align="center"><img src="$variables->{message_img}"></p>\n) : '';
+    qq(<p align="center"><img src="$E{$variables->{message_img}}"></p>\n) : '';
   my $url = $variables->{message_url} ? 
-    qq(<ul><li><a href="$variables->{message_url}">$variables->{message_url_title}</a></li></ul><br />) :
+    qq(<ul><li><a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></li></ul><br />) :
       '';
 
   print NEWFILE <<END_HTML;
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
-    <title>$variables->{subject}</title>
+    <title>$E{$variables->{subject}}</title>
     $style_element
   </head>
   <body>
-    <h1 align="center">$variables->{subject}</h1>
+    <h1 align="center">$E{$variables->{subject}}</h1>
     <hr />
     <p align="center">
       [ <a href="#followups">Follow Ups</a> ]
       [ <a href="#postfp">Post Followup</a> ]
-      [ <a href="$baseurl/$mesgfile">$title</a> ]
+      [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ]
       $faq
     </p>
 
   <hr />
-  <p>Posted by $print_name $ip on $variables->{date}</p>
+  <p>Posted by $print_name $E{$ip} on $E{$variables->{date}}</p>
 
   $pr_follow 
 
@@ -423,11 +426,11 @@ sub new_file {
 
   <hr />
   <p><a id="followups" name="followups">Follow Ups:</a></p>
-  <ul><!--insert: $variables->{id}-->
-  </ul><!--end: $variables->{id}-->
+  <ul><!--insert: $E{$variables->{id}}-->
+  </ul><!--end: $E{$variables->{id}}-->
   <br /><hr />
   <p><a id="postfp" name="postfp">Post a Followup</a></p>
-  <form method=POST action="$cgi_url">
+  <form method=POST action="$E{$cgi_url}">
 END_HTML
 
   my $follow_ups = ( defined $variables->{followups} )  ? 
@@ -437,15 +440,15 @@ END_HTML
 
   my $id = $variables->{id};
 
-  print NEWFILE qq(<input type="hidden" name="followup" value="$follow_ups$id" />);
+  print NEWFILE qq(<input type="hidden" name="followup" value="$E{"$follow_ups$id"}" />);
 
-  print NEWFILE qq(<input type=hidden name="origname" value="$variables->{name}" />);
-  print NEWFILE qq(<input type=hidden name="origemail" value="$variables->{email}" />)
+  print NEWFILE qq(<input type=hidden name="origname" value="$E{$variables->{name}}" />);
+  print NEWFILE qq(<input type=hidden name="origemail" value="$E{$variables->{email}}" />)
     if $variables->{email};
 
   print NEWFILE <<END_HTML;
-<input type="hidden" name="origsubject" value="$variables->{subject}" />
-<input type="hidden" name="origdate" value="$variables->{date}" />
+<input type="hidden" name="origsubject" value="$E{$variables->{subject}}" />
+<input type="hidden" name="origdate" value="$E{$variables->{date}}" />
 <table summary="">
 <tr>
 <td>Name:</td>
@@ -462,12 +465,12 @@ END_HTML
   $subject = 'Re: ' . $subject unless $subject =~ /^Re:/i;
 
   if ($subject_line == 1) {
-    print NEWFILE qq(<input type="hidden" name="subject" value="$subject" />\n);
-    print NEWFILE "<tr><td>Subject:</td><td><b>$subject</b></td></tr>\n";
+    print NEWFILE qq(<input type="hidden" name="subject" value="$E{$subject}" />\n);
+    print NEWFILE "<tr><td>Subject:</td><td><b>$E{$subject}</b></td></tr>\n";
   } elsif ($subject_line == 2) {
     print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject" size="50"></td></tr>\n);
   } else {
-    print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject"value="$subject" size="50"></td></tr>\n);
+    print NEWFILE qq(<tr><td>Subject:</td><td><input type="text" name="subject" value="$E{$subject}" size="50"></td></tr>\n);
   }
   print NEWFILE "<tr><td>Comments:</td>\n";
   print NEWFILE qq(<td><textarea name="body" cols="50" rows="10">\n);
@@ -500,7 +503,7 @@ END_HTML
 <p align="center">
    [ <a href="#followups">Follow Ups</a> ] 
    [ <a href="#postfp">Post Followup</a> ] 
-   [ <a href="$baseurl/$mesgfile">$title</a> ] 
+   [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ] 
    $faq
 </p>
 </body>
@@ -540,10 +543,10 @@ sub main_page {
       if (/<!--begin-->/) {
         print MAIN_OUT <<END_HTML;
 <!--begin-->
-<!--top: $id--><li><a href="$mesgdir/$id.$ext">$subject</a> - <b>$name</b> <i>$date</i>
-(<!--responses: $id-->0)
-<ul><!--insert: $id-->
-</ul><!--end: $id-->
+<!--top: $id--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
+(<!--responses: $E{$id}-->0)
+<ul><!--insert: $E{$id}-->
+</ul><!--end: $E{$id}-->
 END_HTML
       } else {
         print MAIN_OUT $_;
@@ -552,13 +555,13 @@ END_HTML
   } else {
     foreach (@main) {
       my $work = 0;
-      if (/<ul><!--insert: $variables->{last_message}-->/) {
+      if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/) {
         print MAIN_OUT <<END_HTML;
-<ul><!--insert: $variables->{last_message}-->
-<!--top: $id--><li><a href="$mesgdir/$id.$ext">$subject</a> - <b>$name</b> <i>$date</i>
-(<!--responses: $id-->0)
-<ul><!--insert: $id-->
-</ul><!--end: $id-->
+<ul><!--insert: $E{$variables->{last_message}}-->
+<!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
+(<!--responses: $E{$id}-->0)
+<ul><!--insert: $E{$id}-->
+</ul><!--end: $E{$id}-->
 END_HTML
       } elsif (/\(<!--responses: (\d+?)-->(\d+?)\)/) {
         my $response_num = $1;
@@ -566,7 +569,7 @@ END_HTML
         $num_responses++;
         foreach my $followup_num (@{$variables->{followups}}) {
           if ($followup_num == $response_num) {
-            print MAIN "(<!--responses: $followup_num-->$num_responses)\n";
+            print MAIN "(<!--responses: $E{$followup_num}-->$E{$num_responses})\n";
             $work = 1;
           }
         }
@@ -623,13 +626,13 @@ sub thread_pages {
 
     foreach (@followup_lines) {
       my $work = 0;
-      if (/<ul><!--insert: $variables->{last_message}-->/) {
+      if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/) {
         print FOLLOWUP<<END_HTML;
-<ul><!--insert: $variables->{last_message}-->
-<!--top: $id--><li><a href="$id\.$ext">$subject</a> <b>$name</b> <i>$date</i>
-(<!--responses: $id-->0)
-<ul><!--insert: $id-->
-</ul><!--end: $id-->
+<ul><!--insert: $E{$variables->{last_message}}-->
+<!--top: $E{$id}--><li><a href="$E{"$id\.$ext"}">$E{$subject}</a> <b>$E{$name}</b> <i>$E{$date}</i>
+(<!--responses: $E{$id}-->0)
+<ul><!--insert: $E{$id}-->
+</ul><!--end: $E{$id}-->
 END_HTML
       } elsif (/\(<!--responses: (\d+?)-->(\d+?)\)/) {
         my $response_num = $1;
@@ -637,7 +640,7 @@ END_HTML
         $num_responses++;
         foreach $followup_num (@{$variables->{followups}}) {
           if ($followup_num == $response_num) {
-            print FOLLOWUP "(<!--responses: $followup_num-->$num_responses)\n";
+            print FOLLOWUP "(<!--responses: $E{$followup_num}-->$E{$num_responses})\n";
             $work = 1;
           }
         }
@@ -667,36 +670,36 @@ sub return_html {
   $done_headers++;
 
   my $url = $variables->{message_url} ? 
-    qq(<p><b>Link:</b> <a href="$variables->{message_url}">$variables->{message_url_title}</a></p>) : '';
+    qq(<p><b>Link:</b> <a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></p>) : '';
   my $img = $variables->{message_img} ? 
-    qq(<p><b>Image:</b> <img src="$variables->{message_img}"></p>) : '';
+    qq(<p><b>Image:</b> <img src="$E{$variables->{message_img}}"></p>) : '';
 
   print <<END_HTML;
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>Message Added: $variables->{subject}</title>
+    <title>Message Added: $E{$variables->{subject}}</title>
     $style_element
   </head>
   <body>
-    <h1 align="center">Message Added: $variables->{subject}</h1>
+    <h1 align="center">Message Added: $E{$variables->{subject}}</h1>
     <p>The following information was added to the message board:</p>
     <hr />
-    <p><b>Name:</b> $variables->{name}<br />
-      <b>E-Mail:</b> $variables->{email}<br />
-      <b>Subject:</b> $variables->{subject}<br />
+    <p><b>Name:</b> $E{$variables->{name}}<br />
+      <b>E-Mail:</b> $E{$variables->{email}}<br />
+      <b>Subject:</b> $E{$variables->{subject}}<br />
       <b>Body of Message:</b></p>
       <p>$variables->{'body'}</p>
     $url
     $img
 
-    <p><b>Added on Date:</b> $variables->{date}</p>
+    <p><b>Added on Date:</b> $E{$variables->{date}}</p>
     <hr />
     <p align="center">
-       [ <a href="$baseurl/$mesgdir/$id.$ext">Go to Your Message</a> ] 
-       [ <a href="$baseurl/$mesgfile">$title</a> ]
+       [ <a href="$E{"$baseurl/$mesgdir/$id.$ext"}">Go to Your Message</a> ] 
+       [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ]
     </p>
   </body>
 </html>
@@ -737,13 +740,13 @@ EOMESS
   <p>One of the form fields in the message submission was too long.  The 
   following are the limits on the size of each field (in characters):</p>
   <ul>
-    <li>Name: $max_len{'name'}</li>
-    <li>E-Mail: $max_len{'email'}</li>
-    <li>Subject: $max_len{'subject'}</li>
-    <li>Body: $max_len{'body'}</li>
-    <li>URL: $max_len{'url'}</li>
-    <li>URL Title: $max_len{'url_title'}</li>
-    <li>Image URL: $max_len{'img'}</li>
+    <li>Name: $E{$max_len{'name'}}</li>
+    <li>E-Mail: $E{$max_len{'email'}}</li>
+    <li>Subject: $E{$max_len{'subject'}}</li>
+    <li>Body: $E{$max_len{'body'}}</li>
+    <li>URL: $E{$max_len{'url'}}</li>
+    <li>URL Title: $E{$max_len{'url_title'}}</li>
+    <li>Image URL: $E{$max_len{'img'}}</li>
   </ul>
   <p>Please modify the form data and resubmit.</p>
 EOMESS
@@ -755,15 +758,15 @@ please use your back button and try again</p>
 EOMESS
    }
    print <<END_HTML;
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="$charset"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>$title ERROR: $error_title</title>
+    <title>$E{"$title ERROR: $error_title"}</title>
     $style_element
   </head>
-  <body><h1 align="center">ERROR: $error_title</h1>
+  <body><h1 align="center">ERROR: $E{$error_title}</h1>
     $error_message
   <hr />
 END_HTML
@@ -775,43 +778,41 @@ sub rest_of_form {
 
   my ( $variables ) = @_;
 
-  print qq(<form method="POST" action="$cgi_url">\n);
+  print qq(<form method="POST" action="$E{$cgi_url}">\n);
 
   my %Form = %{$variables->{Form}};
 
   if (defined $variables->{followup} and $variables->{followup} == 1) {
-    print qq(<input type="hidden" name="origsubject" value="$Form{origsubject}" />\n);
-    print qq(<input type="hidden" name="origname" value="$Form{origname}" />\n);
-    print qq(<input type="hidden" name="origemail" value="$Form{origemail}" />\n);
-    print qq(<input type="hidden" name="origdate" value="$Form{origdate}" />\n);
-    print qq(<input type="hidden" name="followup" value="$Form{followup}" />\n);
+    print qq(<input type="hidden" name="origsubject" value="$E{$Form{origsubject}}" />\n);
+    print qq(<input type="hidden" name="origname" value="$E{$Form{origname}}" />\n);
+    print qq(<input type="hidden" name="origemail" value="$E{$Form{origemail}}" />\n);
+    print qq(<input type="hidden" name="origdate" value="$E{$Form{origdate}}" />\n);
+    print qq(<input type="hidden" name="followup" value="$E{$Form{followup}}" />\n);
   }
-  print qq(Name: <input type="text" name="name" value="$Form{name}" size="50" /><br />\n);
-  print qq(E-Mail: <input type="text" name="email" value="$Form{email}" size="50" /><p />\n);
+  print qq(Name: <input type="text" name="name" value="$E{$Form{name}}" size="50" /><br />\n);
+  print qq(E-Mail: <input type="text" name="email" value="$E{$Form{email}}" size="50" /><p />\n);
   if ($subject_line == 1) {
-    print qq(<input type="hidden" name="subject" value="$Form{subject}" />\n);
-    print qq(Subject: <b>$Form{subject}</b><p />\n);
+    print qq(<input type="hidden" name="subject" value="$E{$Form{subject}}" />\n);
+    print qq(Subject: <b>$E{$Form{subject}}</b><p />\n);
   } else {
-    print qq(Subject: <input type="text" name="subject" value="$Form{subject}" size="50" /><p />\n);
+    print qq(Subject: <input type="text" name="subject" value="$E{$Form{subject}}" size="50" /><p />\n);
    }
   
-  $Form{'body'} = escape_html($Form{'body'});
-
   print "Message:<br />\n";
   print qq(<textarea cols="50" rows="10" name="body">\n);
 
-  print "$Form{'body'}\n";
+  print "$E{$Form{'body'}}\n";
   print "</textarea><p />\n";
-  print qq(Optional Link URL: <input type="text" name="url" value="$Form{'url'}" size="45" /><br />\n);
-  print qq(Link Title: <input type="text" name="url_title" value="$Form{'url_title'}" size="50" /><br />\n);
-  print qq(Optional Image URL: <input type="text" name="img" value="$Form{'img'}" size="45" /><p />\n);
+  print qq(Optional Link URL: <input type="text" name="url" value="$E{$Form{'url'}}" size="45" /><br />\n);
+  print qq(Link Title: <input type="text" name="url_title" value="$E{$Form{'url_title'}}" size="50" /><br />\n);
+  print qq(Optional Image URL: <input type="text" name="img" value="$E{$Form{'img'}}" size="45" /><p />\n);
   print qq(<input type="submit" value="Post Message" /> <input type="reset" />\n);
   print "</form>\n";
   print qq(<br /><hr size="7" width="75%" />\n);
   if ($show_faq) {
-    print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$baseurl/$mesgfile">$title</a> ] [ <a href="$baseurl/$faqfile">FAQ</a> ]</center>\n);
+    print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ] [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]</center>\n);
   } else {
-    print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$baseurl/$mesgfile">$title</a> ]</center>\n);
+    print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$title</a> ]</center>\n);
   }
   print "</body></html>\n";
 }
@@ -828,50 +829,376 @@ sub strip_html
 
    $allow_html = defined $allow_html ? $allow_html : 0;
 
-   $comments =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs unless $allow_html;
+   # $allow_html not yet implemented, always strip.
 
-   # remove any comments that could harbour an attempt at an SSI exploit
-   # suggested by Pete Sargeant
-
-   $comments =~ s/<!--.*?-->/ /gs;
-
-   # mop up any stray start or end of comment tags.
-
-   $comments = "<!-- -->$comments<!-- -->" if $allow_html;
-
-   return $comments;
+   $comments =~ s/<\w+[^>]*>/ /g;
+   return $E{$comments};
 }
 
-# subroutine to escape the necessary characters to the appropriate HTML
-# entities
+###################################################################
 
-use vars qw(%escape_html_map %unescape_html_map);
+BEGIN { # START OF INLINED use CGI::NMS::Charset
+package CGI::NMS::Charset;
+use strict;
 
-BEGIN
+require 5.00404;
+
+use vars qw($VERSION);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.31 $ =~ /(\d+)\.(\d+)/);
+
+=head1 NAME
+
+CGI::NMS::Charset - a charset-aware object for handling text strings
+
+=head1 SYNOPSIS
+
+   my $cs = CGI::NMS::Charset->new('iso-8859-1');
+
+   my $safe_to_put_in_html = $cs->escape($untrusted_user_input);
+
+   my $printable = &{ $cs->strip_nonprint_coderef }( $input );
+   my $escaped = &{ $cs->escape_html_coderef }( $printable );
+
+=head1 DESCRIPTION
+
+Each object of class C<CGI::NMS::Charset> is bound to a particular
+character set when it is created.  The object provides methods to
+generate coderefs to perform a couple of character set dependent
+operations on text strings.
+
+=cut
+
+=head1 CONSTRUCTORS
+
+=over
+
+=item new ( CHARSET )
+
+Creates a new C<CGI::NMS::Charset> object, suitable for handing text
+in the character set CHARSET.  The CHARSET parameter must be a
+character set string, such as C<us-ascii> or C<utf-8> for example.
+
+=cut
+
+sub new
 {
-   %escape_html_map = ( '&' => '&amp;',
-                        '<' => '&lt;',
-                        '>' => '&gt;',
-                        '"' => '&quot;',
-                        "'" => '&#39;',
-                      );
+   my ($pkg, $charset) = @_;
 
-   while ( my ( $key, $value ) = each %escape_html_map )
+   my $self = { CHARSET => $charset };
+
+   if ($charset =~ /^utf-8$/i)
    {
-      $unescape_html_map{$value} = $key;
+      $self->{SN} = \&_strip_nonprint_utf8;
+      $self->{EH} = \&_escape_html_utf8;
    }
+   elsif ($charset =~ /^iso-8859/i)
+   {
+      $self->{SN} = \&_strip_nonprint_8859;
+      if ($charset =~ /^iso-8859-1$/i)
+      {
+         $self->{EH} = \&_escape_html_8859_1;
+      }
+      else
+      {
+         $self->{EH} = \&_escape_html_8859;
+      }
+   }
+   elsif ($charset =~ /^us-ascii$/i)
+   {
+      $self->{SN} = \&_strip_nonprint_ascii;
+      $self->{EH} = \&_escape_html_8859_1;
+   }
+   else
+   {
+      $self->{SN} = \&_strip_nonprint_weak;
+      $self->{EH} = \&_escape_html_weak;
+   }
+
+   return bless $self, $pkg;
 }
 
-sub escape_html {
-  my $str = shift;
-  my $chars = join '', keys %escape_html_map;
-  $str =~ s/([\Q$chars\E])/$escape_html_map{$1}/g;
-  return $str;
+=back
+
+=head1 METHODS
+
+=over
+
+=item charset ()
+
+Returns the CHARSET string that was passed to the constructor.
+
+=cut
+
+sub charset
+{
+   my ($self) = @_;
+
+   return $self->{CHARSET};
 }
 
-sub unescape_html {
-  my $str = shift;
-  my $pattern = join '|', map { quotemeta($_) } keys(%unescape_html_map);
-  $str =~ s/($pattern)/$unescape_html_map{$1}/g;
-  return $str;
+=item escape ( STRING )
+
+Returns a copy of STRING with runs of non-printable characters
+replaced with spaces and HTML metacharacters replaced with the
+equivalent entities.
+
+If STRING is undef then the empty string will be returned.
+
+=cut
+
+sub escape
+{
+   my ($self, $string) = @_;
+
+   return &{ $self->{EH} }(  &{ $self->{SN} }($string)  );
 }
+
+=item strip_nonprint_coderef ()
+
+Returns a reference to a sub to replace runs of non-printable
+characters with spaces, in a manner suited to the charset in
+use.
+
+The returned coderef points to a sub that takes a single readonly
+string argument and returns a modified version of the string.  If
+undef is passed to the function then the empty string will be
+returned.
+
+=cut
+
+sub strip_nonprint_coderef
+{
+   my ($self) = @_;
+
+   return $self->{SN};
+}
+
+=item escape_html_coderef ()
+
+Returns a reference to a sub to escape HTML metacharacters in
+a manner suited to the charset in use.
+
+The returned coderef points to a sub that takes a single readonly
+string argument and returns a modified version of the string.
+
+=cut
+
+sub escape_html_coderef
+{
+   my ($self) = @_;
+
+   return $self->{EH};
+}
+
+=back
+
+=head1 DATA TABLES
+
+=over
+
+=item C<%eschtml_map>
+
+The C<%eschtml_map> hash maps C<iso-8859-1> characters to the
+equivalent HTML entities.
+
+=cut
+
+use vars qw(%eschtml_map);
+%eschtml_map = ( 
+                 ( map {chr($_) => "&#$_;"} (0..255) ),
+                 '<' => '&lt;',
+                 '>' => '&gt;',
+                 '&' => '&amp;',
+                 '"' => '&quot;',
+               );
+
+=back
+
+=head1 PRIVATE FUNCTIONS
+
+These functions are returned by the strip_nonprint_coderef() and
+escape_html_coderef() methods and invoked by the escape() method.
+The function most appropriate to the character set in use will be
+chosen.
+
+=over
+
+=item _strip_nonprint_utf8
+
+Returns a copy of STRING with everything but printable C<us-ascii>
+characters and valid C<utf-8> multibyte sequences replaced with
+space characters.
+
+=cut
+
+sub _strip_nonprint_utf8
+{
+   my ($string) = @_;
+   return '' unless defined $string;
+
+   $string =~
+   s%
+    ( [\t\n\040-\176]               # printable us-ascii
+    | [\xC2-\xDF][\x80-\xBF]        # U+00000080 to U+000007FF
+    | \xE0[\xA0-\xBF][\x80-\xBF]    # U+00000800 to U+00000FFF
+    | [\xE1-\xEF][\x80-\xBF]{2}     # U+00001000 to U+0000FFFF
+    | \xF0[\x90-\xBF][\x80-\xBF]{2} # U+00010000 to U+0003FFFF
+    | [\xF1-\xF7][\x80-\xBF]{3}     # U+00040000 to U+001FFFFF
+    | \xF8[\x88-\xBF][\x80-\xBF]{3} # U+00200000 to U+00FFFFFF
+    | [\xF9-\xFB][\x80-\xBF]{4}     # U+01000000 to U+03FFFFFF
+    | \xFC[\x84-\xBF][\x80-\xBF]{4} # U+04000000 to U+3FFFFFFF
+    | \xFD[\x80-\xBF]{5}            # U+40000000 to U+7FFFFFFF
+    ) | .
+   %
+    defined $1 ? $1 : ' '
+   %gexs;
+
+   #
+   # U+FFFE, U+FFFF and U+D800 to U+DFFF are dangerous and
+   # should be treated as invalid combinations, according to
+   # http://www.cl.cam.ac.uk/~mgk25/unicode.html
+   #
+   $string =~ s%\xEF\xBF[\xBE-\xBF]% %g;
+   $string =~ s%\xED[\xA0-\xBF][\x80-\xBF]% %g;
+
+   return $string;
+}
+
+=item _escape_html_utf8 ( STRING )
+
+Returns a copy of STRING with any HTML metacharacters
+escaped.  Escapes all but the most commonly occurring C<us-ascii>
+characters and bytes that might form part of valid C<utf-8>
+multibyte sequences.
+
+=cut
+
+sub _escape_html_utf8
+{
+   my ($string) = @_;
+
+   $string =~ s|([^\w \t\r\n\-\.\,\x80-\xFD])| $eschtml_map{$1} |ge;
+   return $string;
+}
+
+=item _strip_nonprint_weak ( STRING )
+
+Returns a copy of STRING with sequences of NULL characters
+replaced with space characters.
+
+=cut
+
+sub _strip_nonprint_weak
+{
+   my ($string) = @_;
+   return '' unless defined $string;
+
+   $string =~ s/\0+/ /g;
+   return $string;
+}
+   
+=item _escape_html_weak ( STRING )
+
+Returns a copy of STRING with any HTML metacharacters escaped.
+In order to work in any charset, escapes only E<lt>, E<gt>, C<">
+and C<&> characters.
+
+=cut
+
+sub _escape_html_weak
+{
+   my ($string) = @_;
+
+   $string =~ s/[<>"&]/$eschtml_map{$1}/eg;
+   return $string;
+}
+
+=item _escape_html_8859_1 ( STRING )
+
+Returns a copy of STRING with all but the most commonly
+occurring printable characters replaced with HTML entities.
+Only suitable for C<us-ascii> or C<iso-8859-1> input.
+
+=cut
+
+sub _escape_html_8859_1
+{
+   my ($string) = @_;
+
+   $string =~ s|([^\w \t\r\n\-\.\,\/\:])| $eschtml_map{$1} |ge;
+   return $string;
+}
+
+=item _escape_html_8859 ( STRING )
+
+Returns a copy of STRING with all but the most commonly
+occurring printable C<us-ascii> characters and characters
+that might be printable in some C<iso-8859-*> charset
+replaced with HTML entities.
+
+=cut
+
+sub _escape_html_8859
+{
+   my ($string) = @_;
+
+   $string =~ s|([^\w \t\r\n\-\.\,\/\:\240-\377])| $eschtml_map{$1} |ge;
+   return $string;
+}
+
+=item _strip_nonprint_8859 ( STRING )
+
+Returns a copy of STRING with runs of characters that are not
+printable in any C<iso-8859-*> charset replaced with spaces.
+
+=cut
+
+sub _strip_nonprint_8859
+{
+   my ($string) = @_;
+   return '' unless defined $string;
+
+   $string =~ tr#\t\n\040-\176\240-\377# #cs;
+   return $string;
+}
+
+=item _strip_nonprint_ascii ( STRING )
+
+Returns a copy of STRING with runs of characters that are not
+printable C<us-ascii> replaced with spaces.
+
+=cut
+
+sub _strip_nonprint_ascii
+{
+   my ($string) = @_;
+   return '' unless defined $string;
+
+   $string =~ tr#\t\n\040-\176# #cs;
+   return $string;
+}
+
+=back
+
+=head1 MAINTAINERS
+
+The NMS project, E<lt>http://nms-cgi.sourceforge.net/E<gt>
+
+To request support or report bugs, please email
+E<lt>nms-cgi-support@lists.sourceforge.netE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2002 London Perl Mongers, All rights reserved
+
+=head1 LICENSE
+
+This module is free software; you are free to redistribute it
+and/or modify it under the same terms as Perl itself.
+
+=cut
+
+1;
+
+} # END OF INLINED use CGI::NMS::Charset
+
