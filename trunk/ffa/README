@@ -30,6 +30,23 @@ MANIFESTO     - List of files
 
 CONFIGURATION
 
+In order for this program to work properly on your webserver it will require
+a small amount of configuration before you upload it.
+
+All of the configuration is done by editing the program file directly, you
+can do this in your favourite text editor or notepad if you are on Windows.
+You probably don't want to use a wordprocessor to do this unless you are
+certain you can save the file as plain text.
+
+Firstly you will need to change the first line of the program:
+
+   #!/usr/bin/perl -wT
+
+so that it points at the proper location of perl on your webserver - your
+system administrator or webhosting provider should be able to tell you this.
+You only need to change the '/usr/bin/perl' part - all of the rest of the
+line must be left exactly as it is.
+
 There are a number of variables that you can change in ffa.pl which
 alter the way that the program works.
 
@@ -53,7 +70,6 @@ $usedatabase  - If this is true (i.e. set to 1) we store the links in a
                 page.
 
 $database     - The filename of the database where the links are stored.
-                the program runs.
 
 $sendmail     - Set to true (i.e. 1) if you want to be notified of new 
                 additions to the list of links.
@@ -87,8 +103,6 @@ will probably be an equivalent function in your file transfer program.
 
 Then, edit the links.html page and put in on your website. You'll need to
 edit the link in the <form> tag so that it points to your copy of ffa.pl.
-be randomized to:
-
 
 SUPPORT
 
@@ -96,3 +110,5 @@ For support of this script please email:
 
   <nms-cgi-support@lists.sourceforge.net>
 
+This mailling list is read by the NMS developers and other helpful people
+who will try to help you solve your problem.
