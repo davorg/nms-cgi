@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2001-11-25 21:45:06 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-01-14 11:27:49 $ )
 
 =head1 DESCRIPTION
 
@@ -82,6 +82,10 @@ B<Countdown>  Count down the time to a certain date
 
 =item *
 
+B<Free For All Links> Simple web link database
+
+=item *
+
 B<Formmail>  Send emails from web forms
 
 =item *
@@ -121,11 +125,15 @@ B<Text Counter> Text counter
 =head2 How are the programs licensed ?
 
 The programs are licensed in the same way as Perl itself. That is you are 
-free to choose between the GNU Public License or the Artistic License.
+free to choose between the GNU Public License
+E<lt>http://www.gnu.org/licenses/gpl.htmlE<gt> or the Artistic License
+E<lt>http://www.perl.com/pub/a/language/misc/Artistic.htmlE<gt>.
 
 =head2 But I have programs that do the same thing already, why change them ?
 
-Because the programs you may already use aren't as good as these.
+Because the programs you may already use aren't as good as these. See
+"L<But there are perfectly good programs already out there, why bother ?">
+above for more details.
 
 =head2 Why do you keep calling them programs and not scripts ?
 
@@ -171,10 +179,10 @@ but it might not be able to deal with data created with Matt's scripts.
 
 You shouldn't believe everything that bk tells you :)
 
-C<use strict> (together with C<-w>) are a great way to keep a huge range
+C<use strict> (together with C<-w>) is a great way to keep a huge range
 of bugs out of your scripts. Even though the I<nms> project team are all
 very experienced Perl programmers, we all insist on using them in all of
-our scripts.
+our scripts. You should too.
 
 =head2 Why don't the programs decode the parameters like other PERL programs ?
 
