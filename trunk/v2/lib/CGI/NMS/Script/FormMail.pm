@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.3 $, 10, -1;
+$VERSION = substr q$Revision: 1.4 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -300,7 +300,7 @@ sub init {
 =item init_allowed_address_list ()
 
 Invoked from init(), this method sets up a hash with a key for each
-allowed recipient email address as C<Allow_Mail}> and a hash with a
+allowed recipient email address as C<Allow_Mail> and a hash with a
 key for each domain at which any address is allowed as C<Allow_Domain>.
 
 =cut
@@ -320,12 +320,8 @@ sub init_allowed_address_list {
     }
   }
 
-  my @alias_targets = split(/\s*,\s*/, join ',', values %{ $self->{CFG}{recipient_alias} });
-  foreach my $m (@alias_targets) {
-    if ($m =~ /\@/) {
-      push @allow_mail, $m;
-    }
-  }
+  my @alias_targets = split /\s*,\s*/, join ',', values %{ $self->{CFG}{recipient_alias} };
+  push @allow_mail, grep /\@/, @alias_targets;
 
   # The username part of email addresses should be case sensitive, but the
   # domain name part should not.  Map all domain names to lower case for
@@ -1205,8 +1201,8 @@ has been successfully sent.
 sub success_page {
   my ($self, $date) = @_;
 
-  if ($self->{CFG}{'redirect'}) {
-    print $self->cgi_object->redirect( $self->{CFG}{'redirect'} );
+  if ($self->{FormConfig}{'redirect'}) {
+    print $self->cgi_object->redirect( $self->{FormConfig}{'redirect'} );
   }
   else {
     $self->output_cgi_html_header;

@@ -92,12 +92,16 @@ security checks are switched on. We do not recommend changing this
 ariable to 1, as the resulting drop in security may leave your script
 open to abuse.
 
+Default: 0
+
 =item C<secure>
 
 When this variable is set to a true value (e.g. 1) many additional
 security features are turned on.  We do not recommend changing this
 variable to 0, as the resulting drop in security may leave your script
 open to abuse.
+
+Default: 1
 
 =item C<locale>
 
@@ -119,6 +123,8 @@ generated messages.  This should probably be the same as the one that
 you use for all the other pages.  This should be a local absolute URI
 fragment.  Set C<style> to 0 or the emtpy string if you don't want to
 use style sheets.
+
+Default: '';
 
 =item C<cgi_post_max>
 
@@ -145,7 +151,7 @@ Default: not set
 
 =item C<no_doctype_doc_header>
 
-If this is set to a true value then the output_cgi_html_header)() method
+If this is set to a true value then the output_cgi_html_header() method
 will omit the DOCTYPE document header that it would normally output.
 This means that the output document will not be strictly valid XHTML, but
 it may work better in some older browsers.
