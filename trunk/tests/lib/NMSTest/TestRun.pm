@@ -208,6 +208,7 @@ sub run
    {
       $self->_substitute_dates(\@results);
       $self->_substitute_generated_header(\@results);
+      $self->_substitute_content_type(\@results);
 
       my $id = $self->{TEST_ID};
       $id =~ tr/ =/_-/;
@@ -389,13 +390,34 @@ sub _substitute_generated_header
 
    foreach my $r (@$results)
    {
-      $r =~ s[^(MAIL\d *X-(?:Generated-By|Mailer): NMS \w+\.pl (?:\([\w\-\.]+\))?) v\d+\.\d+]
+      $r =~ s[^(MAIL\d *X-(?:Generated-By|Mailer): NMS \w+\.pl *(?:\([\w\-\.]+\))?) *v\d+\.\d+]
              [$1 v1.01]g;
       $r =~ s[^(MAIL\d *X-(?:Generated-By|Mailer): NMS \w+) v\d+\.\d+ \(NMStreq \d+\.\d+\)]
              [$1 v1.01 (NMStreq 1.01)]g;
+      $r =~ s[^(MAIL\d *X-Mailer: MIME::Lite) \d\.\d+\s+\(F\d+\.\d+(; B\d\.\d+)?(; Q\d\.\d+)?\)]
+             [$1 2.02 (F1.1)]g;
    }
 }
 
+=item _substitute_content_type
+
+transfroms the content-type HTTP header in the output to a canonical
+form, to prevent false differences due to different versions of CGI.pm
+producing slightly different headers.
+
+=cut
+
+sub _substitute_content_type
+{
+   my ($self, $results) = @_;
+
+   foreach my $r (@$results)
+   {
+      $r =~ s[^OUT *Content\-Type: text/html(; CHARSET=ISO-8859-1)?(\s*\n)]
+             [OUT   Content-Type: text/html$2]i;
+   }
+}
+   
 =back
 
 =head1 SEE ALSO

@@ -25,6 +25,8 @@ my $put_results = $ENV{NMS_PUT_RESULTS} ||
 my $test_perl = $ENV{NMS_TEST_PERL} ||
    die "NMS_TEST_PERL environment variable missing\n";
 
+my $subdir = $ENV{NMS_TEST_SUBDIR} || 'new';
+
 my @testsets = @ARGV;
 scalar @testsets or die "usage: $0 <testset> [...]\n";
 
@@ -37,7 +39,7 @@ foreach my $testset (@testsets)
    my $cgibindir = "$put_results/.tmp/cgi-bin";
    my $outdir    = "$put_results/.tmp/out";
    my $datdir    = "$put_results/.tmp/data";
-   my $resdir    = "$put_results/new/$testset";
+   my $resdir    = "$put_results/$subdir/$testset";
    rmdir_r($cgibindir);
    mkdir_p($cgibindir);
 
@@ -74,7 +76,7 @@ foreach my $testset (@testsets)
 
 foreach my $testset (@testsets)
 {
-   my $resdir = "$put_results/new/$testset";
+   my $resdir = "$put_results/$subdir/$testset";
    open IN, "<$resdir/.log" or die "open <$resdir/.log: $!";
    my @lines = <IN>;
    my $good = grep {/\.\. ok$/    } @lines;
