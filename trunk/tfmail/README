@@ -29,8 +29,9 @@ In this distribution, you will find the following files:
 
 TFmail.pl      - The main Perl script
 NMStreq.pm     - A Perl module that TFmail.pl needs
-MIME_Lite.pm   - A Perl module that TFmail.pl needs unless MIME::Lite is
-                 installed on the server
+MIME_Lite.pm   - A Perl module that TFmail.pl needs if you want to use
+                 file uploads, unless MIME::Lite is installed on the
+                 server
 default.trc    - The main configuration file
 spage.trt      - The template file that controls the layout of the success
                  page
@@ -107,6 +108,14 @@ TEMPLATE_EXT        - The file extension that template files have.  The default
 ENABLE_UPLOADS      - Set this to 1 if you wish to use HTTP file uploads to
                       allow users to upload files via the form and have them
                       come through to you as attachments to the email.
+
+USE_MIME_LITE       - If you're not using file uploads then you can set this to
+                      0 to prevent TFmail from using the MIME::Lite perl module.
+                      This may speed the script up in some cases, and might be
+                      desirable if the email is going to an automated system
+                      that doesn't understand MIME messages.  However, the email
+                      is more likely to be mangled in some way by mail transport
+                      agents if you don't use MIME::Lite.
 
 
 SCRIPT INSTALLATION

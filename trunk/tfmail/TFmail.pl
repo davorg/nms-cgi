@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.3 2002-04-30 19:42:49 nickjc Exp $
+# $Id: TFmail.pl,v 1.4 2002-05-02 07:50:40 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -17,6 +17,7 @@ use constant MAX_DEPTH      => 0;
 use constant CONFIG_EXT     => '.trc';
 use constant TEMPLATE_EXT   => '.trt';
 use constant ENABLE_UPLOADS => 0;
+use constant USE_MIME_LITE  => 1;
 
 # USER CONFIGURATION << END >>
 # ----------------------------
@@ -37,21 +38,26 @@ See the F<README> file for instructions.
 
 =cut
 
+use constant MIME_LITE => USE_MIME_LITE || ENABLE_UPLOADS;
+
 use lib LIBDIR;
 BEGIN
 {
-   # Use installed MIME::Lite if available, falling back to
-   # the copy of MIME/Lite.pm distributed with the script.
-   eval { local $SIG{__DIE__} ; require MIME::Lite };
-   require MIME_Lite if $@;
-   import MIME::Lite;
+   if (MIME_LITE)
+   {
+      # Use installed MIME::Lite if available, falling back to
+      # the copy of MIME/Lite.pm distributed with the script.
+      eval { local $SIG{__DIE__} ; require MIME::Lite };
+      require MIME_Lite if $@;
+      import MIME::Lite;
+   }
 }
 use NMStreq;
 
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.3 $, 10, -1;
+  $VERSION = substr q$Revision: 1.4 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -209,18 +215,16 @@ sub send_emails
 
    my $template = $treq->config('email_template', 'email');
 
-   my $msg = MIME::Lite->new(
+   my $msg = {
       To       => $recipients,
       From     => $from,
       Subject  => $treq->config('subject', 'WWW Form Submission'),
-      Type     => 'TEXT',
-      Data     => $treq->process_template($template, 'email', undef),
-      Date     => '',
-      Encoding => 'quoted-printable',
-   );
+      body     => $treq->process_template($template, 'email', undef),
+   };
 
    if (ENABLE_UPLOADS)
    {
+      $msg->{attach} = [];
       my $cgi = $treq->cgi;
       foreach my $param ($treq->param_list)
       {
@@ -248,17 +252,17 @@ sub send_emails
             $bestext = $goodext{lc $1};
          }
 
-         $msg->attach(
+         push @{ $msg->{attach} }, {
             Type        => 'application/octet-stream',
             Filename    => "$param.$bestext",
             FH          => $filehandle,
             Disposition => 'attachment',
             Encoding    => 'base64',
-         );
+         };
       }
    }
 
-   send_mime_email($msg);
+   send_email($msg);
 
    my $conftemp = $treq->config('confirmation_template', '');
    if ($conftemp and $confto)
@@ -275,36 +279,71 @@ sub send_emails
         $treq->install_directive($k, $save{$k});
       }
 
-      my $conf = MIME::Lite->new(
+      send_email({
          To      => $confto,
          From    => POSTMASTER,
          Subject => $treq->config('confirmation_subject', 'Thanks'),
-         Type    => 'TEXT',
-         Data    => $body,
-         Date    => '',
-      );
-      send_mime_email($conf);
+         body    => $body,
+      });
    }
 }
 
-=item send_mime_email ( MIMELITE )
+=item send_email ( HASHREF )
 
-Adds abuse tracing headers to a C<MIME::Lite> message object,
-and sends the email.  Dies on error.
+Adds abuse tracing headers to an outgoing email stored in a
+hashref, and sends it.  Dies on error.
 
 =cut
 
-sub send_mime_email
+sub send_email
 {
    my ($msg) = @_;
 
    my $remote_addr = $ENV{REMOTE_ADDR};
    $remote_addr =~ /^[\d\.]+$/ or die "weird remote_addr [$remote_addr]";
 
-   $msg->add('X-HTTP-Client'  => "[$remote_addr]");
-   $msg->add('X-Generated-By' => "NMS TFmail v$VERSION (NMStreq $NMStreq::VERSION)");
+   my $x_remote = "[$remote_addr]";
+   my $x_gen_by = "NMS TFmail v$VERSION (NMStreq $NMStreq::VERSION)";
 
-   $msg->send_by_sendmail( MAILPROG . ' -f ' . POSTMASTER );
+   open SENDMAIL, '| '.MAILPROG.' -f '.POSTMASTER or die
+      "open MAILPROG: $!";
+
+   if (MIME_LITE)
+   {
+      my $ml = MIME::Lite->new(
+         To               => $msg->{To},
+         From             => $msg->{From},
+         Subject          => $msg->{Subject},
+         'X-Http-Client'  => $x_remote,
+         'X-Generated-By' => $x_gen_by,
+         Type             => 'TEXT',
+         Data             => $msg->{body},
+         Date             => '',
+         Encoding         => 'quoted-printable',
+      );
+
+      foreach my $a (@{ $msg->{attach} || [] })
+      {
+         $ml->attach( $a );
+      }
+
+      $ml->print(\*SENDMAIL);
+   }
+   else
+   {
+      print SENDMAIL <<END;
+X-Http-Client: $x_remote
+X-Generated-By: $x_gen_by
+To: $msg->{To}
+From: $msg->{From}
+Subject: $msg->{Subject}
+
+$msg->{body}
+END
+   }
+
+   close SENDMAIL or die
+     "SENDMAIL command failed, MAILPROG constant may be set wrong\n";
 }
 
 =item missing_html ( TREQ )
