@@ -4,6 +4,7 @@ wwwboard/faq.html
 wwwboard/MANIFEST
 wwwboard/passwd.txt
 wwwboard/README
+wwwboard/README.dnsbl
 wwwboard/wwwadmin.pl
 wwwboard/wwwboard.html
 wwwboard/ChangeLog

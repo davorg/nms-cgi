@@ -1,11 +1,13 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.56 2004-10-12 09:45:14 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.57 2004-10-15 08:35:33 gellyfish Exp $
 #
+
 use strict;
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
+
 use vars qw(
   $DEBUGGING $VERSION $done_headers $emulate_matts_code
   $max_followups $basedir $baseurl $cgi_url $mesgdir $datafile
@@ -13,12 +15,13 @@ use vars qw(
   $quote_text $quote_char $quote_html $subject_line $use_time
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset @bannedwords
+  $bannedwords $bannednets @use_rbls
 );
-BEGIN { $VERSION = substr q$Revision: 1.56 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.57 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.56 $
+# wwwboard.pl $Revision: 1.57 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -38,7 +41,8 @@ BEGIN { $VERSION = substr q$Revision: 1.56 $, 10, -1; }
 # parameters seems unclear, please see the README file.
 #
 
-BEGIN {
+BEGIN
+{
     $DEBUGGING          = 1;
     $emulate_matts_code = 1;
     $max_followups      = 10;
@@ -82,8 +86,9 @@ BEGIN {
     $locale         = '';
     $charset        = 'iso-8859-1';
 
-    @bannedwords =
-      qw( slut levitra viagra cialis sex phentermine casino lolita fuck );
+    $bannedwords = '';
+    $bannednets  = '';
+    @use_rbls    = qw();
 
     #
     # USER CONFIGURATION << END >>
@@ -94,24 +99,29 @@ BEGIN {
         sub SEEK_SET() { 0; }
     } unless defined(&SEEK_SET);
 
-    if ($use_time) {
+    if ($use_time)
+    {
         $date_fmt = "$time_fmt $date_fmt";
     }
 
     use vars qw($html_preview_button);
-    $html_preview_button =
-      ( $enable_preview
+    $html_preview_button = (
+        $enable_preview
         ? ' <input type="submit" name="preview" value="Preview Post" />'
-        : '' );
+        : ''
+    );
 }
 
-sub html_header {
-    if ( $CGI::VERSION >= 2.57 ) {
+sub html_header
+{
+    if ( $CGI::VERSION >= 2.57 )
+    {
 
         # This is the correct way to set the charset
         print header( '-type' => 'text/html', '-charset' => $charset );
     }
-    else {
+    else
+    {
 
         # However CGI.pm older than version 2.57 doesn't have the
         # -charset option so we cheat:
@@ -124,16 +134,20 @@ sub html_header {
 # This is basically the same as what CGI::Carp does inside but simplified
 # for our purposes here.
 
-BEGIN {
+BEGIN
+{
 
-    sub fatalsToBrowser {
+    sub fatalsToBrowser
+    {
         my ($message) = @_;
 
-        if ($DEBUGGING) {
+        if ($DEBUGGING)
+        {
             $message =~ s/</&lt;/g;
             $message =~ s/>/&gt;/g;
         }
-        else {
+        else
+        {
             $message = '';
         }
 
@@ -202,14 +216,20 @@ $ENV{PATH} =~ /(.*)/ and $ENV{PATH} = $1;
 
 $done_headers = 0;
 
+if ( check_ip($ENV{REMOTE_ADDRESS}) )
+{
+   error('blocked');
+}
 my $Form = parse_form();
 
 my $variables = get_variables($Form);
 
-if ( param('preview') ) {
+if ( param('preview') )
+{
     preview_post($variables);
 }
-else {
+else
+{
     open LOCK, ">>$basedir/.lock" or die "open >>$basedir/.lock: $!";
     flock LOCK, LOCK_EX or die "flock $basedir/.lock: $!";
 
@@ -226,24 +246,28 @@ else {
         thread_pages( $ft, $variables );
     };
 
-    if ($@) {
+    if ($@)
+    {
         $ft->revert;
         close LOCK;
         die $@;
     }
-    else {
+    else
+    {
         $ft->commit;
         close LOCK;
         return_html($variables);
     }
 }
 
-sub get_number {
+sub get_number
+{
     my ($ft) = @_;
     my $num  = 0;
     my $file = "$basedir/$datafile";
 
-    if ( open NUMBER, "<$file" ) {
+    if ( open NUMBER, "<$file" )
+    {
         $num = <NUMBER> || 0;
         $num =~ /^(\d+)\s*$/ or die "$file bad";
         $num = $1;
@@ -262,23 +286,30 @@ sub get_number {
     return $num;
 }
 
-sub parse_form {
+sub parse_form
+{
     my %Form;
 
-    foreach my $param ( keys %max_len, 'followup' ) {
+    foreach my $param ( keys %max_len, 'followup' )
+    {
         my $val = param($param);
         defined $val or $val = '';
         $Form{$param} = &{ $cs->strip_nonprint_coderef }($val);
         $Form{$param} =~ s/[\r\n\0]/ /g unless $param eq 'body';
     }
 
-    if ($enforce_max_len) {
-        foreach ( keys %max_len ) {
-            if ( length( $Form{$_} ) > $max_len{$_} ) {
-                if ( $enforce_max_len == 2 ) {
+    if ($enforce_max_len)
+    {
+        foreach ( keys %max_len )
+        {
+            if ( length( $Form{$_} ) > $max_len{$_} )
+            {
+                if ( $enforce_max_len == 2 )
+                {
                     error( 'field_size', { Form => \%Form } );
                 }
-                else {
+                else
+                {
                     $Form{$_} = substr( $Form{$_}, 0, $max_len{$_} );
                 }
             }
@@ -290,7 +321,8 @@ sub parse_form {
 ###############
 # Get Variables
 
-sub get_variables {
+sub get_variables
+{
 
     my ($Form) = @_;
 
@@ -298,16 +330,20 @@ sub get_variables {
 
     my @followup_num;
 
-    if ( exists $Form->{followup} && length( $Form->{followup} ) ) {
+    if ( exists $Form->{followup} && length( $Form->{followup} ) )
+    {
         $variables->{followup} = 1;
         @followup_num = split( /,/, $Form->{followup} );
 
         my %fcheck;
-        foreach my $fn (@followup_num) {
-            if ( $fcheck{$fn} or $fn !~ /^(\d+)$/ ) {
+        foreach my $fn (@followup_num)
+        {
+            if ( $fcheck{$fn} or $fn !~ /^(\d+)$/ )
+            {
                 error( 'followup_data', { Form => $Form } );
             }
-            else {
+            else
+            {
                 $fn = $1;
                 $fcheck{$fn} = 1;
             }
@@ -332,58 +368,60 @@ sub get_variables {
         $variables->{origname}      = $Form->{origname};
         $variables->{origsubject}   = $Form->{origsubject};
     }
-    else {
+    else
+    {
         $variables->{followup} = $variables->{num_followups} = 0;
     }
 
     length $Form->{name} or error( 'no_name', $variables );
 
-    check_banned($Form->{name}) or error('invalid');
+    check_banned( $Form->{name} ) or error('invalid');
 
-    if ( $Form->{email} =~ /(.*\@.*\..*)/ ) {
+    if ( $Form->{email} =~ /(.*\@.*\..*)/ )
+    {
         $variables->{email} = $1;
     }
-    else {
+    else
+    {
         $variables->{email} = '';
     }
 
-    if ( $Form->{subject} ) {
-        check_banned($Form->{subject}) or error('invalid');
+    if ( $Form->{subject} )
+    {
+        check_banned( $Form->{subject} ) or error('invalid');
         $variables->{subject} = $Form->{subject};
     }
-    else {
+    else
+    {
         error( 'no_subject', $variables );
     }
-
-    # Really you would want to probably:
-    #  a) use a dnsbl of some description
-    #  b) specify the stuff in a file
-    #  c) use CIDR to block a whole network
-    #  if($ENV{REMOTE_ADDR} =~ m/217\.26\.240\.[0-9]{1,3}/ ) {
-    #	error('invalid', 0);
-    #  }
 
     my $url = validate_url( $Form->{'url'} || '' );
     $Form->{'url_title'} =~ s/&#[0-9]{1,3};//g;
     $Form->{'url_title'} =~ s/[^a-zA-Z0-9_ ?!&;]//g;
-    if ( $url and $Form->{'url_title'} ) {
+    if ( $url and $Form->{'url_title'} )
+    {
         $variables->{message_url}       = $url;
         $variables->{message_url_title} = $Form->{'url_title'};
     }
 
     my $message_img = validate_url( $Form->{'img'} || '' );
-    if ( $message_img and $strict_image ) {
+    if ( $message_img and $strict_image )
+    {
         my $image_suffixes = join '|', @image_suffixes;
-        unless ( $message_img =~ /($image_suffixes)$/i ) {
+        unless ( $message_img =~ /($image_suffixes)$/i )
+        {
             undef $message_img;
         }
     }
     $message_img and $variables->{message_img} = $message_img;
 
-    if ( my $body = $Form->{'body'} ) {
+    if ( my $body = $Form->{'body'} )
+    {
 
         check_banned($body) or error('invalid');
-        unless ($allow_html) {
+        unless ($allow_html)
+        {
 
             # strip out what look like tags, then escape all but
             # wellformed HTML entities.
@@ -397,18 +435,21 @@ sub get_variables {
         $body =~ s|\n\n|</p><p>|g;
         $body =~ s%\n%<br />%g;
 
-        if ($allow_html) {
+        if ($allow_html)
+        {
             $body = filter_html($body);
         }
 
         $variables->{html_body} = $body;
 
     }
-    else {
+    else
+    {
         error( 'no_body', $variables );
     }
 
-    if ($quote_text) {
+    if ($quote_text)
+    {
         my $hidden_body = $Form->{'body'};
         $hidden_body =~ s#(</?[a-z][^>]*>)+# #ig unless $quote_html;
         $variables->{hidden_body} = $hidden_body;
@@ -421,17 +462,69 @@ sub get_variables {
     return $variables;
 }
 
+=item check_ip IPNUMBER
+
+If the $bannednets configuration is defined and contains network
+specifications then check IPNUMBER against it, also if @use_rbls is
+defined will perform a check against these if it is not found in the
+local list. Returns a true value if the IP is found in either source.
+
+=cut
+
+sub check_ip
+{
+   my ( $ip ) = @_;
+
+   if ( $bannednets and -s $bannednets )
+   {
+      open BANNED, "<$bannednets" or die "Can't open $bannednets - $!";
+      while (<BANNED>)
+      {
+         chomp;
+         if (ip_in_network($ip, $_))
+         {
+            return 1;
+         }
+            
+      }
+   }
+
+   foreach my $rbl (@use_rbls)
+   {
+      if ( rbl_check($ip, $rbl ))
+      {
+         return 1;
+      }
+
+   }
+
+   return 0;
+}
+
 =item check_banned
 
-Implement banned words list.
+Implement banned words list.  If $bannedwords configuration is defined
+and is a file will take each line as a regular expression to be compared
+with the content presented as an argument.
 
 =cut
 
 sub check_banned
 {
-   my ($temp ) = @_;
-    foreach my $word (@bannedwords) {
-        return 0 if ( lc($temp) =~ /.*$word.*/ ) 
+    my ($temp) = @_;
+
+    if ( $bannedwords and -s $bannedwords )
+    {
+       if (!@bannedwords)
+       {
+          open BANNED, "<$bannedwords" or die "Can't open $bannedwords - $!";
+          chomp(@bannedwords = <BANNED>);
+       }
+
+      foreach my $word (@bannedwords)
+      {
+         return 0 if ( lc($temp) =~ /$word/ );
+      }
     }
 
     return 1;
@@ -440,7 +533,8 @@ sub check_banned
 #####################
 # New File Subroutine
 
-sub new_file {
+sub new_file
+{
 
     my ( $ft, $variables ) = @_;
 
@@ -461,15 +555,18 @@ sub new_file {
 
     my $html_pr_follow = '';
 
-    if ( $variables->{followup} ) {
+    if ( $variables->{followup} )
+    {
         $html_pr_follow = qq(<p>In Reply to:
        <a href="$E{"$variables->{last_message}.$ext"}">$E{$variables->{origsubject}}</a> posted by );
 
-        if ( $variables->{origemail} ) {
+        if ( $variables->{origemail} )
+        {
             $html_pr_follow .=
 qq(<a href="$E{$variables->{origemail}}">$E{$variables->{origname}}</a>);
         }
-        else {
+        else
+        {
             $html_pr_follow .= $E{ $variables->{origname} };
         }
         $html_pr_follow .= '</p>';
@@ -489,7 +586,8 @@ qq(<a href="$E{$variables->{origemail}}">$E{$variables->{origname}}</a>);
       : '';
 
     my $followups = $variables->{id};
-    if ( defined $variables->{followups} ) {
+    if ( defined $variables->{followups} )
+    {
         $followups = join( ',', @{ $variables->{followups} }, $followups );
     }
 
@@ -548,23 +646,27 @@ END_HTML
 
     $subject = 'Re: ' . $subject unless $subject =~ /^Re:/i;
 
-    if ( $subject_line == 1 ) {
+    if ( $subject_line == 1 )
+    {
         print NEWFILE
           qq(<input type="hidden" name="subject" value="$E{$subject}" />\n);
         print NEWFILE
           "<tr><td>Subject:</td><td><b>$E{$subject}</b></td></tr>\n";
     }
-    elsif ( $subject_line == 2 ) {
+    elsif ( $subject_line == 2 )
+    {
         print NEWFILE
 qq(<tr><td>Subject:</td><td><input type="text" name="subject" size="50" /></td></tr>\n);
     }
-    else {
+    else
+    {
         print NEWFILE
 qq(<tr><td>Subject:</td><td><input type="text" name="subject" value="$E{$subject}" size="50" /></td></tr>\n);
     }
     print NEWFILE "<tr><td>Comments:</td>\n";
     print NEWFILE qq(<td><textarea name="body" cols="50" rows="10">\n);
-    if ($quote_text) {
+    if ($quote_text)
+    {
         print NEWFILE map { $E{"$quote_char $_\n"} }
           split /\n/, $variables->{hidden_body};
         print NEWFILE "\n";
@@ -600,7 +702,8 @@ qq(<tr><td>Subject:</td><td><input type="text" name="subject" value="$E{$subject
 </html>
 END_HTML
 
-    unless ( close NEWFILE ) {
+    unless ( close NEWFILE )
+    {
         my $err = "close $file.tmp: $!";
         unlink "$file.tmp";
         die $err;
@@ -612,17 +715,21 @@ END_HTML
 ###############################
 # Main WWWBoard Page Subroutine
 
-sub main_page {
+sub main_page
+{
     my ( $ft, $variables ) = @_;
 
-    if ( $variables->{followup} ) {
+    if ( $variables->{followup} )
+    {
         insert_followup( $ft, $variables, "$basedir/$mesgfile", "$mesgdir/" );
     }
-    else {
+    else
+    {
         $ft->linewise_rewrite(
             "$basedir/$mesgfile",
             sub {
-                if (/<!--begin-->/) {
+                if (/<!--begin-->/)
+                {
                     $_ .= html_message_line( $variables, "$mesgdir/" );
                 }
             }
@@ -630,7 +737,8 @@ sub main_page {
     }
 }
 
-sub insert_followup {
+sub insert_followup
+{
     my ( $ft, $variables, $file, $url_prefix ) = @_;
 
     my %is_followup_to = map { $_ => 1 } @{ $variables->{followups} };
@@ -639,12 +747,15 @@ sub insert_followup {
         $file,
         sub {
 
-            if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/) {
+            if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/)
+            {
                 $_ .= html_message_line( $variables, $url_prefix );
             }
-            elsif (m#\(<!--responses: (\d+?)-->(\d+?)\)#) {
+            elsif (m#\(<!--responses: (\d+?)-->(\d+?)\)#)
+            {
                 my ( $respto, $respcount ) = ( $1, $2 );
-                if ( exists $is_followup_to{$respto} ) {
+                if ( exists $is_followup_to{$respto} )
+                {
                     $respcount++;
 s#\(<!--responses: \d+-->\d+\)#(<!--responses: $respto-->$respcount)#
                       or die "unexpected s/// failure";
@@ -655,7 +766,8 @@ s#\(<!--responses: \d+-->\d+\)#(<!--responses: $respto-->$respcount)#
     );
 }
 
-sub html_message_line {
+sub html_message_line
+{
     my ( $variables, $url_prefix ) = @_;
 
     my $id      = $variables->{id};
@@ -674,20 +786,23 @@ END_HTML
 
 ############################################
 # Add Followup Threading to Individual Pages
-sub thread_pages {
+sub thread_pages
+{
 
     my ( $ft, $variables ) = @_;
 
     return unless $variables->{num_followups};
 
-    foreach my $followup_num ( @{ $variables->{followups} } ) {
+    foreach my $followup_num ( @{ $variables->{followups} } )
+    {
         insert_followup( $ft, $variables,
             "$basedir/$mesgdir/$followup_num.$ext", '' );
     }
 
 }
 
-sub return_html {
+sub return_html
+{
 
     my ($variables) = @_;
     my $id = $variables->{id};
@@ -736,7 +851,8 @@ sub return_html {
 END_HTML
 }
 
-sub preview_post {
+sub preview_post
+{
     my ($variables) = @_;
 
     html_header();
@@ -759,14 +875,16 @@ END_HTML
     rest_of_form($variables);
 }
 
-sub error {
+sub error
+{
     my ( $error, $variables ) = @_;
 
     html_header();
     $done_headers++;
 
     my ( $html_error_message, $error_title );
-    if ( $error =~ /^no_(name|subject|body)$/ ) {
+    if ( $error =~ /^no_(name|subject|body)$/ )
+    {
         my $missing = ucfirst $1;
         $error_title        = "No $missing";
         $html_error_message = <<EOMESS;
@@ -775,7 +893,8 @@ sub error {
     Message.</p>
 EOMESS
     }
-    elsif ( $error eq 'field_size' ) {
+    elsif ( $error eq 'field_size' )
+    {
         $error_title        = 'Field too Long';
         $html_error_message = <<EOMESS;
   <p>One of the form fields in the message submission was too long.  The
@@ -792,13 +911,23 @@ EOMESS
   <p>Please modify the form data and resubmit.</p>
 EOMESS
     }
-    elsif ( $error eq 'invalid' ) {
+    elsif ( $error eq 'invalid' )
+    {
         $error_title        = 'Invalid data';
         $html_error_message = <<EOMESS;
 <p>Attempt to submit invalid data. Your message will not be added.</p>
 EOMESS
     }
-    else {
+    elsif ($error eq 'blocked' )
+    {
+       $error_title        = 'Blocked client';
+       $html_error_message =<<EOMESS;
+<p>The address you are posting from has been blocked - if you believe this
+is a mistake please contact the owner of this site</p>
+EOMESS
+    }
+    else
+    {
         $error_title        = 'Application error';
         $html_error_message = <<EOMESS;
 <p>An error has occurred while your message was being submitted
@@ -822,7 +951,8 @@ END_HTML
     exit;
 }
 
-sub rest_of_form {
+sub rest_of_form
+{
 
     my ($variables) = @_;
 
@@ -830,7 +960,8 @@ sub rest_of_form {
 
     my %Form = %{ $variables->{Form} };
 
-    if ( defined $variables->{followup} and $variables->{followup} == 1 ) {
+    if ( defined $variables->{followup} and $variables->{followup} == 1 )
+    {
         print <<END_HTML;
 <input type="hidden" name="origsubject" value="$E{$Form{origsubject}}" />
 <input type="hidden" name="origname" value="$E{$Form{origname}}" />
@@ -843,12 +974,14 @@ END_HTML
 qq(Name: <input type="text" name="name" value="$E{$Form{name}}" size="50" /><br />\n);
     print
 qq(E-Mail: <input type="text" name="email" value="$E{$Form{email}}" size="50" /><p />\n);
-    if ( $subject_line == 1 ) {
+    if ( $subject_line == 1 )
+    {
         print
 qq(<input type="hidden" name="subject" value="$E{$Form{subject}}" />\n);
         print qq(Subject: <b>$E{$Form{subject}}</b><p />\n);
     }
-    else {
+    else
+    {
         print
 qq(Subject: <input type="text" name="subject" value="$E{$Form{subject}}" size="50" /><p />\n);
     }
@@ -866,18 +999,21 @@ Optional Image URL: <input type="text" name="img" value="$E{$Form{'img'}}" size=
 <br /><hr size="7" width="75%" />
 END_HTML
 
-    if ($show_faq) {
+    if ($show_faq)
+    {
         print
 qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ] [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]</center>\n);
     }
-    else {
+    else
+    {
         print
 qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ]</center>\n);
     }
     print "</body></html>\n";
 }
 
-sub filter_html {
+sub filter_html
+{
     my ($comments) = @_;
 
     my $filter = CGI::NMS::HTMLFilter->new(
@@ -889,7 +1025,8 @@ sub filter_html {
     return $filter->filter( $comments, 'Flow' );
 }
 
-sub validate_url {
+sub validate_url
+{
     my ($url) = @_;
 
     $url = "http://$url" unless $url =~ /:/;
@@ -903,7 +1040,8 @@ sub validate_url {
 
 ###############################################################
 
-BEGIN {
+BEGIN
+{
     eval 'local $SIG{__DIE__} ; require File::Transaction';
     $@ and $INC{'File/Transaction.pm'} = 1;
     $@ and eval <<'END_FILE_TRANSACTION' || die $@;
@@ -2464,6 +2602,166 @@ and/or modify it under the same terms as Perl itself.
 
 ## END INLINED CGI::NMS::HTMLFilter
 END_CGI_NMS_HTMLFILTER
+
+    unless ( eval { local $SIG{__DIE__}; require NMS::IPFilter } )
+    {
+        eval <<'END_INLINED_NMS_IPFilter' or die $@;
+package CGI::NMS::IPFilter;
+use strict;
+                                                                               
+require 5.00404;
+                                                                               
+use Socket;
+require Exporter;
+use vars qw($VERSION @ISA @EXPORT);
+
+@ISA = qw(Exporter);
+
+$VERSION = '0.1';
+                                                                               
+
+@EXPORT = qw(ip_in_network rbl_check);
+
+=item cidr_calc
+
+Given an integer between 1 and 32 (which is assumed to have been extracted
+from a CIDR network description) will return the number of IP addresses in
+the block.
+
+=cut 
+
+sub cidr_calc
+{
+   my ( $block) = @_;
+
+   my $ips_in_block = (2 ** (32 - $block)  ) ;
+   return $ips_in_block;
+}
+
+=item add_number_to_ip
+
+Given an IP in dotted decimal notation and a number (assumed to be a block
+size derived from a CIDR) will return the IP address at the top of the
+notional block of IP addresses.
+
+=cut
+
+sub add_number_to_ip
+{
+   my ($ip,$number ) = @_;
+   my $ip_i = ip_to_int($ip);
+   $ip_i += $number;
+   return inet_ntoa(pack('N', $ip_i));
+}
+
+=item ip_to_int
+
+When passed an IP in dotted decimal notation will return an integer that
+this address represents.
+
+=cut
+
+sub ip_to_int
+{
+   my ( $ip ) = @_;
+   my $ip_n = inet_aton($ip);
+   my $ip_i = unpack('N', $ip_n);
+   return $ip_i
+}
+
+=item ip_in_network ( IP, NETWORK )
+
+Will determine whether IP is in the CIDR network NETWORK. A NETWORK without
+a /n suffix is assumed to be a /32 and the IP is compared directly. Returns
+a true value if IP is within NETWORK.
+
+=cut
+
+sub ip_in_network
+{
+   my ( $ip, $network ) = @_;
+   my $rc = 0;
+
+   my $ip_n = ip_to_int($ip);
+
+   my ($lower, $upper ) = network_bounds_int($network);
+
+   if ( $lower <= $ip_n and $ip_n <= $upper )
+   {
+      $rc = 1;
+   }
+
+   return $rc;
+}
+
+=item network_bounds_int(NETWORK)
+
+NETWORK is an IP network description in CIDR format ( nnn.nnn.nnn.nnn/n ).
+The return values are the lower and upper bounds of the network represented
+as integers for easy comparision.  A single IP without a /n is special cased
+and will return the integer value of that IP as both upper and lower values.
+
+=cut
+
+sub network_bounds_int
+{
+   my ( $network ) = @_;
+
+   my ( $lower, $upper );
+
+   if ( $network =~ m%^([^/]+)/(\d+)% )
+   {
+      $lower = ip_to_int($1);
+      $upper = ip_to_int($1) + cidr_calc($2);
+   }
+   else
+   {
+      $lower = $upper = ip_to_int($network);
+   }
+
+   return ($lower, $upper );
+}
+
+=item rbl_check (IP, ZONE )
+
+This performs a dns block list lookup of the supplied IP in the specified
+zone, returning false if there is an entry listed and true otherwise.
+It can block for a long time if the SOA for the supplied zone is busy or
+unavailable.  It is only really useful if the DNSBL zone provided is one
+that lists open HTTP proxies and know exploited machines that may be used
+by spammers or crackers.  
+
+=cut
+
+=for developers
+
+This has only been tested against a local DNSBL which I can put my own
+IP in, so it could probably be tested more thoroughly against a real
+DNSBL using some known proxies.
+
+=cut
+
+sub rbl_check 
+{
+    my ( $ip, $zone ) = @_;
+
+    my $rc = 1;
+    if ( $ip =~ /(\d+)\.(\d+).(\d+)\.(\d+)/ ) {
+        my $query = "$4.$3.$2.$1.$zone.";
+        my $res   = gethostbyname($query);
+        if ( defined $res ) {
+            $rc = 0;
+        }
+    }
+
+    return $rc;
+}
+
+1;
+
+END_INLINED_NMS_IPFilter
+        $INC{'NMS/IPFilter.pm'} = 1;
+    }
 
 }
 

@@ -1,7 +1,7 @@
 COPYRIGHT
 
 wwwboard.pl
-Copyright 2001,2002 London Perl Mongers, All rights reserved
+Copyright 2001 - 2004 London Perl Mongers, All rights reserved
 
 LICENSE
 
@@ -28,6 +28,7 @@ In this distribution, you will find these files
   MANIFEST      - A list of the files in this distribution
   passwd.txt    - The encoded password and username for wwwadmin
   README        - Configuration and installation instructions. This file
+  README.dnsbl  - Information regarding the use of DNS Block Lists
   wwwadmin.pl   - An administration tool to delete messages
   wwwboard.html - The HTML web board file that users will see
   ChangeLog     - The change history of these files
@@ -121,7 +122,7 @@ During the following you will be guided through the configuration and installati
                             messages.  This probably wants to be the
                             same as the one that you use for all the
                             other pages.  This should be a local absolute
-                            URI fragment.
+                            URI fragment such as '/css/style.css/'.
 
       $show_faq           - If $show_faq is set to 1 then the link for the
                             wwwboard FAQ will be shown on the generated pages.
@@ -213,10 +214,60 @@ During the following you will be guided through the configuration and installati
       $charset            - The character set to use for output documents.
 
 
-      @bannedwords        - Include any single words that would NEVER appear in
-                            a genuine forum message. Any message containing any one
-                            of these words in the subject, name or body will be rejected
-                            with no explanation.
+      $bannedwords        - This can be the full path to a text file containing
+                            complete or partial words (or perl regular
+                            expressions) , one per line, that must not
+                            appear in the post. If a match is found then
+                            the post will not made.
+
+      $bannednets         - This can be the full path to a text file containing
+                            either single IP addresses or network
+                            specifications in CIDR notation, one per line,
+                            against which the client's address is checked.
+                            If a match is found an error message will
+                            displayed and the post will not be allowed.
+                            CIDR notation is a way of specifying a whole
+                            network by giving the network (start) address
+                            followed by a slash and then the number of
+                            bits in the sub-net mask which indicates
+                            how many IPs are in the network.  For example:
+
+                              192.168.1.0/24 is 192.168.1.0 - 192.168.1.255
+                              10.0.0.0/8     is 10.0.0.0 -   10.255.255.255
+                            
+                            (These examples are not really useable as the
+                            first refers to a private network you will not
+                            see on the public internet and the second would
+                            block about a quarter of the internet :)
+                            (For the curious the number of IPs is derived from
+                             the CIDR number by the formula:
+   
+                                 2^(32 -$cidr)
+                           
+                             where $cidr is the number after the slash.)
+                            You probably will have determined the IPs or
+                            networks to block from IPs of abusive posters.
+                            This should be used carefully as it is possible
+                            that you may block innocent posters where a
+                            large number of internet users use a single
+                            IP address (like AOL users) or where an addresses
+                            may get used by different people (as with dialup
+                            accounts for instance.)
+
+      @use_rbls           - This is a list of DNSBL zones that list open 
+                            proxies or exploited computers that can be
+                            used by spammers or crackers to attempt to
+                            anonymously access wwwboard, if this is
+                            set and the requesting client appears in
+                            one of the lists then the request will be
+                            refused before any further action is taken
+                            Care should be taken in using this item as
+                            a lookup on a nonexistent or overloaded zone
+                            could block for some time.  More information
+                            on DNSBL and useful zones can be found in
+                            README.dnsbl you got with wwwboard.
+   
+
    Installation
       You must upload this file to your server's cgi-bin or in a directory where
       CGI execution is allowed. Make sure the directory and path match the
@@ -256,13 +307,14 @@ During the following you will be guided through the configuration and installati
       to chmod it. However, it should be chmoded to 644.
 
 * Administration files (wwwadmin.pl, passwd.txt, ADMIN_README)
-   If your site attracts unwanted attention, close monitoring of the wwwadmin.pl
-   output is essential. If you let spurious, malicious, illegal, commercial or
-   unwanted posts linger on your board for days, you only encourage similar activity.
-   However, the administrative files are not necessary to run the boards. That is, if you
-   do not wish to set them up or use them, you can still have a working
-   wwwboard. They are simply a useful tool for the wwwboard administrator to
-   delete messages and perform other administrative tasks. Their settings and
+   If your site attracts unwanted attention, close monitoring of the
+   wwwadmin.pl output is essential. If you let spurious, malicious,
+   illegal, commercial or unwanted posts linger on your board for days,
+   you only encourage similar activity.  However, the administrative files
+   are not necessary to run the boards. That is, if you do not wish to
+   set them up or use them, you can still have a working wwwboard. They
+   are simply a useful tool for the wwwboard administrator to delete
+   messages and perform other administrative tasks. Their settings and
    installation procedure is discussed in ADMIN_README.
 
 SUPPORT
