@@ -1,6 +1,6 @@
 #! /usr/bin/perl -wT
 #
-# $Id: rand_image.pl,v 1.9 2002-07-23 20:44:50 nickjc Exp $
+# $Id: rand_image.pl,v 1.10 2002-07-23 21:00:17 nickjc Exp $
 #
 
 use strict;
@@ -76,7 +76,7 @@ BEGIN
          $message = '';
       }
       
-      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ( $pack, $file, $line, $sub ) = caller(0);
       my ($id ) = $file =~ m%([^/]+)$%;
 
       return undef if $file =~ /^\(eval/;

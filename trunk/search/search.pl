@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.34 2002-07-23 20:44:50 nickjc Exp $
+# $Id: search.pl,v 1.35 2002-07-23 21:00:17 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 
 # PROGRAM INFORMATION
 # -------------------
-# search.pl $Revision: 1.34 $
+# search.pl $Revision: 1.35 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -82,7 +82,7 @@ BEGIN
          $message = '';
       }
 
-      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ( $pack, $file, $line, $sub ) = caller(0);
       my ($id ) = $file =~ m%([^/]+)$%;
 
       return undef if $file =~ /^\(eval/;

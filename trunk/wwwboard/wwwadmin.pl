@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.17 2002-07-23 20:44:51 nickjc Exp $
+# $Id: wwwadmin.pl,v 1.18 2002-07-23 21:00:17 nickjc Exp $
 #
 
 use strict;
@@ -12,7 +12,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.17 $ (part of wwwboard)
+# wwwadmin.pl $Revision: 1.18 $ (part of wwwboard)
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -73,7 +73,7 @@ BEGIN
          $message = '';
       }
       
-      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ( $pack, $file, $line, $sub ) = caller(0);
       my ($id ) = $file =~ m%([^/]+)$%;
 
       return undef if $file =~ /^\(eval/;

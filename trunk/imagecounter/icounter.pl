@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: icounter.pl,v 1.13 2002-07-23 20:44:50 nickjc Exp $
+# $Id: icounter.pl,v 1.14 2002-07-23 21:00:16 nickjc Exp $
 #
 
 use strict;
@@ -70,7 +70,7 @@ BEGIN
          $message = '';
       }
       
-      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ( $pack, $file, $line, $sub ) = caller(0);
       my ($id ) = $file =~ m%([^/]+)$%;
 
       return undef if $file =~ /^\(eval/;

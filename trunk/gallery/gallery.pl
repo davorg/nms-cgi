@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 
-# $Id: gallery.pl,v 1.3 2002-07-23 20:44:50 nickjc Exp $
+# $Id: gallery.pl,v 1.4 2002-07-23 21:00:16 nickjc Exp $
 
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2002/07/23 20:44:50  nickjc
+# * changed $main::DEBUGGING to $DEBUGGING, since the assumption that we're
+#   in package main is invalid under mod_perl
+#
 # Revision 1.2  2002/02/27 09:04:29  gellyfish
 # * Added question about simple search and PDF to FAQ
 # * Suppressed output of headers in fatalsToBrowser if $done_headers
@@ -62,7 +66,7 @@ BEGIN
          $message = '';
       }
       
-      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ( $pack, $file, $line, $sub ) = caller(0);
       my ($id ) = $file =~ m%([^/]+)$%;
 
       return undef if $file =~ /^\(eval/;
