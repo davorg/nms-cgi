@@ -1,5 +1,6 @@
 tfmail/TFmail.pl
 tfmail/NMStreq.pm
+tfmail/NMStreqUTF8.pm
 tfmail/MIME_Lite.pm
 tfmail/default.trc
 tfmail/email.trt

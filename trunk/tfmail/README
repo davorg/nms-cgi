@@ -32,6 +32,8 @@ In this distribution, you will find the following files:
 
 TFmail.pl      - The main Perl script
 NMStreq.pm     - A Perl module that TFmail.pl needs
+NMStreqUTF8.pm - A Perl module that TFmail.pl needs if you use the 'utf-8'
+                 character encoding.
 MIME_Lite.pm   - A Perl module that TFmail.pl needs if you want to use
                  file uploads, unless MIME::Lite is installed on the
                  server
@@ -133,6 +135,17 @@ LOGFILE_ROOT        - The filesystem path to the directory under which log
 LOGFILE_EXT         - The file extension that log files must have.  Default:
                       .log
 
+CHARSET             - The character encoding to use for output documents and
+                      e-mails.  All user input must be encoded with the same
+                      charset or the output may appear garbled.  The defualt
+                      of 'iso-8859-1' works for many Western languages.  If
+                      you need characters that iso-8859-1 cannot represent
+                      then you might want to consider setting CHARSET to
+                      'utf-8' and reading the notes in NMStreqUTF8.pm about
+                      forcing the browser to use utf-8 to encode the form
+                      submission.
+
+
 SCRIPT INSTALLATION
 
 TFmail is installed by copying the file TFmail.pl into your cgi-bin
@@ -156,7 +169,7 @@ will probably be an equivalent function in your file transfer program.
 
 CHOOSING SECURE LOCATIONS FOR FILES
 
-The TFmail.pl CGI requires many support files, such as the two .pm
+The TFmail.pl CGI requires many support files, such as the .pm
 files, the .trc configuration files, the .trt output template files
 and possibly some log files and/or the nms_sendmail script.  It's
 important to consider security when choosing locations for these
@@ -166,7 +179,7 @@ The most important consideration is to prevent an attacker from
 accessing any of these files directly via the web server, and
 hence gaining information about your setup or access to your log
 files.  Since your e-mail address appears in the configuration
-file(s), it's important to protect them.  The log files may 
+file(s), it's important to protect them.  The log files may
 contain even more sensitive information.
 
 For example, if you were to put your configuration files in a
@@ -204,8 +217,8 @@ would need to guess the URL:
   http://www.your.domain/p5xltfe/default.trc
 
 which is harder.  Be aware however that this is a weak form of
-security.  Web server bugs and configuration errors that allow this
-type of precaution to be bypassed are relatively common.
+security.  Web server bugs and configuration errors that allow
+this type of precaution to be bypassed are relatively common.
 
 
 OUTPUT CUSTOMIZATION
@@ -542,7 +555,7 @@ email_template:
 %The name they entered was: {= param.name =}
 
 
-... in the configuration file.  You can do this for any of the 
+... in the configuration file.  You can do this for any of the
 configuration variables listed above that expect a template file
 as a value.
 

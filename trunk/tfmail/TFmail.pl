@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.10 2002-05-23 20:50:27 nickjc Exp $
+# $Id: TFmail.pl,v 1.11 2002-05-30 19:45:30 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -20,6 +20,7 @@ use constant ENABLE_UPLOADS => 0;
 use constant USE_MIME_LITE  => 1;
 use constant LOGFILE_ROOT   => '';
 use constant LOGFILE_EXT    => '.log';
+use constant CHARSET        => 'iso-8859-1';
 
 # USER CONFIGURATION << END >>
 # ----------------------------
@@ -54,13 +55,20 @@ BEGIN
       require MIME_Lite if $@;
       import MIME::Lite;
    }
+   if (CHARSET eq 'utf-8')
+   {
+      require NMStreqUTF8;
+   }
+   else
+   {
+      require NMStreq;
+   }
 }
-use NMStreq;
 
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.10 $, 10, -1;
+  $VERSION = substr q$Revision: 1.11 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -88,7 +96,7 @@ sub main
 {
    local ($CGI::DISABLE_UPLOADS, $CGI::POST_MAX);
 
-   my $treq = NMStreq->new(
+   my $treq = (CHARSET eq 'utf-8' ? 'NMStreqUTF8' : 'NMStreq')->new(
       ConfigRoot    => CONFIG_ROOT,
       MaxDepth      => MAX_DEPTH,
       ConfigExt     => CONFIG_EXT,
@@ -414,7 +422,7 @@ sub send_email
          Subject          => $msg->{Subject},
          'X-Http-Client'  => $x_remote,
          'X-Generated-By' => $x_gen_by,
-         Type             => 'text/plain; charset=iso-8859-1',
+         Type             => 'text/plain; charset=' . CHARSET,
          Data             => $msg->{body},
          Date             => '',
          Encoding         => 'quoted-printable',
@@ -531,7 +539,7 @@ sub html_page
 {
    my ($treq, $template) = @_;
 
-   print "Content-type: text/html; charset=iso-8859-1\n\n";
+   print "Content-type: text/html; charset=@{[ CHARSET ]}\n\n";
    $done_headers = 1;
 
    $treq->process_template($template, 'html', \*STDOUT);
@@ -552,9 +560,9 @@ sub error_page
    unless ( $done_headers )
    {
       print <<EOERR;
-Content-type: text/html; charset=iso-8859-1
+Content-type: text/html; charset=@{[ CHARSET ]}
 
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="@{[ CHARSET ]}"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
