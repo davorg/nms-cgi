@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.81 2002-05-02 07:54:12 nickjc Exp $
+# $Id: FormMail.pl,v 1.82 2002-05-02 16:36:44 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.81 $
+# FormMail.pl $Revision: 1.82 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -66,7 +66,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.81 $, 10, -1;
+  $VERSION = substr q$Revision: 1.82 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -468,14 +468,12 @@ sub send_mail {
   }
 
   if ( $send_confirmation_mail ) {
-    open(CMAIL,"|$mailprog")
-      || die "Can't open $mailprog\n";
+    open_sendmail_pipe(\*CMAIL, $mailprog);
     print CMAIL $xheader, "To: $email$realname\n$confirmation_text";
     close CMAIL;
   }
 
-  open(MAIL,"|$mailprog")
-    || die "Can't open $mailprog\n";
+  open_sendmail_pipe(\*MAIL, $mailprog);
 
   print MAIL $xheader, <<EOMAIL;
 To: $Config{recipient}
@@ -509,6 +507,22 @@ EOMAIL
   }
 
   close (MAIL) || die "close mailprog: \$?=$?,\$!=$!";
+}
+
+sub open_sendmail_pipe {
+  my ($fh, $mailprog) = @_;
+
+  my $result;
+  eval { local $SIG{__DIE__};
+         $result = open $fh, "| $mailprog"
+       };
+  if ($@) {
+    die $@ unless $@ =~ /Insecure directory/;
+    delete $ENV{PATH};
+    $result = open $fh, "| $mailprog";
+  }
+
+  die "Can't open $mailprog\n" unless $result;
 }
 
 sub cleanup_realname {
@@ -863,7 +877,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.81 $
+FormMail $Revision: 1.82 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
