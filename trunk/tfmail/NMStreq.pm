@@ -7,7 +7,7 @@ use IO::File;
 use POSIX qw(strftime);
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.3 $, 10, -1;
+$VERSION = substr q$Revision: 1.4 $, 10, -1;
 
 =head1 NAME
 
@@ -550,7 +550,7 @@ Would compile to the array ref:
       'ctl' => 'FOREACH'
       'arg' => 'input_field',
       'sub' => [ \'name', ": ", \'value', "\n" ],
-    }
+    },
     "----\n",
   ]
 
@@ -781,7 +781,7 @@ sub _read_config_file
       s#^\s*##;
       s#\s*$##;
       next unless length;
-      $config{$key} = (defined $config{$key} ? "$config{$key} $_" : $_);
+      $config{$key} = (defined $config{$key} ? "$config{$key}\n$_" : $_);
    }
    delete $config{'**NOKEY**'};
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.9 2002-05-17 07:54:46 nickjc Exp $
+# $Id: TFmail.pl,v 1.10 2002-05-23 20:50:27 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -60,7 +60,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.9 $, 10, -1;
+  $VERSION = substr q$Revision: 1.10 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -155,7 +155,8 @@ sub check_recipients
 =item address_ok ( ADDRESS )
 
 Returns true if ADDRESS is a reasonable email address, false
-otherwise.
+otherwise.  Allows leading and trailing spaces and tabs on the
+address.
 
 =cut
 
@@ -163,7 +164,7 @@ sub address_ok
 {
    my ($addr) = @_;
 
-   $addr =~ m#^[\w\-\.\*]{1,100}\@[\w\-\.]{1,100}$# ? 1 : 0;
+   $addr =~ m#^[ \t]*[\w\-\.\*]{1,100}\@[\w\-\.]{1,100}[ \t]*$# ? 1 : 0;
 }
 
 =item check_required_fields ( TREQ )
@@ -270,6 +271,7 @@ sub send_main_email
    if ($email_input and address_ok($treq->param($email_input)) )
    {
       $from = $treq->param($email_input);
+      $from =~ s#\s+##g;
       $confto = $from;
       if ($realname_input)
       {
