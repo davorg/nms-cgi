@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail_config.pl,v 1.2 2002-11-11 13:15:23 nickjc Exp $
+# $Id: TFmail_config.pl,v 1.3 2002-11-17 09:33:51 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -47,13 +47,13 @@ a single file.
 use Fcntl ':flock';
 use lib LIBDIR;
 use NMSCharset;
-use CGI;
+use CGI qw(:standard);
 use IO::File;
 
 BEGIN
 {
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.2 $, 10, -1;
+   $VERSION = substr q$Revision: 1.3 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -97,9 +97,8 @@ sub main
    }
    unless ( $ENV{REQUEST_METHOD} eq 'POST' and length $gotpass )
    {
+      html_header();
       print <<END;
-Content-type: text/html; charset=@{[ CHARSET ]}
-
 <?xml version="1.0" encoding="@{[ CHARSET ]}"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -125,9 +124,8 @@ END
 
    if (-s LOCKFILE > 5)
    {
+       html_header();
        print <<END;
-Content-type: text/html; charset=@{[ CHARSET ]}
-
 <?xml version="1.0" encoding="@{[ CHARSET ]}"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -154,9 +152,8 @@ END
       seek LOCK, 0, 2 or die "seek: $!";
       print LOCK "x";
       close LOCK;
+      html_header();
       print <<END;
-Content-type: text/html; charset=@{[ CHARSET ]}
-
 <?xml version="1.0" encoding="@{[ CHARSET ]}"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -223,19 +220,14 @@ sub send_log
 
    if ($is_download)
    {
-      print <<END;
-Content-type: application/octet-stream
-Content-Disposition: attachment; filename="$log.log"
-Content-Length: $size
-
-END
+      print header('-type' => 'application/octet-stream',
+                   '-Content_Disposition' => qq{attachment; filename="$log.log"},
+                   '-Content_Length' => $size,
+                  );
    }
    else
    {
-      print <<END;
-Content-type: text/plain
-
-END
+      print header('-type' => 'text/plain');
    }
 
    print $buf;
@@ -495,9 +487,8 @@ sub page_header
    my $title = 'TFmail Configuration Editor';
    $title .= " - $this_config" if length $this_config;
 
+   html_header();
    print <<END;
-Content-type: text/html; charset=@{[ CHARSET ]}
-
 <?xml version="1.0" encoding="@{[ CHARSET ]}"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -571,9 +562,8 @@ sub error_page
 
    unless ( $done_headers )
    {
+      html_header();
       print <<EOERR;
-Content-type: text/html; charset=@{[ CHARSET ]}
-
 <?xml version="1.0" encoding="@{[ CHARSET ]}"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -606,5 +596,17 @@ EOERR
   </body>
 </html>
 EOERR
+}
+
+sub html_header {
+    if ($CGI::VERSION >= 2.57) {
+        # This is the correct way to set the charset
+        print header('-type'=>'text/html', '-charset'=>CHARSET);
+    }
+    else {
+        # However CGI.pm older than version 2.57 doesn't have the
+        # -charset option so we cheat:
+        print header('-type' => "text/html; charset=@{[ CHARSET ]}");
+    }
 }
 

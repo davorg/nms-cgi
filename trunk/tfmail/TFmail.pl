@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.20 2002-10-02 08:10:46 nickjc Exp $
+# $Id: TFmail.pl,v 1.21 2002-11-17 09:33:51 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -47,6 +47,7 @@ use constant MIME_LITE => USE_MIME_LITE || ENABLE_UPLOADS;
 
 use Fcntl ':flock';
 use IO::File;
+use CGI qw(header);
 use lib LIBDIR;
 use NMStreq;
 use NMSCharset;
@@ -62,7 +63,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.20 $, 10, -1;
+   $VERSION = substr q$Revision: 1.21 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -650,7 +651,7 @@ sub html_page
 {
    my ($treq, $template) = @_;
 
-   print "Content-type: text/html; charset=@{[ CHARSET ]}\n\n";
+   html_header();
    $done_headers = 1;
 
    $treq->process_template($template, 'html', \*STDOUT);
@@ -670,9 +671,8 @@ sub error_page
 
    unless ( $done_headers )
    {
+      html_header();
       print <<EOERR;
-Content-type: text/html; charset=@{[ CHARSET ]}
-
 <?xml version="1.0" encoding="@{[ CHARSET ]}"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -705,6 +705,24 @@ EOERR
   </body>
 </html>
 EOERR
+}
+
+=item html_header ()
+
+Outputs the CGI header using a content-type of text/html.
+
+=cut
+
+sub html_header {
+    if ($CGI::VERSION >= 2.57) {
+        # This is the correct way to set the charset
+        print header('-type'=>'text/html', '-charset'=>CHARSET);
+    }
+    else {
+        # However CGI.pm older than version 2.57 doesn't have the
+        # -charset option so we cheat:
+        print header('-type' => "text/html; charset=@{[ CHARSET ]}");
+    }
 }
 
 =back
