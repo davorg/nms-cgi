@@ -1,0 +1,194 @@
+
+Test Counter  Version 1.00
+Copyright 2001 London Perl Mongers, All rights reserved
+
+This script is free software; you are free to redistibute it
+and/or modify it under the same terms as Perl itself.
+
+Scripts Archive at  <http://www.dave.org.uk/scripts/nms/>
+
+
+TextCounter is a simple program which allows you to include a text counter 
+on any page.  You can also include the date since it began counting, a link 
+to a help page, etc...  This program was designed for anyone to use, from a 
+user who just wants a text counter on his or her home page to a system 
+administrator who wants to make it easy for anyone on their server to use 
+the count program.  Multiple counters can be set up, with the need for only 
+one script to manage them all.  You can specify what hosts are allowed to 
+access this program, and can even allow certain directories or exclude certain 
+directories from being able to use this script.  Details on how to install 
+and use this script are available below.
+
+This package should have come with 2 files:
+   1) README 	- This file.  Installation Instructions, 
+                  Disclaimer, Copyright
+   2) counter.pl   - The CGI/Perl program which does all of the work.
+
+Installation:
+=============
+
+counter.pl
+------------
+
+The first thing you will need to do when you get ahold of this script is 
+make sure that the first line of the script correctly points to the Perl 
+executable on your system.  If you don't know where this is for sure, use 
+the command:
+
+which perl
+or
+whereis perl
+
+from your Unix shell.
+
+There are also several Variables and Options you will need to configure.  
+The instructions below provide examples and instructions of how to do so.
+
+VARIABLE CONFIGURATION:
+    $data_dir = "/path/to/a/data/directory/";
+        The $data_dir variable should specify the path to the 
+        directory under which all of th data files will be stored.
+        This path must end with a '/' and it NEEDS to be writable by 
+        your web server.  This means that you most likely will need 
+        to chmod this directory 777.  You can do this by executing:
+
+            chmod 777 /path/to/a/data/directory/
+
+        It is suggested that you make this directory a brand new 
+        directory for the sole purpose of holding the data files.  A 
+        new data file will be created for each page you add your text
+        counter to.  You may think that this is not the best way to 
+        do this, but it is not all bad, and is beneficial in some 
+        ways:
+
+        1) If you use this system wide, it is likely that 
+           many pages will load at the same time, meaning 
+           this script would have to try and edit the main 
+           file if it was all included in one database.  
+           This file can lead to slow downs (if I locked the
+           file each time it was called) or it could lead to 
+           mangled data if I didn't.  That is one reason I 
+           chose to use separate files.
+        2) The files created for the data are EXTREMELY 
+           small, taking up between 15 and 30 bytes (yes, 
+           you heard correctly, bytes).
+        3) Access time is faster as I know exactly what 
+           file to open, rather than flipping through lines 
+           of a database if it was all in one file.
+           (BTW, this explanation was more for people who 
+           may have questioned why I chose to do it this way.  
+           Most of you could care less about these last 3 points)
+           :-)
+
+    @valid_uri = ("/");
+        The @valid_uri array allows you to allow this script to 
+        be used only under a certain directory of your server.  Say 
+        your username is fred and you are on a server called 
+        host.com, therefore all of your pages reside under: 
+        http://www.host.com/~fred/.  You only want those pages under
+        that directory to be able to use this program, so you set the 
+        @valid_uri variable to ("/~fred"); or you can allow you and 
+        your friend joe to use it by setting the @valid_uri variable
+        to: ("/~fred","/~joe");  Or if you are a sysadmin who wants 
+        to allow everyone to use this script, simply set this array 
+        to ("/"); as I have shown above.
+
+    @invalid_uri = ("");
+        Most likely you will just comment this line out if you do 
+        not wish to block access to a certain part of your server.
+        But take the example of fred above.  He decides to be real 
+        cool and open this program up to anyone on the server by 
+        setting @valid_uri = ("/");  His arch enemy bob is also on 
+        the server though, and fred despises him so much that he 
+        wants to block access to this guy, cause bob is such a jerk.
+        So fred sets his @invalid_uri = ("/~bob"); and bob can't use 
+        his counter. MU HA HA HA.  I'm sure there are other cool uses
+        for this too.  Like if you sell virtual domains and want to 
+        charge people before they can use your counter script, you 
+        put their URI in here until they pay or something.  I dunno. 
+        The story was fun to write, and that's all that matters. :-)
+
+OPTION SETTINGS:
+    $show_link = "http://www.worldwidemart.com/scripts/";
+        If you put a URL into this option, then the actual number 
+        returned by the TextCounter script will be linked to this 
+        URL.  This is useful if you want to link to my site 
+        (PLEASE?!) or link to a help page explaining how the user 
+        on your system can set up their own text counter.  or if 
+        you just want to have a pointless link on your number.  
+        Setting this to a null value like "" or 0 will take out the
+        link.
+
+    $auto_create = "1";
+        Suggested value here is 1, or else you will have to 
+        create data files by hand.  This allows users who reside 
+        under the @valid_uri array to create a new counter for their 
+        page simply by putting the Server Side Include reference into
+        their page.  Otherwise the maintainer will have to create a 
+        data file which looks like:
+
+            January 1, 2000||0
+
+        Obviously putting the correct date into the script and 
+        changing 0 to whatever you want to start the number at.  
+        This file MUST be writable by the web server meaning you 
+        need to chmod it 777.  This means other users on your 
+        system can write to it too, which is another reason to allow 
+        auto-create.  Auto-Create will leave it chmoded so only the 
+        web server can write to it.
+
+    $show_date = "1";
+        If this variable is on, then the date on which you began 
+        the count will appear with your actual count number.  It 
+        will look like: 
+
+            [Count] hits since [Date]
+
+        If this is turned off, you allow users more control over 
+        their text and it will simply print:
+
+            [Count]
+
+        The user can then supply the date if they wish.
+
+    $pad_size = "5";
+        You will notice if you have seen many other counters on 
+        the web, graphical or text-based, that they are often 
+        padded with zeros at the front to form a number like: 
+        0000154.  This is achieved by adding 0's to the front of 
+        the current count.  You can specify how many digits long 
+        you want your number to be, so in the example above you would 
+        set $pad_size = "7";
+
+        If you do not want your number padded and wish for the 
+        above example to appear as 154 in your page, then set 
+        $pad_size = "1";
+
+______________________________________________________________________________
+
+HOW TO CALL THIS SCRIPT FROM YOUR PAGE?
+
+Calling this program is really very simple.  As I have mentioned before, 
+you will need Server Side Includes turned on on your server before you 
+can use this program.  Talk to your system administrator or visit my 
+Frequently Asked Questions section for more information on server side 
+includes.  If you know they are turned on, or want to try and find out, 
+put the following code into your HTML document:
+
+<!--#exec cgi="/virtual/path/to/counter.pl"-->
+
+So, if I have my counter.pl (or counter.cgi if I have to rename it for 
+my server) program located at 
+http://www.worldwidemart.com/scripts/demos/textcounter/counter.pl, then I 
+would put the following into any HTML document a wanted a count to appear in:
+
+<!--#exec cgi="/scripts/demos/textcounter/counter.pl"-->
+
+_____________________________________________________________________________
+
+Well, that covers all of the options and variables, and I explained these 
+in such detail that hopefully I won't get swamped by help mail for this 
+script. :-D (Yah right!)  But please, before you ask for help, follow the 
+steps at the top of this document.  You probably won't get an answer from 
+myself or the help staff if your answer is in the Frequently Asked 
+Questions at my site.
