@@ -80,24 +80,14 @@ MAILPROG            - The command line that the script should use to fire
                         MAILPROG => '/usr/sbin/sendmail -oi -t';
 
                       If your system lacks a suitable sendmail program, then
-                      you can use the nms_sendmail script available from
-                      http://nms-cgi.sourceforge.net/ in place of sendmail.
+                      you can configure TFmail to talk directly to an SMTP
+                      relay rather then using sendmail.
 
-                      Success has been reported on windows systems using a
-                      MAILPROG setting like:
+                      For example, if your ISP has a host called
+                      "mailhost.your-isp.net" which will act as an SMTP relay
+                      for the web server, you would set:
 
-                        MAILPROG => "$^X -wT d:/inetpub/web31337/nms_sendmail -oi -t";
-
-                      ... you will need to replace "d:/inetpub/web31337/" with
-                      the filesystem location of the nms_sendmail script.
-
-                      If you find that the above fails with an error message
-                      like "Insecure dependency in piped open", then you
-                      should replace the single MAILPROG line with the two
-                      lines:
-
-                        BEGIN { use vars qw($X); $^X =~ /(.+)/; $X = $1; }
-                        use constant MAILPROG => "$X -wT d:/inetpub/web31337/nms_sendmail -oi -t";
+                        MAILPROG => 'SMTP:mailhost.your-isp.net';
 
 POSTMASTER          - The email address to use as the 'envelope sender' of
                       outgoing e-mails.  This address will receive the bounce
