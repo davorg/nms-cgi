@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.20 2002-07-23 21:00:16 nickjc Exp $
+#  $Id: ffa.pl,v 1.21 2003-01-16 23:10:24 nickjc Exp $
 #
 
 use strict;
@@ -368,7 +368,7 @@ sub repeat_url
    print <<EIEIO;
 <h1>Repeat URL</h1>
 <p>
-Sorry, this link is already in the Free For All Link Page
+Sorry, this link is already in the $linkstitle
 You cannot add this URL to it again. </p>
 <p>
 <a href="$linksurl">$linkstitle</a>
