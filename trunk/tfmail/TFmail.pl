@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.22 2003-06-14 14:50:23 nickjc Exp $
+# $Id: TFmail.pl,v 1.23 2004-04-09 04:27:53 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -69,7 +69,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.22 $, 10, -1;
+   $VERSION = substr q$Revision: 1.23 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -508,7 +508,7 @@ sub email_start {
     smtp_command("DATA", '3');
   }
   else {
-    my $command = MAILPROG . ' -f "$sender"';
+    my $command = MAILPROG . " -f '$sender'";
     my $result;
     eval { local $SIG{__DIE__};
            $result = open SENDMAIL, "| $command"
