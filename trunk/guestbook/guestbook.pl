@@ -1,11 +1,10 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.1.1.1 2001-11-11 16:48:53 davorg Exp $
+# $Id: guestbook.pl,v 1.2 2001-11-11 17:55:27 davorg Exp $
 #
 # $Log: not supported by cvs2svn $
-# Revision 1.2  2001/09/18 19:26:47  dave
-# Added CVS keywords.
-#
+# Revision 1.1.1.1  2001/11/11 16:48:53  davorg
+# Initial import
 #
 
 use strict;

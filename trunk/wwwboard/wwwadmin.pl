@@ -1,4 +1,9 @@
 #!/usr/local/bin/perl -wT
+#
+# $Id: wwwadmin.pl,v 1.2 2001-11-11 17:55:27 davorg Exp $
+#
+# $Log: not supported by cvs2svn $
+#
 
 use strict;
 use CGI qw(:standard);
