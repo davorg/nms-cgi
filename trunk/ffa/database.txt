@@ -1,5 +1,0 @@
-Miscellaneous|http://localhost.com/|Foo test|941370205|127.0.0.1
-Computers|http://gellyfish.com/|gfgfh|941370796|127.0.0.1
-Computers|http://www.gellyfish.com/|gfgfh|941370936|127.0.0.1
-Miscellaneous|http://www.rabies.com/|Scabies|941371257|127.0.0.1
-Miscellaneous|http://www.perl.gellyfish.com|Cabbage|941371841|127.0.0.1
