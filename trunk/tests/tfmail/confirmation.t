@@ -51,11 +51,12 @@ my $t = NMSTest::ScriptUnderTest->new(
 );
 
 my @tests = (
-  # TEST           REALNAME        E-MAIL               OK
-  [ 'both ok',     "Mr \377 dude", 'foo@foo.domain',    1  ],
-  [ 'rn empty',    "",             'foo@foo.domain',    1  ],
-  [ 'email empty', "Mr \377 dude", '',                  0  ],
-  [ 'email bad',   "Mr \377 dude", 'g%4g@foo.domain',   0  ],
+  # TEST             REALNAME        E-MAIL               OK
+  [ 'both ok',       "Mr \377 dude", 'foo@foo.domain',    1  ],
+  [ 'both ok space', "Mr \377 dude", ' foo@foo.domain ',  1  ],
+  [ 'rn empty',      "",             'foo@foo.domain',    1  ],
+  [ 'email empty',   "Mr \377 dude", '',                  0  ],
+  [ 'email bad',     "Mr \377 dude", 'g%4g@foo.domain',   0  ],
 );
 
 use vars qw($id $r $e $ok);
