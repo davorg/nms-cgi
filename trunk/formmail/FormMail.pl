@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.26 2002-01-21 21:58:00 gellyfish Exp $
+# $Id: FormMail.pl,v 1.27 2002-01-27 13:59:08 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.26  2002/01/21 21:58:00  gellyfish
+# Checkbox fix from Chris Benson
+#
 # Revision 1.25  2002/01/20 14:52:02  nickjc
 # added a warning about the risks of turning on the confirmation email
 #
@@ -274,7 +277,7 @@ sub check_url {
 
   if (my $referer = referer()) {
     foreach my $test_ref (@referers) {
-      if ($referer =~ m|https?://([^/]*)\Q$test_ref\E|i) {
+      if ($referer =~ m|^https?://([^/]*)\Q$test_ref\E|i) {
 	$check_referer = 1;
 	last;
       }
@@ -294,7 +297,7 @@ sub check_url {
       }
     }
   } else {
-    $check_referer = 1;
+    $check_referer = $secure ? 0 : 1;
   }
   error('bad_referer') unless $check_referer;
 }
