@@ -1,0 +1,628 @@
+COPYRIGHT
+
+TFMail - autoinstall version
+Copyright 2002 London Perl Mongers, All rights reserved
+Portions copyright ZeeGee Software Inc
+
+WARNING
+
+This autoinstall system for TFmail is currently experimental, and
+doesn't yet allow you to activate all of TFmail's features.  If you
+have trouble, it might be worth trying a manual installation of
+TFmail instead.  Just grab the 'tfmail' package from
+http://nms-cgi.sourceforge.net/scripts.shtml
+
+Please report any problems to nms-cgi-support@lists.sourceforge.net
+so that we can improve the autoinstall procedure.
+
+LICENSE
+
+This script is free software; you are free to redistribute it
+and/or modify it under the same terms as Perl itself.
+
+URL
+
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>
+
+SUMMARY
+
+TFmail is a script which allows you to receive the results of an
+HTML form submission via an email message.
+
+TFmail is *not* a plug-in replacement for FormMail.pl, although
+it has a lot of the same features.  TFmail is configured via
+text files on the server rather than via hidden form fields, has
+templates for output, and can support HTTP file uploads.
+
+FILES
+
+In this distribution, you will find the following files:
+
+tfmail_install.pl - A CGI script that will install TFmail on your server
+README            -   This file. Instructions on how to install and use TFmail
+EXAMPLES          -   Some examples of the use of TFmail
+ChangeLog         -   The change history of these files
+MANIFEST          -   List of files
+
+SCRIPT CONFIGURATION
+
+Before you upload and run tfmail_install.pl, you will need to make a
+couple of small changes to it.  There are detailed instructions at the
+top of the script.
+
+SCRIPT INSTALLATION
+
+TFmail is installed by copying the file tfmail_install.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is,
+then please ask your system administrator.
+
+Once you have uploaded the tfmail_install.pl CGI script, simply point
+your web browser at it and it will walk you through the process of
+installing TFmail.
+
+You may need to rename tfmail_install.pl to tfmail_install.cgi. Your
+system administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x tfmail_install.pl" from your
+command line. If you don't have command line access to your web server
+then there will probably be an equivalent function in your file transfer
+program.
+
+OUTPUT CUSTOMIZATION
+
+The .trt files are templates used by TFmail to generate the output
+HTML and the body of the email.  You can edit them to change the
+look of the output before uploading them to the CONFIG_ROOT directory.
+
+The character combinations "{=" and "=}" are used to mark template
+directives.  Whenever TFmail encounters a template directive, it
+replaces it with a value.  For example, the template directive
+{= date =} will be replaced with the current date.  There are also
+directives for introducing environment variables and CGI form input
+values, and a few others.
+
+For example, by default TFmail will use the template email.tft to
+generate the body of the email.  By default that template looks
+like this:
+
+
+%% NMS email template file %%
+Below is the result of your feedback form.  It was submitted
+{= by_submitter =}on {= date =}.
+----------------------------------------------------------------------
+
+{= FOREACH input_field =}
+{= name =}: {= value =}
+
+{= END =}
+----------------------------------------------------------------------
+
+
+The first line just tells TFmail that this is indeed a template
+file for an email body - it won't be included in the output.
+
+The {= by_submitter =} directive generates the user's email address
+and real name followed by the string "by ", if there are email
+address and realname inputs in the form.  If TFmail can't work out
+the user's email address then the {= by_submitter =} directive
+produces nothing.  The "by " string was made part of the directive
+output so that the sentence would make sense in either case.  The
+word 'by' can be replaced by setting the "by_submitter_by"
+configuration directive to the required text.
+
+The {= FOREACH input_field =} directive repeats the lines between
+the FOREACH line and the END line for each field in the form who's
+name starts with a letter or a number.
+
+If everything goes OK and the email is sent, TFmail presents a
+success page to the user.  By default, that success page comes
+from the spage.trt template file, which defaults to this:
+
+
+%% NMS html template file %%
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Thank You</title>
+    <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+    <style>
+       h1.title {
+                   text-align : center;
+                }
+    </style>
+  </head>
+  <body>
+    <h1 class="title">Thank You</h1>
+    <p>Below is what you submitted on {= date =}</p>
+    <hr size="1" width="75%" />
+{= FOREACH input_field =}
+    <p><b>{= name =}:</b> {= value =}</p>
+{= END =}
+    <hr size="1" width="75%" />
+    <p align="center">
+      <font size="-1">
+        <a href="http://nms-cgi.sourceforge.net/">TFmail</a>
+        &copy; 2002 London Perl Mongers
+      </font>
+    </p>
+  </body>
+</html>
+
+
+You can change these templates to anything you like, giving you
+full control over the look of the output.  You don't have to
+include the {= FOREACH input_field =} directive or the {= date =}
+directive unless you want to.
+
+You can use "param" directives to get at the values of individual
+CGI parameters.  The directive {= param.foo =} will output the
+value of the "foo" CGI parameter, if there is one.
+
+For example, if your HTML form has only two inputs, "name" and
+"age", then your success page template file might look like this:
+
+%% NMS html template file %%
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Thank You</title>
+  </head>
+  <body>
+    <h1>Thank You {= param.name =}</h1>
+    <p>
+      Thanks {= param.name =} for registering your age
+      as <b>{= param.age =}</b>.  Your results have been
+      added to our database.
+    </p>
+  </body>
+</html>
+
+In a similar way, you can access the CGI environment variables
+via "env" template directives.  For example:
+
+%% NMS html template file %%
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Thank You</title>
+  </head>
+  <body>
+    <h1>Thank You {= param.name =}</h1>
+    <p>
+      Thanks {= param.name =} for registering your age
+      as <b>{= param.age =}</b>.  Your results have been
+      added to our database.
+    </p>
+    <p>
+      Note: we have logged your IP address as {= env.REMOTE_ADDR =},
+      and we will be reporting you to the FBI if you lied about
+      your age.  Have a nice day.
+    </p>
+  </body>
+</html>
+
+You can also use these "param" and "env" template directives
+in the email template, to get finer control over the body of
+the email.
+
+
+CONFIGURATION FILES
+
+TFmail reads its configuration from a configuration file.  By
+default, that file is default.trc in whatever directory you set
+for CONFIG_ROOT above.
+
+If you have several forms on your site using TFmail, each will
+need its own configuration file.  You can control TFmail's choice
+of configuration file via the "_config" hidden form field.  For
+example, if you added the line:
+
+  <input type="hidden" name="_config" value="foo" />
+
+to one of your HTML forms, then TFmail would use foo.trc in the
+CONFIG_ROOT directory as its configuration file when processing
+that form.
+
+The choice of configuration file is the only thing that can be
+configured via a hidden form field.
+
+The first line of the configuration file has to be exactly the
+text:
+
+  %% NMS configuration file %%
+
+Lines starting with '#' are ignored, and configuration values
+are set by putting the name of the configuration setting at
+the start of a line, followed by a ':' character, followed by
+the value for that setting.  The value can be split over
+several lines.
+
+One configuration value that you must set is "recipient", the
+email address to which the form results should be mailed.  For
+example, your configuration file might look like:
+
+%% NMS configuration file %%
+#
+# This is my configuration file
+#
+recipient: me@my.domain
+
+You can have several recipients set, in which case the form
+results will be copied to all of them:
+
+%% NMS configuration file %%
+#
+# This is my configuration file
+#
+recipient: me@my.domain, some-else@my.domain
+
+Other things that can be set in the configuration file are:
+
+email_template              - The template file to use for the body
+                              of the email.  Default: email
+
+success_page_template       - The template file to use for the main
+                              HTML success page, displayed when the
+                              email has been sent.  Default: spage
+
+sort                        - This sets the order in which the
+                              {= FOREACH input_field =} directive processes
+                              the CGI parameters.  It can be the string
+                              'alphabetic' for alphabetic order, or the
+                              string "order:" followed by a comma separated
+                              list of the parameter names.  Default: the
+                              parameters are output in the order in which
+                              they occur in the HTTP request.
+
+print_blank_fields          - If this is set to a true value then fields that
+                              the user left blank will be visited by the
+                              {= FOREACH input_field =} directive.  Normally,
+                              blank fields are suppressed to save space.
+                              Default: 0
+
+subject                     - The subject for the email.  Default:
+                              "WWW Form Submission".  Template directives can
+                              be included in the subject value, see the section
+                              on OUTPUT CUSTOMIZATION below.
+
+email_input                 - The name of the CGI parameter that
+                              will hold the user's email address.
+                              Used by TFmail to set the From field
+                              of the email.  Default: no email_input,
+                              the mail comes from POSTMASTER.
+
+realname_input              - The name of the CGI parameter that will
+                              hold the user's full name.  Used by
+                              TFmail to set the comment part of the
+                              From field of the email if a valid
+                              email address was found in the
+                              email_input input.  Default: none, so
+                              there will be no comment on the From
+                              address.  If you list several inputs here then
+                              their values will be concatenated to make up
+                              the comment.
+
+by_submitter_by             - The phrase added by the {= by_submitter =}
+                              template directive when outputting the user's
+                              email address.  Default: 'by'.
+
+redirect                    - If this configuration value is set, then it
+                              must be a URL and TFmail will generate a
+                              redirect to that URL on success, instead of
+                              using the success page template.
+
+required                    - A comma separated list of the names of inputs
+                              that the user cannot leave blank.  If any of
+                              these are blank, then the submission will not
+                              be accepted.  Default: no fields are required.
+
+missing_template            - The HTML template file used to generate the
+                              page that the user sees if they leave a
+                              required field blank.
+
+missing_fields_redirect     - If this configuration value is set then
+                              it must be a URL and TFmail will generate
+                              a redirect to that URL instead of using a
+                              template if the user leaves a required
+                              field blank.
+
+confirmation_template       - If this field is set then it must be the
+                              name of an email template that will be used
+                              to send a mail back to the user confirming
+                              their submission.  CAUTION: since the user
+                              could give any email address (not just their
+                              own) and submit repeatedly, there is a risk that
+                              some nasty person will use this to mailbomb
+                              a third party.  Only switch this on if you
+                              really need it.  Template directives that
+                              depend on user input will be disabled for this
+                              template, so that this feature can't be used to
+                              send SPAM.  Default: no confirmation email.
+
+confirmation_subject        - The subject for the confirmation email, if it
+                              is activated by the confirmation_template
+                              directive above.
+
+logfile                     - The name of a file to which data will be
+                              appended for each successful run of the
+                              script.  The name is relative to the
+                              LOGFILE_ROOT directory and does not include
+                              the LOGFILE_EXT file extension.  Default: no
+                              logging.  Note that logging is disabled unless
+                              the LOGFILE_ROOT constant in the script is set.
+
+log_template                - The template file used to construct the text
+                              that gets appended to the log file if the
+                              logfile setting above is set.  Default: log
+
+                              See WRITING TO A LOG FILE below.
+
+modify_html_files           - A list of the names of one or more HTML files
+                              into which TFmail should insert text, relative
+                              to the HTMLFILE_ROOT directory and without the
+                              HTMLFILE_EXT file extension.  See the section
+                              below on inserting text into HTML files.
+
+no_email                    - Set this to a true value to prevent the main
+                              e-mail from being sent.  You might wish to do
+                              that if you're using TFmail.pl to record data
+                              to a log file and don't need it mailed as well.
+
+
+INLINE TEMPLATES
+
+If you don't want to have a separate file for each template, you can
+choose to put some or all of the templates directly into the
+configuration file instead, putting a '%' character at the start of
+each line.
+
+For example, rather than having the configuration file line:
+
+
+email_template: my_email_template
+
+
+... and a separate my_email_template.trt file with the text:
+
+
+%% NMS email template file %%
+This is the email.
+
+remote address: {= env.REMOTE_ADDR =}
+user agent:     {= env.HTTP_USER_AGENT =}
+referer:        {= env.HTTP_REFERER =}
+
+The name they entered was: {= param.name =}
+
+
+... you could just have the block:
+
+
+email_template:
+%This is the email.
+%
+%remote address: {= env.REMOTE_ADDR =}
+%user agent:     {= env.HTTP_USER_AGENT =}
+%referer:        {= env.HTTP_REFERER =}
+%
+%The name they entered was: {= param.name =}
+
+
+... in the configuration file.  You can do this for any of the
+configuration variables listed above that expect a template file
+as a value.
+
+Note that you must leave out the %% NMS ???? template file %%
+line when using an inline template like this.
+
+
+WRITING TO A LOG FILE
+
+If you want to keep your log files in /usr/local/tfmail/logs, then
+you would set LOGFILE_ROOT to '/usr/local/tfmail/logs', and you
+might add the following lines to your .trc file:
+
+
+logfile: foo
+logfile_template:
+%{= date =}|{= env.REMOTE_ADDR =}|{= param.email =}
+
+
+One problem with log files done this way is that the values input
+by the user can contain '|' and newline characters, so it's possible
+for a malicious user to mess up your log files.
+
+However, TFmail will change tag-like constructs such as "<foo>" found
+in the user input into "< foo>" when it writes the log file, so using
+an HTML-like format for log files makes them more resilient:
+
+
+logfile: foo
+logfile_template:
+%{= date =}<x>{= env.REMOTE_ADDR =}<x>{= param.email =}<eol>
+
+
+FILE UPLOADS
+
+To enable file uploads, you will need to set the ENABLE_UPLOADS constant
+in the script to 1.  You will also need to set the correct encoding in
+your HTML form:
+
+<form method="post" enctype="multipart/form-data" action="/cgi-bin/TFmail.pl">
+...
+
+...and you will need to configure one or more inputs to be file uploads
+in your configuration file.  The configuration directive to make an
+input act as a file upload is upload_*, with the * replaced by the name
+of the input.  The value is a list of acceptable file extensions for
+the uploaded file, with the last one being the default that gets used
+if the uploaded file has another extension.
+
+For example, suppose you want the user to be able to upload a picture.
+You might put in the configuration file:
+
+upload_picture: gif jpg jpeg png xxx
+
+and you might put in the HTML form:
+
+  A picture of yourself:
+  <input type="file" name="picture" />
+
+If you want the MIME content-type of the upload to be recorded in the
+email, then you should add:
+
+  {= content_type.picture =}
+
+to the email template file.
+
+INSERTING TEXT INTO HTML FILES
+
+As well as sending email and writing log files, TFmail can be made to
+insert some text into the middle of an existing HTML file.  The
+HTMLFILE_ROOT constant in the script should be set to the filesystem
+path under which all of the HTML files that you might want TFmail to
+modify reside.
+
+For example, to use TFmail.pl as a guestbook script, with your
+guestbook stored in the file /www/sites/31337/guestbook.html, you
+might set the HTMLFILE_ROOT constant to '/www/sites/31337' and put
+the following in a guestbook.trc file:
+
+
+%% NMS configuration file %%
+
+no_email: 1
+
+modify_html_files: guestbook
+
+htmlfile_template_guestbook:
+%   <p><b>Date:</b>{= date =}</p>
+%   <p><b>Name:</b>{= param.name =}</p>
+%   <p><b>Comments:</b>{= param.comments =}</p>
+%   <hr />
+
+required: name,comments
+
+missing_template:
+%<?xml version="1.0" encoding="iso-8859-1"?>
+%<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+% "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+%<html>
+% <head>
+%  <title>Missing Fields</title>
+%  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+% </head>
+% <body>
+%  <p>
+%   You must fill in both the <b>name</b> and <b>comments</b> fields.
+%   Please try again.
+%  </p>
+%  <form method="post">
+%   <input type="hidden" name="_config" value="guestbook" />
+%   <p>Your Name: <input type="text" name="name" size="30" value="{= param.name =}" /></p>
+%   <p>
+%    Comments:<br />
+%    <textarea name="comments" cols="60" rows="4">{= param.comments =}</textarea>
+%   </p>
+%   <p><input type="submit" /> * <input type="reset" /></p>
+%  </form>
+%  <hr />
+% </body>
+%</html>
+
+redirect: http://www.your.domain/thankyou.html
+
+
+... and you might put something like this in the guestbook.html file:
+
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <title>Guestbook</title>
+  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+ </head>
+ <body>
+  <h1>Guestbook</h1>
+  <p>Thank you for visiting our pages.  We would love it if you would
+   <a href="addguest.html">Add</a> to this guestbook we are keeping!</p>
+  <hr />
+<!-- NMS insert below -->
+ </body>
+</html>
+
+
+... and addguest.html would probably look something like:
+
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+ <head>
+  <title>Add to our Guestbook</title>
+  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+ </head>
+ <body>
+  <h1>Add to our Guestbook</h1>
+  <p>Fill in the blanks below to add to our guestbook.</p>
+  <hr />
+  <form method="post" action="http://www.your.domain/cgi-bin/TFmail.pl">
+   <input type="hidden" name="_config" value="guestbook" />
+   <p>Your Name: <input type="text" name="name" size="30" /></p>
+   <p>Comments:<br /><textarea name="comments" cols="60" rows="4"></textarea></p>
+   <p><input type="submit" /> * <input type="reset" /></p>
+  </form>
+  <hr />
+ </body>
+</html>
+
+
+ADVANCED GUESTBOOK
+
+The trouble with the guestbook scheme described above is that it writes
+the entries directly into the guestbook HTML file, so you can't change
+the style in which the entries are shown without going back and editing
+all the old entries by hand.
+
+There is an alternative scheme, using the script GBview.pl, which
+formats the guestbook when it is displayed.  GBview.pl also allows you
+to split a long guestbook into multiple pages.
+
+To use the GBview scheme, adapt the example GBview configuration file
+supplied as gb.trc to your requirements, and upload it.  You will also
+need to edit the configuration section of GBview.pl and upload it to
+the same place as TFmail.pl.  Give all the configuration constants in
+GBview.pl the same values that you used for TFmail.pl.
+
+You will need to have the HTMLFILE_ROOT configuration constant set in
+both TFmail and GBview.  Since the HTML file that TFmail rewrites isn't
+viewed directly by the user in this case, it's best to set HTMLFILE_ROOT
+to a location outside of the web server's document root.  See the
+section on CHOOSING SECURE LOCATIONS FOR FILES above.
+
+You will need an addguest.html file, such as the one shown in the
+example above.  You must change the value of the hidden "_config" input
+to "gb" in the HTML form.  You will also need to upload an empty
+gbdata.html file to the HTMLFILE_ROOT directory on the server.
+
+See http://cleaton.net/nms/agb.html for a working example of a guestbook
+of this type.
+
+
+SUPPORT
+
+For support of this script please email:
+
+  <nms-cgi-support@lists.sourceforge.net>
+
