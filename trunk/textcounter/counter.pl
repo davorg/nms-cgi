@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.12 2002-03-09 10:41:16 gellyfish Exp $
+# $Id: counter.pl,v 1.13 2002-03-09 11:39:06 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/03/09 10:41:16  gellyfish
+# * Added single counter file facility
+# * Added virtual host support
+#
 # Revision 1.11  2002/02/26 20:57:01  gellyfish
 # * Added DOCUMENT_URI to NMSTest::TestRun
 # * Added a default test for textcounter.pl
@@ -48,7 +52,7 @@
 #
 
 use strict;
-use CGI qw(header);
+use CGI qw(header virtual_host);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(strftime);
 use vars qw($DEBUGGING $done_header);
