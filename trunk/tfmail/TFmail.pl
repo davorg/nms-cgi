@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.21 2002-11-17 09:33:51 nickjc Exp $
+# $Id: TFmail.pl,v 1.22 2003-06-14 14:50:23 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -62,8 +62,14 @@ BEGIN
       import MIME::Lite;
    }
 
+   if ( MAILPROG =~ /^SMTP:/i )
+   {
+      require IO::Socket;
+      import IO::Socket;
+   }
+
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.21 $, 10, -1;
+   $VERSION = substr q$Revision: 1.22 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -434,8 +440,7 @@ sub send_email
    my $x_remote = "[$remote_addr]";
    my $x_gen_by = "NMS TFmail v$VERSION (NMStreq $NMStreq::VERSION)";
 
-   open SENDMAIL, '| '.MAILPROG.' -f '.POSTMASTER or die
-      "open MAILPROG: $!";
+   email_start( POSTMASTER, split /\s*,\s*/, $msg->{To} );
 
    if (MIME_LITE)
    {
@@ -456,11 +461,11 @@ sub send_email
          $ml->attach( %$a );
       }
 
-      $ml->print(\*SENDMAIL);
+      email_data( $ml->as_string );
    }
    else
    {
-      print SENDMAIL <<END;
+      email_data(<<END);
 X-Http-Client: $x_remote
 X-Generated-By: $x_gen_by
 To: $msg->{To}
@@ -471,9 +476,138 @@ $msg->{body}
 END
    }
 
-   close SENDMAIL or die
-     "SENDMAIL command failed, MAILPROG constant may be set wrong\n";
+   email_end();
 }
+
+=item email_start( SENDER, RECIPIENT [,...] )
+
+Starts sending a new outgoing email.  SENDER is the envelope
+sender and one or more recipient email addresses must be given.
+
+=cut
+
+use vars qw($smtp);
+sub email_start {
+  my ($sender, @recipients) = @_;
+
+  if (MAILPROG =~ /^SMTP:([\w\-\.]+(:\d+)?)$/i) {
+    my $mailhost = $1;
+    $mailhost .= ':25' unless $mailhost =~ /:/;
+    $smtp = IO::Socket::INET->new($mailhost);
+    defined $smtp or die "SMTP connect to [$mailhost]: $!";
+
+    my $banner = smtp_response();
+    $banner =~ /^2/ or die "bad SMTP banner [$banner] from [$mailhost]";
+
+    my $helohost = ($ENV{SERVER_NAME} =~ /^([\w\-\.]+)$/ ? $1 : '.');
+    smtp_command("HELO $helohost");
+    smtp_command("MAIL FROM:<$sender>");
+    foreach my $r (@recipients) {
+      smtp_command("RCPT TO:<$r>");
+    }
+    smtp_command("DATA", '3');
+  }
+  else {
+    my $command = MAILPROG . ' -f "$sender"';
+    my $result;
+    eval { local $SIG{__DIE__};
+           $result = open SENDMAIL, "| $command"
+         };
+    if ($@) {
+      die $@ unless $@ =~ /Insecure directory/;
+      delete $ENV{PATH};
+      $result = open SENDMAIL, "| $command";
+    }
+
+    die "Can't open mailprog [$command]\n" unless $result;
+  }
+}
+
+=item email_data ( DATA )
+
+Called one or more times after a call to email_start(), this sub
+sends part of the email data.
+
+=cut
+
+sub email_data {
+  my ($data) = @_;
+
+  if (defined $smtp) {
+    $data =~ s#\n#\015\012#g;
+    $data =~ s#^\.#..#mg;
+    $smtp->print($data) or die "write to SMTP server: $!";
+  } else {
+    print SENDMAIL $data or die "write to sendmail pipe: $!";
+  }
+}
+
+=item email_end ()
+
+This sub must be called for the end of each email.
+
+=cut
+
+sub email_end {
+  if (defined $smtp) {
+    smtp_command(".");
+    smtp_command("QUIT");
+    undef $smtp;
+  } else {
+    close SENDMAIL or die "close sendmail pipe failed, mailprog=[".MAILPROG."]";
+  }
+}
+
+=item smtp_command ( COMMAND, [EXPECT] )
+
+Sends a single SMTP command to the remote server, and dies unless
+the response starts with the character EXPECT.  EXPECT defaults to
+'2'.
+
+=cut
+
+sub smtp_command {
+  my ($cmd, $want) = @_;
+  defined $want or $want = '2';
+
+  $smtp->print("$cmd\015\012")
+      or die "write [$cmd] to SMTP server: $!";
+
+  my $resp = smtp_response();
+  unless (substr($resp, 0, 1) eq $want) {
+    die "SMTP command [$cmd] gave response [$resp]";
+  }
+}
+
+=item smtp_response ()
+
+Reads a response from the remote SMTP server, and returns it as
+a single string.  The returned string may have multiple lines.
+
+=cut
+
+sub smtp_response {
+  my $line = smtp_getline();
+  my $resp = $line;
+  while ($line =~ /^\d\d\d\-/) {
+    $line = smtp_getline();
+    $resp .= $line;
+  }
+  return $resp;
+}
+
+=item smtp_getline ()
+
+Reads a single line from the remote SMTP server, and returns it
+as a string.
+
+=cut
+
+sub smtp_getline {
+  my $line = <$smtp>;
+  defined $line or die "read from SMTP server: $!";
+  return $line;
+}  
 
 =item log_to_file ( TREQ )
 
