@@ -1,3 +1,4 @@
+wwwboard/wwwboard.pl
 wwwboard/ADMIN_README
 wwwboard/faq.html
 wwwboard/MANIFEST
@@ -5,5 +6,4 @@ wwwboard/passwd.txt
 wwwboard/README
 wwwboard/wwwadmin.pl
 wwwboard/wwwboard.html
-wwwboard/wwwboard.pl
 wwwboard/ChangeLog

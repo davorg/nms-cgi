@@ -1,4 +1,4 @@
-MANIFEST
-README
-gallery.css
-gallery.pl
+gallery/gallery.pl
+gallery/MANIFEST
+gallery/README
+gallery/gallery.css
