@@ -134,6 +134,21 @@ $line_breaks  -  When set to 1 all of the carriage returns in the visitors
                  comments will be changed to <br /> - this is probably not
                  necessary if $allow_html is set to 1.
 
+$timezone     -   If set this will over-ride the timezone as set on the 
+                  server.  The timezone is a three upper case letter code 
+                  with an optional offset from UTC (The time in London) and 
+                  a code for daylight saving time.  Some examples might be:
+
+                       AST4ADT   America/Thule
+                       CST6CDT   America/Chicago
+                       EST5EDT   America/New_York
+                       MST7MDT   America/Denver
+                       PST8PDT   America/Los_Angeles
+                       YST9YDT   America/Anchorage
+                       ROC       Asia/Taipei
+                       ROK       Asia/Seoul
+                       NZ        Pacific/Auckland
+                       MET       Europe/Paris
 
 You will need also to edit the addguest.html file so that the line :
 

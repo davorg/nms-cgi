@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.41 2002-05-02 07:54:12 nickjc Exp $
+# $Id: guestbook.pl,v 1.42 2002-07-20 08:21:13 gellyfish Exp $
 #
 
 use strict;
@@ -9,12 +9,13 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use IO::File;
 
+
 use vars qw(
   $DEBUGGING $done_headers @debug_msg $guestbookurl
   $guestbookreal $guestlog $cgiurl $emulate_matts_code
   $style $mail $uselog $linkmail $separator $redirection
   $entry_order $remote_mail $allow_html $line_breaks
-  $mailprog $recipient $short_date_fmt $long_date_fmt $locale
+  $mailprog $recipient $short_date_fmt $long_date_fmt $locale $timezone
 );
 
 # sanitize the environment
@@ -79,6 +80,11 @@ $mailprog  = '/usr/lib/sendmail -t -oi -oem';
 
 $recipient = 'you@your.com';
 
+# $timezone is the timezone which you want the times to show as
+# if you are happy with the current timezone it should be left as '';
+
+$timezone = '';
+
 # $long_date_fmt and $short_date_fmt describe the format of the dates that
 # will output - the replacement parameters you can use here are:
 #
@@ -103,7 +109,7 @@ $locale         = '';
 # End configuration
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.41 $, 10, -1;
+$VERSION = substr q$Revision: 1.42 $, 10, -1;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -162,6 +168,11 @@ use vars qw($style_element);
 $style_element = $style ?
                  qq%<link rel="stylesheet" type="text/css" href="$style" />%
                : '';
+
+if ( $timezone ) {
+   $ENV{TZ} = $timezone;
+   POSIX::tzset();
+}
 
 use vars qw($date $shortdate);
 my @now    = localtime();

@@ -240,6 +240,29 @@ web hosting provider.
          </paragraph>
       </description>
    </variable>
+   <variable>
+      <var_name>$timezone</var_name>
+      <description>
+         <paragraph>
+             If set this will over-ride the timezone as set on the server.
+             The timezone is a three upper case letter code with an optional
+             offset from UTC (The time in London) and a code for daylight
+             saving time.  Some examples might be:
+         </paragraph>
+         <paragraph>
+              AST4ADT   America/Thule
+              CST6CDT   America/Chicago
+              EST5EDT   America/New_York
+              MST7MDT   America/Denver
+              PST8PDT   America/Los_Angeles
+              YST9YDT   America/Anchorage
+              ROC       Asia/Taipei
+              ROK       Asia/Seoul
+              NZ        Pacific/Auckland
+              MET       Europe/Paris
+          </paragraph>
+      </description>
+   </variable>
 
     </variables>
   </configuration>
