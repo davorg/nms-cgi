@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.18 2002-08-06 22:05:11 nickjc Exp $
+# $Id: TFmail.pl,v 1.19 2002-09-17 19:28:28 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -62,7 +62,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.18 $, 10, -1;
+   $VERSION = substr q$Revision: 1.19 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -236,7 +236,7 @@ sub setup_input_fields
    }
    else
    {
-      @fields = grep {/^[a-zA-Z0-9]/} $treq->param_list;
+      @fields = grep {/^[^_]/} $treq->param_list;
       if ($sort =~ /^alpha/i)
       {
          @fields = sort @fields;
