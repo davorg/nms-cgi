@@ -1,8 +1,7 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.52 2003-12-28 19:45:42 nickjc Exp $
+# $Id: wwwboard.pl,v 1.53 2004-07-23 21:13:17 codehelpgpg Exp $
 #
-
 use strict;
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
@@ -11,15 +10,15 @@ use vars qw(
   $DEBUGGING $VERSION $done_headers $emulate_matts_code
   $max_followups $basedir $baseurl $cgi_url $mesgdir $datafile
   $mesgfile $faqfile $ext $title $style $show_faq $allow_html
-  $quote_text $quote_char $quote_html $subject_line $use_time
+  $quote_text $quote_char $quote_html $subject_line $use_time $temp
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
-  %max_len $strict_image @image_suffixes $locale $charset
+  %max_len $strict_image @image_suffixes $locale $charset @bannedwords $word
 );
-BEGIN { $VERSION = substr q$Revision: 1.52 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.53 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.52 $
+# wwwboard.pl $Revision: 1.53 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -28,7 +27,7 @@ BEGIN { $VERSION = substr q$Revision: 1.52 $, 10, -1; }
 # <http://www.perl.com/pub/a/language/misc/Artistic.html>
 #
 # For a list of changes see CHANGELOG
-# 
+#
 # For help on configuration or installation see README
 #
 # USER CONFIGURATION SECTION
@@ -38,6 +37,7 @@ BEGIN { $VERSION = substr q$Revision: 1.52 $, 10, -1; }
 # your own web server. If the purpose of these
 # parameters seems unclear, please see the README file.
 #
+
 BEGIN
 {
   $DEBUGGING           = 1;
@@ -57,12 +57,13 @@ BEGIN
   $allow_html          = 1;
   $quote_text          = 1;
   $quote_char          = ':';
-  $quote_html          = 1; 
+  $quote_html          = 1;
   $subject_line        = 0;
   $use_time            = 1;
   $date_fmt            = '%d/%m/%y';
   $time_fmt            = '%T';
   $show_poster_ip      = 1;
+  $extra_strict         = 1;
   $enable_preview      = 0;
   $enforce_max_len     = 0;
   %max_len             = ('name'        => 50,
@@ -81,6 +82,7 @@ BEGIN
   $locale              = '';
   $charset             = 'iso-8859-1';
 
+@bannedwords	= qw( slut levitra viagra cialis sex phentermine casino lolita fuck );
 #
 # USER CONFIGURATION << END >>
 # ----------------------------
@@ -94,7 +96,7 @@ BEGIN
   }
 
   use vars qw($html_preview_button);
-  $html_preview_button = 
+  $html_preview_button =
     ( $enable_preview ? ' <input type="submit" name="preview" value="Preview Post" />' : '');
 }
 
@@ -130,7 +132,7 @@ BEGIN
       {
          $message = '';
       }
-      
+
       my ( $pack, $file, $line, $sub ) = caller(0);
       my ($id ) = $file =~ m%([^/]+)$%;
 
@@ -160,7 +162,7 @@ EOERR
    };
 
    $SIG{__DIE__} = \&fatalsToBrowser;
-}   
+}
 
 
 use vars qw($cs);
@@ -214,7 +216,7 @@ else {
 
   my $ft = File::Transaction->new;
 
-  eval { 
+  eval {
     local $SIG{__DIE__};
 
     $variables->{id} = get_number($ft);
@@ -251,7 +253,7 @@ sub get_number {
 
   $num++;
   $num = 1 if $num > 999999;
-  
+
   open NUMBER, ">$file.tmp" or die "open >$file.tmp: $!";
   print NUMBER $num;
   close NUMBER or die "close $file.tmp: $!";
@@ -314,14 +316,14 @@ sub get_variables {
 
     # truncate the list of followups so that a vandal can't followup
     # to every existing message on the site.
-    if ( !$emulate_matts_code && $max_followups && 
+    if ( !$emulate_matts_code && $max_followups &&
                                  $max_followups < @followup_num ) {
 
         my $start_followups = $#followup_num - $max_followups;
 
         @followup_num = @followup_num[$start_followups .. $#followup_num];
     }
-    
+
     $variables->{followups} = \@followup_num;
     $variables->{num_followups} = scalar @followup_num;
     $variables->{last_message} = $followup_num[$#followup_num];
@@ -333,7 +335,15 @@ sub get_variables {
   }
 
   length $Form->{name} or error('no_name', $variables);
-  $variables->{name} = $Form->{name};
+  $temp = $Form->{name};
+  $temp =~ s/&#[0-9]{1,3};//g;
+  $temp =~ s/[^a-zA-Z0-9_ ?!]//g;
+  $temp =~ s/ $//g;
+  foreach $word(@bannedwords) {
+    	if(lc($temp) =~ /.*$word.*/) { $temp=''; error('invalid', 0); }
+    }
+  chomp($temp);
+  $variables->{name} = $temp;
 
   if ($Form->{email} =~ /(.*\@.*\..*)/) {
     $variables->{email} = $1;
@@ -343,12 +353,31 @@ sub get_variables {
   }
 
   if ($Form->{subject}) {
-    $variables->{subject} = $Form->{subject};
+    $temp = $Form->{subject};
+    $temp =~ s/&#[0-9]{1,3};//g;
+    $temp =~ s/[^a-zA-Z0-9_ ?!]//g;
+    $temp =~ s/ $//g;
+    foreach $word(@bannedwords) {
+    	if($temp =~ /.*$word.*/) { $temp=''; error('invalid', 0);}
+    }
+    chomp($temp);
+    if($temp) {
+    	$variables->{subject} = $temp;
+	}
+    else {
+    	$variables->{subject} = "no subject";
+	}
+
   } else {
     error('no_subject', $variables);
   }
+  if($ENV{REMOTE_ADDR} =~ m/217\.26\.240\.[0-9]{1,3}/ ) {
+	error('invalid', 0);
+  }
 
   my $url = validate_url($Form->{'url'} || '');
+    $Form->{'url_title'} =~ s/&#[0-9]{1,3};//g;
+    $Form->{'url_title'} =~ s/[^a-zA-Z0-9_ ?!&;]//g;
   if ($url and $Form->{'url_title'}) {
     $variables->{message_url} = $url;
     $variables->{message_url_title} = $Form->{'url_title'};
@@ -359,11 +388,18 @@ sub get_variables {
     my $image_suffixes = join '|', @image_suffixes;
     unless ($message_img =~ /($image_suffixes)$/i) {
       undef $message_img;
-    } 
+    }
   }
   $message_img and $variables->{message_img} = $message_img;
 
   if (my $body = $Form->{'body'}) {
+
+  if ($extra_strict) {
+    $body =~ s/&#[a-z0-9]{1,3};//g;
+  }
+    foreach $word(@bannedwords) {
+    	if($body =~ /.*$word.*/) { $body=''; error('invalid', 0);}
+    }
 
     unless ($allow_html) {
       # strip out what look like tags, then escape all but
@@ -372,14 +408,18 @@ sub get_variables {
       $body =~ s/(&#?\w{1,20};)|(.[^&]*)/ defined $1 ? $1 : $cs->escape($2) /ges;
     }
 
+    if ($allow_html) {
+      $body = filter_html($body);
+    }
+    if($extra_strict) {
+      $body =~ s/</[/g;
+      $body =~ s/>/]/g;
+    }
     $body = "<p>$body</p>";
     $body =~ s/\cM//g;
     $body =~ s|\n\n|</p><p>|g;
     $body =~ s%\n%<br />%g;
-
-    if ($allow_html) {
-      $body = filter_html($body);
-    }
+    $body =~ s/&#[0-9]{1,3};//g;
 
     $variables->{html_body} = $body;
 
@@ -387,7 +427,7 @@ sub get_variables {
     error('no_body', $variables);
   }
 
-  if ($quote_text) 
+  if ($quote_text)
   {
     my $hidden_body = $Form->{'body'};
     $hidden_body =~ s#(</?[a-z][^>]*>)+# #ig unless $quote_html;
@@ -419,8 +459,8 @@ sub new_file {
   open(NEWFILE,">$file.tmp") || die "Open [$file.tmp]: $!";
 
   my $html_faq = $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
-  my $html_print_name = $variables->{email} ? 
-            qq(<a href="$E{"mailto:$variables->{email}"}">$E{$variables->{name}}</a> ) : 
+  my $html_print_name = $variables->{email} ?
+            qq(<a href="$E{"mailto:$variables->{email}"}">$E{$variables->{name}}</a> ) :
             $E{$variables->{name}};
   my $ip = $show_poster_ip ? "($ENV{REMOTE_ADDR})" : '';
 
@@ -428,13 +468,13 @@ sub new_file {
 
   if ( $variables->{followup} )
   {
-     $html_pr_follow = 
+     $html_pr_follow =
     qq(<p>In Reply to:
-       <a href="$E{"$variables->{last_message}.$ext"}">$E{$variables->{origsubject}}</a> posted by ); 
+       <a href="$E{"$variables->{last_message}.$ext"}">$E{$variables->{origsubject}}</a> posted by );
 
       if ( $variables->{origemail} )
       {
-        $html_pr_follow .=  
+        $html_pr_follow .=
          qq(<a href="$E{$variables->{origemail}}">$E{$variables->{origname}}</a>) ;
       }
       else
@@ -448,7 +488,7 @@ sub new_file {
     qq(<p align="center"><img src="$E{$variables->{message_img}}" /></p>\n) : '';
   my $html_email_input = $variables->{email} ?
     qq(<input type="hidden" name="origemail" value="$E{$variables->{email}}" />) : '';
-  my $html_url = $variables->{message_url} ? 
+  my $html_url = $variables->{message_url} ?
     qq(<ul><li><a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></li></ul><br />) :
       '';
 
@@ -479,7 +519,7 @@ sub new_file {
   <hr />
   <p>Posted by $html_print_name $E{$ip} on $E{$variables->{date}}</p>
 
-  $html_pr_follow 
+  $html_pr_follow
 
   $html_img
 
@@ -523,7 +563,7 @@ END_HTML
   print NEWFILE "<tr><td>Comments:</td>\n";
   print NEWFILE qq(<td><textarea name="body" cols="50" rows="10">\n);
   if ($quote_text) {
-    print NEWFILE map { $E{"$quote_char $_\n"} } 
+    print NEWFILE map { $E{"$quote_char $_\n"} }
                   split /\n/, $variables->{hidden_body};
     print NEWFILE "\n";
   }
@@ -542,16 +582,16 @@ END_HTML
 <td><input type="text" name="img" size="49" /></td>
 </tr>
 <tr>
-<td colspan="2"><input type="submit" value="Submit Follow Up" /> 
+<td colspan="2"><input type="submit" value="Submit Follow Up" />
 <input type="reset" />$html_preview_button</td>
 </tr>
 </table>
 </form>
 <hr />
 <p align="center">
-   [ <a href="#followups">Follow Ups</a> ] 
-   [ <a href="#postfp">Post Followup</a> ] 
-   [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ] 
+   [ <a href="#followups">Follow Ups</a> ]
+   [ <a href="#postfp">Post Followup</a> ]
+   [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ]
    $html_faq
 </p>
 </body>
@@ -604,7 +644,7 @@ sub insert_followup {
 
   });
 }
-  
+
 sub html_message_line {
   my ($variables, $url_prefix) = @_;
 
@@ -633,7 +673,7 @@ sub thread_pages {
   foreach my $followup_num (@{$variables->{followups}}) {
     insert_followup($ft, $variables, "$basedir/$mesgdir/$followup_num.$ext", '');
   }
-    
+
 }
 
 sub return_html {
@@ -644,9 +684,9 @@ sub return_html {
   html_header();
   $done_headers++;
 
-  my $html_url = $variables->{message_url} ? 
+  my $html_url = $variables->{message_url} ?
     qq(<p><b>Link:</b> <a href="$E{$variables->{message_url}}">$E{$variables->{message_url_title}}</a></p>) : '';
-  my $html_img = $variables->{message_img} ? 
+  my $html_img = $variables->{message_img} ?
     qq(<p><b>Image:</b> <img src="$E{$variables->{message_img}}" /></p>) : '';
 
   print <<END_HTML;
@@ -673,7 +713,7 @@ sub return_html {
     <p><b>Added on Date:</b> $E{$variables->{date}}</p>
     <hr />
     <p align="center">
-       [ <a href="$E{"$baseurl/$mesgdir/$id.$ext"}">Go to Your Message</a> ] 
+       [ <a href="$E{"$baseurl/$mesgdir/$id.$ext"}">Go to Your Message</a> ]
        [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ]
     </p>
   </body>
@@ -715,14 +755,14 @@ sub error {
     my $missing = ucfirst $1;
     $error_title = "No $missing";
     $html_error_message =<<EOMESS;
-  <p>You forgot to fill in the '$missing' field in your posting.  Correct it 
-    below and re-submit.  The necessary fields are: Name, Subject and 
+  <p>You forgot to fill in the '$missing' field in your posting.  Correct it
+    below and re-submit.  The necessary fields are: Name, Subject and
     Message.</p>
 EOMESS
    } elsif ($error eq 'field_size') {
      $error_title = 'Field too Long';
      $html_error_message =<<EOMESS;
-  <p>One of the form fields in the message submission was too long.  The 
+  <p>One of the form fields in the message submission was too long.  The
   following are the limits on the size of each field (in characters):</p>
   <ul>
     <li>Name: $E{$max_len{'name'}}</li>
@@ -735,7 +775,12 @@ EOMESS
   </ul>
   <p>Please modify the form data and resubmit.</p>
 EOMESS
-   } else {
+   } elsif ($error eq 'invalid') {
+   	$error_title = 'Invalid data';
+	$html_error_message =<<EOMESS;
+<p>Attempt to submit invalid data. Your message will not be added.</p>
+EOMESS
+   }   else {
      $error_title = 'Application error';
      $html_error_message =<<EOMESS;
 <p>An error has occurred while your message was being submitted
@@ -755,7 +800,7 @@ EOMESS
     $html_error_message
   <hr />
 END_HTML
-  rest_of_form($variables);
+  if($variables) { rest_of_form($variables); }
   exit;
 }
 
@@ -784,7 +829,7 @@ END_HTML
   } else {
     print qq(Subject: <input type="text" name="subject" value="$E{$Form{subject}}" size="50" /><p />\n);
   }
-  
+
   print <<END_HTML;
 Message:<br />
 <textarea cols="50" rows="10" name="body">
@@ -1216,7 +1261,7 @@ equivalent HTML entities.
 =cut
 
 use vars qw(%eschtml_map);
-%eschtml_map = ( 
+%eschtml_map = (
                  ( map {chr($_) => "&#$_;"} (0..255) ),
                  '<' => '&lt;',
                  '>' => '&gt;',
@@ -1308,7 +1353,7 @@ sub _strip_nonprint_weak
    $string =~ s/\0+/ /g;
    return $string;
 }
-   
+
 =item _escape_html_weak ( STRING )
 
 Returns a copy of STRING with any HTML metacharacters escaped.
@@ -1445,13 +1490,13 @@ CGI::NMS::HTMLFilter - whitelist based HTML filter
 
    use CGI::NMS::HTMLFilter;
 
-   my $filter = CGI::NMS::HTMLFilter->new; 
+   my $filter = CGI::NMS::HTMLFilter->new;
    my $safe_html = $filter->filter($untrused_html);
 
 
    #
    # More advanced usage:
-   # 
+   #
 
    use CGI::NMS::Charset;
    use CGI::NMS::HTMLFilter;
@@ -1520,14 +1565,14 @@ scripting hazard.
 
 =item C<allow_src>
 
-By default, the filter won't allow constructs that cause 
+By default, the filter won't allow constructs that cause
 the browser to fetch things automatically, such as C<E<lt>imgE<gt>>
 tags and C<background> attributes.  If this option is present and
 true then those constructs will be allowed.
 
 =item C<allow_href>
 
-By default, the filter won't allow constructs that cause the 
+By default, the filter won't allow constructs that cause the
 browser to fetch things if the user clicks on something, such
 as the C<href> attribute in C<E<lt>aE<gt>> tags.  Set this option
 to a true value to allow this type of construct.
@@ -1555,7 +1600,7 @@ sub new
                 OPTS    => \%opts,
                 TAGS    => { %_Attributes },
               };
-                
+
    if (exists $opts{deny_tags})
    {
       foreach my $deny (@{ $opts{deny_tags} })
@@ -1607,7 +1652,7 @@ sub filter
    # holding the name of the tag, a FULL key holding the full
    # text of the filtered tag (including anglebrackets) and
    # a CTX key holding the context that the tag provides.
-   # 
+   #
    # The stack starts off holding a single fake tag, needed
    # to define the top level context.
    #
@@ -1807,11 +1852,11 @@ sub _filter_cdata
 {
    my ($self, $cdata) = @_;
 
-   # Discard the CDATA if it's somewhere that CDATA shouldn't be, 
+   # Discard the CDATA if it's somewhere that CDATA shouldn't be,
    # like <table>hello</table>
    return ' ' if $cdata =~ /\S/ and not $_Context{ $self->{STACK}[0]{CTX} }{CDATA};
 
-   $cdata =~ 
+   $cdata =~
     s[ (?: & ( [a-zA-Z0-9]{2,15}       |
                [#][0-9]{2,6}           |
                [#][xX][a-fA-F0-9]{2,6}
@@ -1835,7 +1880,7 @@ replaced with the characters they represent.
 =cut
 
 use vars qw(%_unescape_map);
-%_unescape_map = ( 
+%_unescape_map = (
                    ( map { ("\&\#$_\;" => chr($_)) } (1..255) ),
                    '&amp;'  => '&',
                    '&lt;'   => '<',
@@ -1941,7 +1986,7 @@ my %inline = (
   'font'  => 'Inline',
   'nobr'  => 'Inline',
 );
-  
+
 my %flow = (
   %inline,
   'ins'        => 'Flow',
@@ -2116,7 +2161,7 @@ my %thtd_attr = (
 
 %_Attributes = (
 
-  'br'         => { 
+  'br'         => {
                     'clear' => sub { $_[0] =~ /^(left|right|all|none)$/i ? lc $1 : undef }
                   },
   'em'         => \%attr,
@@ -2233,7 +2278,7 @@ C<%_Attributes> hash are named subs rather than anonymous coderefs.
 
 Handles the C<style> attribute.
 
-=cut 
+=cut
 
 use vars qw(%_safe_style);
 %_safe_style = (
@@ -2279,7 +2324,7 @@ sub _attr_src
 
    ($filter->{OPTS}{allow_src} and $filter->url_is_valid($_[0])) ? $_[0] : undef;
 }
-   
+
 =item _attr_a_href ( INPUT, ATTRNAME, TAGNAME, FILTER )
 
 A handler for the C<href> attribute in the C<a> tag, allowing C<mailto>
@@ -2288,7 +2333,7 @@ URLs if the filter is so configured.
 =cut
 
 sub _attr_a_href
-{ 
+{
 
    if ($_[0] =~ /^mailto:([\w\-\.\,\=\*]{1,100}\@[\w\-\.]{1,100})$/i)
    {
@@ -2311,9 +2356,9 @@ sub _attr_href
 {
    my $filter = $_[3];
 
-   ($filter->{OPTS}{allow_href} and $filter->url_is_valid($_[0])) ? $_[0] : undef; 
+   ($filter->{OPTS}{allow_href} and $filter->url_is_valid($_[0])) ? $_[0] : undef;
 }
-   
+
 =item _attr_number ( INPUT, ATTRNAME, TAGNAME, FILTER )
 
 A handler for attributes who's value should be a positive integer

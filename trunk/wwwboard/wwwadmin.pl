@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwadmin.pl,v 1.25 2003-12-28 19:45:42 nickjc Exp $
+# $Id: wwwadmin.pl,v 1.26 2004-07-23 21:13:17 codehelpgpg Exp $
 #
 
 use strict;
@@ -12,11 +12,11 @@ use vars qw(
   $basedir $baseurl $cgi_url $mesgdir $datafile $mesgfile
   $passwd_file $ext $title $style $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.25 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.26 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.25 $
+# wwwadmin.pl $Revision: 1.26 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -25,7 +25,7 @@ BEGIN { $VERSION = substr q$Revision: 1.25 $, 10, -1; }
 # <http://www.perl.com/pub/a/language/misc/Artistic.html>
 #
 # For a list of changes see CHANGELOG
-# 
+#
 # For help on configuration or installation see ADMIN_README
 #
 # USER CONFIGURATION SECTION
@@ -35,6 +35,7 @@ BEGIN { $VERSION = substr q$Revision: 1.25 $, 10, -1; }
 # your own web server. If the purpose of these
 # parameters seems unclear, please see the README file.
 #
+
 BEGIN
 {
   $DEBUGGING           = 1;
@@ -85,11 +86,13 @@ sub html_header {
 # This is basically the same as what CGI::Carp does inside but simplified
 # for our purposes here.
 
+
 BEGIN
 {
    sub fatalsToBrowser
    {
-      my ( $message ) = @_;
+
+      my ($message) = @_;
 
       if ( $DEBUGGING )
       {
@@ -100,7 +103,7 @@ BEGIN
       {
          $message = '';
       }
-      
+
       my ( $pack, $file, $line, $sub ) = caller(0);
       my ($id ) = $file =~ m%([^/]+)$%;
 
@@ -117,8 +120,8 @@ BEGIN
   </head>
   <body>
      <h1>Application Error</h1>
-     <p>
-     An error has occurred in the program
+     <p>$message
+     An error has occurred in the program.
      </p>
      <p>
      $message
@@ -129,8 +132,8 @@ EOERR
      die @_;
    };
 
-   $SIG{__DIE__} = \&fatalsToBrowser;
-}   
+  $SIG{__DIE__} = \&fatalsToBrowser;
+}
 
 
 use vars qw($cs);
@@ -169,7 +172,7 @@ html_header();
 $done_headers = 1;
 
 
-if (request_method eq 'POST') {
+if (request_method eq 'post') {
   my $FORM = parse_form();
   check_passwd($FORM);
 
@@ -178,7 +181,7 @@ if (request_method eq 'POST') {
 
   run_command($FORM);
 
-  close LOCK; 
+  close LOCK;
 }
 else {
   my $command = $ENV{QUERY_STRING} || '';
@@ -198,7 +201,7 @@ sub display_form {
   print $HTML{HTML_DECL};
   print $HTML{"TOP_$command"};
   return if $command =~ /DEFAULT|CHANGE_PASSWD/;
-  
+
   my $messages = parse_message_list("$basedir/$mesgfile");
 
   my $loop_over;
@@ -206,7 +209,7 @@ sub display_form {
     $loop_over = $messages;
   }
   elsif ($command eq 'REMOVE_BY_NUM') {
-    $loop_over = [ sort { $a->{id} <=> $b->{id} } @$messages ];
+    $loop_over = [ reverse sort { $a->{id} <=> $b->{id} } @$messages ];
   }
   elsif ($command eq 'REMOVE_BY_DATE') {
     foreach my $msg (@$messages) {
@@ -229,7 +232,7 @@ sub display_form {
   foreach my $item (@$loop_over) {
      print template("MID_$command", $item);
   }
-     
+
   print $HTML{"BOT_$command"};
 }
 
@@ -242,7 +245,7 @@ sub group_messages {
     exists $bykey{$k} or $bykey{$k} = [];
     push @{ $bykey{$k} }, $msg->{id};
   }
-  
+
   my @grouped = ();
   foreach my $key (sort keys %bykey) {
 
@@ -252,17 +255,17 @@ sub group_messages {
     my $html_links = join ' ', @links;
     my $ids = join '_', @{$bykey{$key}};
     my $count = @{$bykey{$key}};
-  
+
     push @grouped, { key        => $key,
                      html_links => $html_links,
                      ids        => $ids,
                      count      => $count,
                    };
   }
-  
+
   return \@grouped;
 }
-  
+
 sub run_command {
   my ($FORM) = @_;
 
@@ -270,13 +273,13 @@ sub run_command {
     remove_messages($FORM);
   }
   elsif ($FORM->{action} eq 'change_passwd') {
-    change_passwd($FORM);
+    #change_passwd($FORM);
   }
   else {
     display_form('');
   }
 }
- 
+
 sub remove_messages {
   my ($FORM) = @_;
 
@@ -304,7 +307,7 @@ sub remove_messages {
 
     if (/<!--(top|responses|insert|end):\s*(\d+)-->/) {
       my ($marker, $id) = ($1, $2);
-      
+
       if ($in_dead_thread) {
         if ($marker eq 'end' and $id == $in_dead_thread) {
           $in_dead_thread = 0;
@@ -348,13 +351,13 @@ sub remove_messages {
     }
   }
 
-  my $html_report = "<b>Attempted to Remove:</b> $E{join(' ',@attempted)}<p>\n";
+  my $html_report = "<b>Attempted to Remove:</b> $E{join(' ',@attempted)}<p>\n"; #'
   if (@not_removed) {
-    $html_report .= "<b>Files That Could Not Be Deleted:</b> $E{join(' ',@not_removed)}<p>\n";
+    $html_report .= "<b>Files That Could Not Be Deleted:</b> $E{join(' ',@not_removed)}<p>\n"; #'
   }
   if (@no_file) {
     $html_report .= "<b>Files Not Found:</b> $E{join(' ',@no_file)}<p>\n";
-  }
+  }#'
 
   print $HTML{HTML_DECL};
   print template("REMOVE_RESULTS",
@@ -394,6 +397,7 @@ sub change_passwd {
   print template("CHANGE_PASSWD_RESULTS",
                  { new_username => $new_username, new_password => $FORM->{passwd_1} }
                 );
+
 }
 
 sub parse_form {
@@ -461,8 +465,9 @@ sub parse_message_list {
 
   open MESG_IN, "<$filename" or die "open $filename: $!";
   while(<MESG_IN>) {
-    if (m#<!--top: (\d+)-->(?:</li>)?<li><a href="[^"]+">(.*)</a> - <b>(.*)</b>\s+<i>(.*)</i>#) {
+    if (m#<!--top: (\d+)-->(?:</li>)?<li><a href="[^"]+">(.*)<\/a> - <b>(.*)<\/b>\s*<i>(.*)<\/i>#) {
       my $msg = { id => $1, subject => $2, author => $3, date => $4 };
+
       push @messages, $msg;
     }
   }
@@ -470,7 +475,7 @@ sub parse_message_list {
 
   return \@messages;
 }
-      
+
 sub template {
   my ($template, $vars) = @_;
 
@@ -504,24 +509,27 @@ while checking the Input Box on the right to remove just that posting.</p>
 <p>These messages have been left unsorted, so that you can see the order in
 which they appear in the $mesgfile page.  This will give you an idea of
 what the threads look like and is often more helpful than the sorted method.</p>
-<hr size=7 width=75%><p align="center"><font size=-1>
+<hr size="7" width="75%"/><p align="center"><font size="-1">
 [ <a href="$cgi_url?remove">Remove</a> ] [ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] [ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] [ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] [ <a href="$baseurl/$mesgfile">$title</a> ]
-</font></p><hr size="7" width="75%" /><p>
-<form method="POST" action="$cgi_url">
-<input type=hidden name="action" value="remove" />
+</font></p><hr size="7" width="75%" />
+<form method="post" action="$cgi_url">
+<div><input type="hidden" name="action" value="remove" />
 <table border="0" summary="">
 <tr>
-<th colspan="6">
-Username: <input type="text" name="username" /> -- 
-Password: <input type=password name="password" /></th>
+<th colspan="7">
+Username: <input type="text" name="username" /> --
+Password: <input type="password" name="password" /></th>
 </tr><tr>
-<th>Post # </th><th>Thread </th><th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
+<th>Post #
+</th><th>Thread </th><th>None</th>
+<th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
 END
 
     MID_REMOVE => <<"END",
 <tr>
-<th><b>[% id %]</b> </th><td><input type=radio name="[% id %]" value="all"></td>
-<td><input type=radio name="[% id %]" value="single"> </td>
+<th><b>[% id %]</b> </th><td><input type="radio" name="[% id %]" value="all"/></td>
+<td><input type="radio" name="[% id %]" value="0" checked="checked" /></td>
+<td><input type="radio" name="[% id %]" value="single"/> </td>
 <td><a href="$baseurl/$mesgdir/[% id %].$ext">[% subject %]</a></td>
 <td>[% author %]</td>
 <td>[% date %]<br /></td>
@@ -532,7 +540,7 @@ END
 </table>
 <input type="hidden" name="type" value="" />
 <input type="submit" value="Remove Messages" /> <input type="reset" />
-</form>
+</div></form>
 </body></html>
 END
 
@@ -546,28 +554,31 @@ Checking the Input Box on the left will remove the whole thread
 while checking the Input Box on the right to remove just that posting.</p>
 <hr size="7" width="75%" />
 <center><font size="-1">
-[ <a href="$cgi_url?remove">Remove</a> ] 
-[ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
-[ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
-[ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
+[ <a href="$cgi_url?remove">Remove</a> ]
+[ <a href="$cgi_url?remove_by_date">Remove by Date</a> ]
+[ <a href="$cgi_url?remove_by_author">Remove by Author</a> ]
+[ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ]
 [ <a href="$baseurl/$mesgfile">$title</a> ]
-</font></center><hr size="7" width="75%" /><p>
-<form method="POST" action="$cgi_url">
+</font></center><hr size="7" width="75%" />
+<form method="post" action="$cgi_url"><div>
 <input type="hidden" name="action" value="remove" />
 <table border="0" summary="">
 <tr>
-<th colspan="6">
-Username: <input type="text" name="username" /> -- 
+<th colspan="7">
+Username: <input type="text" name="username" /> --
 Password: <input type="password" name="password" /><br /></th>
 </tr>
 <tr>
-<th>Post # </th><th>Thread </th><th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
+<th>Post #
+</th><th>Thread </th><th>None</th>
+<th>Single </th><th>Subject </th><th> Author</th><th> Date</th></tr>
 END
 
     MID_REMOVE_BY_NUM => <<"END",
 <tr>
 <th><b>[% id %]</b> </th><td>
 <input type="radio" name="[% id %]" value="all" /></td>
+<td><input type="radio" name="[% id %]" value="0" checked="checked" /></td>
 <td><input type="radio" name="[% id %]" value="single" /></td>
 <td><a href="$baseurl/$mesgdir/[% id %].$ext">[% subject %]</a></td>
 <td>[% author %]</td>
@@ -578,9 +589,9 @@ END
     BOT_REMOVE_BY_NUM => <<"END",
 </table>
 <center><p>
-<input type="hidden" name="type" value=" By NUmber" />
+<input type="hidden" name="type" value=" By NUmber" /></p></center>
 <input type="submit" value="Remove Messages" /> <input type="reset" />
-</form>
+</div></form>
 </body></html>
 END
 
@@ -590,34 +601,33 @@ END
 $html_style
 </head>
 <body><center><h1>Remove Messages From WWWBoard By Date</h1></center>
-Select below to remove those postings you wish to remove.
-Checking the input box beside a date will remove all postings 
+<p>Select below to remove those postings you wish to remove.
+Checking the input box beside a date will remove all postings
 that occurred on that date.
-<p>
-<hr size="7" width="75%">
+</p>
+<hr size="7" width="75%"/>
 <center><font size="-1">
-[ <a href="$cgi_url?remove">Remove</a> ] 
-[ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
-[ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
-[ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
+[ <a href="$cgi_url?remove">Remove</a> ]
+[ <a href="$cgi_url?remove_by_date">Remove by Date</a> ]
+[ <a href="$cgi_url?remove_by_author">Remove by Author</a> ]
+[ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ]
 [ <a href="$baseurl/$mesgfile">$title</a> ]
 </font></center><hr size="7" width="75%" />
-<p>
-<form method="POST" action="$cgi_url">
+<form method="post" action="$cgi_url"><div>
 <input type="hidden" name="action" value="remove_by_date_or_author" />
 <input type="hidden" name="type" value=" By Date" />
 <center>
 <table border="0" summary="">
 <tr>
 <th colspan="4">
-Username: <input type="text" name="username"> -- 
-Password: <input type="password" name="password"><br /></th>
+Username: <input type="text" name="username" /> --
+Password: <input type="password" name="password" /><br /></th>
 </tr>
 <tr>
 <th>X </th>
 <th>Date </th>
 <th># of Messages </th>
-<th>Message Numbers<br></th></tr>
+<th>Message Numbers<br /></th></tr>
 END
 
     MID_REMOVE_BY_DATE => <<"END",
@@ -625,14 +635,14 @@ END
 <td><input type="checkbox" name="[% ids %]" value="these" /></td>
 <th>[% key %]</th>
 <td>[% count %]</td>
-<td>[% html_links %]<br></td>
+<td>[% html_links %]<br /></td>
 </tr>
 END
 
     BOT_REMOVE_BY_DATE => <<"END",
 </table>
-<input type="submit" value="Remove Messages"> <input type="reset" />
-</form></center>
+<input type="submit" value="Remove Messages" /> <input type="reset" />
+</center></div></form>
 </body></html>
 END
 
@@ -642,25 +652,24 @@ END
 $html_style
 </head>
 <body><center><h1>Remove Messages From WWWBoard By Author</h1></center>
-Checking the checkbox beside the name of an author will remove 
+<p>Checking the checkbox beside the name of an author will remove
 all postings which that author has created.
-<p>
-<hr size="7" width="75%"><center><font size="-1">
-[ <a href="$cgi_url?remove">Remove</a> ] 
-[ <a href="$cgi_url?remove_by_date">Remove by Date</a> ] 
-[ <a href="$cgi_url?remove_by_author">Remove by Author</a> ] 
-[ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ] 
+</p>
+<hr size="7" width="75%"/><center><font size="-1">
+[ <a href="$cgi_url?remove">Remove</a> ]
+[ <a href="$cgi_url?remove_by_date">Remove by Date</a> ]
+[ <a href="$cgi_url?remove_by_author">Remove by Author</a> ]
+[ <a href="$cgi_url?remove_by_num">Remove by Message Number</a> ]
 [ <a href="$baseurl/$mesgfile">$title</a> ]
 </font></center><hr size="7" width="75%" />
-<p>
-<form method="POST" action="$cgi_url">
+<form method="post" action="$cgi_url"><div>
 <input type="hidden" name="action" value="remove_by_date_or_author" />
 <input type="hidden" name="type" value=" by Author" />
 <center>
 <table border="0" summary="">
 <tr>
-<th colspan=4>
-Username: <input type="text" name="username" /> -- 
+<th colspan="4">
+Username: <input type="text" name="username" /> --
 Password: <input type="password" name="password" /><br /></th>
 </tr>
 <tr>
@@ -680,7 +689,7 @@ END
     BOT_REMOVE_BY_AUTHOR => <<"END",
 </table>
 <input type="submit" value="Remove Messages" /> <input type="reset" />
-</form></center>
+</center></div></form>
 </body></html>
 END
 
@@ -692,8 +701,8 @@ $html_style
 <center><h1>Change WWWBoard Admin Password</h1></center>
 Fill out the form below completely to change your password and user name.
 If new username is left blank, your old one will be assumed.<p>
-<hr size="7" width="75%" /><p>
-<form method="POST" action="$cgi_url">
+<hr size="7" width="75%" />
+<form method="post" action="$cgi_url"><div>
 <input type="hidden" name="action" value="change_passwd" />
 <center><table border="0" summary="">
 <tr>
@@ -701,7 +710,7 @@ If new username is left blank, your old one will be assumed.<p>
 <td><input type="text" name="username" /><br /></td>
 </tr><tr>
 <th align="left">Password: </th>
-<td><input type=password name="password" /><br /></td>
+<td><input type="password" name="password" /><br /></td>
 </tr><tr> </tr><tr>
 <th align="left">New Username: </th>
 <td><input type="text" name="new_username" /><br /></td>
@@ -715,7 +724,7 @@ If new username is left blank, your old one will be assumed.<p>
 <td align="center">
 <input type="submit" value="Change Password" /> </td>
 <td align="center"><input type="reset" /></td>
-</tr></table></center>
+</tr></table></center></div>
 </form></body></html>
 END
 
@@ -731,7 +740,7 @@ $html_style
 <li>Remove Files
 <ul>
 <li><a href="$cgi_url?remove">Remove Files</a>
-<li><a href="$cgi_url?remove_by_num">Remove Files by Mesage Number</a>
+<li><a href="$cgi_url?remove_by_num">Remove Files by Message Number</a>
 <li><a href="$cgi_url?remove_by_date">Remove Files by Date</a>
 <li><a href="$cgi_url?remove_by_author">Remove Files by Author</a>
 </ul><br />
@@ -748,30 +757,31 @@ END
 $html_style
 </head>
 <body><center><h1>WWWBoard WWWAdmin Password Changed</h1></center>
-Your Password for WWWBoard WWWAdmin has been changed!  Results are below:<p><hr size=7 width=75%><p>
+Your Password for WWWBoard WWWAdmin has been changed!  Results are below:<p><hr size="7" width="75%" /><p>
 <b>New Username: [% new_username %]<p>
 New Password: [% new_password %]</b><p>
-<hr size=7 width=75%><p>
+<hr size="7" width="75%" /><p>
 Do not forget these, since they are now encoded in a file, and not readable!.
 </body></html>
 END
 
     REMOVE_RESULTS => <<"END",
 <head><title>Results of Message Board Removal[% remove_by %]</title>
+$html_style
 </head>
 <body><center><h1>Results of Message Board Removal[% remove_by %]</h1></center>
 Below is a short summary of what messages were removed from $mesgfile and the
 $mesgdir directory.  All files that the script attempted to remove, were removed,
 unless there is an error message stating otherwise.
-<p><hr size=7 width=75%><p>
+<p><hr size="7" width="75%"/><p>
 [% html_report %]
-<hr size=7 width=75%><center><font size=-1>
+<hr size="7" width="75%"/><center><font size="-1">
 [ <a href=\"$cgi_url\?remove\">Remove</a> ]
 [ <a href=\"$cgi_url\?remove_by_date\">Remove by Date</a> ]
 [ <a href=\"$cgi_url\?remove_by_author\">Remove by Author</a> ]
 [ <a href=\"$cgi_url\?remove_by_num\">Remove by Message Number</a> ]
 [ <a href=\"$baseurl/$mesgfile\">$title</a> ]
-</font></center><hr size=7 width=75%>
+</font></center><hr size="7" width="75%"/>
 </body></html>
 END
 
@@ -783,10 +793,10 @@ $html_style
 <center><h1>[% Title %]</h1></center>
 <p>
 [% Body %]
-</p> 
+</p>
 <center>
 <font size="-1">
-[ <a href="$cgi_url">NMS WWWAdmin</a> ] 
+[ <a href="$cgi_url">NMS WWWAdmin</a> ]
 [ <a href="$baseurl/$mesgfile">$title</a> ]
 </font>
 </center>
@@ -971,7 +981,7 @@ equivalent HTML entities.
 =cut
 
 use vars qw(%eschtml_map);
-%eschtml_map = ( 
+%eschtml_map = (
                  ( map {chr($_) => "&#$_;"} (0..255) ),
                  '<' => '&lt;',
                  '>' => '&gt;',
@@ -1063,7 +1073,7 @@ sub _strip_nonprint_weak
    $string =~ s/\0+/ /g;
    return $string;
 }
-   
+
 =item _escape_html_weak ( STRING )
 
 Returns a copy of STRING with any HTML metacharacters escaped.

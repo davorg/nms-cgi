@@ -67,9 +67,9 @@ USAGE:
 ------
 
 RUNNING WWWADMIN.
-        WWWAdmin is a self-contained script, in that all you have to do is 
-   call the script with a plain url (The url you used in $cgi_url) and it 
-   will give you a form which displays all of your options.  The options 
+        WWWAdmin is a self-contained script, in that all you have to do is
+   call the script with a plain url (The url you used in $cgi_url) and it
+   will give you a form which displays all of your options.  The options
    that are currently available in this release are:
         Remove Messages
         Remove Messages by Date
@@ -77,30 +77,30 @@ RUNNING WWWADMIN.
         Remove Messages by Sorted Number
         Change WWWAdmin Password
 
-All of these options require you to use a password and username once you 
+All of these options require you to use a password and username once you
 take the link.  The default username and password for WWWAdmin are:
 
 Username: WebAdmin
 Password: WebBoard
 
-They are case sensitive, so make sure you type them in correctly.  I suggest 
-you jump down to the explanation on Changing WWWAdmin Password before 
-you make this wwwboard available to the public.  A brief description of 
+They are case sensitive, so make sure you type them in correctly.  I suggest
+you jump down to the explanation on Changing WWWAdmin Password before
+you make this wwwboard available to the public.  A brief description of
 how each WWWAdmin function works is below:
 
 REMOVE MESSAGES
 ===============
-        When selecting this link, you will be taken to a form which gives you 
-the article number, two radio boxes, the subject, author and date that 
-the article was posted, for all articles.  The form is put inside of a 
-Netscape table, but I have tested it and it also works with lynx (a text 
-based browser) so I am sure it will work with others.  You can check the 
-radio boxes to the side of the messages that you wish to remove from 
-your WWWBoard.  Checking the check box to the left, will remove the 
-entire thread, while checking the check box on the right, simply removes 
-that single posting, whether it is imbeded in a thread or not.  This 
-will also remove the message out of your messages/ directory, and if you 
-select to remove the thread, it will remove all messages in that thread 
+        When selecting this link, you will be taken to a form which gives you
+the article number, three radio buttons, the subject, author and date that
+the article was posted, for all articles.  The form is put inside of a
+Netscape table, but I have tested it and it also works with lynx (a text
+based browser) so I am sure it will work with others.  You can check the
+radio boxes to the side of the messages that you wish to remove from
+your WWWBoard.  Checking the check box to the left, will remove the
+entire thread, while checking the check box on the right, simply removes
+that single posting, whether it is imbeded in a thread or not.  This
+will also remove the message out of your messages/ directory, and if you
+select to remove the thread, it will remove all messages in that thread
 out of your messages/ directory.
 
 REMOVE MESSAGES BY DATE
@@ -109,41 +109,43 @@ REMOVE MESSAGES BY DATE
 
   Checkbox   Date1   # of Messages  Message Numbers
 
-You can click in the checkbox next to any dates of your choice and it 
-will remove all files that were posted on that date.  To see what files 
-are going to be removed and how many, you can look at the columns 
-labeled # of messages and message numbers.  If messages of an earlier 
-date happen to be at the head of a thread, they will be removed and the 
-next response down in the thread becomes the head of that thread.  It 
+You can click in the checkbox next to any dates of your choice and it
+will remove all files that were posted on that date.  To see what files
+are going to be removed and how many, you can look at the columns
+labeled # of messages and message numbers.  If messages of an earlier
+date happen to be at the head of a thread, they will be removed and the
+next response down in the thread becomes the head of that thread.  It
 will only remove messages with that date.
 
 REMOVE MESSAGES BY AUTHOR
 =========================
-        This link will pop up a form very similar to that which the Remove 
-Message by Date link brought up.  Except instead of different dates, you 
-will see the names of authors of messages.  You can check the checkbox 
-next to an authors name to remove all postings that he or she posted to 
+        This link will pop up a form very similar to that which the Remove
+Message by Date link brought up.  Except instead of different dates, you
+will see the names of authors of messages.  You can check the checkbox
+next to an authors name to remove all postings that he or she posted to
 your message board.
 
 REMOVE MESSAGES BY SORTED NUMBER
 ================================
-        This link brings up a form identical to the plain Remove Messages form, 
-except that the postings are sorted from lowest number to highest 
-number.  This can be useful if you want to delete postings in the order 
-they were posted, but this is probably the l east useful remove function.
+        This link brings up a form identical to the plain Remove Messages form,
+except that the postings are sorted from lowest number to highest
+number.  This can be useful if you want to delete postings in the order
+they were posted. This function can be invaluable in controlling spurious messages -
+it allows you to see only those messages added since you last checked the board, even
+if those messages have been added as follow-ups deep within the board.
 
 CHANGE PASSWORD
 ===============
-        This form will ask you to fill in your current username and password 
-and allow you to change your username and password to whatever you 
-like.  If you want to keep the username the same, you can simply not 
-fill in the 'New Username' part of the script.  When changing your 
-password, which I suggest you do right when you get WWWAdmin working, 
-you will need to type the new password two times in a row, just to make 
-sure you don't mis-type it.  Then, hit submit and if you input the 
-correct old username and password, you will be given a response that 
-tells you the new username and password.  Do not forget your password, 
-because it will be encrypted in the passwd.txt file, just like your Unix 
+        This form will ask you to fill in your current username and password
+and allow you to change your username and password to whatever you
+like.  If you want to keep the username the same, you can simply not
+fill in the 'New Username' part of the script.  When changing your
+password, which I suggest you do right when you get WWWAdmin working,
+you will need to type the new password two times in a row, just to make
+sure you don't mis-type it.  Then, hit submit and if you input the
+correct old username and password, you will be given a response that
+tells you the new username and password.  Do not forget your password,
+because it will be encrypted in the passwd.txt file, just like your Unix
 login password.  You will need to re-download the wwwadmin tool...
 
 SUPPORT:

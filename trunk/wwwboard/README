@@ -107,7 +107,7 @@ During the following you will be guided through the configuration and installati
                             (FAQ) file, in $basedir, which will be used to
                             answer wwwboard users' questions.
 
-      $ext                - This is the extension that will be given to 
+      $ext                - This is the extension that will be given to
                             various web documents created by wwwboard. You
                             should leave it as 'html' for most purposes,
                             although you might want to change it to
@@ -181,6 +181,11 @@ During the following you will be guided through the configuration and installati
       $show_poster_ip     - Set to 1, the client IP address of the poster is
                             displayed in the message. Otherwise it won't.
 
+      $extra_strict       - Set to 1 to strip suspicious content that may be
+                            used to spike the forum with unwanted messages.
+                            CAUTION: This may be over-zealous and remove content
+                            that you may consider useful. Test before using.
+
       $enable_preview     - Set this to 1 to add a preview button to all script
                             generated forms, to allow users to preview their
                             messages before posting.
@@ -207,6 +212,11 @@ During the following you will be guided through the configuration and installati
 
       $charset            - The character set to use for output documents.
 
+
+      @bannedwords        - Include any single words that would NEVER appear in
+                            a genuine forum message. Any message containing any one
+                            of these words in the subject, name or body will be rejected
+                            with no explanation.
    Installation
       You must upload this file to your server's cgi-bin or in a directory where
       CGI execution is allowed. Make sure the directory and path match the
@@ -246,7 +256,10 @@ During the following you will be guided through the configuration and installati
       to chmod it. However, it should be chmoded to 644.
 
 * Administration files (wwwadmin.pl, passwd.txt, ADMIN_README)
-   The administrative files are not necessary to run the boards. That is, if you
+   If your site attracts unwanted attention, close monitoring of the wwwadmin.pl
+   output is essential. If you let spurious, malicious, illegal, commercial or
+   unwanted posts linger on your board for days, you only encourage similar activity.
+   However, the administrative files are not necessary to run the boards. That is, if you
    do not wish to set them up or use them, you can still have a working
    wwwboard. They are simply a useful tool for the wwwboard administrator to
    delete messages and perform other administrative tasks. Their settings and
