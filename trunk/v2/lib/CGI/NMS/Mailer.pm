@@ -36,7 +36,7 @@ version of the CGI script.
 sub output_trace_headers {
   my ($self, $traceinfo) = @_;
 
-  $ENV{REMOTE_ADDR} =~ /^\[?([\d\.]{7,15})\]?$/ or die
+  $ENV{REMOTE_ADDR} =~ /^\[?([\d\.\:a-f]{7,100})\]?$/i or die
      "failed to get remote address from [$ENV{REMOTE_ADDR}], so can't send traceable email";
   $self->print("Received: from [$1]\n");
 
