@@ -2,7 +2,7 @@
 
 Frequently Asked Questions about the Perl used in the I<nms> CGI programs.
 
-E<lt>-- $Date: 2004-05-31 12:10:30 $ --E<gt>
+E<lt>-- $Date: 2004-05-31 12:11:50 $ --E<gt>
 
 =head1 DESCRIPTION
 
@@ -79,7 +79,7 @@ an SMTP relay to be available on the local network.
 =head2 Where can I learn more Perl?
 
 
-If you wish to learn more Perl, you should look at Randall Schwartz's
+If you wish to learn more Perl, you should look at Randal Schwartz's
 book Learning Perl, published by O'Reilly and Associates
 E<lt>http://www.oreilly.com/catalog/lperl3/E<gt>.
 
