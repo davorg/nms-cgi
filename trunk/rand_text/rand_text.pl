@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: rand_text.pl,v 1.6 2001-12-01 19:45:22 gellyfish Exp $
+# $Id: rand_text.pl,v 1.7 2002-01-27 17:35:28 davorg Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/12/01 19:45:22  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.5  2001/11/25 11:39:38  gellyfish
 # * add missing use vars qw($DEBUGGING) from most of the files
 # * sundry other compilation failures
@@ -37,8 +41,7 @@ BEGIN
    $DEBUGGING = 1;
 }
    
-#my $random_file = '/path/to/random.txt';
-my $random_file = 'random.txt';
+my $random_file = '/path/to/random.txt';
 
 my $delimiter = "%%\n";
 
