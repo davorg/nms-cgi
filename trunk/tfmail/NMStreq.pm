@@ -7,7 +7,7 @@ use IO::File;
 use POSIX qw(strftime);
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.6 $, 10, -1;
+$VERSION = substr q$Revision: 1.7 $, 10, -1;
 
 =head1 NAME
 
@@ -586,6 +586,10 @@ sub _compile_template
    local $_;
    foreach(@lines)
    {
+      # Ditch trailing whitespace, in particular get rid of the spare \r
+      # if the template had \r\n line termination.
+      s#\s+$#\n#;
+
       # Suppress newline on control directive alone on a line
       s#^\s*(\{\= \s*[A-Z]+\s*[\s\w\-\.]+ \=\})\s*\n#$1#x;
 
