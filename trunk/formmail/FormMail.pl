@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.15 2002-09-26 22:10:09 nickjc Exp $
+# $Id: FormMail.pl,v 2.16 2002-10-08 08:03:21 nickjc Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.15 $
+# FormMail.pl $Revision: 2.16 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -73,7 +73,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.15 $, 10, -1;
+  $VERSION = substr q$Revision: 2.16 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -324,14 +324,19 @@ sub check_required {
   $Config{recipient} =~ s/[\r\n]+/ /g;
 
   if (length $Config{recipient}) {
-    my @valid;
+    my (@valid, @recip);
 
-    if (exists $recipient_alias{$Config{recipient}}) {
-      $Config{recipient} = $recipient_alias{$Config{recipient}};
-      $hide_recipient = 1;
+    foreach (split /\s*,\s*/, $Config{recipient}) {
+      if (exists $recipient_alias{$_}) {
+        push @recip, split /\s*,\s*/, $recipient_alias{$_};
+        $hide_recipient = 1;
+      }
+      else {
+        push @recip, $_;
+      }
     }
 
-    foreach (split /,/, $Config{recipient}) {
+    foreach (@recip) {
       next unless check_email($_);
 
       if (check_recipient($_)) {
@@ -946,7 +951,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.15 $
+FormMail $Revision: 2.16 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
