@@ -8,7 +8,7 @@ use POSIX qw(strftime);
 use NMSCharset;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.11 $, 10, -1;
+$VERSION = substr q$Revision: 1.12 $, 10, -1;
 
 =head1 NAME
 
@@ -782,8 +782,6 @@ sub _interpolate
       {
          $self->error("unknown template context [$context]");
       }
-      $value =~ s#\r##g;
-      $value =~ s#\n#<br />#g
    }
 
    &{ $coderef }($value) if length $value;
