@@ -1,8 +1,11 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.25 2001-12-21 08:53:24 nickjc Exp $
+# $Id: guestbook.pl,v 1.26 2001-12-28 22:17:07 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2001/12/21 08:53:24  nickjc
+# More HTML filter fixes
+#
 # Revision 1.24  2001/12/20 08:57:54  nickjc
 # tidying and adding comments
 #
@@ -1014,7 +1017,7 @@ sub cleanup_attr_multilength {
   /^(\d+(?:\.\d+)?[*%]?)$/ ? $1 : undef;
 }
 sub cleanup_attr_text {
-  tr/-a-zA-Z0-9()[]{}\/?.,\\|;:@#~=+-*^%$! //dc;
+  tr/-a-zA-Z0-9()[]{}\/?.,\\|;:@#~=+*^%$! //dc;
   $_;
 }
 sub cleanup_attr_length {
