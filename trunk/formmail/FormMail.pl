@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.51 2002-03-10 01:05:11 nickjc Exp $
+# $Id: FormMail.pl,v 1.52 2002-03-12 00:41:04 nickjc Exp $
 #
 
 use strict;
@@ -727,9 +727,9 @@ sub check_required {
     if ($_ eq 'email' && !check_email($Config{$_})) {
       push(@error, $_);
     } elsif (defined($Config{$_})) {
-      push(@error, $_) unless $Config{$_};
+      push(@error, $_) unless length $Config{$_};
     } else {
-      push(@error,$_) unless $Form{$_};
+      push(@error,$_) unless defined $Form{$_} and length $Form{$_};
     }
   }
 
@@ -1245,6 +1245,10 @@ sub escape_html {
 
 
 # $Log: not supported by cvs2svn $
+# Revision 1.51  2002/03/10 01:05:11  nickjc
+# * tightened weak checking on the realname part of email addresses
+# * added a test for that
+#
 # Revision 1.50  2002/03/07 23:00:05  nickjc
 # * eliminated the remaining path for nonprintable characters to get into
 #   the email body.
