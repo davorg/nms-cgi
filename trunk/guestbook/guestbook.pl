@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.36 2002-04-13 09:00:30 nickjc Exp $
+# $Id: guestbook.pl,v 1.37 2002-04-15 07:46:30 nickjc Exp $
 #
 
 use strict;
@@ -126,7 +126,7 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n" unless $done_headers;
+      print "Content-Type: text/html; charset=iso-8859-1\n\n" unless $done_headers;
 
       print <<EOERR;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -159,55 +159,39 @@ $style_element = $style ?
                : '';
 
 use vars qw($date $shortdate);
-my @now       = localtime();
+my @now    = localtime();
 $date      = strftime($long_date_fmt, @now);
 $shortdate = strftime($short_date_fmt, @now);
 
-use vars qw($username $realname $comments);
-($username, $realname, $comments)
-  = (param('username'), param('realname'), param('comments'));
-
-use vars qw($city $state $country);
-($city, $state, $country)
-  = (param('city'), param('state'), param('country'));
-
-use vars qw($url);
-$url = param('url');
-$url = '' if $url and not check_url_valid($url);
+my @input_names =
+  qw(username realname comments city state country url);
+use vars qw(%inputs);
+foreach my $input (@input_names) {
+  $inputs{$input} = strip_nonprintable(param($input));
+}
 
 # There is a possibility that the comments can be escaped if passed as
 # the hidden field from the form_error() form
+if (param('encoded_comments')) {
+  $inputs{comments} = unescape_html( $inputs{comments} );
+}
 
-use vars qw($encoded_comments);
-$encoded_comments = param('encoded_comments') || 0;
+$inputs{'url'}    = '' unless check_url_valid($inputs{'url'});
+$inputs{username} = '' unless check_email($inputs{username});
 
-form_error('no_comments') unless $comments;
+# Strip out HTML unless we are allowing it.  The process_html
+# sub should take care of everything.
+use vars qw($comments);
+$comments = process_html($inputs{comments}, $line_breaks, $allow_html);
 
-$comments = unescape_html($comments) if $encoded_comments;
-
-# Strip out HTML unless we are allowing it
-# process_html should take care of everything.
-
-$comments = process_html($comments, $line_breaks, $allow_html);
-
-form_error('no_name')     unless $realname;
-
-
-# Get rid of the $username unless it is a valid e-mail address
-
-$username = '' unless check_email($username);
-
-# Escape any HTML in the rest of the fields - HTML should not
-# be allowed anywhere but the comment.
-
+# Generate versions of the inputs with HTML metacharacters
+# escaped - HTML should not # be allowed anywhere but the
+# comment.
 use vars qw(%escaped);
-%escaped = (
- username => escape_html($username),
- realname => escape_html($realname),
- city     => escape_html($city),
- state    => escape_html($state),
- country  => escape_html($country),
-);
+%escaped = map {$_ => escape_html($inputs{$_})} keys %inputs;
+
+form_error('no_comments') unless $inputs{comments};
+form_error('no_name')     unless $inputs{realname};
 
 rewrite_file($guestbookreal, sub
 {
@@ -217,14 +201,13 @@ rewrite_file($guestbookreal, sub
 
      $_ .= "<b>$comments</b><br />\n";
 
-     if ($url) {
-       my $eurl = escape_html($url);
-       $_ .= qq(<a href="$eurl">$escaped{realname}</a>);
+     if ($inputs{'url'}) {
+       $_ .= qq(<a href="$escaped{'url'}">$escaped{realname}</a>);
      } else {
        $_ .= $escaped{realname};
      }
 
-     if ($username){
+     if ($inputs{username}){
        if ($linkmail) {
          $_ .= qq( &lt;<a href="mailto:$escaped{username}">);
          $_ .= "$escaped{username}</a>&gt;";
@@ -235,15 +218,15 @@ rewrite_file($guestbookreal, sub
 
      $_ .= "<br />\n";
 
-     if ($city){
+     if ($inputs{city}){
        $_ .= "$escaped{city}, ";
      }
 
-     if ($state){
+     if ($inputs{state}){
        $_ .= $escaped{state};
      }
 
-     if ($country){
+     if ($inputs{country}){
        $_ .= " $escaped{country}";
      }
 
@@ -261,16 +244,16 @@ write_log('entry') if $uselog;
 
 if ($mail) {
    my $to = $recipient;
-   my $reply = "$username ($realname)";
-   my $from   = "$username ($realname)";
+   my $reply = "$inputs{username} ($inputs{realname})";
+   my $from   = "$inputs{username} ($inputs{realname})";
    my $subject = 'Entry to Guestbook';
    my $body    = 'You have a new entry in your guestbook:';
    do_mail($to, $from, $reply, $subject, $body );
 }
 
-if ($remote_mail && $username) {
+if ($remote_mail && $inputs{username}) {
 
-  my $to = $username;
+  my $to = $inputs{username};
   my $from = $recipient;
   my $reply = $recipient;
   my $subject = 'Entry to Guestbook';
@@ -289,12 +272,11 @@ sub form_error {
 
   my ( $why ) = @_;
 
-  $comments = escape_html($comments) if $comments;
-
   my ( $title, $heading, $text, $comments_field ) ;
 
   if ( $why eq 'no_name' ) {
-      $realname = '';
+      $inputs{realname} = '';
+      $escaped{realname} = '';
       $title = 'No Name';
       $heading = 'Your Name appears to be blank';
       $text =<<EOTEXT;
@@ -304,7 +286,7 @@ added.  Please add your name in the blank below.
 EOTEXT
       $comments_field =<<EOCOMMENT;
     Comments have been retained.
-        <input type="hidden" name="comments" value="$comments" />
+        <input type="hidden" name="comments" value="$escaped{comments}" />
         <input type="hidden" name="comments_encoded" value="1" />
 EOCOMMENT
    }
@@ -327,14 +309,14 @@ EOCOMMENT
       $text    = 'Please check your input and resubmit';
       $comments_field =<<EOCOMMENT;
       Comments:<br />
-      <textarea name="comments" cols="60" rows="4">$comments</textarea />
+      <textarea name="comments" cols="60" rows="4">$escaped{comments}</textarea />
       <input type="hidden" name="comments_encoded" value="1" />
 EOCOMMENT
    }
 
   local $^W; # suppress warnings as we may have missing fields;
 
-  print header;
+  print "Content-Type: text/html; charset=iso-8859-1\n\n";
   $done_headers++;
   print <<END_FORM;
 <?xml version="1.0" encoding="iso-8859-1"?>
@@ -352,19 +334,19 @@ EOCOMMENT
     </p>
     <form method="post" action="$cgiurl">
       <p>Your Name: <input type="text" name="realname"
-                           value="$realname" size="30" /><br />
+                           value="$escaped{realname}" size="30" /><br />
         E-Mail: <input type="text" name="username"
-                       value="$username" size="40" /><br />
-        City: <input type="text" name="city" value="$city"
+                       value="$escaped{username}" size="40" /><br />
+        City: <input type="text" name="city" value="$escaped{city}"
                      size="15" />,
         State: <input type="text" name="state"
-                      value="$state" size="2" />
-        Country: <input type="text" name="country" value="$country"
+                      value="$escaped{state}" size="2" />
+        Country: <input type="text" name="country" value="$escaped{country}"
                         size="15" /></p>
       <p>
        $comments_field
       </p>
-      <p><input type="submit"> * <input type="reset"></p>
+      <p><input type="submit" /> * <input type="reset" /></p>
     </form>
     <hr />
     <p>Return to the <a href="$guestbookurl">Guestbook</a></p>.
@@ -416,7 +398,7 @@ sub write_log {
 # Redirection Option
 sub no_redirection {
 
-  print header();
+  print "Content-Type: text/html; charset=iso-8859-1\n\n";
   $done_headers++;
   print <<END_HTML;
 <?xml version="1.0" encoding="iso-8859-1"?>
@@ -438,14 +420,13 @@ sub no_redirection {
 
 END_HTML
 
-  if ($url) {
-    my $eurl = escape_html($url);
-    print qq(<a href="$eurl">$escaped{realname}</a>);
+  if ($inputs{'url'}) {
+    print qq(<a href="$escaped{'url'}">$escaped{realname}</a>);
   } else {
     print $escaped{realname};
   }
 
-  if ($username){
+  if ($inputs{username}){
     if ($linkmail) {
       print qq( &lt;<a href="mailto:$escaped{username}">);
       print "$escaped{username}</a>&gt;";
@@ -456,11 +437,11 @@ END_HTML
 
   print "<br />\n";
 
-  print "$escaped{city}," if $city;
+  print "$escaped{city}," if $inputs{city};
 
-  print " $escaped{state}" if $state;
+  print " $escaped{state}" if $inputs{state};
 
-  print " $escaped{country}" if $country;
+  print " $escaped{country}" if $inputs{country};
 
   print " - $date\n";
 
@@ -501,20 +482,20 @@ Subject: $subject
 $body
 ------------------------------------------------------
 $comments
-$realname
+$inputs{realname}
 EOMAIL
 
-  if ($username){
-    print MAIL " <$username>";
+  if ($inputs{username}){
+    print MAIL " <$inputs{username}>";
   }
 
   print MAIL "\n";
 
-  print MAIL "$city'," if $city;
+  print MAIL "$inputs{city}'," if $inputs{city};
 
-  print MAIL " $state" if $state;
+  print MAIL " $inputs{state}" if $inputs{state};
 
-  print MAIL " $country" if $country;
+  print MAIL " $inputs{country}" if $inputs{country};
 
   print MAIL " - $date\n";
   print MAIL "------------------------------------------------------\n";
@@ -522,6 +503,13 @@ EOMAIL
   close (MAIL);
 }
 
+sub strip_nonprintable {
+  my $text = shift;
+  return '' unless defined $text;
+  $text=~ tr#\011\012\040-\176\240-\377##dc;
+  return $text;
+}
+	
 ##############################################################
 #
 # Validity checks for various contexts.
@@ -720,7 +708,7 @@ BEGIN
     'para'   => "\266", 'middot' => "\267",
     'cedil'  => "\270", 'supl'   => "\271",
     'ordm'   => "\272", 'raquo'  => "\273",
-    'frac14' => "\274", 'frac12 '=> "\275",
+    'frac14' => "\274", 'frac12' => "\275",
     'frac34' => "\276", 'iquest' => "\277",
 
     'Agrave' => "\300", 'Aacute' => "\301",
@@ -1132,7 +1120,7 @@ sub cleanup_cdata {
   ]gesx;
 
   # substitute newlines in the input for html line breaks if required.
-  s%\cM\n%<br />\n%g if $convert_nl;
+  s%\cM?\n%<br />\n%g if $convert_nl;
 
   return $_;
 }
@@ -1162,7 +1150,7 @@ sub unescape_html {
        "&$1$4"
      /gex;
 
-  return $str;
+  return strip_nonprintable($str);
 }
 
 #
