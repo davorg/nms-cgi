@@ -3,7 +3,7 @@
 Frequently Asked Questions about running the I<nms> CGI programs.
 If a question is not specific to 
 
-E<lt>-- $Date: 2004-08-15 14:12:55 $ --E<gt>
+E<lt>-- $Date: 2004-08-15 14:21:34 $ --E<gt>
 
 =head1 DESCRIPTION
 
@@ -43,9 +43,6 @@ and you think you know which one it is, but don't know how to correct
 it, include I<all> the information anyway. It's easier
 to ignore what we know we don't need, than to ask for information we
 might.
-
-this on their own time.
-
 
 =head2 There is a conflict between NMS documentation and Matt's.  Which is right?
 
