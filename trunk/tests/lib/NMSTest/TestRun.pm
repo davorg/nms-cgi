@@ -287,6 +287,9 @@ sub _grab_and_delete_output
       open IN, "<$self->{OUTDIR}/$out.out" or die "open $out.out: $!";
       push @alloutput, map {$prefix . $_} <IN>;
       push @alloutput, "\n";
+
+      # leave symlinks in place, see _setup_data_files in NMSTest::ScriptUnderTest.
+      next if -l "$self->{OUTDIR}/$out.out";
       unlink "$self->{OUTDIR}/$out.out" or die "unlink $self->{OUTDIR}/$out.out: $!";
    }
 
@@ -365,6 +368,8 @@ sub _substitute_dates
    {
       $r =~ s[($daypat), ($monpat) \d\d?, \d{4} at \d\d:\d\d:\d\d]
              [Sunday, December 31, 2002 at 23:58:00]og;
+      $r =~ s{\[\d\d/\d\d/\d\d \d\d:\d\d:\d\d [A-Z]{3}\]}
+             {[31/12/02 23:58:00]}og;
    }
 }
 

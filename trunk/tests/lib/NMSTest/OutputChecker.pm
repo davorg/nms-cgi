@@ -74,6 +74,9 @@ and L<NMSTest::CheckerMail>.
 There is a method for each defined check, so a check named
 "foo" would be implemented by a C<check_foo()> method.
 
+An optional argument can be passed to each check method,
+separated from the check name by a ':' character.
+
 =cut
 
 sub checks
@@ -83,11 +86,15 @@ sub checks
    my @checks = split /\s+/, $spec;
    foreach my $check (@checks)
    {
-      my $method = "check_$check";
+      my $checkbase = $check;
+      my $arg = undef;
+      $checkbase =~ s/-(.*)$// and $arg = $1;
+
+      my $method = "check_$checkbase";
       die "unknown check <$check>" unless $self->can($method);
 
       local $SIG{__DIE__};
-      eval { $self->$method() };
+      eval { $self->$method($arg) };
       $self->failed("Check $check failed: $@") if $@;
    }
 }

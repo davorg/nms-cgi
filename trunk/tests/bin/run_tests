@@ -36,11 +36,14 @@ foreach my $testset (@testsets)
    
    my $cgibindir = "$put_results/.tmp/cgi-bin";
    my $outdir    = "$put_results/.tmp/out";
+   my $datdir    = "$put_results/.tmp/data";
    my $resdir    = "$put_results/new/$testset";
    rmdir_r($cgibindir);
    mkdir_p($cgibindir);
    rmdir_r($outdir);
    mkdir_p($outdir);
+   rmdir_r($datdir);
+   mkdir_p($datdir);
    rmdir_r($resdir);
    mkdir_p($resdir);
    
@@ -51,6 +54,7 @@ foreach my $testset (@testsets)
    $ENV{NMSTEST_SRCDIR}      = $working_copy;
    $ENV{NMSTEST_CGIBIN}      = $cgibindir;
    $ENV{NMSTEST_OUTDIR}      = $outdir;
+   $ENV{NMSTEST_DATDIR}      = $datdir;
    $ENV{NMSTEST_RESULTS_DIR} = $resdir;
    $ENV{NMSTEST_LOGFILE}     = "$resdir/.log";
    $ENV{NMSTEST_PERL}        = $test_perl;

@@ -68,6 +68,34 @@ try different values of configuration variables in the script.
 
 The relative path to the script from the C<SRCDIR>.
 
+=item FILES
+
+A hash by output page name of information about the files
+that the script modifies.  The values of the hash are
+hashrefs, with the following keys set:
+
+=over 4
+
+=item NAME
+
+The basename of the file, e.g. F<guestbook.html>.
+
+=item START
+
+The path relative to the root of the CVS working directory
+of a file who's contents should be copied into the file to
+be operated on by the script under test at the time that
+the script is rewritten and installed.
+
+=back
+
+This code adds a C<PATH> key to hash, recording the full
+path of the copy of the file on which the script is to
+operate.  This is done before the coderefs in the 
+C<REWRITERS> array (above) are run, to allow the re-writer
+functions to configure the locations of the files into
+the script under test.
+
 =back
 
 =cut
@@ -82,10 +110,15 @@ sub new
       SRCDIR    => '[[DIR]]/src',
       BINDIR    => '[[DIR]]/bin',
       CGIBIN    => '[[DIR]]/cgi-bin',
+      DATDIR    => '[[DIR]]/data',
+      OUTDIR    => '[[DIR]]/out',
       SENDMAIL  => '[[BINDIR]]/fake_sendmail',
       REWRITERS => [],
+      FILES     => {},
       SCRIPT    => undef,
    });
+
+   $self->_setup_data_files;
 
    $self->_rewrite_script;
 
@@ -115,6 +148,51 @@ sub run_test
 =head1 PRIVATE METHODS
 
 =over 4
+
+=item _setup_data_files ()
+
+Copies initial versions of any data files defined in the C<FILES>
+option into the data files directory, and adds symlinks in the
+output directory so that the file contents after the script run
+become part of the recorded output.
+
+=cut
+
+sub _setup_data_files
+{
+   my ($self) = @_;
+
+   # ditch any old data and output files left over from the previous test
+   foreach my $dir ($self->{DATDIR}, $self->{OUTDIR})
+   {
+      opendir D, $dir or die "opendir $dir: $!";
+      while ( defined (my $file = readdir D) )
+      {
+         next if $file =~ /^\./;
+         unlink "$dir/$file";
+      }
+      closedir D;
+   }
+
+   foreach my $page (keys %{$self->{FILES}})
+   {
+      my $pdat = $self->{FILES}{$page};
+      my $fname = "$self->{DATDIR}/$pdat->{NAME}"; 
+      $pdat->{PATH} = $fname;
+
+      open IN, "<$self->{SRCDIR}/$pdat->{START}" or die "open <$pdat->{START}: $!";
+      local $/;
+      my $file_contents = <IN>;
+      close IN;
+
+      open OUT, ">$fname" or die "open >$fname: $!";
+      print OUT $file_contents;
+      close OUT;
+
+      symlink $fname, "$self->{OUTDIR}/$page.out" or die 
+         "symlink $fname -> $self->{OUTDIR}/$page.out: $!";
+   }
+}
 
 =item _rewrite_script ()
 

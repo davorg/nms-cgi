@@ -23,14 +23,20 @@ Ensures that the script output looks something like valid XHTML.
 
 sub check_xhtml
 {
-   my ($self) = @_;
+   my ($self, $page) = @_;
+   $page = 'OUT' unless defined $page;
 
-   local $_ = $self->{PAGES}{OUT};
+   local $_ = $self->{PAGES}{$page};
 
-   defined $_ or die "no output, expecting some XHTML\n";
+   defined $_ or die "no $page output, expecting some XHTML\n";
 
-   s|^Content-type:[ \t]+text/html\r?\n\r?\n\s*||i or die
-      "can't find text/html content-type\n";
+   if ($page eq 'OUT')
+   {
+      s|^Content-type:[ \t]+text/html(; charset=iso-8859-1)?\r?\n\r?\n\s*||i or die
+         "can't find text/html content-type\n";
+   }
+
+   s|^<\?xml version="1.0" encoding="iso-8859-1"\?>\r?\n||i;
 
    s|^<!DOCTYPE \s+ html \s+ PUBLIC \s+
      "-//W3C//DTD \s+ XHTML \s+ 1\.0 \s+ Transitional//EN" \s*
@@ -41,7 +47,7 @@ sub check_xhtml
    s#^<html xmlns="http://www\.w3\.org/1999/xhtml">\s*## or die
       "can't find correct <html> tag\n";
 
-   s#</html>\s*\z## or die "can't find </html>\n";
+   s#</html>\s*\z## or die "can't find </html> in <<$_>>\n";
 
 
    my $opts = q[\s*(?:[a-z][a-z0-9]*\s*=\s*"[^"<>']*"\s*)*];
