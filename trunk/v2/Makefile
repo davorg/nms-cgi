@@ -110,8 +110,9 @@ formmail_modules_tarballs:
 	mv .tarballs/formmail_modules .tarballs/formmail
 	perl -i -pe 's|^# use lib.*|use lib "$(NMS_WORKING_COPY)/v2/.tarballs/formmail/lib";|' \
 		.tarballs/formmail/FormMail.pl
-	# NMSTEST_SRCDIR="$(NMS_WORKING_COPY)/v2/.tarballs" buildtools/run_tests formmail
-	NMSTEST_SRCDIR="$(NMS_WORKING_COPY)/v2/.tarballs" make multitest_formmail
+	NMSTEST_SRCDIR="$(NMS_WORKING_COPY)/v2/.tarballs" \
+		sh -e -c 'for NMS_TEST_PERL in $(NMS_TEST_PERL) $(NMS_MORE_TEST_PERLS); \
+		do echo; echo $$NMS_TEST_PERL; echo; buildtools/run_tests formmail; done'
 	rm -rf .tarballs/formmail
 	touch $@
 
@@ -121,8 +122,9 @@ formmail_modules_tarballs:
 	mv .tarballs/formmail_modules .tarballs/formmail
 	perl -i -pe 's|^# use lib.*|use lib "$(NMS_WORKING_COPY)/v2/.tarballs/formmail/lib";|' \
 		.tarballs/formmail/FormMail.pl
-	# NMSTEST_SRCDIR="$(NMS_WORKING_COPY)/v2/.tarballs" buildtools/run_tests formmail
-	NMSTEST_SRCDIR="$(NMS_WORKING_COPY)/v2/.tarballs" make multitest_formmail
+	NMSTEST_SRCDIR="$(NMS_WORKING_COPY)/v2/.tarballs" \
+		sh -e -c 'for NMS_TEST_PERL in $(NMS_TEST_PERL) $(NMS_MORE_TEST_PERLS); \
+		do echo; echo $$NMS_TEST_PERL; echo; buildtools/run_tests formmail; done'
 	rm -rf .tarballs/formmail
 	touch $@
 
