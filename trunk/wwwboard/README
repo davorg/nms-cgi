@@ -1,32 +1,27 @@
-COPYRIGHT:
-----------
+COPYRIGHT
 
 wwwboard.pl Version 1.00
 Copyright 2001,2002 London Perl Mongers, All rights reserved
 
-LICENSE:
---------
+LICENSE
 
 This script is free software; you are free to redistribute it
 and/or modify it under the same terms as Perl itself.
 
-URL:
-----
+URL
 
 The most up to date version of this script is available from the nms
 script archive at  <http://nms-cgi.sourceforge.net/>
 
-SUMMARY:
---------
+SUMMARY
 
 wwwboard is a script which allows you to create and maintain a discussion
 forum on the web. On the forum, people will be able to post and reply to
 posts.
 
-FILES:
-------
+FILES
 
-In this distribution, you will find these files:
+In this distribution, you will find these files
   README        - Configuration and installation instructions. This file
   wwwboard.pl   - Script containing the config and making everything work
   wwwboard.html - The HTML web board file that users will see
@@ -37,14 +32,13 @@ In this distribution, you will find these files:
   passwd.txt    - The encoded password and username for wwwadmin
   ADMIN_README  - wwwadmin config and install instruction.
 
-CONFIGURATION and INSTALLATION:
--------------------------------
+CONFIGURATION and INSTALLATION
 
 There are a number of files to configure in order to get the wwwboard working.
 During the following you will be guided through the configuration and installation of all the files and settings in order to have a working wwwboard.
 
 * wwwboard.pl
-   Settings:
+   Settings
 
       $DEBUGGING          - This should be set to 1 whilst you are installing
                             and testing the script. Once the script is live you
@@ -165,7 +159,7 @@ During the following you will be guided through the configuration and installati
       $date_fmt
       $time_fmt           - $date_fmt and $time_fmt describe the format of the
                             dates that will output - the replacement parameters
-                            you can use here are:
+                            you can use here are
 
             %A - the full name of the weekday according to the current locale
             %B - the full name of the month according to the current locale
@@ -208,16 +202,16 @@ During the following you will be guided through the configuration and installati
                             entry of a malicious URL that may be used to attack
                             another host or disfigure this web page.
 
-   Installation:
+   Installation
       You must upload this file to your server's cgi-bin or in a directory where
       CGI execution is allowed. Make sure the directory and path match the
       $cgi_url put in the settings. You must also give the file the right
       permissions. In order to do so, the file must be chmoded to 755 using the
-      following command:
+      following command
          chmod 755 wwwboard.pl
 
 * wwwboard.html
-   Settings:
+   Settings
       <form method="post" action="/cgi-bin/wwwboard.pl">
                           - This is the only setting to modify in this file. The
                             only thing you got to make sure of is the action=""
@@ -230,39 +224,39 @@ During the following you will be guided through the configuration and installati
                             remain intact are the <form>, <input> and
                             <textarea> tags.
 
-   Installation:
+   Installation
       This is fairly simple. Just put it in your $basedir so that people
       visiting $baseurl/wwwboard.html will see it. You also have to chmod the
-      file to 777 using the following command:
+      file to 777 using the following command
          chmod 777 wwwboard.html
 
 * faq.html
-   Settings:
+   Settings
       This file does not need to be edited. However feel free to change anything
       you want in it. Just make sure that the links to wwwboard.html work.
 
-   Installation:
+   Installation
       This is fairly simple. Just put it in your $basedir so that people
       visiting $baseurl/wwwboard.html will see it. Normally, you should not need
       to chmod it. However, it should be chmoded to 644.
 
 * messages/
-   Settings:
+   Settings
       None.
 
-   Installation:
+   Installation
       This is fairly simple. Just put it in your $basedir. You also have to
-      chmod the directory to 777 using the following command:
+      chmod the directory to 777 using the following command
          chmod 777 messages/
 
 * data.txt
-   Settings:
+   Settings
       None.
 
-   Installation:
+   Installation
       Simply upload this file to $basedir, as mentionned in wwwboard.pl. You
       also have to chmod the file to 666 (no, we are not the devil) using the
-      following command:
+      following command
          chmod 666 data.txt
 
 * Administration files (wwwadmin.pl, passwd.txt, ADMIN_README)
@@ -272,9 +266,8 @@ During the following you will be guided through the configuration and installati
    delete messages and perform other administrative tasks. Their settings and
    installation procedure is discussed in ADMIN_README.
 
-SUPPORT:
---------
+SUPPORT
 
-For support of this script please suscribe to and email:
+For support of this script please suscribe to and email
 
   <nms-cgi-support@lists.sourceforge.net>

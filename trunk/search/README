@@ -1,29 +1,24 @@
 COPYRIGHT
----------
 
 Simple Search
 Copyright 2001 London Perl Mongers, All rights reserved
 
 LICENSE
--------
 
 This script is free software; you are free to redistibute it and/or
 modify it under the same terms as Perl itself.
 
 URL
----
 
 The most up to date version of this script is available from the nms
 script archive at <http://nms-cgi.sourceforge.net/>
 
 SUMMARY
--------
 
 Simple Search is a simple search engine that performs a quick search of
 a website and displays links to files containing the text search for.
 
 FILES
------
 
 In this distribution, you will find four files:
 
@@ -34,7 +29,6 @@ search.html - A sample HTML file demonstrating how to use Simple Search.
 MANIFEST    - List of files included with the Simple Search distribution.
 
 CONFIGURATION
--------------
 
 There are a number of variables that you can change in search.pl which
 alter the way that the program works.  $basedir and $baseurl are the two
@@ -139,7 +133,6 @@ most important variables, and must be altered to refer to your website.
        
         
 INSTALLATION
-------------
 
 Simple Search is installed simply by copying the file search.pl into
 your cgi-bin directory.  If you don't know the location of your cgi-bin
@@ -194,7 +187,6 @@ similar to the following:
     </form>
 
 SUPPORT
--------
 
 For support with Simple Search please email:
 
