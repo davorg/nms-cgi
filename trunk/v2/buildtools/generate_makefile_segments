@@ -52,6 +52,7 @@ my @files = qw(
   buildtools/tarballs
   buildtools/inline
   buildtools/cvs2cl
+  buildtools/cl2ver
 
 );
 
