@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.13 2002-09-02 20:36:25 nickjc Exp $
+# $Id: FormMail.pl,v 2.14 2002-09-23 20:39:05 nickjc Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.13 $
+# FormMail.pl $Revision: 2.14 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -73,7 +73,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.13 $, 10, -1;
+  $VERSION = substr q$Revision: 2.14 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -543,14 +543,18 @@ EOMAIL
     if ($Config{'print_blank_fields'} || $val !~ /^\s*$/) {
       my $field_name = "$_: ";
       if ( $wrap_text and length("$field_name$val") > 72 ) {
-         my $subs_indent = '';
-         if ( $wrap_style == 1 ) {
-            $subs_indent = ' ' x length($field_name);
-         }
-         $Text::Wrap::columns = 72;
-         $val = wrap('',$subs_indent,$val);
+        my $subs_indent = '';
+        if ( $wrap_style == 1 ) {
+          $subs_indent = ' ' x length($field_name);
+        }
+        $Text::Wrap::columns = 72;
+        my $wraped;
+        eval { local $SIG{__DIE__} ;  $wraped = wrap($field_name,$subs_indent,$val) };
+        print MAIL +($@ ? "$field_name$val" : $wraped), "\n\n";
       }
-      print MAIL "$field_name$val\n\n";
+      else {
+        print MAIL "$field_name$val\n\n";
+      }
     }
   }
 
@@ -946,7 +950,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.13 $
+FormMail $Revision: 2.14 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
