@@ -627,7 +627,7 @@ might add the following lines to your .trc file:
 
 
 logfile: foo
-logfile_template:
+log_template:
 %{= date =}|{= env.REMOTE_ADDR =}|{= param.email =}
 
 
@@ -641,7 +641,7 @@ an HTML-like format for log files makes them more resilient:
 
 
 logfile: foo
-logfile_template:
+log_template:
 %{= date =}<x>{= env.REMOTE_ADDR =}<x>{= param.email =}<eol>
 
 
