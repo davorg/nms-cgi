@@ -187,7 +187,11 @@ sub _setup_data_files
       my $fname = "$self->{DATDIR}/$pdat->{NAME}"; 
 
       my $file_contents;
-      if (ref $pdat->{START} eq 'CODE')
+      if (not defined $pdat->{START})
+      {
+         undef $file_contents;
+      }
+      elsif (ref $pdat->{START} eq 'CODE')
       {
          $file_contents = &{ $pdat->{START} };
       }
@@ -212,9 +216,12 @@ sub _setup_data_files
 	 -d $path or mkdir $path, 0755 or die "mkdir $path: $!";
       }
 
-      open OUT, ">$fname" or die "open >$fname: $!";
-      print OUT $file_contents;
-      close OUT;
+      if (defined $file_contents)
+      {
+         open OUT, ">$fname" or die "open >$fname: $!";
+         print OUT $file_contents;
+         close OUT;
+      }
 
       next if $page =~ /^_/;
 

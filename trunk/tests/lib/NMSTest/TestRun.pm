@@ -285,13 +285,19 @@ sub _grab_and_delete_output
    foreach my $out (sort @outputs)
    {
       my $prefix = pack 'A6', $out;
-      open IN, "<$self->{OUTDIR}/$out.out" or die "open $out.out: $!";
-      push @alloutput, map {$prefix . $_} <IN>;
-      push @alloutput, "\n";
+      if (open IN, "<$self->{OUTDIR}/$out.out")
+      {
+         push @alloutput, map {$prefix . $_} <IN>;
+         push @alloutput, "\n";
 
-      # leave symlinks in place, see _setup_data_files in NMSTest::ScriptUnderTest.
-      next if -l "$self->{OUTDIR}/$out.out";
-      unlink "$self->{OUTDIR}/$out.out" or die "unlink $self->{OUTDIR}/$out.out: $!";
+         # leave symlinks in place, see _setup_data_files in NMSTest::ScriptUnderTest.
+         next if -l "$self->{OUTDIR}/$out.out";
+         unlink "$self->{OUTDIR}/$out.out" or die "unlink $self->{OUTDIR}/$out.out: $!";
+      }
+      else
+      {
+         push @alloutput, "$prefix<<<FILE ABSENT>>>\n", "\n";
+      }
    }
 
    return @alloutput;
