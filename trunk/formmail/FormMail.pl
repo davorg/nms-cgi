@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.24 2002-01-19 23:44:28 nickjc Exp $
+# $Id: FormMail.pl,v 1.25 2002-01-20 14:52:02 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2002/01/19 23:44:28  nickjc
+# Added the option to send a confirmation email to the submitter, in
+# response to a user request.
+#
 # Revision 1.23  2002/01/14 08:54:10  nickjc
 # Took out a warn statement left over from a debugging session
 #
@@ -165,6 +169,13 @@ my $style = '/css/nms.css';
 # If $send_confirmation_mail is set to 1, then an additional email will
 # be sent to the person who submitted the form.  The details of the
 # confirmation email can be edited below.
+#
+# CAUTION: with this feature turned on it's possible for someone
+# to put someone else's email address in the form and submit it
+# 5000 times, causing this script to send a flood of email to a
+# third party.  This third party is likely to blame you for the
+# email flood attack.
+#
 my $send_confirmation_mail = 0;
 my $confirmation_text = <<'END_OF_CONFIRMATION';
 From: you@your.com
