@@ -1,8 +1,13 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.10 2002-02-26 08:59:28 gellyfish Exp $
+# $Id: counter.pl,v 1.11 2002-02-26 20:57:01 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/02/26 08:59:28  gellyfish
+# * Fixed imagecounter to something
+# * fixed typo in textcounter/README
+# * suppressed emission of headers in fatalsToBrowser if already done.
+#
 # Revision 1.9  2002/02/11 09:16:35  gellyfish
 # * provided method to turn off emission of headers
 # * Fixed the locking race
@@ -146,13 +151,19 @@ check_server_software();
 
 print header if $ssi_emit_cgi_headers;
 
-check_uri($count_page);
+check_uri($count_page) || die "bad URI : '$count_page'\n";
 
 
 $count_page =~ s|/$||;
 $count_page =~ s/[^\w]/_/g;
 
 my ($date, $count);
+
+
+if ( $data_dir !~ m%/$% ) {
+  $data_dir .= '/';
+}
+
 if (-e "$data_dir$count_page") {
    sysopen(COUNT, "$data_dir$count_page", O_RDWR)
      or die "Can't open count file: $!\n";
@@ -215,7 +226,7 @@ sub check_uri {
       last;
     }
   }
-  die "Bad URI: $count_page" unless $uri_check;
+  return $uri_check;
 }
 
 sub create {

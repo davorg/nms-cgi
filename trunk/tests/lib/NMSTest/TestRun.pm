@@ -69,6 +69,12 @@ The request method for the simulated request, "GET" or
 The value to be set for the REMOTE_ADDR environment
 variable seen by the script under test.
 
+=item DOCUMENT_URI
+
+The value to be set for the DOCUMENT_URI environment 
+variable for the tested script - this is useful for the
+SSI programs.
+
 =item PERL
 
 The path to the Perl interpreter to be used to run the
@@ -116,6 +122,7 @@ sub new
      CHECKS          => '',
      CHECKER         => 'NMSTest::OutputChecker',
      RESULTS_DIR     => '[[DIR]]/results',
+     DOCUMENT_URI    => '/zub.shtml',
    });
 
    return $self;
@@ -149,6 +156,7 @@ sub run
        HTTP_REFERER         => $self->{HTTP_REFERER},
        FAKE_SENDMAIL_OUTPUT => $self->{OUTDIR},
        REMOTE_ADDR          => $self->{REMOTE_ADDR},
+       DOCUMENT_URI         => $self->{DOCUMENT_URI},
    );
 
    my $q = $self->_build_query;
