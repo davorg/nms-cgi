@@ -59,7 +59,8 @@ my @scripts = qw(
 # The modules to inline
 my %modules = (
 
-   'CGI::NMS::Charset' => 'modules/NMS/Charset/Charset.pm',
+   'CGI::NMS::Charset'    => 'modules/NMS/Charset/Charset.pm',
+   'CGI::NMS::HTMLFilter' => 'modules/NMS/HTMLFilter/HTMLFilter.pm',
 
 );
 
