@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.25 2002-03-04 10:27:39 gellyfish Exp $
+# $Id: search.pl,v 1.26 2002-03-04 21:45:11 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.25  2002/03/04 10:27:39  gellyfish
+# * Added $no_prune to cause the search to recurse all sub-directories.
+# * Removed some old debugging code.
+#
 # Revision 1.24  2002/03/04 09:09:39  gellyfish
 # * No point in lying about the encoding of our output
 # * Made the use of the directory parameter safer in search.pl
@@ -280,7 +284,11 @@ sub do_search
         }
         return;
     }
-    unless (!$emulate_matts_code and $no_prune )
+    if (!$emulate_matts_code and $no_prune )
+    {
+       return unless $basename =~ /$wclist/io;
+    }
+    else
     {
       return unless ("$dirname$basename" =~ m/$wclist/io);
     }
