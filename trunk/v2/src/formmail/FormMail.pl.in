@@ -18,7 +18,8 @@ use vars qw(
   @allow_mail_to @recipients %recipient_alias
   @valid_ENV $date_fmt $style $send_confirmation_mail
   $confirmation_text $locale $charset $no_content
-  $double_spacing $wrap_text $wrap_style $postmaster
+  $double_spacing $wrap_text $wrap_style $postmaster 
+  $address_style
 );
 
 # PROGRAM INFORMATION
@@ -64,6 +65,7 @@ BEGIN
   $double_spacing    = 1;
   $wrap_text         = 0;
   $wrap_style        = 1;
+  $address_style     = 0;
   $send_confirmation_mail = 0;
   $confirmation_text = <<'END_OF_CONFIRMATION';
 From: you@your.com
@@ -116,6 +118,7 @@ BEGIN {
      wrap_style             => $wrap_style,
      send_confirmation_mail => $send_confirmation_mail,
      confirmation_text      => $confirmation_text,
+     address_style          => $address_style,
      %more_config
   );
 }

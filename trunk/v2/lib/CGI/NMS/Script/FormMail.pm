@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.11 $, 10, -1;
+$VERSION = substr q$Revision: 1.12 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -226,6 +226,16 @@ smaller than the characters in the field name.
 
 Default: 1
 
+=item C<address_style>
+
+If C<address_style> is set to 0 then the full address for the user who filled
+in the form will be used as "$email ($realname)" - this is also what the
+format will be if C<emulate_matts_code> is true.
+
+If it is set to 1 then the address format will be "$realname <$email>".
+
+Default: 0
+
 =item C<force_config_*>
 
 Configuration settings of this form can be used to fix configuration
@@ -281,6 +291,7 @@ sub default_configuration {
     join_string            => ' ',
     wrap_text              => 0,
     wrap_style             => 1,
+    address_style          => 0,
   );
 }
 
@@ -1059,6 +1070,35 @@ sub send_main_email {
   $mailer->endmail;
 }
 
+=item build_from_address( EMAIL, REALNAME )
+
+Creates the address that will be used for the user that filled in the form,
+if the address_style configuration is 0 or emulate_matts_code is true then
+the format will be "$email ($realname)" if it is set to a true value then 
+the format will be "$realname <$email>".
+
+=cut
+
+sub build_from_address
+{
+   my ( $self, $email, $realname ) = @_;
+
+   my $from_address = $email;
+   if ( length $realname )
+   {
+      if (!$self->{CFG}{emulates_matts_code} and $self->{CFG}{address_style})
+      {
+         $from_address = "$realname <$email>";
+      }
+      else
+      {
+         $from_address = "$email ($realname)";
+      }
+   }
+
+   return $from_address;
+}
+
 =item send_main_email_header ( EMAIL, REALNAME )
 
 Sends the email header for the main email, not including the terminating
@@ -1076,7 +1116,7 @@ sub send_main_email_header {
   $subject =~ s#[\r\n\t]+# #g;
 
   my $to = join ',', @{ $self->{Recipients} };
-  my $from = (length $realname ? "$email ($realname)" : $email);
+  my $from = $self->build_from_address($email ,$realname);
 
   $self->mailer->print(<<END);
 X-Mailer: ${\( $self->name_and_version )}
@@ -1241,7 +1281,7 @@ sub send_conf_email {
   my ($self, $date, $email, $realname) = @_;
 
   if ( $self->{CFG}{send_confirmation_mail} and $email =~ /\@/ ) {
-    my $to = (length $realname ? "$email ($realname)" : $email);
+    my $to = $self->build_from_address($email, $realname);
     $self->mailer->newmail("NMS FormMail.pm v$VERSION", $self->{CFG}{postmaster}, $email);
     $self->mailer->print("To: $to\n$self->{CFG}{confirmation_text}");
     $self->mailer->endmail;

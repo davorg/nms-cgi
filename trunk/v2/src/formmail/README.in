@@ -287,6 +287,12 @@ $wrap_style         - If $wrap_text is set to 1  then
                       of the indent might be smaller than the characters in
                       the field name.
 
+$address_style      - If this is set to 0 ( or if $emulate_matts_code is set
+                      to 1 ) then the address constructed for the person
+                      filling in the form will be of the format 
+                      "$email ($realname)".  If it is set to 1 then the format
+                      will be "$realname <$email>".
+
 $send_confirmation_mail - If this flag is set to 1 then an additional email
                           will be sent to the person who submitted the
                           form.
