@@ -1,8 +1,12 @@
 #! /usr/bin/perl -Tw
 #
-# $Id: rand_link.pl,v 1.6 2001-12-01 19:45:22 gellyfish Exp $
+# $Id: rand_link.pl,v 1.7 2002-02-27 09:04:29 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/12/01 19:45:22  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.5  2001/11/25 11:39:38  gellyfish
 # * add missing use vars qw($DEBUGGING) from most of the files
 # * sundry other compilation failures
@@ -22,7 +26,7 @@ use strict;
 use POSIX qw(strftime);
 use CGI qw(redirect);
 use Fcntl qw(:DEFAULT :flock);
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 
 # Configuration
 
@@ -95,10 +99,12 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -128,7 +134,6 @@ chomp @links;
 my $link = $links[rand @links];
 close LINKS;
 
-print redirect($link);
 
 if ($uselog) {
   my $date = strftime($date_format, localtime());
@@ -140,8 +145,9 @@ if ($uselog) {
    print LOG "$ENV{REMOTE_HOST} - [$date]\n";
   close (LOG)
     or die "Can't close logfile: $!\n";
-  open (LOG, ">>$logfile");
-  close (LOG);
 }
+
+print redirect($link);
+$done_headers++;
 
 exit;

@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 
-# $Id: gallery.pl,v 1.1.1.1 2002-01-22 20:37:41 gellyfish Exp $
+# $Id: gallery.pl,v 1.2 2002-02-27 09:04:29 gellyfish Exp $
 
 # $Log: not supported by cvs2svn $
+# Revision 1.1.1.1  2002/01/22 20:37:41  gellyfish
+# * Checked in for discussion purposes
+#
 
 # Originally :
 # Revision 1.1  2000/02/05 17:29:04  gellyfish
@@ -10,7 +13,7 @@
 use strict;
 
 use CGI qw(:standard);
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 
 # Configuration items
 
@@ -56,10 +59,12 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -126,6 +131,8 @@ print header,
       start_html( -style => $style ),
       p({-class => 'image'},img({-src => "$image_url/$files[$image]",
            -align => 'center'}));
+
+$done_headers++;
 
 print h2($descrips{$files[$image]}) if exists $descrips{$files[$image]};
        

@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: textclock.pl,v 1.6 2001-12-01 19:45:22 gellyfish Exp $
+# $Id: textclock.pl,v 1.7 2002-02-27 09:04:29 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/12/01 19:45:22  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.5  2001/11/25 11:39:40  gellyfish
 # * add missing use vars qw($DEBUGGING) from most of the files
 # * sundry other compilation failures
@@ -23,7 +27,7 @@
 use strict;
 use POSIX 'strftime';
 use CGI 'header';
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 
 # Configuration
 
@@ -73,10 +77,12 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -107,5 +113,6 @@ push @date_fmt, '%H:%M:%S' if $Display_Time;
 push @date_fmt, '%Z'       if $Display_Time_Zone;
 
 print header(-type => 'text/plain');
+$done_headers++;
 
 print strftime(join(' ', @date_fmt), localtime);

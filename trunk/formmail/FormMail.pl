@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.44 2002-02-26 22:30:49 proub Exp $
+# $Id: FormMail.pl,v 1.45 2002-02-27 09:04:28 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.44  2002/02/26 22:30:49  proub
+# Updated no-recipients-defined error message -- we now suggest both
+# @allow_mail_to and @recipients as places to add valid emails.
+#
 # Revision 1.43  2002/02/26 22:13:20  proub
 # Removed commented-out unit-tests (unit tests now live in /tests/formail)
 #
@@ -178,7 +182,7 @@ use strict;
 use POSIX qw(strftime);
 use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
@@ -264,7 +268,7 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -500,7 +504,8 @@ sub return_html {
   if ($Config{'redirect'}) {
     print redirect $Config{'redirect'};
   } else {
-    print header;
+    print header();
+    $done_headers++;
 
     my $title = escape_html( $Config{'title'} || 'Thank You' );
     my $torecipient = 'to ' . escape_html($Config{'recipient'});
@@ -893,6 +898,7 @@ EOBODY
   }
 
   print header();
+  $done_headers++;
   print <<END_ERROR_HTML;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.12 2002-01-28 20:46:27 gellyfish Exp $
+# $Id: countdown.pl,v 1.13 2002-02-27 09:04:28 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/01/28 20:46:27  gellyfish
+# * Fixed $emulate_matts_code to lower case
+#
 # Revision 1.11  2002/01/27 13:06:15  gellyfish
 # Bugfix as reported via sourceforge
 #
@@ -44,7 +47,7 @@ use strict;
 use POSIX qw(strftime);
 use Time::Local;
 use CGI qw(:standard);
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 
 # Configuration
 
@@ -64,13 +67,6 @@ BEGIN
 my @from_date = (2002,9,7,0,0,0);
 my $delimiter = "<br />";
 my $date_fmt = '%H:%M:%S %d/%b/%Y';
-
-# $style is the URL of a CSS stylesheet which will be used for script
-# generated messages.  This probably wants to be the same as the one
-# that you use for all the other pages.  This should be a local absolute
-# URI fragment.
-
-my $style = '/css/nms.css';
 
 # If $emulate_matts_code is set to 1 then this will behave exactly as the
 # original countdown.pl did.
@@ -101,10 +97,12 @@ BEGIN
 
     return undef if $file =~ /^\(eval/;
 
-    print "Content-Type: text/html\n\n";
+    print "Content-Type: text/html\n\n" unless $done_headers;
 
     print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -167,6 +165,7 @@ my $now = strftime($date_fmt, reverse @now);
 # Output formatting
 
 print header;
+$done_headers++;
 
 # Check to see whether the date has already passed.
 

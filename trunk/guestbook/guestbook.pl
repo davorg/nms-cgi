@@ -1,8 +1,11 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.28 2002-02-14 12:57:53 nickjc Exp $
+# $Id: guestbook.pl,v 1.29 2002-02-27 09:04:29 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.28  2002/02/14 12:57:53  nickjc
+# * file locking review
+#
 # Revision 1.27  2002/01/29 08:50:44  nickjc
 # Improved check_url_valid function from FormMail.pl
 #
@@ -109,7 +112,7 @@ use POSIX qw(strftime);
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 
-use vars qw($DEBUGGING @debug_msg);
+use vars qw($DEBUGGING $done_headers @debug_msg);
 
 # sanitize the environment
 
@@ -220,10 +223,13 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -243,6 +249,10 @@ EOERR
 
    $SIG{__DIE__} = \&fatalsToBrowser;
 }
+
+my $style_element = $style ? 
+                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
+                  : '';
 
 my @now       = localtime();
 my $date      = strftime($long_date_fmt, @now);
@@ -443,14 +453,15 @@ EOCOMMENT
   local $^W; # suppress warnings as we may have missing fields;
 
   print header;
+  $done_headers++;
   print <<END_FORM;
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>$title</title>
-     <link rel="stylesheet" type="text/css" href="$style" />
+    $style_element
   </head>
   <body>
     <h1>$heading</h1>
@@ -524,14 +535,15 @@ sub write_log {
 sub no_redirection {
 
   print header();
+  $done_headers++;
   print <<END_HTML;
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Thank You</title>
-     <link rel="stylesheet" type="text/css" href="$style" />
+    $style_element
   </head>
   <body>
     <h1>Thank You For Signing The Guestbook</h1>

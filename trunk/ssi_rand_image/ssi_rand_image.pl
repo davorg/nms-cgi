@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: ssi_rand_image.pl,v 1.7 2002-01-27 17:25:48 davorg Exp $
+# $Id: ssi_rand_image.pl,v 1.8 2002-02-27 09:04:29 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.7  2002/01/27 17:25:48  davorg
+# Remove unused $base_dir variable.
+#
 # Revision 1.6  2001/12/01 19:45:22  gellyfish
 # * Tested everything with 5.004.04
 # * Replaced the CGI::Carp with local variant
@@ -28,7 +31,7 @@ use strict;
 use POSIX qw(strftime);
 use CGI qw(header img a);
 use Fcntl qw(:DEFAULT :flock);
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 
 # Configuration
 
@@ -91,10 +94,12 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -120,6 +125,7 @@ my $img = $images[rand(@images)];
 # Print Out Header With Random Filename and Base Directory
 
 print header;
+$done_headers++;
 
 my $output = img({-src => $img->{file},
 		  -alt => $img->{alt},

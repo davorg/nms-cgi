@@ -1,8 +1,13 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: icounter.pl,v 1.9 2002-02-26 08:59:28 gellyfish Exp $
+# $Id: icounter.pl,v 1.10 2002-02-27 09:04:29 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/02/26 08:59:28  gellyfish
+# * Fixed imagecounter to something
+# * fixed typo in textcounter/README
+# * suppressed emission of headers in fatalsToBrowser if already done.
+#
 # Revision 1.8  2002/02/14 10:46:50  gellyfish
 # * Realized that it didn't do anything
 #
@@ -35,14 +40,17 @@ use strict;
 use CGI 'header';
 use Fcntl qw(:DEFAULT :flock);
 use POSIX 'strftime';
-use vars qw($DEBUGGING $done_header);
-
-# We don't need file uploads or POSTed data so switch them off
-# The strange locution is to stop a 'used once' warning.
+use vars qw($DEBUGGING $done_headers);
 
 # Older Fcntl module doesn't have the SEEK_* constants
 
-sub SEEK_SET() { 0; }
+BEGIN 
+{
+  eval
+  {
+     sub SEEK_SET() { 0; }
+  } unless defined(&SEEK_SET);
+}
 
 # The program does not require any upload or posted data
 # this is done in a strange way to shut up the warnings.
@@ -101,7 +109,7 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n" unless $done_header;
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -134,17 +142,21 @@ my $count_page = $ENV{DOCUMENT_URI} || $ENV{SCRIPT_NAME};
 check_server_software();
 
 print header if $ssi_emit_cgi_headers;
-$done_header++;
+$done_headers++;
 
 check_uri($count_page);
 
 $count_page =~ s|/$||;
 $count_page =~ s/[^\w]/_/g;
 
+if ( $data_dir !~ m%/$% ) {
+  $data_dir .= '/';
+}
+
 
 my $count = 0;
-if (-e "$data_dir/$count_page") {
-   sysopen(COUNT, "$data_dir/$count_page", O_RDWR)
+if (-e "$data_dir$count_page") {
+   sysopen(COUNT, "$data_dir$count_page", O_RDWR)
      or die "Can't open count file: $!\n";
    flock(COUNT, LOCK_EX)
      or die "Can't lock count file: $!\n";

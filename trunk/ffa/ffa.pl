@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.11 2002-02-01 09:18:48 gellyfish Exp $
+#  $Id: ffa.pl,v 1.12 2002-02-27 09:04:28 gellyfish Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.11  2002/02/01 09:18:48  gellyfish
+#  * Possibly less confusing way of stoppoing used once warning
+#
 #  Revision 1.10  2002/01/31 23:50:04  nickjc
 #  * start_html syntax fix
 #  * file locking review
@@ -57,8 +60,9 @@
 use strict;
 use CGI qw(:standard);
 use Fcntl qw(:flock);
+use POSIX qw(strftime);
 
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 
 # We don't need file uploads or very large POST requests.
 # Annoying locution to shut up 'used only once' warning in older perl
@@ -95,7 +99,7 @@ my $directory  = '/usr/local/apache/htdocs/links';
 
 # This is the title that will be displayed for some of the pages.
 
-my $linkstitle = "Blah Blah Pointless FFA Script";
+my $linkstitle = "Free For All Links Page";
 
 # Act as drop in replacement for Matts FFA script
 # if so the $filename & $linksurl must be valid (otherwise not used);
@@ -135,8 +139,8 @@ unless ( $emulate_matts_code )
 #     you want notifications of new additions sent.
 #
 
-my $sendmail = 1;
-my $mailer = '/usr/lib/sendmail -t -oi -oem';
+my $sendmail     = 1;
+my $mailer       = '/usr/lib/sendmail -t -oi -oem';
 my $mail_address = 'gellyfish@localhost';
 
 # $style is the URL of a CSS stylesheet which will be used for script
@@ -146,7 +150,6 @@ my $mail_address = 'gellyfish@localhost';
 
 my $style = '/css/nms.css';
 
-#
 
 # $default_section indicates the section to which a link will be added
 # if for some reason a section isn't provided.
@@ -199,7 +202,7 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
 <html>
@@ -239,11 +242,15 @@ $url     = escape_html($url);
 $title   = escape_html($title);
 $section = escape_html($section);
 
-# Don't waste time with jokers who just hit the submit button.
+
 unless ($url or $title) {
     print redirect($linksurl);
     exit;
 }
+
+print header;
+
+$done_headers++; 
 
 no_url()   unless $url;
 no_title() unless $title;
@@ -276,7 +283,8 @@ while ( defined(my $line = <FILE>) )
 { 
    if ($line =~ /<!--time-->/) 
    {
-      print NEWFILE "<!--time--><b>Last link was added ",datestamp(),"</b><hr />\n"
+      print NEWFILE "<!--time--><b>Last link was added ",
+                    datestamp(),"</b><hr />\n"
          or ( unlink($tmpnam), die "write to $tmpnam: $!" );
    }
    elsif ($line =~ /<!--number-->/) 
@@ -339,40 +347,14 @@ sub datestamp
 
    $time ||= time();
 
-   my @months = qw(
-                   January
-                   February
-                   March
-                   April
-                   May
-                   June
-                   July
-                   August
-                   September
-                   October
-                   November
-                   December
-                  );
+   # use strftime because we get locales.
 
-   my @days   = qw(
-                   Sunday
-                   Monday
-                   Tuesday
-                   Wednesday
-                   Thursday
-                   Friday
-                   Saturday
-                  );
-
-   my ($sec,$min,$hour,$mday,$mon,$year,$wday) = (localtime($time))[0 .. 6];
-   return sprintf "on %s, %s %.2d, %.4d at %.2d:%.2d:%.2d",
-                  $days[$wday], $months[$mon],$mday,$year+1900,$hour,$min,$sec;
+   return strftime("on %A, %B %d, %Y at %T",localtime($time));
 }
 
 sub no_url 
 {
-   print header, 
-         start_html('-title'   => 'ERROR: No URL',
+   print start_html('-title'   => 'ERROR: No URL',
                     '-BGCOLOR' => '#FFFFFF',
                     '-style' => { src  => $style } );
    print <<EIEIO;
@@ -398,8 +380,7 @@ EIEIO
 
 sub no_title 
 {
-   print header, 
-         start_html('-title'   => 'ERROR: No Title',
+   print start_html('-title'   => 'ERROR: No Title',
                     '-BGCOLOR' => '#FFFFFF',
                     '-style' => { src  => $style } );
    print <<EIEIO;
@@ -426,8 +407,7 @@ EIEIO
 
 sub repeat_url 
 {
-   print header, 
-         start_html('-title'   => 'ERROR: Repeat URL',
+   print start_html('-title'   => 'ERROR: Repeat URL',
                     '-BGCOLOR' => '#FFFFFF',
                     '-style'   => { src  => $style } );
    print <<EIEIO;

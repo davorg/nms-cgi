@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.13 2002-02-04 21:13:31 dragonoe Exp $
+# $Id: wwwboard.pl,v 1.14 2002-02-27 09:04:30 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2002/02/04 21:13:31  dragonoe
+# Added header to script and aligned values of parameter settings.
+#
 # Revision 1.12  2002/01/22 09:15:19  gellyfish
 # * Fixed some typos
 # * (Threading still not working)
@@ -52,10 +55,17 @@
 use strict;
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
-BEGIN{sub SEEK_SET(){0;}};# Seems like 'SEEK_*' things arent defined everywhere
 use POSIX qw(strftime);
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 my $VERSION = '1.0';
+
+BEGIN
+{ 
+  eval
+  {
+    sub SEEK_SET() {0;}
+  } unless defined(&SEEK_SET);
+}
 
 # PROGRAM INFORMATION
 # -------------------
@@ -146,10 +156,12 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -169,6 +181,11 @@ EOERR
 
    $SIG{__DIE__} = \&fatalsToBrowser;
 }   
+
+
+my $style_element = $style ?
+                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
+                  : '';
 
 if ( $use_time ) {
    $date_fmt = "$time_fmt $date_fmt";
@@ -332,7 +349,7 @@ sub get_variables {
     # it would allow someone to subvert $allow_html by putting escaped stuff
     # in the message and having the script expand it.
 
-    $variables->{body} = unescape_html($body);
+    $variables->{'body'} = unescape_html($body);
      
   } else {
     error('no_body');
@@ -340,7 +357,7 @@ sub get_variables {
 
   if ($quote_text) 
   {
-    my $hidden_body = $variables->{body};
+    my $hidden_body = $variables->{'body'};
 
     if ( $quote_html ) 
     {
@@ -404,7 +421,7 @@ sub new_file {
 <html>
   <head>
     <title>$variables->{subject}</title>
-    <link rel="stylesheet" type="text/css" href="$style" />
+    $style_element
   </head>
   <body>
     <h1 align="center">$variables->{subject}</h1>
@@ -421,7 +438,7 @@ sub new_file {
 
   $variables->{followup} $img
 
-  $variables->{body}<br />$url
+  $variables->{'body'}<br />$url
 
   <hr />
   <p><a name="followups">Follow Ups:</a><br />
@@ -636,6 +653,7 @@ sub return_html {
   my ( $variables ) = @_;
 
   print header;
+  $done_headers++;
 
   my $url = $variables->{message_url} ? 
     qq(<p><b>Link:</b> <a href="$variables->{message_url}">$variables->{message_url_title}</a></p>) : '';
@@ -646,26 +664,29 @@ sub return_html {
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Message Added: $variables->{subject}</title>
-    <link rel="stylesheet" type="text/css" href="$style" />
+    $style_element
   </head>
   <body>
     <h1 align="center">Message Added: $variables->{subject}</h1>
     <p>The following information was added to the message board:</p>
-    <hr>
-    <p><b>Name:</b> $variables->{name}<br>
-      <b>E-Mail:</b> $variables->{email}<br>
-      <b>Subject:</b> $variables->{subject}<br>
+    <hr />
+    <p><b>Name:</b> $variables->{name}<br />
+      <b>E-Mail:</b> $variables->{email}<br />
+      <b>Subject:</b> $variables->{subject}<br />
       <b>Body of Message:</b></p>
-      <p>$variables->{body}</p>
+      <p>$variables->{'body'}</p>
     $url
     $img
 
     <p><b>Added on Date:</b> $variables->{date}</p>
-    <hr>
-    <p align="center">[ <a href="$baseurl/$mesgdir/$id.$ext">Go to Your Message</a> ] [ <a href="$baseurl/$mesgfile">$title</a> ]</p>
+    <hr />
+    <p align="center">
+       [ <a href="$baseurl/$mesgdir/$id.$ext">Go to Your Message</a> ] 
+       [ <a href="$baseurl/$mesgfile">$title</a> ]
+    </p>
   </body>
 </html>
 END_HTML
@@ -682,16 +703,17 @@ sub error {
   my $error = $_[0];
 
   print header;
+  $done_headers++;
 
   if ($error eq 'no_name') {
     print <<END_HTML;
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>$title ERROR: No Name</title>
-    <link rel="stylesheet" type="text/css" href="$style" />
+    $style_element
   </head>
   <body><h1 align="center">ERROR: No Name</h1>
   <p>You forgot to fill in the 'Name' field in your posting.  Correct it 
@@ -708,7 +730,7 @@ END_HTML
 <html>
   <head>
     <title>$title ERROR: No Subject</title>
-    <link rel="stylesheet" type="text/css" href="$style" />
+    $style_element
   </head>
   <body><h1 align="center">ERROR: No Subject</h1>
   <p>You forgot to fill in the 'Subject' field in your posting.  Correct it 
@@ -724,7 +746,7 @@ END_HTML
 <html>
 <head>
 <title>$title ERROR: No Message</title>
-<link rel="stylesheet" type="text/css" href="$style" />
+$style_element
 </head>
 <body><align="center"><h1>ERROR: No Message</h1>
 <p>You forgot to fill in the 'Message' field in your posting.  Correct it
@@ -741,7 +763,7 @@ printf <<END_HTML;
 <html>
   <head>
     <title>$title ERROR: Field too Long</title>
-    <link rel="stylesheet" type="text/css" href="$style" />
+    $style_element
   </head>
   <body><h1 align="center">ERROR: Field too Long</h1>
   <p>One of the form fields in the message submission was too long.  The 

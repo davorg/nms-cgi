@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-02-23 15:23:46 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-02-27 09:04:28 $ )
 
 =head1 DESCRIPTION
 
@@ -282,10 +282,42 @@ however it is extremely unlikey to be already installed on your webserver
 almost certainly going to be too difficult to install unless you are the
 administrator of the server yourself.
 
-
 Blat is available from  http://gepasi.dbs.aber.ac.uk/softw/Blat.html
 
 Microsofts sendmail port is at 
 ftp://ftp.microsoft.com/developr/drg/unix-to-windows/ports/sendmail/sm1121.zip
+
+=head2 Is Simple Search broken - it can't find text in my PDF files ?
+
+The 'text' in a  PDF file is stored as a page description, a sort of image 
+file really, so the text that appears in the acrobat viewer doesn't 
+actually appear literally in the file.  If you are on a Unix-like system 
+you can see this for yourself by doing 'strings *.pdf'.  Simple Search 
+really is *simple*, it looks for the plaintext strings that are specified 
+on the form in the specified files, it won't find them in a PDF file.
+
+A quick hack that we really don't think we would ever consider to put in 
+the standard search.pl, because it depends on Ghostscript, would be to 
+change, in the file search.pl, the line:
+
+    open(FILE, "<$File::Find::name") or return;
+
+to :
+
+    if ( $File::Find::name =~ /\.pdf$/i )
+    {
+       open(FILE, "/usr/bin/ps2ascii $File::Find::name|") or return;
+    }
+    else
+    {  
+       open(FILE, "<$File::Find::name") or return;
+    }
+
+
+This does depend on there being a recent version of Ghostscript installed 
+and ps2ascii being locate as above (it might of course be /usr/local/bin 
+or /opt/bin or wherever :).
+
+The above comes with no warranty whatsoever. 
 
 =cut

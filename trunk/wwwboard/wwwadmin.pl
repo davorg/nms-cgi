@@ -1,8 +1,11 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.9 2002-02-04 21:14:39 dragonoe Exp $
+# $Id: wwwadmin.pl,v 1.10 2002-02-27 09:04:30 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/02/04 21:14:39  dragonoe
+# Added header to script and aligned values of parameter settings.
+#
 # Revision 1.8  2001/12/01 19:45:22  gellyfish
 # * Tested everything with 5.004.04
 # * Replaced the CGI::Carp with local variant
@@ -37,7 +40,7 @@
 
 use strict;
 use CGI qw(:standard);
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
@@ -107,10 +110,12 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -131,6 +136,10 @@ EOERR
    $SIG{__DIE__} = \&fatalsToBrowser;
 }   
 
+my $style_element = $style ?
+                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
+                  : '';
+
 my %HTML;
 {
   local $/ = "==\n";
@@ -144,6 +153,7 @@ my %HTML;
 }
 
 print header;
+$done_headers++;
 
 my %FORM;
 my $command = $ENV{QUERY_STRING};
@@ -460,7 +470,7 @@ if ($command eq 'remove') {
 
 
 sub parse_form {
-  foreach (param) {
+  foreach (param()) {
     $FORM{$_} = param($_);
   }
 }
@@ -562,7 +572,7 @@ $HTML{HTML_DECL}
 <html>
   <head>
     <title>$args->{Title}</title>
-    <link rel="stylesheet" type="text/css" href="$style" />
+    $style_element;
     <body>
      <center>
        <h1>$args->{Heading}</a> 

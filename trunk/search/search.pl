@@ -1,8 +1,11 @@
 #!perl -Tw
 #
-# $Id: search.pl,v 1.21 2002-02-13 15:09:20 jfryan Exp $
+# $Id: search.pl,v 1.22 2002-02-27 09:04:29 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.21  2002/02/13 15:09:20  jfryan
+# Expanded detaint_dirname to include a colon so that win32 paths would pass taint checking
+#
 # Revision 1.20  2002/02/05 04:24:38  jfryan
 # Added $hit_threshhold config var and also moved output functions to end
 #
@@ -72,7 +75,7 @@
 use strict;
 use CGI qw(header param);
 use subs 'File::Find::chdir';# see note above the File::Find::chdir subroutine
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_headers);
 use File::Find;
 $ENV{PATH} = '/bin:/usr/bin';# sanitize the environment
 delete @ENV{qw(ENV BASH_ENV IFS)};# ditto
@@ -109,8 +112,10 @@ my @blocked             = ();
 my $emulate_matts_code  = 1;
 my $style               = '';
 
-# the following config variables only affect the program if $emulate_matts_code is switched off
-# $hit_threshhold is what the minimum amount of hits per page that are required for the match to be outputted
+# the following config variables only affect the program if
+# $emulate_matts_code is switched off $hit_threshhold is what the minimum
+# amount of hits per page that are required for the match to be outputted
+
 my $hit_threshhold      = 1;
 
 
@@ -146,10 +151,13 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_headers;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -169,6 +177,10 @@ EOERR
 
    $SIG{__DIE__} = \&fatalsToBrowser;
 }
+
+my $style_element = $style ?
+                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
+                  : '';
 
 # Parse Form Search Information
 my $case  = param("case") ? param("case") : "Insensitive";
@@ -339,17 +351,14 @@ sub start_of_html
 {
     my ($title,$style) = @_;
     print header;
+    $done_headers++;
     print <<END_HTML;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Results of Search</title>
-END_HTML
-
-print qq(    <link rel="stylesheet" type="text/css" href="$style" />) if $style;
-
-print <<END_HTML;
+    $style_element
   </head>
   <body>
     <h1 align="center">Results of Search in $title</h1>
