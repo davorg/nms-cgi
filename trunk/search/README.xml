@@ -336,7 +336,45 @@ most important variables, and must be altered to refer to your website.
 
       </variable>       
         
+      <variable>
+   
+        <var_name>
+    $style
     
+        </var_name>
+    
+        <description>
+        
+          <paragraph>
+        Used for script generated messages.  This should probably be the
+        same as the one that you use for all the other pages.  This should
+        be a local absolute URI fragment.  Set $style to '0' or the emtpy
+        string if you don't want to use style sheets.
+        
+          </paragraph>
+     
+        </description>
+
+      </variable>       
+    
+      <variable>
+   
+        <var_name>
+    $charset
+    
+        </var_name>
+    
+        <description>
+        
+          <paragraph>
+        The name of the character set to use for the output document.
+
+          </paragraph>
+     
+        </description>
+
+      </variable>       
+
     </variables>
   
   </configuration>
