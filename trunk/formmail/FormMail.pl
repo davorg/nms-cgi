@@ -1,8 +1,11 @@
 #!/usr/bin/perl -w
 #
-# $Id: FormMail.pl,v 1.3 2001-11-13 20:35:14 gellyfish Exp $
+# $Id: FormMail.pl,v 1.4 2001-11-13 21:40:46 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/11/13 20:35:14  gellyfish
+# Added the CGI::Carp workaround
+#
 # Revision 1.2  2001/11/11 17:55:27  davorg
 # Small amount of post-import tidying :)
 #
@@ -59,18 +62,18 @@ my %valid_ENV;
 
 @valid_ENV{@valid_ENV} = (1) x @valid_ENV;
 
-&check_url;
+check_url();
 
 my $date = strftime($date_fmt, localtime);
 
 my (%Config, %Form);
-my @Field_Order = &parse_form;
+my @Field_Order = parse_form();
 
-&check_required;
+check_required();
 
-&send_mail;
+send_mail();
 
-&return_html;
+return_html();
 
 sub check_url {
   my $check_referer;
@@ -91,11 +94,28 @@ sub check_url {
 
 sub parse_form {
 
-  my @fields = qw(recipient subject email realname redirect bgcolor
-		  background link_color vlink_color text_color
-		  alink_color title sort print_config required
-		  env_report return_link_title return_link_url
-		  print_blank_fields missing_fields_redirect);
+  my @fields = qw(
+                  recipient 
+                  subject 
+                  email 
+                  realname 
+                  redirect 
+                  bgcolor
+		  background 
+                  link_color 
+                  vlink_color 
+                  text_color
+		  alink_color 
+                  title 
+                  sort 
+                  print_config 
+                  required
+		  env_report 
+                  return_link_title 
+                  return_link_url
+		  print_blank_fields 
+                  missing_fields_redirect
+                 );
 
   @Config{@fields} = '' x @fields;
 
@@ -155,7 +175,7 @@ sub check_required {
   }
 
   foreach (@{$Config{required}}) {
-    if ($_ eq 'email' && !&check_email($Config{$_})) {
+    if ($_ eq 'email' && !check_email($Config{$_})) {
       push(@error, $_);
     } elsif (defined($Config{$_})) {
       push(@error, $_) unless $Config{$_};
@@ -182,7 +202,7 @@ sub return_html {
 
     print " </head>\n <body";
 
-    &body_attributes;
+    body_attributes();
 
     print ">\n  <center>\n";
 
