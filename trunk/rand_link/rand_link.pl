@@ -1,11 +1,11 @@
 #! /usr/bin/perl -Tw
 #
-# $Id: rand_link.pl,v 1.12 2002-07-23 21:00:17 nickjc Exp $
+# $Id: rand_link.pl,v 1.13 2004-10-07 12:28:50 gellyfish Exp $
 #
 
 use strict;
 use POSIX qw(locale_h strftime);
-use CGI qw(redirect);
+use CGI qw(redirect param);
 use Fcntl qw(:DEFAULT :flock);
 use vars qw($DEBUGGING $done_headers);
 
@@ -24,10 +24,23 @@ BEGIN
    
 my $linkfile = '/path/to/links/database';
 
+#
+# If $use_multi_file is set to 1 then $linkfile will be ignored 
+# if the 'collection' parameter is passed to the program
+# $linkdir must be the path to a directory containing the files and
+# $link_ext must be a common extension for all the files - this will
+# be appended to the name passed to the program.
+#
+
+my $use_multi_file = 0;
+my $linkdir        = '';
+my $link_ext       = '.txt';
+
+
 # If $uselog is set to 1 then the redirections will be logged to the file
 # set in $logfile
 
-my $uselog = 1;
+my $uselog = 0;
 
 # $logfile should be the full filesystem path to a file that the CGI program
 # can write to
@@ -107,6 +120,23 @@ EOERR
 
    $SIG{__DIE__} = \&fatalsToBrowser;
 }   
+
+if ($use_multi_file and param('collection'))
+{
+   my $filename = param('collection');
+
+   unless ( $filename =~ /^([a-zA-Z0-9_]{1,100})$/ )
+   {
+      die "Invalid collection name\n";
+   }
+   $filename = $1;
+
+   if ($linkdir)
+   {
+      $linkdir .= '/' if ($linkdir !~ m#/$# );
+      $linkfile = $linkdir + $filename + $link_ext;
+   }
+}
 
 open (LINKS, "<$linkfile")
   or die "Can't open link file: $!\n";

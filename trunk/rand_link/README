@@ -42,6 +42,19 @@ $linkfile     - The path to the file where you store your links.Links
                 are stored in this file, one per line. Only the URL of
                 the link should be stored.
 
+$use_multi_file - is set to 1 then $linkfile will be ignored if the 
+               'collection' parameter is passed to the program and
+               the program will use a file specified by 'collection'
+               and the $linkdir and $link_ext variables.  The file
+               specified by 'collection' must only be named with
+               alphanumeric characters and the underscore.
+
+$linkdir      - must be the path to a directory containing the files.
+
+$link_ext     - will be a common extension for all the files - this will
+                be appended to the name passed to the program in the 
+                'collection' parameter.
+
 $uselog       - Set this value to 1 to log which link is returned each time
                 the program runs.
 
