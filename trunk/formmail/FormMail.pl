@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.68 2002-04-05 22:45:52 nickjc Exp $
+# $Id: FormMail.pl,v 1.69 2002-04-06 16:12:18 nickjc Exp $
 #
 
 use strict;
@@ -16,7 +16,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.68 $
+# FormMail.pl $Revision: 1.69 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -62,7 +62,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.68 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.69 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -109,9 +109,10 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n" unless $done_headers;
+      print "Content-Type: text/html; charset=iso-8859-1\n\n" unless $done_headers;
 
       print <<EOERR;
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -360,7 +361,7 @@ sub return_html {
   if ($Config{'redirect'}) {
     print redirect $Config{'redirect'};
   } else {
-    print header();
+    print "Content-Type: text/html; charset=iso-8859-1\n\n";
     $done_headers++;
 
     my $title = escape_html( $Config{'title'} || 'Thank You' );
@@ -369,6 +370,7 @@ sub return_html {
     my $attr = body_attributes(); # surely this should be done with CSS
 
     print <<EOHTML;
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -835,7 +837,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.68 $
+FormMail $Revision: 1.69 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
