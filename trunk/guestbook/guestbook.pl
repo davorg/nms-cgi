@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.3 2001-11-13 20:35:14 gellyfish Exp $
+# $Id: guestbook.pl,v 1.4 2001-11-14 19:39:14 davorg Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.3  2001/11/13 20:35:14  gellyfish
+# Added the CGI::Carp workaround
+#
 # Revision 1.2  2001/11/11 17:55:27  davorg
 # Small amount of post-import tidying :)
 #
@@ -71,10 +74,10 @@ my $date = strftime($long_date_fmt, @now);
 my $shortdate = strftime($short_date_fmt, @now);
 
 my ($username, $realname, $comments)
-  = param('username'), param('realname'), param('comments');
+  = (param('username'), param('realname'), param('comments'));
 
 my ($city, $state, $country)
-  = param('city'), param('state'), param('country');
+  = (param('city'), param('state'), param('country'));
 
 my ($url)
   = param('url');
@@ -119,13 +122,13 @@ foreach (@lines) {
 	 print GUEST " &lt;$username&gt;";
        }
      }
-    
+
      print GUEST "<br>\n";
 
      if ($city){
        print GUEST "$city, ";
      }
-     
+
      if ($state){
        print GUEST $state;
      }
