@@ -1,8 +1,12 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.18 2001-12-15 00:19:25 nickjc Exp $
+# $Id: guestbook.pl,v 1.19 2001-12-15 22:22:59 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2001/12/15 00:19:25  nickjc
+# Added a whitelist-based HTML filter to strip out unsafe constructs
+# when $allow_html is 1
+#
 # Revision 1.17  2001/12/11 08:52:16  nickjc
 # * more general unescape_html(), in preparation for proper HTML filter
 # * more aggressive escape_html()
@@ -228,6 +232,7 @@ my ($city, $state, $country)
   = (param('city'), param('state'), param('country'));
 
 my ($url) = param('url');
+$url = '' if $url and not check_url($url);
 
 # There is a possibility that the comments can be escaped if passed as
 # the hidden field from the form_error() form
@@ -245,9 +250,6 @@ $comments = strip_html($comments, $allow_html);
 
 form_error('no_name')     unless $realname;
 
-# substitute newlines in the comments for html line breaks if required.
-
-$comments =~ s%\cM\n%<br />\n%g if $line_breaks;
 
 # Get rid of the $username unless it is a valid e-mail address
 
@@ -285,7 +287,8 @@ foreach (@lines) {
      print GUEST "<b>$comments</b><br />\n";
 
      if ($url) {
-       print GUEST qq(<a href="$url">$escaped{realname}</a>);
+       my $eurl = escape_html($url);
+       print GUEST qq(<a href="$eurl">$escaped{realname}</a>);
       } else {
          print GUEST $escaped{realname};
       }
@@ -510,10 +513,11 @@ sub no_redirection {
 END_HTML
 
   if ($url) {
-    print qq(<a href="$url">$escaped{realname}</a>);
-   } else {
-     print $escaped{realname};
-   }
+    my $eurl = escape_html($url);
+    print qq(<a href="$eurl">$escaped{realname}</a>);
+  } else {
+    print $escaped{realname};
+  }
 
   if ($username){
     if ($linkmail) {
@@ -974,7 +978,7 @@ sub cleanup_tag
                 defined $3 ? unescape_html($3) :
                 defined $4 ? unescape_html($4) :
                 ''
-    );
+              );
     unless (exists $t->{$attr}) {
       push @debug_msg, "<$tag>: attr '$attr' rejected" if $DEBUGGING;
       next;
@@ -1022,8 +1026,8 @@ sub cleanup_close {
 
   my $html = join '', map {"</$_->{NAME}>"} @close;
 
-  # Reopen any we closed early if all that were closed are configured
-  # to be auto deinterleaved.
+  # Reopen any we closed early if all that were closed are
+  # configured to be auto deinterleaved.
   unless (grep {! exists $auto_deinterleave{$_->{NAME}} } @close) {
     pop @close;
     $html .= join '', map {$_->{FULL}} reverse @close;
@@ -1043,6 +1047,9 @@ sub cleanup_cdata {
   ][
      defined $1 ? "&$1;" : $escape_html_map{$2}
   ]gesx;
+
+  # substitute newlines in the comments for html line breaks if required.
+  s%\cM\n%<br />\n%g if $line_breaks;
 
   return $_;
 }
@@ -1067,7 +1074,7 @@ sub unescape_html {
     s/ &( (\w+) | [#](\d+) ) \b (;?)
      /
        defined $2 && exists $html_entities{$2} ? $html_entities{$2} :
-       defined $3 && $3 <= 255                 ? chr $3             :
+       defined $3 && $3 > 0 && $3 <= 255       ? chr $3             :
        "&$1$4"
      /gex;
 
