@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.42 2002-09-01 14:12:59 nickjc Exp $
+# $Id: wwwboard.pl,v 1.43 2002-09-03 21:00:21 nickjc Exp $
 #
 
 use strict;
@@ -12,14 +12,14 @@ use vars qw(
   $max_followups $basedir $baseurl $cgi_url $mesgdir $datafile
   $mesgfile $faqfile $ext $title $style $show_faq $allow_html
   $quote_text $quote_char $quote_html $subject_line $use_time
-  $date_fmt $time_fmt $show_poster_ip $enforce_max_len
+  $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.42 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.43 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.42 $
+# wwwboard.pl $Revision: 1.43 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -54,7 +54,7 @@ BEGIN
   $title               = "NMS WWWBoard Version $VERSION";
   $style               = '/css/nms.css';
   $show_faq            = 1;
-  $allow_html          = 0;
+  $allow_html          = 1;
   $quote_text          = 1;
   $quote_char          = ':';
   $quote_html          = 1; 
@@ -63,6 +63,7 @@ BEGIN
   $date_fmt            = '%d/%m/%y';
   $time_fmt            = '%T';
   $show_poster_ip      = 1;
+  $enable_preview      = 0;
   $enforce_max_len     = 0;
   %max_len             = ('name'        => 50,
                           'email'       => 70,
@@ -92,6 +93,9 @@ BEGIN
     $date_fmt = "$time_fmt $date_fmt";
   }
 
+  use vars qw($html_preview_button);
+  $html_preview_button = 
+    ( $enable_preview ? ' <input type="submit" name="preview" value="Preview Post" />' : '');
 }
 
 
@@ -189,6 +193,10 @@ $done_headers = 0;
 my $Form = parse_form();
 
 my $variables = get_variables($Form);
+
+if ( param('preview') ) {
+  preview_post($variables);
+}
 
 open LOCK, ">>$basedir/.lock" or die "open >>$basedir/.lock: $!";
 flock LOCK, LOCK_EX or die "flock $basedir/.lock: $!";
@@ -512,7 +520,7 @@ END_HTML
 </tr>
 <tr>
 <td colspan="2"><input type="submit" value="Submit Follow Up" /> 
-<input type="reset" /></td>
+<input type="reset" />$html_preview_button</td>
 </tr>
 </table>
 </form>
@@ -713,6 +721,30 @@ sub return_html {
 END_HTML
 }
 
+sub preview_post {
+  my ($variables) = @_;
+
+  print header;
+  $done_headers = 1;
+
+  print <<END_HTML;
+<?xml version="1.0" encoding="$charset"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Preview</title>
+    $html_style
+  </head>
+  <body><h1 align="right">Preview</h1>
+  <hr />
+    $variables->{'body'}
+  <hr />
+END_HTML
+  rest_of_form($variables);
+  exit;
+}
+
 sub error {
   my ($error, $variables) = @_;
 
@@ -815,7 +847,7 @@ $E{$Form{'body'}}
 Optional Link URL: <input type="text" name="url" value="$E{$Form{'url'}}" size="45" /><br />
 Link Title: <input type="text" name="url_title" value="$E{$Form{'url_title'}}" size="50" /><br />
 Optional Image URL: <input type="text" name="img" value="$E{$Form{'img'}}" size="45" /><p />
-<input type="submit" value="Post Message" /> <input type="reset" />
+<input type="submit" value="Post Message" /> <input type="reset" />$html_preview_button
 </form>
 <br /><hr size="7" width="75%" />
 END_HTML

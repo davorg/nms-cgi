@@ -181,6 +181,10 @@ During the following you will be guided through the configuration and installati
       $show_poster_ip     - Set to 1, the client IP address of the poster is
                             displayed in the message. Otherwise it won't.
 
+      $enable_preview     - Set this to 1 to add a preview button to all script
+                            generated forms, to allow users to preview their
+                            messages before posting.
+
       $enforce_max_len    - Set to 2, this will force the max length settings
                             listed below by giving an error. Set to 1,
                             this will force by truncating too long
