@@ -104,6 +104,16 @@ CONFIG_ROOT         - The filesystem path to the directory that holds all of
                       See the section below on choosing secure locations for
                       files.
 
+SESSION_DIR         - The location where (if you are using sessions as 
+                      described below) the session information will be stored.
+                      This needs to be a directory in which the user that the
+                      TFmail is run as can create and delete files.  You may
+                      want to consider having this a separate directory as it
+                      will make it easier to clean up any orphaned sessions.
+
+                      Again you should see the section on  choosing secure
+                      locations for files.
+                      
 MAX_DEPTH           - The depth of subdirectories under CONFIG_ROOT that
                       configuration files and templates may be placed.  The
                       default of 0 is fine for most people.
@@ -600,7 +610,33 @@ get_template               - If this is set then it must specify a valid
                              wanted to have a link to a partly prefilled
                              form.  If both this and 'get_redirect' are
                              specified then the 'get_redirect' will take
-                             precedence.
+                             precedence. If this is set then it is possible
+                             to use the session capabilities as described in
+                             the items below.
+
+session_cookies            - If this is set to 1 and get_template is set then
+                             when the templated page is sent out in response
+                             to a GET request a session is created and a
+                             Cookie is sent with the Session Id which will
+                             be checked when a POST request is sent - TFmail
+                             will abort if the session does not exist or there
+                             is no SessionID cooke.  Some users may turn off
+                             cookies in their browser settings, if this is a
+                             problem to you then you might want to see 
+                             session_field below.
+
+session_field              - this can be set to the name of a hidden field on
+                             your templated form that will contain the
+                             session id when the form is posted.  If this is
+                             set then for a GET request the template directive
+                             {= session_id =} will be available and contain
+                             the Session ID - you would want to create a field
+                             like:
+                              
+                               <input type="hidden" name="SessionID"
+                                      value="{= session_id =}" />
+
+                             where you have session_field is set to SessionID.
 
 address_style              - This will specify the style of the address that
                              is used in the From: address of the main mail

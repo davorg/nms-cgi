@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.26 2004-08-20 08:00:16 gellyfish Exp $
+# $Id: TFmail.pl,v 1.27 2004-08-24 09:23:02 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -13,6 +13,7 @@ use constant LIBDIR         => '.';
 use constant MAILPROG       => '/usr/lib/sendmail -oi -t';
 use constant POSTMASTER     => 'me@my.domain';
 use constant CONFIG_ROOT    => '.';
+use constant SESSION_DIR    => '.';
 use constant MAX_DEPTH      => 0;
 use constant CONFIG_EXT     => '.trc';
 use constant TEMPLATE_EXT   => '.trt';
@@ -69,7 +70,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.26 $, 10, -1;
+   $VERSION = substr q$Revision: 1.27 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -114,6 +115,8 @@ sub main
 
    if ( $ENV{REQUEST_METHOD} eq 'POST' )
    {
+      check_session($treq) or die "Bad or missing session information";
+
       my $recipients = check_recipients($treq);
    
       if ( check_required_fields($treq) )
@@ -165,6 +168,119 @@ sub main
 
 =over 4
 
+=item check_session ( TREQ )
+
+If L<use_session> would return a true value this will determine the appropiate
+method of determining the session id (either cookie or form field) and 
+retrieve the session id then check for its existence, returning true if the
+session exists and false if it doesn't.  The session will be removed if it
+exists.  It will always return true if sessions are not in use.
+
+=cut
+
+sub check_session
+{
+   my ( $treq ) = @_;
+   
+   my $session_ok = 1;
+   if ( use_session($treq) )
+   {
+      $session_ok = 0;
+
+      my $session_id;
+      if ( $treq->config('session_cookie',0) )
+      {
+         $session_id = $treq->cgi()->cookie('SessionID');
+      }
+      else
+      {
+         $session_id = $treq->param($treq->config('session_field','session'));
+      }
+
+      if ( $session_id )
+      {
+         $session_id =~ /([a-fA-F0-9]+)/ or die "Bad Session id";
+         $session_id = $1;
+         
+         my $session_file = "@{[ SESSION_DIR ]}/$session_id";
+
+         if ( -f $session_file )
+         {
+            $session_ok = 1;
+            unlink $session_file or die "Can't delete session [$session_file]";
+         }
+      }
+
+   }
+
+   return $session_ok;
+}
+
+=item create_session ( TREQ )
+
+This creates the new session file in SESSION_DIR and returns the number of
+the session created.  It will die if it is unable to create the session file.
+
+=cut
+
+sub create_session
+{
+   my ( $treq ) = @_;
+
+   my $session_id = session_id();
+   my $session_file = "@{[ SESSION_DIR ]}/$session_id";
+
+   open TFILE, ">$session_file" or die "Unable to create session: $!";
+   print TFILE $ENV{REMOTE_ADDR};
+   close TFILE;
+
+   return $session_id;
+}
+
+
+=item session_id
+
+This returns a hexadecimal number that is suitable to be used as a session ID
+
+=cut
+
+=for developers
+
+Please review the uniqueness of this - I tested with ~ 1.5m calls to this
+code and didn't find any duplicates but different OS, levels of concurrency
+and other factors may impact this.
+
+=cut
+
+sub session_id
+{
+   return sprintf("%x%x%x", (time() +  $$) * rand, {} * rand,[] *rand)
+}
+
+=item use_session ( TREQ )
+
+This returns a true value if either the configuration items 'session_cookie'
+or session_field are set, indicating that for a GET request the appropriate
+session should be generated and for a POST the existence of the session 
+should be checked before any further actions are taken.
+
+=cut
+
+sub use_session
+{
+   my ( $treq ) = @_;
+
+   if ( $treq->config('session_cookie','') || $treq->config('session_field',''))
+   {
+      return 1;
+   }
+   else
+   {
+      return 0;
+   }
+
+}
+
 =item can_handle_get ( TREQ )
 
 Will return a true value if either of the configuration items 'get_redirect'
@@ -208,8 +324,31 @@ sub handle_get
    }
    else
    {
+      my @cookie = ();
+
       setup_input_fields($treq);
-      html_page($treq, $treq->config('get_template'));
+
+      if (use_session($treq) )
+      {
+         my $session_id = create_session($treq);
+
+         my $me = $treq->cgi()->script_name();
+
+         if ( $treq->config('session_cookie',0) )
+         {
+            my $cookie = $treq->cgi()->cookie('-name'  => 'SessionID',
+                                              '-value' => $session_id,
+                                              '-path'  => $me );
+            @cookie = ('-cookie' => $cookie);
+         }
+         else
+         {
+            $treq->install_directive('session_id', $session_id);
+         }
+            
+      }
+
+      html_page($treq, $treq->config('get_template'),@cookie);
    }
 }
 
@@ -350,6 +489,8 @@ sub setup_input_fields
    else
    {
       @fields = grep {/^[^_]/} $treq->param_list;
+      @fields = grep {!($treq->config('session_field',0) 
+                   and ($_ eq $treq->config('session_field',''))) } @fields;
       if ($sort =~ /^alpha/i)
       {
          @fields = sort @fields;
@@ -994,17 +1135,18 @@ sub return_html
    }
 }
 
-=item html_page ( TREQ, TEMPLATE )
+=item html_page ( TREQ, TEMPLATE, EXTRA )
 
-Outputs an HTML page using the template TEMPLATE.
+Outputs an HTML page using the template TEMPLATE.  EXTRA is an array that is
+passed directlyn to L<html_header>.
 
 =cut
 
 sub html_page
 {
-   my ($treq, $template) = @_;
+   my ($treq, $template, @extra) = @_;
 
-   html_header();
+   html_header(@extra);
    $done_headers = 1;
 
    $treq->process_template($template, 'html', \*STDOUT);
@@ -1060,21 +1202,24 @@ EOERR
 EOERR
 }
 
-=item html_header ()
+=item html_header (EXTRA)
 
-Outputs the CGI header using a content-type of text/html.
+Outputs the CGI header using a content-type of text/html. The optional
+argument EXTRA comprise an array of key/value pairs that will be passed
+directly to header() method of the CGI module.
 
 =cut
 
 sub html_header {
+    my @extra = @_;
     if ($CGI::VERSION >= 2.57) {
         # This is the correct way to set the charset
-        print header('-type'=>'text/html', '-charset'=>CHARSET);
+        print header('-type'=>'text/html', '-charset'=>CHARSET, @extra);
     }
     else {
         # However CGI.pm older than version 2.57 doesn't have the
         # -charset option so we cheat:
-        print header('-type' => "text/html; charset=@{[ CHARSET ]}");
+        print header('-type' => "text/html; charset=@{[ CHARSET ]}", @extra);
     }
 }
 
