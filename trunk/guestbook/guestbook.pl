@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.40 2002-05-01 08:09:54 gellyfish Exp $
+# $Id: guestbook.pl,v 1.41 2002-05-02 07:54:12 nickjc Exp $
 #
 
 use strict;
@@ -103,7 +103,7 @@ $locale         = '';
 # End configuration
 
 use vars qw($VERSION);
-$VERSION = ('$Revision: 1.40 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+$VERSION = substr q$Revision: 1.41 $, 10, -1;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
