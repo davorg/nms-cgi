@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.11 2002-01-15 20:34:03 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.12 2002-01-22 09:15:19 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/01/15 20:34:03  gellyfish
+# * Removed nasty global variables prior to refactoring
+#
 # Revision 1.10  2001/12/01 19:45:22  gellyfish
 # * Tested everything with 5.004.04
 # * Replaced the CGI::Carp with local variant
@@ -330,7 +333,7 @@ sub get_variables {
 
   my @followup_num;
 
-  if ($Form->{followup}) {
+  if (exists $Form->{followup} && length($Form->{followup})) {
     $variables->{followup} = 1;
     @followup_num = split(/,/, $Form->{followup});
 
@@ -351,6 +354,7 @@ sub get_variables {
     $variables->{origname} = $Form->{origname};
     $variables->{origsubject} = $Form->{origsubject};
   } else {
+    warn "No followups";
     $variables->{followup} = $variables->{num_followups} = 0;
   }
 
@@ -367,6 +371,9 @@ sub get_variables {
 
   if ($Form->{email} =~ /(.*\@.*\..*)/) {
     $variables->{email} = $1;
+  }
+  else {
+    $variables->{email} = '';
   }
 
   if ($Form->{subject}) {
@@ -446,13 +453,23 @@ sub new_file {
             qq(<a href="mailto:$variables->{email}">$variables->{name}</a> ) : 
             $variables->{name};
   my $ip = $show_poster_ip ? "($ENV{REMOTE_ADDR})" : '';
-  my $pr_follow = $variables->{followup} ? 
+
+  my $pr_follow = '';
+
+  if ( $variables->{followup} )
+  {
+     $pr_follow = 
     qq(<p>In Reply to:
-       <a href="$variables->{last_message}.$ext">$variables->{origsubject}</a> posted by ) .
-	 $variables->{origemail} ? 
-         qq(<a href="$variables->{origemail}">$variables->{origname}</a>) 
-	   : $variables->{origname} . "on $variables->{origdate}:</p>" : '';
-  my $img = $variables->{message_img} ? 
+       <a href="$variables->{last_message}.$ext">$variables->{origsubject}</a> posted by ); 
+
+      if ( $variables->{origemail} )
+      {
+        $pr_follow .=  
+         qq(<a href="$variables->{origemail}">$variables->{origname}</a>) ;
+      }
+  }
+
+  my $img = $variables->{message_img} ?
     qq(<p align="center"><img src="$variables->{message_img}"></p>\n) : '';
   my $url = $variables->{message_url} ? 
     qq(<ul><li><a href="$variables->{message_url}">$variables->{message_url_title}</a></li></ul><br>) :
@@ -493,8 +510,8 @@ sub new_file {
   <form method=POST action="$cgi_url">
 END_HTML
 
-  my $follow_ups = @{$variables->{followups}}  ? 
-                    join ',', @{$variables->{followup_num}} : '';
+  my $follow_ups = ( defined $variables->{followups} )  ? 
+                     join( ',', @{$variables->{followups}}) : '';
 
   $follow_ups .= ',' if length($follow_ups);
 
@@ -617,7 +634,7 @@ END_HTML
 	my $response_num = $1;
 	my $num_responses = $2;
 	$num_responses++;
-	foreach my $followup_num (@{$variables->{followup}}) {
+	foreach my $followup_num (@{$variables->{followups}}) {
 	  if ($followup_num == $response_num) {
 	    print MAIN "(<!--responses: $followup_num-->$num_responses)\n";
 	    $work = 1;
@@ -647,18 +664,18 @@ sub thread_pages {
   my $name    = $variables->{name};
   my $date    = $variables->{date};
 
-  foreach my $followup_num (@{$variables->{followup_num}}) {
+  foreach my $followup_num (@{$variables->{followups}}) {
     open(FOLLOWUP, "$basedir/$mesgdir/$followup_num.$ext")
       || die "$!";
 
     my @followup_lines = <FOLLOWUP>;
     close(FOLLOWUP);
 
-    open(FOLLOWUP, "<+$basedir/$mesgdir/$followup_num.$ext")
-      || die "$!";
+
+    open(FOLLOWUP, ">>$basedir/$mesgdir/$followup_num.$ext") || die "$!"; 
 
     flock FOLLOWUP, LOCK_EX or die "Can't lock $!\n";
-
+    truncate FOLLOWUP,0;
     seek FOLLOWUP, SEEK_SET,0;
 
     foreach (@followup_lines) {
@@ -671,7 +688,7 @@ sub thread_pages {
 <ul><!--insert: $id-->
 </ul><!--end: $id-->
 END_HTML
-      } elsif (/\(<!--responses: (.*)-->(.*)\)/) {
+      } elsif (/\(<!--responses: (\d*)-->(\d*)\)/) {
 	my $response_num = $1;
 	my $num_responses = $2;
 	$num_responses++;
@@ -832,7 +849,7 @@ sub rest_of_form {
 
   print qq(<form method="POST" action="$cgi_url">\n);
 
-  my %Form = $variables->{Form};
+  my %Form = %{$variables->{Form}};
 
   if ($variables->{followup} == 1) {
     print qq(<input type="hidden" name="origsubject" value="$Form{origsubject}" />\n);
