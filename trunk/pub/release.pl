@@ -44,7 +44,7 @@ open MAINFILE, "<$files[0]" or die "open <$files[0]: $!";
 my $mainfile = do { local $/ ; <MAINFILE> };
 close MAINFILE;
 
-$mainfile =~ /\$Id: release.pl,v 1.1 2002-08-18 20:53:57 nickjc Exp $files[0]";
+$mainfile =~ /\$[I]d: \S+ (\d+\.\d+) / or die "can't find CVS id tag in $files[0]";
 my $version = $1;
 
 open VERSION, ">$package.VER" or die "open >$package.VER: $!";
