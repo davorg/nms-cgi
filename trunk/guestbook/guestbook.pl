@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.13 2001-12-01 11:44:43 gellyfish Exp $
+# $Id: guestbook.pl,v 1.14 2001-12-01 17:53:11 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2001/12/01 11:44:43  gellyfish
+# SSI exploit fix as suggested by Pete Sargent
+#
 # Revision 1.12  2001/11/26 13:40:05  nickjc
 # Added \Q \E around variables in regexps where metacharacters in the
 # variables shouldn't be interpreted by the regex engine.
@@ -53,8 +56,14 @@
 use strict;
 use POSIX qw(strftime);
 use CGI qw(:standard);
-use CGI::Carp qw(fatalsToBrowser set_message);
-use Fcntl qw(:DEFAULT :flock :seek);
+use Fcntl qw(:DEFAULT :flock);
+
+# Older Fcntl doesn't deal with the SEEK_* defines :(
+
+BEGIN
+{
+   sub SEEK_SET() { 0; }
+};
 
 use vars qw($DEBUGGING);
 
@@ -141,15 +150,54 @@ my $short_date_fmt = '%d/%m/%y %T %Z';
 
 # End configuration
 
+# We need finer control over what gets to the browser and the CGI::Carp
+# set_message() is not available everywhere :(
+# This is basically the same as what CGI::Carp does inside but simplified
+# for our purposes here.
 
 BEGIN
 {
-   my $error_message = sub {
-                             my ($message ) = @_;
-                             print "<h1>It's all gone horribly wrong</h1>";
-                             print $message if $DEBUGGING;
-                            };
-  set_message($error_message);
+   sub fatalsToBrowser
+   {
+      my ( $message ) = @_;
+
+      if ( $main::DEBUGGING )
+      {
+         $message =~ s/</&lt;/g;
+         $message =~ s/>/&gt;/g;
+      }
+      else
+      {
+         $message = '';
+      }
+      
+      my ( $pack, $file, $line, $sub ) = caller(1);
+      my ($id ) = $file =~ m%([^/]+)$%;
+
+      return undef if $file =~ /^\(eval/;
+
+      print "Content-Type: text/html\n\n";
+
+      print <<EOERR;
+<html>
+  <head>
+    <title>Error</title>
+  </head>
+  <body>
+     <h1>Application Error</h1>
+     <p>
+     An error has occurred in the program
+     </p>
+     <p>
+     $message
+     </p>
+  </body>
+</html>
+EOERR
+     die @_;
+   };
+
+   $SIG{__DIE__} = \&fatalsToBrowser;
 }   
 
 my @now       = localtime();
@@ -169,20 +217,14 @@ my ($url) = param('url');
 
 my $encoded_comments = param('encoded_comments') || 0;
 
+form_error('no_comments') unless $comments;
+
 $comments = unescape_html($comments) if $encoded_comments;
 
 # crudely Strip out HTML unless we are allowing it
+# strip_html should take care of everything.
 
-$comments = strip_html($comments) unless $allow_html;
-
-# remove any comments that could harbour an attempt at an SSI exploit
-# suggested by Pete Sargeant
-
-$comments =~ s/<!--.*?-->/ /gs;
-
-# mop up any stray start or end of comment tags.
-
-$comments = "<!-- -->$comments<!-- -->";
+$comments = strip_html($comments, $allow_html);
 
 # remove any HTML from the rest of the fields - HTML should not be allowed
 # anywhere but the comment 
@@ -193,7 +235,6 @@ $city     = strip_html($city);
 $state    = strip_html($state);
 $country  = strip_html($country);
 
-form_error('no_comments') unless $comments;
 form_error('no_name')     unless $realname;
 
 # substitute newlines in the comments for html line breaks if required.
@@ -345,6 +386,8 @@ EOCOMMENT
 EOCOMMENT
    }
   
+  local $^W; # suppress warnings as we may have missing fields;
+
   print header;
   print <<END_FORM;
 <?xml version="1.0" encoding="UTF-8"?>
@@ -392,20 +435,35 @@ END_FORM
 
 # Log the Entry or Error
 sub write_log {
-  my $log_type = $_[0];
-  open(LOG, ">>$guestlog")
-    or die "Can't open log file: $!\n";
-  flock LOG, LOCK_EX
-    or die "Can't lock log file: $!\n";
+  my ($log_type) = @_;   
 
-  my $remote = remote_host();
-  if ($log_type eq 'entry') {
-    print LOG "$remote - [$shortdate]<br />\n";
-  } elsif ($log_type eq 'no_name') {
-    print LOG "$remote - [$shortdate] - ERR: No Name<br />\n";
-  } elsif ($log_type eq 'no_comments') {
-    print LOG "$remote - [$shortdate] - ERR: No Comments<br />\n";
+  if ( open(LOG, ">>$guestlog") )
+  {
+      if ( flock LOG, LOCK_EX )
+      {
+
+         my $remote = remote_host();
+         if ($log_type eq 'entry') {
+           print LOG "$remote - [$shortdate]<br />\n";
+         } elsif ($log_type eq 'no_name') {
+           print LOG "$remote - [$shortdate] - ERR: No Name<br />\n";
+         } elsif ($log_type eq 'no_comments') {
+           print LOG "$remote - [$shortdate] - ERR: No Comments<br />\n";
+         }
+      }
+      else
+      {
+         die "Can't lock log file: $!\n" if $main::DEBUGGING;
+      }
   }
+  else
+  {
+    # We probably dont wan't to show this to the crowd :)
+
+    die "Can't open log file: $!\n" if $DEBUGGING;
+
+  }
+
 }
 
 # Redirection Option
@@ -512,11 +570,27 @@ EOMAIL
 
 # subroutine to crudely strip html from a text string
 # ideally we would want to use HTML::Parser or somesuch.
+# we will also implement any selective tag replacement here
+# thus all user supplied input that will be displayed should
+# be passed through this before being displayed.
 
 sub strip_html
 {
-   my ( $comments ) = @_;
-   $comments =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs;
+   my ( $comments,$allow_html ) = @_;
+
+   $allow_html = defined $allow_html ? $allow_html : 0;
+
+   $comments =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs unless $allow_html;
+
+   # remove any comments that could harbour an attempt at an SSI exploit
+   # suggested by Pete Sargeant
+
+   $comments =~ s/<!--.*?-->/ /gs;
+
+   # mop up any stray start or end of comment tags.
+
+   $comments = "<!-- -->$comments<!-- -->";
+
    return $comments;
 }
 
