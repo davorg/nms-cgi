@@ -26,7 +26,7 @@ sub rw_setup
    my $basedir = $files{DATA}{PATH};
    $basedir =~ s#/[^/]+$##;
 
-   s{(my\s*\$basedir\s*=).*}{$1 '$basedir';};
+   s{(\s*\$basedir\s*=).*}{$1 '$basedir';} or die;
 }
 
 
