@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.9 2001-11-25 11:39:38 gellyfish Exp $
+# $Id: FormMail.pl,v 1.10 2001-11-25 16:07:40 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2001/11/25 11:39:38  gellyfish
+# * add missing use vars qw($DEBUGGING) from most of the files
+# * sundry other compilation failures
+#
 # Revision 1.8  2001/11/24 11:59:58  gellyfish
 # * documented strfime date formats is various places
 # * added more %ENV cleanup
@@ -298,7 +302,7 @@ sub return_html {
     print qq(<h1 align="center">$title</h1>\n);
 
     print "<p>Below is what you submitted to $recipient on ";
-    print "$date<p><hr size=1 width=75% /></p>\n";
+    print "$date<p><hr size="1" width="75%" /></p>\n";
 
     my @sorted_fields;
     if ($Config{sort}) {
@@ -324,7 +328,7 @@ sub return_html {
       }
     }
 
-    print "<p><hr size=1 width=75%><p>\n";
+    print "<p><hr size="1" width="75%" /></p>\n";
 
     if ($Config{return_link_url} && $Config{return_link_title}) {
       print "<ul>\n";
@@ -451,13 +455,13 @@ sub error {
   my ($host, $missing_field, $missing_field_list);
 
   if ($error eq 'bad_referer') {
-    if ($ENV{'HTTP_REFERER'} =~ m|^https?://([\w\.]+)|i) {
+    if (referer() =~ m|^https?://([\w\.]+)|i) {
       $host = $1;
+      print header();
       print <<END_ERROR_HTML;
-Content-type: text/html
-
-<html>
- <head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <title>Bad Referrer - Access Denied</title>
   <link rel="stylesheet" type="text/css" href="$style" />
  </head>
@@ -485,10 +489,11 @@ Content-type: text/html
 END_ERROR_HTML
 
 } else {
+  print header();
   print <<END_ERROR_HTML;
-Content-type: text/html
-
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
  <head>
   <title>FormMail</title>
   <link rel="stylesheet" type="text/css" href="$style" />
@@ -505,10 +510,11 @@ END_ERROR_HTML
 
   }
 } elsif ($error eq 'no_recipient') {
+  print header();
   print <<END_ERROR_HTML;
-Content-type: text/html
-
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
  <head>
   <title>Error: Bad/No Recipient</title>
   <link rel="stylesheet" type="text/css" href="$style" />
@@ -524,7 +530,7 @@ Content-type: text/html
      configured in <tt>\@recipients</tt>.  More information on filling in 
      <tt>recipient</tt> form fields and variables can be found in the README 
      file.<hr size="1" />
-     The recipient was: [${\( escape_html($Config{recipient}) )}]<hr>
+     The recipient was: [${\( escape_html($Config{recipient}) )}]<hr />
      <p align="center"><font size="-1">
       <a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001 London Perl Mongers<br></font></p>
     </td></tr>
@@ -542,10 +548,11 @@ END_ERROR_HTML
       $missing_field_list .= "      <li>${\( escape_html($missing_field) )}</li>\n";
     }
 
+    print header();
     print <<END_ERROR_HTML;
-Content-type: text/html
-
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
  <head>
   <title>Error: Blank Fields</title>
   <link rel="stylesheet" type="text/css" href="$style" />
