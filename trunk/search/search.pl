@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.8 2001-12-01 19:45:22 gellyfish Exp $
+# $Id: search.pl,v 1.9 2001-12-02 10:20:28 gellyfish Exp $
 #
-# $Log: not supported by cvs2svn $
+# Revision 1.8  2001/12/01 19:45:22  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.7  2001/11/26 13:40:05  nickjc
 # Added \Q \E around variables in regexps where metacharacters in the
 # variables shouldn't be interpreted by the regex engine.
@@ -28,6 +31,7 @@
 use strict;
 use CGI qw(header param);
 use vars qw($DEBUGGING);
+use File::Find;
 
 # sanitize the environment
 
@@ -48,14 +52,15 @@ BEGIN
 {
    $DEBUGGING = 1;
 }
-   
 
-my $basedir = '/home/dave';
-my $baseurl = 'http://worldwidemart.com/scripts/';
+
+my $basedir = '/indigo/html';
+my $baseurl = '/indigo/html';
 my @files = ('*.txt','*.html','*.dat', 'src');
 my $title = "NMS Search Program";
-my $title_url = 'http://worldwidemart.com/scripts/';
-my $search_url = 'http://worldwidemart.com/scripts/demos/search/search.html';
+my $title_url = 'http://cgi-nms.sourceforge.net';
+my $search_url = 'http://localhost/search.html';
+my @blocked = ();
 
 # $emulate_matts_code determines whether the program should behave exactly
 # like the original guestbook program.  It should be set to 1 if you
@@ -69,9 +74,9 @@ my $emulate_matts_code = 1;
 # $style is the URL of a CSS stylesheet which will be used for script
 # generated messages.  This probably want's to be the same as the one
 # that you use for all the other pages.  This should be a local absolute
-# URI fragment.
+# URI fragment.  Set to '' if there will be no style sheet used.
 
-my $style = '/css/nms.css';
+my $style = '';
 
 # end config
 
@@ -95,7 +100,7 @@ BEGIN
       {
          $message = '';
       }
-      
+
       my ( $pack, $file, $line, $sub ) = caller(1);
       my ($id ) = $file =~ m%([^/]+)$%;
 
@@ -123,119 +128,121 @@ EOERR
    };
 
    $SIG{__DIE__} = \&fatalsToBrowser;
-}   
+}
 
 # Parse Form Search Information
+my $case  = param("case") ? param("case") : "Insensitive";
+my $bool  = param("boolean") ? param("boolean") : "OR";
+my $terms = param("terms") ? param("terms") : "";
 
-my %FORM = parse_form();
+# Print page headers
 
-# Get Files To Search Through
-my @search_files = get_files(@files);
+start_of_html($title, $style);
 
-# Search the files
-my %files = search($FORM{terms}, $FORM{boolean}, $FORM{case}, @search_files);
+my @term_list = ();
+my $wclist    = '';
 
-# Print Results of Search
-return_html($FORM{terms}, %files);
+if ($terms)
+{
+    @term_list = split(/\s+/, $terms);
+    $wclist = build_list(@files);
 
-
-sub parse_form {
-  my %FORM;
-
-  foreach my $param ( param() )
-  {
-    $FORM{$param} = param($param);
-  }
-  return %FORM;
+    find (\&do_search, $basedir);
+}
+else
+{
+    print "<li>No Terms Specifiedi</li>";
 }
 
+end_of_html($search_url, $title_url, $title, $terms, $bool, $case);
 
-sub get_files {
-  my @files = @_;
 
-  chdir($basedir) or die "Can't chdir to $basedir: $!\n";
+sub do_search
+{
+    return if(/^\./);
+    return unless (m/$wclist/i);
+    my @stats = stat $File::Find::name;
+    return if -d _;
+    return unless -r _;
+    foreach my $blocked (@blocked) {
+         return if ($File::Find::dir eq $blocked)
+    }
 
-  my @found;
-
-  foreach (@files) {
-    $_ .= '/*' if -d "./$_" && !/\*/;
-  }
-
-  foreach my $file ( grep {-f $_ } map { glob($_) } @files )
-  {
-    push @found, $file;
-  }
-
-  return @found;
-}
-
-sub search {
-  my ($terms, $bool, $case, @files) = @_;
-
-  my @terms = split(/\s+/, $terms);
-
-  my %files;
-
-  foreach (@files) {
-
-    open(FILE, "<$_") or die "Can't open $_: $!\n";
+    open(FILE, "<$File::Find::name") or return;
     my $string = do { local $/; <FILE> };
     close(FILE);
 
     if ($bool eq 'AND') {
-      foreach my $term (@terms) {
-	if ($case eq 'Insensitive') {
-	  if ($string =~ /\Q$term\E/i) {
-	    $files{include}{$_}++;
-	  } else {
-	    $files{include}{$_} = 0;
-	    last;
-	  }
-	} elsif ($case eq 'Sensitive') {
-	  if ($string =~ /\Q$term\E/) {
-	    $files{include}{$_} = 1;
-	  } else {
-	    $files{include}{$_} = 0;
-	    last;
-	  }
-	}
-	last unless $files{include}{$_};
-      }
-    } elsif ($bool eq 'OR') {
-      foreach my $term (@terms) {
-	if ($case eq 'Insensitive') {
-	  if ($string =~ /\Q$term\E/i) {
-	    $files{include}{$_}++;
-	  }
-	} elsif ($case eq 'Sensitive') {
-	  if ($string =~ /\Q$term\E/) {
-	    $files{include}{$_}++;
-	    last;
-	  }
-	}
-      }
+        foreach my $term (@term_list) {
+           if ($case eq 'Insensitive') {
+                return if ($string !~ m/\Q$term\E/i);
+           }
+           elsif ($case eq 'Sensitive') {
+                return if ($string !~ m/\Q$term\E/);
+           }
+        }
     }
-    if ($string =~ /<title>(.*)<\/title>/is) {
-      $files{title}{$_} = $1;
-    } else {
-      $files{title}{$_} = $_;
+    elsif ($bool eq 'OR') {
+       my $find;
+       foreach my $term (@term_list) {
+          if ($case eq 'Insensitive') {
+                $find++ if ($string =~ /\Q$term\E/i);
+          }
+          elsif ($case eq 'Sensitive') {
+                $find++ if ($string =~ /\Q$term\E/)
+          }
+       }
+       return unless $find;
     }
-  }
 
-  return %files;
+    my $page_title = $_;
+
+    if ($string =~ /<title>(.*?)<\/title>/is) {
+        $page_title = $1;
+    }
+
+    print_result($baseurl, $_, $page_title);
 }
 
-sub return_html {
-  my ($terms, %files) = @_;
+sub build_list
+{
+    my @files = @_;
+    my $typelist;
 
-  print header;
-  print <<END_HTML;
+    my @wildcards = grep(/[^a-z]/,@files);
+    my @filetypes = grep($_!~/[^a-z]/,@files);
+
+    $typelist  = '(?:\.';
+    $typelist .= join(')|(\.',@filetypes) if (@filetypes>0);
+    $typelist .= ')';
+    $typelist .= '|' if (@wildcards>0 && @filetypes>0);
+
+    foreach my $wildcard (@wildcards)
+    {
+        $wildcard  =~ s/\*(\.)/'.*?'/g;
+        $wildcard .=  '\.' if ($1);
+        $wildcard  =  '(' . $_ . ')';
+    }
+
+    $typelist .= join ('|',@wildcards);
+    return $typelist;
+}
+
+sub start_of_html
+{
+    my ($title,$style) = @_;
+    print header;
+    print <<END_HTML;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Results of Search</title>
-    <link rel="stylesheet" type="text/css" href="$style" />
+END_HTML
+
+print qq(    <link rel="stylesheet" type="text/css" href="$style" />) if $style;
+
+print <<END_HTML;
   </head>
   <body>
     <h1 align="center">Results of Search in $title</h1>
@@ -243,21 +250,27 @@ sub return_html {
     <hr size="7" width="75%" />
     <ul>
 END_HTML
+}
 
-  foreach (keys %{$files{include}}) {
-    if ($files{include}{$_}) {
-      print qq(<li><a href="$baseurl$_">$files{title}{$_}</a></li>\n);
-      }
-   }
 
+sub print_result
+{
+    my ($baseurl, $file, $title) = @_;
+    print qq(<li><a href="$baseurl$file">$title</a></li>\n);
+}
+
+
+sub end_of_html
+{
+  my ($search_url, $title_url, $title, $terms, $boolean, $case) = @_;
   print <<END_HTML;
     </ul>
     <hr size="7" width="75%" />
    <p>Search Information:</p>
    <ul>
      <li><b>Terms:</b> $terms</li>
-     <li><b>Boolean Used:</b> $FORM{boolean}</li>
-     <li><b>Case:</b> $FORM{case}</li>
+     <li><b>Boolean Used:</b> $boolean</li>
+     <li><b>Case:</b> $case</li>
    </ul>
    <hr size="7" width="75%" />
    <ul>
@@ -266,7 +279,7 @@ END_HTML
    </ul>
    <hr size="7" width="75%" />
    <p>Search Script (c) London Perl Mongers 2001 part of
-   <a href="http://nms-cgi.sourceforge.net/">NMS Project</a>
+   <a href="http://nms-cgi.sourceforge.net/">NMS Project</a></p>
  </body>
 </html>
 END_HTML
