@@ -57,8 +57,6 @@ sub new {
 
   $self->{Charset} = CGI::NMS::Charset->new( $self->{CFG}{charset} );
 
-  $self->init_mailer;
-
   $self->init;
 
   return $self;
@@ -165,33 +163,6 @@ outputs.
 =head1 METHODS
 
 =over
-
-=item init_mailer ()
-
-If there is a C<mailprog> setting in the configuration, requires in
-the apropriate subclass of C<CGI::NMS::Mailer> and initialises a
-mailer object for the mailer() method to return.
-
-Invoked from new().
-
-=cut
-
-sub init_mailer {
-  my ($self) = @_;
-
-  my $mailprog = $self->{CFG}{mailprog};
-  return unless $mailprog;
-
-  if ($mailprog =~ /^SMTP:([\w\-\.]+(:\d+)?)/i) {
-    my $mailhost = $1;
-    require CGI::NMS::Mailer::SMTP;
-    $self->{Mailer} = CGI::NMS::Mailer::SMTP->new($mailhost);
-  }
-  else {
-    require CGI::NMS::Mailer::Sendmail;
-    $self->{Mailer} = CGI::NMS::Mailer::Sendmail->new($mailprog);
-  }
-}
 
 =item request ()
 
@@ -332,19 +303,6 @@ sub output_style_element {
   }
 }
 
-=item mailer ()
-
-Returns the mailer object that should be used for sending outgoing emails,
-see L<CGI::NMS::Mailer>.
-
-=cut
-
-sub mailer {
-  my ($self) = @_;
-
-  $self->{Mailer};
-}
-
 =item cgi_object ()
 
 Returns a reference to the C<CGI.pm> object for this request.
@@ -438,8 +396,7 @@ traped and treated according to the C<DEBUGGING> configuration setting.
 
 =head1 SEE ALSO
 
-L<CGI::NMS::Charset>, L<CGI::NMS::Mailer>,
-L<CGI::NMS::Script::FormMail>
+L<CGI::NMS::Charset>, L<CGI::NMS::Script::FormMail>
 
 =head1 MAINTAINERS
 

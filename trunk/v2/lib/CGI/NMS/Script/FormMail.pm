@@ -2,12 +2,13 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.1 $, 10, -1;
+$VERSION = substr q$Revision: 1.2 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
 use CGI::NMS::Script;
 use CGI::NMS::Validator;
+use CGI::NMS::Mailer::ByScheme;
 use base qw(CGI::NMS::Script CGI::NMS::Validator);
 
 =head1 NAME
@@ -292,6 +293,8 @@ sub init {
   $self->{Valid_Env} = {  map {$_=>1} @{ $self->{CFG}{valid_ENV} }  };
 
   $self->init_allowed_address_list;
+
+  $self->{Mailer} = CGI::NMS::Mailer::ByScheme->new($self->{CFG}{mailprog});
 }
 
 =item init_allowed_address_list ()
@@ -1398,7 +1401,18 @@ END
 END
 }
 
-1;
+=item mailer ()
+
+Returns an object satisfying the definition in L<CGI::NMS::Mailer>,
+to be used for sending outgoing email.
+
+=cut
+
+sub mailer {
+  my ($self) = @_;
+
+  return $self->{Mailer};
+}
 
 =back
 
@@ -1423,4 +1437,6 @@ This module is free software; you are free to redistribute it
 and/or modify it under the same terms as Perl itself.
 
 =cut
+
+1;
 
