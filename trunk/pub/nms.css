@@ -10,6 +10,11 @@ H1, H2, H3, H4, H5, H6, TH {
 		color: #990033;
 	}
 		
+BODY {
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
 ADDRESS {
 		font-family: arial, helvetica, sans-serif;
 		font-style: normal;
