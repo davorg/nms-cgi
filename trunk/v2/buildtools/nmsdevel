@@ -63,11 +63,11 @@ sub upload {
     foreach my $pkg (@pkg) {
         push @upload, $pkg->archive_path . ".tar.gz";
         push @upload, $pkg->archive_path . ".zip";
-        push @upload, $pkg->archive_path . ".VERSION";
-        push @upload, $pkg->archive_path . ".LASTMOD";
+        push @upload, $pkg->srcpath. "/" . $pkg->name . ".VERSION";
+        push @upload, $pkg->srcpath. "/" . $pkg->name . ".LASTMOD";
     }
 
-    system('scp', @upload,  "$username\@shell.sourceforge.net:/home/groups/n/nm/nms-cgi/htdocs/v2")
+    system('scp', @upload,  "$username\@shell.sourceforge.net:/home/groups/n/nm/nms-cgi/htdocs/")
         and die;
 }
 
