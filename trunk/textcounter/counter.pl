@@ -1,54 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.13 2002-03-09 11:39:06 gellyfish Exp $
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.12  2002/03/09 10:41:16  gellyfish
-# * Added single counter file facility
-# * Added virtual host support
-#
-# Revision 1.11  2002/02/26 20:57:01  gellyfish
-# * Added DOCUMENT_URI to NMSTest::TestRun
-# * Added a default test for textcounter.pl
-# * Made it easier to test textcounter
-#
-# Revision 1.10  2002/02/26 08:59:28  gellyfish
-# * Fixed imagecounter to something
-# * fixed typo in textcounter/README
-# * suppressed emission of headers in fatalsToBrowser if already done.
-#
-# Revision 1.9  2002/02/11 09:16:35  gellyfish
-# * provided method to turn off emission of headers
-# * Fixed the locking race
-# * Turned off uploads and POST
-#
-# Revision 1.8  2002/01/27 14:13:33  davorg
-# Removed Matt's docs.
-# Removed unnecessary reference to lock file.
-#
-# Revision 1.7  2001/12/01 19:45:22  gellyfish
-# * Tested everything with 5.004.04
-# * Replaced the CGI::Carp with local variant
-#
-# Revision 1.6  2001/11/26 13:40:05  nickjc
-# Added \Q \E around variables in regexps where metacharacters in the
-# variables shouldn't be interpreted by the regex engine.
-#
-# Revision 1.5  2001/11/25 11:39:40  gellyfish
-# * add missing use vars qw($DEBUGGING) from most of the files
-# * sundry other compilation failures
-#
-# Revision 1.4  2001/11/13 20:35:14  gellyfish
-# Added the CGI::Carp workaround
-#
-# Revision 1.3  2001/11/13 09:19:24  gellyfish
-# Added CGI::Carp
-#
-# Revision 1.2  2001/11/11 17:55:27  davorg
-# Small amount of post-import tidying :)
-#
-# Revision 1.1.1.1  2001/11/11 16:48:59  davorg
-# Initial import
+# $Id: counter.pl,v 1.14 2002-03-27 20:36:40 davorg Exp $
 #
 
 use strict;

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.65 2002-03-26 21:45:09 nickjc Exp $
+# $Id: FormMail.pl,v 1.66 2002-03-27 20:36:36 davorg Exp $
 #
 
 use strict;
@@ -16,7 +16,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.65 $
+# FormMail.pl $Revision: 1.66 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -62,7 +62,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.65 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.66 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -859,7 +859,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.65 $
+FormMail $Revision: 1.66 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1350,257 +1350,6 @@ and not:
 For support of this script please email:
 
 nms-cgi-support@lists.sourceforge.net
-
-=head1 CHANGELOG
-
- $Log: not supported by cvs2svn $
- Revision 1.64  2002/03/26 13:58:26  nickjc
- * added %Z to the list of strftime directives in the docs
-
- Revision 1.63  2002/03/26 13:49:16  nickjc
- * play nicely under Apache::Registry
-
- Revision 1.62  2002/03/26 09:01:03  gellyfish
- Added $allow_empty_ref to FormMail configuration
-
- Revision 1.61  2002/03/19 23:20:46  nickjc
- error message fix from Dave Baker
-
- Revision 1.60  2002/03/17 23:43:02  nickjc
- * typos
- * added a Common Problems section to the FormMail docs
-
- Revision 1.59  2002/03/15 09:02:02  nickjc
- return_link_url must be valid if $secure
-
- Revision 1.58  2002/03/15 00:33:51  nickjc
- * Put a limit on the subject length
-
- Revision 1.57  2002/03/13 23:52:52  nickjc
- * Better diagnostics when referrer is malformed or missing
-
- Revision 1.56  2002/03/13 00:49:36  nickjc
- * Added an X-Generated-By header.
-
- Revision 1.55  2002/03/12 23:58:57  nickjc
- minor POD tweak for its new context
-
- Revision 1.54  2002/03/12 23:46:17  nickjc
- * moved the POD to the end, and put the changelog inside the POD
-
- Revision 1.53  2002/03/12 19:43:02  nickjc
- * Duplicate input name display bug fix.
- * Better diagnostics when $mailprog exits nonzero.
- * Replaced out of date hardcoded version numbers with
-   CVS Revision tags.
-
- Revision 1.52  2002/03/12 00:41:04  nickjc
- * Allow the value '0' in a required field
-
- Revision 1.51  2002/03/10 01:05:11  nickjc
- * tightened weak checking on the realname part of email addresses
- * added a test for that
-
- Revision 1.50  2002/03/07 23:00:05  nickjc
- * eliminated the remaining path for nonprintable characters to get into
-   the email body.
- * added a test for that.
-
- Revision 1.49  2002/03/06 14:48:53  proub
- Inserted README text, in POD format.
- Moved Log messages to the end of the file.
-
- Revision 1.48  2002/02/28 21:14:10  nickjc
- * warning fix
- * fixed print_blank_fields bug
-
- Revision 1.47  2002/02/28 08:51:05  nickjc
- Allowed pathless URLs with query strings in check_url_valid
-
- Revision 1.46  2002/02/27 17:51:20  davorg
- typo
-
- Revision 1.45  2002/02/27 09:04:28  gellyfish
- * Added question about simple search and PDF to FAQ
- * Suppressed output of headers in fatalsToBrowser if $done_headers
- * Suppressed output of '<link rel...' if not $style
- * DOCTYPE in fatalsToBrowser
- * moved redirects until after possible cause of failure
- * some small XHTML fixes
-
- Revision 1.44  2002/02/26 22:30:49  proub
- Updated no-recipients-defined error message -- we now suggest both
- @allow_mail_to and @recipients as places to add valid emails.
-
- Revision 1.43  2002/02/26 22:13:20  proub
- Removed commented-out unit-tests (unit tests now live in /tests/formail)
-
- Revision 1.42  2002/02/26 08:50:15  nickjc
- Hide the recipient when it comes directly from @allow_mail_to and
- isn't in $recipient, to prevent SPAM harvesting
-
- Revision 1.41  2002/02/24 21:54:41  nickjc
- * DOCTYPE declarations on all output pages
-
- Revision 1.40  2002/02/22 12:08:30  nickjc
- * removed stray ';' from output HTML
-
- Revision 1.39  2002/02/21 09:17:29  gellyfish
- Stylesheet elements will not be added if $style is empty
-
- Revision 1.38  2002/02/14 08:45:04  nickjc
- * fixed silly error in body attribute checking
-
- Revision 1.37  2002/02/14 01:33:20  proub
- Updated unit tests to reflect new check_email behavior (specifically,
-   disallowing % in names when emulate_matts_code is in effect)
-
- Revision 1.36  2002/02/13 23:36:46  nickjc
- (This is the log message for the previous checkin)
- * reworked check_email
- * made it produce debugging output when rejecting recipients
- * sort order: doc correction
- * doc typo
- * added a way to keep the email address out of the form (user request)
- * POST_MAX and DISABLE_UPLOADS stuff
- * restricted the body attribute inputs to sane values
- * squished a couple of warnings
- * allowed relative URLs in check_url_valid
-
- Revision 1.35  2002/02/13 23:33:52  nickjc
- *** empty log message ***
-
- Revision 1.34  2002/02/03 21:32:47  dragonoe
- Indent configuration variables so they are all aligned. Made sure that it fits in 80 characters.
-
- Revision 1.33  2002/02/03 20:47:06  dragonoe
- Added header to script after the cvs log.
-
- Revision 1.32  2002/01/31 17:26:43  proub
- no longer accepting email addresses with % characters in the name portion
-   (to avoid spoofing sendmail addressing on some systems) - revert
-   to old behavior when $emulate_matts_code is true
- when $emulate_matts_code is true, verify email addresses in a
-   case-insensitive manner.
-
- Revision 1.31  2002/01/30 19:04:45  proub
- now properly handling referer URLs involving authentication info (e.g.
-   http://www.dave.org.uk@actual.referer.com, or
-   http://someuser@dave.org.uk)
- cleared up warnings when no referer is present
-
- Revision 1.30  2002/01/29 00:05:01  nickjc
- * typo
- * added X-HTTP-Client header to the confirmation email.
-
- Revision 1.29  2002/01/27 16:00:04  nickjc
- allow_mail_to: explicit $ rather than depend on the one that's added
- unless $emulate_matts_code.
-
- Revision 1.28  2002/01/27 14:45:11  nickjc
- * re-wrote README
- * added @allow_mail_to config option
-
- Revision 1.27  2002/01/27 13:59:08  gellyfish
- Issues from  http://www.monkeys.com/anti-spam/formmail-advisory.pdf
- * Left anchored regex to check referer
- * If $secure and no referer supplied then croak
-
- Revision 1.26  2002/01/21 21:58:00  gellyfish
- Checkbox fix from Chris Benson
-
- Revision 1.25  2002/01/20 14:52:02  nickjc
- added a warning about the risks of turning on the confirmation email
-
- Revision 1.24  2002/01/19 23:44:28  nickjc
- Added the option to send a confirmation email to the submitter, in
- response to a user request.
-
- Revision 1.23  2002/01/14 08:54:10  nickjc
- Took out a warn statement left over from a debugging session
-
- Revision 1.22  2002/01/04 08:55:31  nickjc
- tightened valid url regex
-
- Revision 1.21  2002/01/02 21:21:45  gellyfish
- Altered regex in check_valid_url to deal with server port number
-
- Revision 1.20  2002/01/01 01:22:27  nickjc
- error message fix from Paul Sharpe
-
- Revision 1.19  2001/12/15 22:42:00  nickjc
- * Added a validity check on the redirect URLs
- * Moved the nonprintable character striping code to a sub
-
- Revision 1.18  2001/12/09 22:31:22  nickjc
- * anchor recipient checks at end (as per README) unless $emulate_matts_code
- * move repeated check_email call out one loop level
-
- Revision 1.17  2001/12/05 14:28:24  nickjc
- * Don't do things on GET if $secure
- * Eliminate some warnings in send_email
- * Restrict realname slightly if $secure
-
- Revision 1.16  2001/12/04 08:55:03  nickjc
- stricter check_email if $secure
-
- Revision 1.15  2001/12/01 19:45:21  gellyfish
- * Tested everything with 5.004.04
- * Replaced the CGI::Carp with local variant
-
- Revision 1.14  2001/11/29 14:18:38  nickjc
- * Removed CGI::Carp::set_message (doesn't work under 5.00404)
- * Added some very minimal input filtering
-
- Revision 1.13  2001/11/26 17:36:43  nickjc
- * Allow domain names without '.' so that user@localhost works.
- * Don't overwrite $Config{recipient} with the empty string before
-   displaying it on the error page.
- * Fixed a couple of minor errors.
-
- Revision 1.12  2001/11/26 13:40:05  nickjc
- Added \Q \E around variables in regexps where metacharacters in the
- variables shouldn't be interpreted by the regex engine.
-
- Revision 1.11  2001/11/26 09:20:20  gellyfish
- Tidied up the error() subroutine
-
- Revision 1.10  2001/11/25 16:07:40  gellyfish
- A couple of nits
-
- Revision 1.9  2001/11/25 11:39:38  gellyfish
- * add missing use vars qw($DEBUGGING) from most of the files
- * sundry other compilation failures
-
- Revision 1.8  2001/11/24 11:59:58  gellyfish
- * documented strfime date formats is various places
- * added more %ENV cleanup
- * spread more XHTML goodness and CSS stylesheet
- * generalization in wwwadmin.pl
- * sundry tinkering
-
- Revision 1.7  2001/11/23 13:57:36  nickjc
- * added -T switch
- * Escape metachars in input variables when outputing HTML
-
- Revision 1.6  2001/11/20 17:39:20  nickjc
- * Fixed a problem with %Config initialisation
- * Reduced the scope for SPAM relaying
-
- Revision 1.5  2001/11/14 09:10:11  gellyfish
- Added extra check on the referer.
-
- Revision 1.4  2001/11/13 21:40:46  gellyfish
- Changed all of the sub calls to be without '&'
-
- Revision 1.3  2001/11/13 20:35:14  gellyfish
- Added the CGI::Carp workaround
-
- Revision 1.2  2001/11/11 17:55:27  davorg
- Small amount of post-import tidying :)
-
- Revision 1.1.1.1  2001/11/11 16:48:47  davorg
- Initial import
 
 =cut
 

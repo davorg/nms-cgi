@@ -1,46 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.13 2002-02-27 09:04:28 gellyfish Exp $
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.12  2002/01/28 20:46:27  gellyfish
-# * Fixed $emulate_matts_code to lower case
-#
-# Revision 1.11  2002/01/27 13:06:15  gellyfish
-# Bugfix as reported via sourceforge
-#
-# Revision 1.10  2002/01/25 16:37:09  gellyfish
-# Put the missing log messages back
-#
-# Revision 1.9  2002/01/25 15:55:13  davorg
-# Made it compile :(
-# 
-# Revision 1.8  2002/01/14 09:31:48  gellyfish
-# * Added patch from sourceforge
-# * Added real validation of the input date
-# 
-# Revision 1.7  2001/12/02 10:26:26 gellyfish
-# Merged in changes from Joseph Ryan
-#
-# Revision 1.6  2001/12/01 19:45:21  gellyfish
-# * Tested everything with 5.004.04
-# * Replaced the CGI::Carp with local variant
-#
-# Revision 1.5  2001/11/25 11:39:38  gellyfish
-# * add missing use vars qw($DEBUGGING) from most of the files
-# * sundry other compilation failures
-#
-# Revision 1.4  2001/11/13 20:35:14  gellyfish
-# Added the CGI::Carp workaround
-#
-# Revision 1.3  2001/11/13 09:14:41  gellyfish
-# Added CGI::Carp
-#
-# Revision 1.2  2001/11/11 17:55:27  davorg
-# Small amount of post-import tidying :)
-#
-# Revision 1.1.1.1  2001/11/11 16:48:45  davorg
-# Initial import
+# $Id: countdown.pl,v 1.14 2002-03-27 20:36:36 davorg Exp $
 #
 
 use strict;

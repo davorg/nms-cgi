@@ -1,39 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: icounter.pl,v 1.10 2002-02-27 09:04:29 gellyfish Exp $
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.9  2002/02/26 08:59:28  gellyfish
-# * Fixed imagecounter to something
-# * fixed typo in textcounter/README
-# * suppressed emission of headers in fatalsToBrowser if already done.
-#
-# Revision 1.8  2002/02/14 10:46:50  gellyfish
-# * Realized that it didn't do anything
-#
-# Revision 1.7  2001/12/01 19:45:22  gellyfish
-# * Tested everything with 5.004.04
-# * Replaced the CGI::Carp with local variant
-#
-# Revision 1.6  2001/11/26 13:40:05  nickjc
-# Added \Q \E around variables in regexps where metacharacters in the
-# variables shouldn't be interpreted by the regex engine.
-#
-# Revision 1.5  2001/11/25 11:39:38  gellyfish
-# * add missing use vars qw($DEBUGGING) from most of the files
-# * sundry other compilation failures
-#
-# Revision 1.4  2001/11/13 20:35:14  gellyfish
-# Added the CGI::Carp workaround
-#
-# Revision 1.3  2001/11/13 09:15:22  gellyfish
-# Added CGI::Carp
-#
-# Revision 1.2  2001/11/11 17:55:27  davorg
-# Small amount of post-import tidying :)
-#
-# Revision 1.1.1.1  2001/11/11 16:48:53  davorg
-# Initial import
+# $Id: icounter.pl,v 1.11 2002-03-27 20:36:36 davorg Exp $
 #
 
 use strict;

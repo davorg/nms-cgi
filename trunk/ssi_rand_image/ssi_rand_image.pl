@@ -1,30 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: ssi_rand_image.pl,v 1.8 2002-02-27 09:04:29 gellyfish Exp $
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.7  2002/01/27 17:25:48  davorg
-# Remove unused $base_dir variable.
-#
-# Revision 1.6  2001/12/01 19:45:22  gellyfish
-# * Tested everything with 5.004.04
-# * Replaced the CGI::Carp with local variant
-#
-# Revision 1.5  2001/11/25 11:39:39  gellyfish
-# * add missing use vars qw($DEBUGGING) from most of the files
-# * sundry other compilation failures
-#
-# Revision 1.4  2001/11/13 20:35:14  gellyfish
-# Added the CGI::Carp workaround
-#
-# Revision 1.3  2001/11/13 09:18:20  gellyfish
-# Added CGI::Carp
-#
-# Revision 1.2  2001/11/11 17:55:27  davorg
-# Small amount of post-import tidying :)
-#
-# Revision 1.1.1.1  2001/11/11 16:48:57  davorg
-# Initial import
+# $Id: ssi_rand_image.pl,v 1.9 2002-03-27 20:36:40 davorg Exp $
 #
 
 use strict;

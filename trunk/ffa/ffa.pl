@@ -1,69 +1,7 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.13 2002-03-20 09:04:13 gellyfish Exp $
+#  $Id: ffa.pl,v 1.14 2002-03-27 20:36:36 davorg Exp $
 #
-#  $Log: not supported by cvs2svn $
-#  Revision 1.12  2002/02/27 09:04:28  gellyfish
-#  * Added question about simple search and PDF to FAQ
-#  * Suppressed output of headers in fatalsToBrowser if $done_headers
-#  * Suppressed output of '<link rel...' if not $style
-#  * DOCTYPE in fatalsToBrowser
-#  * moved redirects until after possible cause of failure
-#  * some small XHTML fixes
-#
-#  Revision 1.11  2002/02/01 09:18:48  gellyfish
-#  * Possibly less confusing way of stoppoing used once warning
-#
-#  Revision 1.10  2002/01/31 23:50:04  nickjc
-#  * start_html syntax fix
-#  * file locking review
-#  * handle write errors better
-#  * escape_html before the first place HTML could be displayed
-#  * silence some warnings
-#  * minor XHTML fixes
-#
-#  Revision 1.9  2002/01/30 09:21:04  lertl
-#  *) redone error checking for no_url() and no_title()
-#  *) added escape_html function from FormMail.pl
-#  *) added strip_nonprintable function from FormMail.pl
-#  *) added $CGI::DISABLE_UPLOADS and $CGI::POST_MAX
-#  *) added lock file checking (I guess this needs some more work)
-#  *) allow https:// URLs
-#  *) fixed various typos
-#
-#  Revision 1.8  2001/12/01 19:45:21  gellyfish
-#  * Tested everything with 5.004.04
-#  * Replaced the CGI::Carp with local variant
-#
-#  Revision 1.7  2001/11/26 13:40:05  nickjc
-#  Added \Q \E around variables in regexps where metacharacters in the
-#  variables shouldn't be interpreted by the regex engine.
-#
-#  Revision 1.6  2001/11/24 11:59:58  gellyfish
-#  * documented strfime date formats is various places
-#  * added more %ENV cleanup
-#  * spread more XHTML goodness and CSS stylesheet
-#  * generalization in wwwadmin.pl
-#  * sundry tinkering
-#
-#  Revision 1.5  2001/11/15 09:11:04  gellyfish
-#  * Fixed the -style thing in start_html
-#  * added nms.css to the links page
-#  * fixed the hard coded HTML to be nearly XHTML
-#  * fixed header in the die handler.
-#
-#  Revision 1.4  2001/11/13 20:35:14  gellyfish
-#  Added the CGI::Carp workaround
-#
-#  Revision 1.3  2001/11/12 21:24:37  gellyfish
-#  * Captured newer version from elsewhere
-#  * Made links.html an XHTML file
-#
-#  Revision 1.2  2001/11/12 16:52:36  gellyfish
-#  * Removed confusing log messages
-#
-#
-# 
 
 use strict;
 use CGI qw(:standard);

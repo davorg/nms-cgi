@@ -1,57 +1,6 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.13 2002-03-04 09:09:39 gellyfish Exp $
-#
-# $Log: not supported by cvs2svn $
-# Revision 1.12  2002/03/03 11:55:06  gellyfish
-# * XHTML output from wwwadmin.pl
-#
-# Revision 1.11  2002/03/03 10:55:14  gellyfish
-# * Added POST_MAX etc
-# * File locking in wwwboard.pl
-# * Started on wwwadmin
-#
-# Revision 1.10  2002/02/27 09:04:30  gellyfish
-# * Added question about simple search and PDF to FAQ
-# * Suppressed output of headers in fatalsToBrowser if $done_headers
-# * Suppressed output of '<link rel...' if not $style
-# * DOCTYPE in fatalsToBrowser
-# * moved redirects until after possible cause of failure
-# * some small XHTML fixes
-#
-# Revision 1.9  2002/02/04 21:14:39  dragonoe
-# Added header to script and aligned values of parameter settings.
-#
-# Revision 1.8  2001/12/01 19:45:22  gellyfish
-# * Tested everything with 5.004.04
-# * Replaced the CGI::Carp with local variant
-#
-# Revision 1.7  2001/11/26 13:40:05  nickjc
-# Added \Q \E around variables in regexps where metacharacters in the
-# variables shouldn't be interpreted by the regex engine.
-#
-# Revision 1.6  2001/11/25 11:39:40  gellyfish
-# * add missing use vars qw($DEBUGGING) from most of the files
-# * sundry other compilation failures
-#
-# Revision 1.5  2001/11/24 11:59:58  gellyfish
-# * documented strfime date formats is various places
-# * added more %ENV cleanup
-# * spread more XHTML goodness and CSS stylesheet
-# * generalization in wwwadmin.pl
-# * sundry tinkering
-#
-# Revision 1.4  2001/11/19 09:21:44  gellyfish
-# * added allow_html functionality
-# * fixed potential for pre lock clobbering in guestbook
-# * some XHTML toshing
-#
-# Revision 1.3  2001/11/13 20:35:14  gellyfish
-# Added the CGI::Carp workaround
-#
-# Revision 1.2  2001/11/11 17:55:27  davorg
-# Small amount of post-import tidying :)
-#
+# $Id: wwwadmin.pl,v 1.14 2002-03-27 20:36:40 davorg Exp $
 #
 
 use strict;
