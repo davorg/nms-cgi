@@ -93,7 +93,7 @@ When this variable is set to a true value (e.g. 1) the script will work
 in exactly the same way as its counterpart at Matt's Script Archive. If
 it is set to a false value (e.g. 0) then more advanced features and
 security checks are switched on. We do not recommend changing this 
-ariable to 1, as the resulting drop in security may leave your script
+variable to 1, as the resulting drop in security may leave your script
 open to abuse.
 
 Default: 0
@@ -110,7 +110,7 @@ Default: 1
 =item C<locale>
 
 This determines the language that is used in the format_date() method -
-by default this is blank and the language will probably be english.
+by default this is blank and the language will probably be English.
 
 Default: ''
 
@@ -125,7 +125,7 @@ Default: 'iso-8859-1'
 This is the URL of a CSS stylesheet which will be used for script
 generated messages.  This should probably be the same as the one that
 you use for all the other pages.  This should be a local absolute URI
-fragment.  Set C<style> to 0 or the emtpy string if you don't want to
+fragment.  Set C<style> to 0 or the empty string if you don't want to
 use style sheets.
 
 Default: '';
@@ -139,7 +139,7 @@ Default: 1000000
 
 =item C<cgi_disable_uploads>
 
-The varaible C<CGI::DISABLE_UPLOADS> gets set to this value before
+The variable C<CGI::DISABLE_UPLOADS> gets set to this value before
 the request is handled.
 
 Default: 1
@@ -177,7 +177,7 @@ outputs.
 =item request ()
 
 This is the method that the CGI script invokes once for each run of the
-CGI.  This inplementation sets up some things that are common to all NMS
+CGI.  This implementation sets up some things that are common to all NMS
 scripts and then invokes the virtual method handle_request() to do the
 script specific processing.
 
@@ -280,7 +280,7 @@ END
 
 =item output_cgi_header ()
 
-Outputs the CGI header for an HTML docuement.
+Outputs the CGI header for an HTML document.
 
 =cut
 
@@ -330,7 +330,7 @@ sub cgi_object {
 
 =item escape_html ( INPUT )
 
-Returns a copy of the string INPUT with all HTML metacharcters escaped.
+Returns a copy of the string INPUT with all HTML metacharacters escaped.
 
 =cut
 
@@ -415,7 +415,7 @@ sub init {}
 
 Invoked from request(), this method is responsible for performing the
 bulk of the CGI processing.  Any fatal errors raised here will be
-traped and treated according to the C<DEBUGGING> configuration setting.
+trapped and treated according to the C<DEBUGGING> configuration setting.
 
 =back
 

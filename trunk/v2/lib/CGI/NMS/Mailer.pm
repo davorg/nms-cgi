@@ -84,8 +84,8 @@ of recipients.  Dies on error.
 
 =item print ( @ARGS )
 
-Concatentates the arguments and appends them to the email.  Both the
-header and the body should be sent in this way, seperated by a single
+Concatenates the arguments and appends them to the email.  Both the
+header and the body should be sent in this way, separated by a single
 blank line.  Dies on error.
 
 =item endmail ()

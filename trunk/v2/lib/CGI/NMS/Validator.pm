@@ -23,7 +23,7 @@ data the occur in CGI scripts, such as URLs and email addresses.
 These C<validate_*> methods all return undef if the item passed
 in is invalid, otherwise they return the valid item.
 
-Some of these methods attempt to tranform invalid input into valid
+Some of these methods attempt to transform invalid input into valid
 input (for example, validate_abs_url() will prepend http:// if missing)
 so the returned valid item may not be the same as that passed in.
 

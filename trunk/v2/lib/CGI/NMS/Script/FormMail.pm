@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.7 $, 10, -1;
+$VERSION = substr q$Revision: 1.8 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -46,7 +46,7 @@ configuration settings:
 
 =over
 
-=item C<allow_emtpy_ref>
+=item C<allow_empty_ref>
 
 Some web proxies and office firewalls may strip certain headers from the
 HTTP request that is sent by a browser.  Among these is the HTTP_REFERER
@@ -82,7 +82,7 @@ For example:
 
   'mailprog' => '/usr/lib/sendmail -oi -t',
 
-An SMTP relay can be specified instead of a sendmail compatable mail program,
+An SMTP relay can be specified instead of a sendmail compatible mail program,
 using the prefix C<SMTP:>, for example:
 
   'mailprog' => 'SMTP:mailhost.your.domain',
@@ -171,7 +171,7 @@ Default: '%A, %B %d, %Y at %H:%M:%S'
 
 =item C<date_offset>
 
-The emtpy string to use local time for the date, or an offset from GMT
+The empty string to use local time for the date, or an offset from GMT
 in hours to fix the timezone independent of the server's locale settings.
 
 Default: ''
@@ -196,7 +196,7 @@ Default: 1
 
 =item C<join_string>
 
-If an input occurs multilpe times, the values are joined to make a
+If an input occurs multiple times, the values are joined to make a
 single string value.  The value of this configuration setting is
 inserted between each value when they are joined.
 
@@ -352,7 +352,7 @@ to the request() method inherited from L<CGI::NMS::Script>.
 
 =item handle_request ()
 
-Handles the core of a single CGI request, outputing the HTML success
+Handles the core of a single CGI request, outputting the HTML success
 or error page or redirect header and sending emails.
 
 Dies on error.
@@ -628,7 +628,7 @@ sub configuration_form_fields {
 
 =item parse_config_form_input ( NAME )
 
-Deals with the configuration form input NAME, incorperating it into
+Deals with the configuration form input NAME, incorporating it into
 the C<FormConfig> field in the blessed hash.
 
 =cut
@@ -648,7 +648,7 @@ sub parse_config_form_input {
 
 =item parse_nonconfig_form_input ( NAME )
 
-Deals with the non-configuration form input NAME, incorperating it into
+Deals with the non-configuration form input NAME, incorporating it into
 the C<Form> and C<Field_Order> fields in the blessed hash.
 
 =cut
@@ -665,7 +665,7 @@ sub parse_nonconfig_form_input {
 =item expand_list_config_items ()
 
 Converts the form configuration values C<required>, C<env_report> and
-C<print_config> from strings of comma seperated values to arrays, and
+C<print_config> from strings of comma separated values to arrays, and
 removes anything not in the C<valid_ENV> configuration setting from
 C<env_report>.
 
@@ -747,7 +747,7 @@ sub remove_blank_fields {
 
 =item get_recipients ()
 
-Determins the list of configured recipients from the form inputs and the
+Determines the list of configured recipients from the form inputs and the
 C<recipient_alias> configuration setting, and returns them as a list.
 
 Sets the C<Hide_Recipient> field in the blessed hash to a true value if
@@ -946,7 +946,7 @@ sub get_missing_fields {
 =item missing_fields_output ( @MISSING )
 
 Produces the configured output (an error page or a redirect) for the
-case when there are missing fileds.  Takes a list of the missing
+case when there are missing fields.  Takes a list of the missing
 fields as arguments.
 
 =cut
@@ -1182,7 +1182,7 @@ sub wrap_field_for_email {
   local $Text::Wrap::columns = $self->email_wrap_columns;
 
   # Some early versions of Text::Wrap will die on very long words, if that
-  # happpens we fall back to no wrapping.
+  # happens we fall back to no wrapping.
   my $wrapped;
   eval { local $SIG{__DIE__} ; $wrapped = wrap($prefix,$subs_indent,$value) };
   return ($@ ? "$prefix$value" : $wrapped);
@@ -1220,7 +1220,7 @@ sub send_main_email_footer {
 =item send_conf_email ( DATE, EMAIL, REALNAME )
 
 Sends a confirmation email back to the user, if configured to do so and the
-user entered a valid email addresss.
+user entered a valid email addresses.
 
 =cut
 
