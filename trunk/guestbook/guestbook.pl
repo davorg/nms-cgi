@@ -1,8 +1,11 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.27 2002-01-29 08:50:44 nickjc Exp $
+# $Id: guestbook.pl,v 1.28 2002-02-14 12:57:53 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.27  2002/01/29 08:50:44  nickjc
+# Improved check_url_valid function from FormMail.pl
+#
 # Revision 1.26  2001/12/28 22:17:07  nickjc
 # minor HTML filter fix
 #
@@ -105,13 +108,6 @@ use strict;
 use POSIX qw(strftime);
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
-
-# Older Fcntl doesn't deal with the SEEK_* defines :(
-
-BEGIN
-{
-   sub SEEK_SET() { 0; }
-};
 
 use vars qw($DEBUGGING @debug_msg);
 
@@ -293,17 +289,18 @@ my %escaped = (
  country  => escape_html($country),
 );
 
-open (GUEST, "+<$guestbookreal")
+open (LOCK, ">>$guestbookreal.lck")
+  || die "Can't Open $guestbookreal.lck: $!\n";
+flock LOCK, LOCK_EX
+  || die "Can't lock $guestbookreal.lck: $!\n";
+
+open (GUEST_IN, "<$guestbookreal")
   || die "Can't Open $guestbookreal: $!\n";
-flock GUEST, LOCK_EX
-  || die "Can't lock $guestbookreal: $!\n";
+open (GUEST, ">$guestbookreal.tmp")
+  || die "Can't Open $guestbookreal.tmp: $!\n";
 
-my @lines = <GUEST>;
 
-seek GUEST, SEEK_SET, 0;
-truncate GUEST, 0;
-
-foreach (@lines) {
+while ( defined( $_ = <GUEST_IN> ) ) {
    if (/<!--begin-->/) {
 
      if ($entry_order) {
@@ -358,9 +355,17 @@ foreach (@lines) {
    }
 }
 
-close (GUEST);
+unless ( close GUEST ) {
+   unlink "$guestbookreal.tmp";
+   die "write to $guestbookreal.tmp: $!";
+}
+
+rename "$guestbookreal.tmp", $guestbookreal
+   or die "rename $guestbookreal.tmp -> $guestbookreal: $!";
 
 write_log('entry') if $uselog;
+
+close LOCK;
 
 if ($mail) {
    my $to = $recipient;
