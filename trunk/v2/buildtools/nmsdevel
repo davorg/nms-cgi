@@ -25,6 +25,7 @@ if ($action eq 'test') {
 }
 elsif ($action eq 'upload') {
     release();
+    tarballs();
     test();
     upload();
 }    
