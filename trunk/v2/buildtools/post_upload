@@ -29,7 +29,7 @@ foreach my $file (@files) {
 
 my @delete;
 foreach my $file (@files) {
-    next unless $file =~ /^(\w+_(?:compat|modules|autoinst))-(\w+)(\.tar\.gz|\.zip|$)$/;
+    next unless $file =~ /^(\w+_(?:compat|modules|autoinst))-([\d\.acm]+)(\.tar\.gz|\.zip|$)/;
     my ($name, $ver, $ext) = ($1, $2, $3);
     next if $dont_delete{"$name-$ver"};
     push @delete, "$name-$ver$ext";
