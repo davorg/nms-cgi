@@ -106,6 +106,12 @@ variables that go along with it:
     $mailprog -  The location of your sendmail program on your
                  host machine.
 
+CAUTION: with this option turned on it's possible for someone
+to put someone else's email address in the form and submit it
+5000 times, causing this script to send a flood of email to a
+third party.  This third party is likely to blame you for the
+email flood attack.
+
 Option 8: $allow_html = "";
 This option allows you to turn on or off the use of HTML tags by 
 users of your guestbook.  Setting this variable to '1' allows 
