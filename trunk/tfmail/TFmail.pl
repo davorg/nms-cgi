@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.8 2002-05-15 07:47:42 nickjc Exp $
+# $Id: TFmail.pl,v 1.9 2002-05-17 07:54:46 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -60,7 +60,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.8 $, 10, -1;
+  $VERSION = substr q$Revision: 1.9 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -111,8 +111,9 @@ sub main
    if ( check_required_fields($treq) )
    {
        setup_input_fields($treq);
-       send_emails($treq, $recipients);
+       my $confto = send_main_email($treq, $recipients);
        log_to_file($treq);
+       send_confirmation_email($treq, $confto);
        return_html($treq);
    }
    else
@@ -130,12 +131,16 @@ sub main
 Checks that all configured recipients are reasonable email
 addresses, and returns a string suitable for use as the value
 of a To header.  Dies if any configured recipient is bad.
+Returns the empty string if the 'no_email' configuration
+setting is true.
 
 =cut
 
 sub check_recipients
 {
    my ($treq) = @_;
+
+   $treq->config('no_email', '') and return '';
 
    my @recip = split /[\s,]+/, $treq->config('recipient', '');
    scalar @recip or die 'no recipients specified in the config file';
@@ -237,22 +242,23 @@ sub setup_input_fields
    );
 }
 
-=item send_emails ( TREQ, RECIPIENTS )
+=item send_main_email ( TREQ, RECIPIENTS )
 
-Sends the email, and sends the additional confirmation email
-back to the user if configured to do so and we have a reasonable
-email address for the user.
+Sends the main email to the configured recipient.
 
 Any file uploads configured will be attached to the main email,
 with "content/type" forced to "application/octet-stream" so
 that mail software will do nothing with the attachments other
 than allow them to be saved.
 
+Returns the email address of the user if a valid one was
+supplied, the empty string otherwise.
+
 Dies on error.
 
 =cut
 
-sub send_emails
+sub send_main_email
 {
    my ($treq, $recipients) = @_;
 
@@ -275,6 +281,8 @@ sub send_emails
       my $by = $treq->config('by_submitter_by', 'by');
       $treq->install_directive('by_submitter', "$by $from ");
    }
+
+   return $confto unless length $recipients;
 
    my $template = $treq->config('email_template', 'email');
 
@@ -327,32 +335,53 @@ sub send_emails
 
    send_email($msg);
 
+   return $confto;
+}
+
+=item send_confirmation_email ( TREQ, CONFTO )
+
+Sends the confirmation email back to the user if configured
+to do so and we have a reasonable email address for the user.
+
+The CONFTO parameter must be the sanity checked user's email
+address or the empty string it no valid email address was
+given.
+
+Dies on error.
+
+=cut
+
+sub send_confirmation_email
+{
+   my ($treq, $confto) = @_;
+
+   return unless length $confto;
+
    my $conftemp = $treq->config('confirmation_template', '');
-   if ($conftemp and $confto)
+   return unless length $conftemp;
+
+   my %save = (
+     'param'        => $treq->uninstall_directive('param'),
+     'param_values' => $treq->uninstall_directive('param_values'),
+     'env'          => $treq->uninstall_directive('env'),
+     'by_submitter' => $treq->uninstall_directive('by_submitter'),
+   );
+   my $save_foreach = $treq->uninstall_foreach('input_field');
+
+   my $body = $treq->process_template($conftemp, 'email', undef);
+
+   foreach my $k (keys %save)
    {
-      my %save = (
-        'param'        => $treq->uninstall_directive('param'),
-        'param_values' => $treq->uninstall_directive('param_values'),
-        'env'          => $treq->uninstall_directive('env'),
-        'by_submitter' => $treq->uninstall_directive('by_submitter'),
-      );
-      my $save_foreach = $treq->uninstall_foreach('input_field');
-
-      my $body = $treq->process_template($conftemp, 'email', undef);
-
-      foreach my $k (keys %save)
-      {
-        $treq->install_directive($k, $save{$k});
-      }
-      $treq->install_foreach('input_field', $save_foreach);
-
-      send_email({
-         To      => $confto,
-         From    => POSTMASTER,
-         Subject => $treq->config('confirmation_subject', 'Thanks'),
-         body    => $body,
-      });
+     $treq->install_directive($k, $save{$k});
    }
+   $treq->install_foreach('input_field', $save_foreach);
+
+   send_email({
+      To      => $confto,
+      From    => POSTMASTER,
+      Subject => $treq->config('confirmation_subject', 'Thanks'),
+      body    => $body,
+   });
 }
 
 =item send_email ( HASHREF )
@@ -423,7 +452,7 @@ sub log_to_file
 {
    my ($treq) = @_;
 
-   unless( LOGFILE_ROOT )
+   unless ( LOGFILE_ROOT )
    {
       return;
    }
@@ -435,7 +464,7 @@ sub log_to_file
 
    open LOG, ">>@{[ LOGFILE_ROOT ]}/$file@{[ LOGFILE_EXT ]}" or die "open [$file]: $!";
    flock LOG, LOCK_EX or die "flock [$file]: $!";
-   seek LOG, 0, 2;
+   seek LOG, 0, 2 or die "seek to end of [$file]: $!";
 
    $treq->process_template(
       $treq->config('log_template', 'log'),

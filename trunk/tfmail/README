@@ -3,6 +3,9 @@ COPYRIGHT
 TFMail
 Copyright 2002 London Perl Mongers, All rights reserved
 
+The file MIME_Lite.pm is copyright ZeeGee Software Inc,
+see the file for details.
+
 LICENSE
 
 This script is free software; you are free to redistribute it
@@ -37,7 +40,7 @@ spage.trt      - The template file that controls the layout of the success
                  page
 missing.trt    - The template file that controls the layout of the page
                  presented to the user if some required fields have been
-                 left blank.
+                 left blank
 email.trt      - The template file that controls the layout of the email
                  body
 README         - This file. Instructions on how to install and use TFmail
@@ -84,9 +87,9 @@ MAILPROG            - The command line that the script should use to fire
 
 POSTMASTER          - The email address to use as the 'envelope sender' of
                       outgoing e-mails.  This address will receive the bounce
-                      messages if there is trouble delivering an email, so
+                      messages if there is trouble delivering an e-mail, so
                       it's important to set this.  If in doubt, set this to
-                      your email address.
+                      your e-mail address.
 
 CONFIG_ROOT         - The filesystem path to the directory that holds all of
                       the configuration files and template files for the script.
@@ -111,14 +114,14 @@ ENABLE_UPLOADS      - Set this to 1 if you wish to use HTTP file uploads to
 USE_MIME_LITE       - If you're not using file uploads then you can set this to
                       0 to prevent TFmail from using the MIME::Lite perl module.
                       This may speed the script up in some cases, and might be
-                      desirable if the email is going to an automated system
-                      that doesn't understand MIME messages.  However, the email
+                      desirable if the e-mail is going to an automated system
+                      that doesn't understand MIME messages.  However, the e-mail
                       is more likely to be mangled in some way by mail transport
                       agents if you don't use MIME::Lite.
 
 LOGFILE_ROOT        - The filesystem path to the directory under which log
                       files can be written.  Leave this set to the empty
-		      string to disable writting to log files.
+                      string to disable writting to log files.
 
 LOGFILE_EXT         - The file extension that log files must have.  Default:
                       .log
@@ -423,14 +426,19 @@ confirmation_subject        - The subject for the confirmation email, if it
 logfile                     - The name of a file to which data will be
                               appended for each successful run of the
                               script.  The name is relative to the
-			      LOGFILE_ROOT directory and does not include
-			      the LOGFILE_EXT file extension.  Default: no
-			      logging.  Note that logging is disabled unless
-			      the LOGFILE_ROOT constant in the script is set.
+                              LOGFILE_ROOT directory and does not include
+                              the LOGFILE_EXT file extension.  Default: no
+                              logging.  Note that logging is disabled unless
+                              the LOGFILE_ROOT constant in the script is set.
 
 log_template                - The template file used to construct the text
                               that gets appended to the log file if the
                               logfile setting above is set.  Default: log
+
+no_email                    - Set this to a true value to prevent the main
+                              e-mail from being sent.  You might wish to do
+                              that if you're using TFmail.pl to record data
+                              to a log file and don't need it mailed as well.
 
 FILE UPLOADS
 
