@@ -151,9 +151,7 @@ CHARSET             - The character encoding to use for output documents and
                       of 'iso-8859-1' works for many Western languages.  If
                       you need characters that iso-8859-1 cannot represent
                       then you might want to consider setting CHARSET to
-                      'utf-8' and reading the notes in NMStreqUTF8.pm about
-                      forcing the browser to use utf-8 to encode the form
-                      submission.
+                      'utf-8'.
 
 
 SCRIPT INSTALLATION
