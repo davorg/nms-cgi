@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.12 2002-01-22 09:15:19 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.13 2002-02-04 21:13:31 dragonoe Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2002/01/22 09:15:19  gellyfish
+# * Fixed some typos
+# * (Threading still not working)
+#
 # Revision 1.11  2002/01/15 20:34:03  gellyfish
 # * Removed nasty global variables prior to refactoring
 #
@@ -48,155 +52,73 @@
 use strict;
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
-
-# It appears that the 'SEEK_*' things arent defined everywhere
-
-BEGIN
-{
-   sub SEEK_SET() { 0;}
-};
-
+BEGIN{sub SEEK_SET(){0;}};# Seems like 'SEEK_*' things arent defined everywhere
 use POSIX qw(strftime);
-
 use vars qw($DEBUGGING);
-
 my $VERSION = '1.0';
 
-# Configuration
-
+# PROGRAM INFORMATION
+# -------------------
+# wwwboard.pl v1.0
 #
-# $DEBUGGING must be set in a BEGIN block in order to have it be set before
-# the program is fully compiled.
-# This should almost certainly be set to 0 when the program is 'live'
+# This program is licensed in the same way as Perl
+# itself. You are free to choose between the GNU Public
+# License <http://www.gnu.org/licenses/gpl.html>  or
+# the Artistic License
+# <http://www.perl.com/pub/a/language/misc/Artistic.html>
 #
-
-BEGIN
-{
-   $DEBUGGING = 1;
-}
-   
-my $basedir = '/var/www/nms-test/wwwboard';
-my $baseurl = 'http://nms-test/wwwboard';
-my $cgi_url = 'http://nms-test/cgi-bin/wwwboard.pl';
-
-my $mesgdir  = 'messages';
-my $datafile = 'data.txt';
-my $mesgfile = 'wwwboard.html';
-my $faqfile  = 'faq.html';
-
-my $ext = 'html';
-
-# $title is the title that will be displayed on the program generated pages
-
-my $title = "NMS WWWBoard Version $VERSION";
-
-# $style is the URL of a CSS stylesheet which will be used for script
-# generated messages.  This probably want's to be the same as the one
-# that you use for all the other pages.  This should be a local absolute
-# URI fragment.
-
-my $style = '/css/nms.css';
-
-# $emulate_matts_code determines whether the program should behave exactly
-# like the original wwwboard program.  It should be set to 1 if you
-# want to emulate the original program - this is recommended if you are
-# replacing an existing installation with this program.  If it is set to 0
-# then potentially it will not work with files produced by the original
-# version - this is recommended for people installing this for the first time.
-
-my $emulate_matts_code = 1;
-
-# If $show_faq is set to 1 then the link for the WWWBoard FAQ will be shown
-# on the generated pages.
-
-my $show_faq     = 1;
-
-# If $allow_html is set to 1 then HTML will not be removed from the body of
-# the message.  Be warned however that setting this is a possible security
-# risk allowing malicious defacement of the page and possible cross page
-# scripting attacks on this or other site.
-
-my $allow_html   = 1;
-
-# If $quote_text is set to 1 then the text of the original message will
-# be placed in the "Post Followup" text box
-
-my $quote_text   = 1;
-
-# $quote_char is the string that will be prepended to each quoted line
-# if $quote_text described above is set to 1
-
-my $quote_char  = ':';
-
-# If $quote_html is set to 1 then if $quote_text is set to 1 above the
-# original HTML in the post will be retained in the followup - otherwise
-# it will be removed
-
-my $quote_html = 0; 
-
-my $subject_line = 0;	# 0 = Quote Subject Editable
-                        # 1 = Quote Subject UnEditable; 
-                        # 2 = Don't Quote Subject, Editable.
-
-# If $use_time is set to 1 then the dates will be displayed as
-# "$time_fmt $date_fmt" - see note below about date formats
-
-my $use_time        = 1;
-
-# $date_fmt and $time_fmt describe the format of the dates that
-# will output - the replacement parameters you can use here are:
+# For a list of changes see CHANGELOG
+# 
+# For help on configuration or installation see README
 #
-# %A - the full name of the weekday according to the current locale
-# %B - the full name of the month according to the current local
-# %m - the month as a number
-# %d - the day of the month as a number
-# %D - the date in the form %m/%d/%y (i.e. the US format )
-# %y - the year as a number without the century
-# %Y - the year as a number including the century
-# %H - the hour as number in the 24 hour clock
-# %M - the minute as a number
-# %S - the seconds as a number
-# %T - the time in 24 hour format (%H:%M:%S)
-# %Z - the time zone (full name or abbreviation)
+# USER CONFIGURATION SECTION
+# --------------------------
+# Modify these to your own settings. You might have to
+# contact your system administrator if you do not run
+# your own web server. If the purpose of these
+# parameters seems unclear, please see the README file.
+#
+BEGIN { $DEBUGGING      = 1; }
+my $emulate_matts_code  = 1;
+my $basedir             = '/var/www/nms-test/wwwboard';
+my $baseurl             = 'http://nms-test/wwwboard';
+my $cgi_url             = 'http://nms-test/cgi-bin/wwwboard.pl';
+my $mesgdir             = 'messages';
+my $datafile            = 'data.txt';
+my $mesgfile            = 'wwwboard.html';
+my $faqfile             = 'faq.html';
+my $ext                 = 'html';
+my $title               = "NMS WWWBoard Version $VERSION";
+my $style               = '/css/nms.css';
+my $show_faq            = 1;
+my $allow_html          = 1;
+my $quote_text          = 1;
+my $quote_char          = ':';
+my $quote_html          = 0; 
+my $subject_line        = 0;
+my $use_time            = 1;
+my $date_fmt            = '%d/%m/%y';
+my $time_fmt            = '%T';
+my $show_poster_ip      = 1;
+my $enforce_max_len     = 0;
+my %max_len             = ('name'        => 50,
+                           'email'       => 70,
+                           'subject'     => 80,
+                           'url'         => 150,
+                           'url_title'   => 80,
+                           'img'         => 150,
+                           'body'        => 3000,
+                           'origsubject' => 80,
+                           'origname'    => 50,
+                           'origemail'   => 70,
+                           'origdate'    => 50);
+my $strict_image        = 1;
+my @image_suffixes      = qw(png jpe?g gif);
+#
+# USER CONFIGURATION << END >>
+# ----------------------------
+# (no user serviceable parts beyond here)
 
-my $date_fmt = '%d/%m/%y';
-my $time_fmt = '%T';
-
-# $show_poster_ip determines whether the client IP address of the poster
-# is displayed in the message.
-
-my $show_poster_ip  = 1;
-
-my $enforce_max_len = 0;   # 2 = YES, error; 1 = YES, truncate; 0 = NO
-
-# These are the maximum lengths of the data allowed in the various
-# fields - they must be supplied if $enforce_max_len is not 0
-
-my %max_len = ('name'        => 50,
-	       'email'       => 70,
-	       'subject'     => 80,
-	       'url'         => 150,
-	       'url_title'   => 80,
-	       'img'         => 150,
-	       'body'        => 3000,
-	       'origsubject' => 80,
-	       'origname'    => 50,
-	       'origemail'   => 70,
-	       'origdate'    => 50);
-
-# $strict_image if set to 1 will require that an image url if supplied
-# must end in one of the common suffixes as defined in @image_suffixes
-
-my $strict_image = 1;
-
-# @images_suffixes is a list of the extensions that the image URL must end
-# with if $strict_image above is set to 1 - this is to minimize a potential
-# for the entry of entry of a malicious URL that may be used to attack
-# another host or disfigure this web page.
-
-my @image_suffixes = qw(png jpe?g gif);
-
-# End configuration
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -310,11 +232,11 @@ sub parse_form {
   if ($enforce_max_len) {
     foreach (keys %max_len) {
       if (length($Form{$_}) > $max_len{$_}) {
-	if ($enforce_max_len == 2) {
-	  &error('field_size');
-	} else {
-	  $Form{$_} = substr($Form{$_}, 0, $max_len{$_});
-	}
+        if ($enforce_max_len == 2) {
+          &error('field_size');
+        } else {
+          $Form{$_} = substr($Form{$_}, 0, $max_len{$_});
+        }
       }
     }
   }
@@ -608,7 +530,7 @@ sub main_page {
   if ($variables->{followup} == 0) {
     foreach (@main) {
       if (/<!--begin-->/) {
-	print MAIN <<END_HTML;
+        print MAIN <<END_HTML;
 <!--begin-->
 <!--top: $id--><li><a href="$mesgdir/$id.$ext">$subject</a> - <b>$name</b> <i>$date</i>
 (<!--responses: $id-->0)
@@ -616,14 +538,14 @@ sub main_page {
 </ul><!--end: $id-->
 END_HTML
       } else {
-	print MAIN $_;
+        print MAIN $_;
       }
     }
   } else {
     foreach (@main) {
       my $work = 0;
       if (/<ul><!--insert: $variables->{last_message}-->/) {
-	print MAIN <<END_HTML;
+        print MAIN <<END_HTML;
 <ul><!--insert: $variables->{last_message}-->
 <!--top: $id--><li><a href="$mesgdir/$id.$ext">$subject</a> - <b>$name</b> <i>$date</i>
 (<!--responses: $id-->0)
@@ -631,20 +553,20 @@ END_HTML
 </ul><!--end: $id-->
 END_HTML
       } elsif (/\(<!--responses: (.*)-->(.*)\)/) {
-	my $response_num = $1;
-	my $num_responses = $2;
-	$num_responses++;
-	foreach my $followup_num (@{$variables->{followups}}) {
-	  if ($followup_num == $response_num) {
-	    print MAIN "(<!--responses: $followup_num-->$num_responses)\n";
-	    $work = 1;
-	  }
-	}
-	if ($work != 1) {
-	  print MAIN $_;
-	}
+        my $response_num = $1;
+        my $num_responses = $2;
+        $num_responses++;
+        foreach my $followup_num (@{$variables->{followups}}) {
+          if ($followup_num == $response_num) {
+            print MAIN "(<!--responses: $followup_num-->$num_responses)\n";
+            $work = 1;
+          }
+        }
+        if ($work != 1) {
+          print MAIN $_;
+        }
       } else {
-	print MAIN $_;
+        print MAIN $_;
       }
     }
   }
@@ -681,7 +603,7 @@ sub thread_pages {
     foreach (@followup_lines) {
       my $work = 0;
       if (/<ul><!--insert: $variables->{last_message}-->/) {
-	print FOLLOWUP<<END_HTML;
+        print FOLLOWUP<<END_HTML;
 <ul><!--insert: $variables->{last_message}-->
 <!--top: $id--><li><a href="$id\.$ext">$subject</a> <b>$name</b> <i>$date</i>
 (<!--responses: $id-->0)
@@ -689,20 +611,20 @@ sub thread_pages {
 </ul><!--end: $id-->
 END_HTML
       } elsif (/\(<!--responses: (\d*)-->(\d*)\)/) {
-	my $response_num = $1;
-	my $num_responses = $2;
-	$num_responses++;
-	foreach $followup_num (@{$variables->{followups}}) {
-	  if ($followup_num == $response_num) {
-	    print FOLLOWUP "(<!--responses: $followup_num-->$num_responses)\n";
-	    $work = 1;
-	  }
-	}
-	if ($work != 1) {
-	  print FOLLOWUP $_;
-	}
+        my $response_num = $1;
+        my $num_responses = $2;
+        $num_responses++;
+        foreach $followup_num (@{$variables->{followups}}) {
+          if ($followup_num == $response_num) {
+            print FOLLOWUP "(<!--responses: $followup_num-->$num_responses)\n";
+            $work = 1;
+          }
+        }
+        if ($work != 1) {
+          print FOLLOWUP $_;
+        }
       } else {
-	print FOLLOWUP $_;
+        print FOLLOWUP $_;
       }
     }
     close(FOLLOWUP);

@@ -1,8 +1,12 @@
 #!/usr/local/bin/perl -wT
 #
-# $Id: wwwadmin.pl,v 1.8 2001-12-01 19:45:22 gellyfish Exp $
+# $Id: wwwadmin.pl,v 1.9 2002-02-04 21:14:39 dragonoe Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2001/12/01 19:45:22  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.7  2001/11/26 13:40:05  nickjc
 # Added \Q \E around variables in regexps where metacharacters in the
 # variables shouldn't be interpreted by the regex engine.
@@ -35,52 +39,47 @@ use strict;
 use CGI qw(:standard);
 use vars qw($DEBUGGING);
 
-# Configuration
-
+# PROGRAM INFORMATION
+# -------------------
+# wwwadmin.pl v1.9 (part of wwwboard)
 #
-# $DEBUGGING must be set in a BEGIN block in order to have it be set before
-# the program is fully compiled.
-# This should almost certainly be set to 0 when the program is 'live'
+# This program is licensed in the same way as Perl
+# itself. You are free to choose between the GNU Public
+# License <http://www.gnu.org/licenses/gpl.html>  or
+# the Artistic License
+# <http://www.perl.com/pub/a/language/misc/Artistic.html>
 #
+# For a list of changes see CHANGELOG
+# 
+# For help on configuration or installation see README
+#
+# USER CONFIGURATION SECTION
+# --------------------------
+# Modify these to your own settings. You might have to
+# contact your system administrator if you do not run
+# your own web server. If the purpose of these
+# parameters seems unclear, please see the
+# ADMIN_README file.
+#
+BEGIN { $DEBUGGING      = 1;}
+my $emulate_matts_code  = 1;
+my $basedir             = '/var/www/html/wwwboard';
+my $baseurl             = 'http://localhost/wwwboard';
+my $cgi_url             = 'http://localhost/cgi-bin/wwwadmin.pl';
+my $mesgdir             = 'messages';
+my $datafile            = 'data.txt';
+my $mesgfile            = 'wwwboard.html';
+my $passwd_file         = 'passwd.txt';
+my $ext                 = 'html';
+my $title               = 'NMS WWWBoard Version 1.0';
+my $use_time            = 1;
+my $style               = '/css/nms.css';
+#
+# USER CONFIGURATION << END >>
+# ----------------------------
+# (no user serviceable parts beyond here)
 
-BEGIN
-{
-   $DEBUGGING = 1;
-}
-   
-my $basedir = '/var/www/html/wwwboard';
-my $baseurl = 'http://localhost/wwwboard';
-my $cgi_url = 'http://localhost/cgi-bin/wwwadmin.pl';
 
-my $mesgdir = 'messages';
-my $datafile = 'data.txt';
-my $mesgfile = 'wwwboard.html';
-my $passwd_file = 'passwd.txt';
-
-my $ext = 'html';
-
-my $title = 'NMS WWWBoard Version 1.0';
-my $use_time = 1; # 1 = YES; 0 = NO
-
-# $emulate_matts_code determines whether the program should behave exactly
-# like the original guestbook program.  It should be set to 1 if you
-# want to emulate the original program - this is recommended if you are
-# replacing an existing installation with this program.  If it is set to 0
-# then potentially it will not work with files produced by the original
-# version - this is recommended for people installing this for the first time.
-
-my $emulate_matts_code = 1;
-
-# $style is the URL of a CSS stylesheet which will be used for script
-# generated messages.  This probably want's to be the same as the one
-# that you use for all the other pages.  This should be a local absolute
-# URI fragment.
-
-my $style = '/css/nms.css';
-
-# Done
-
-###########################################################################
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -164,7 +163,7 @@ if ($command eq 'remove') {
 
   foreach my $line (@lines) {
     if (my ($id, $subject, $author, $date) 
-	= $line =~ /<!--top: (.*)--><li><a href="\Q$mesgdir\E\/\1\Q.$ext\E">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>/) {
+        = $line =~ /<!--top: (.*)--><li><a href="\Q$mesgdir\E\/\1\Q.$ext\E">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>/) {
       $min = $id if ! defined $min or $id < $min;
       $max = $id if ! defined $max or $id > $max;
 
@@ -192,7 +191,7 @@ if ($command eq 'remove') {
 
   foreach my $line (@lines) {
     if (my ($id, $subject, $author, $date)
-	= $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1.$ext">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>/) {
+        = $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1.$ext">(.*)<\/a> - <b>(.*)<\/b>\s+<i>(.*)<\/i>/) {
       $min = $id if ! defined $min or $id < $min;
       $max = $id if ! defined $max or $id > $max;
 
@@ -226,13 +225,13 @@ if ($command eq 'remove') {
   my %entries;
   foreach my $line (@lines) {
     if (my ($id, $date)
-	= $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1.$ext">.*<\/a> - <b>.*<\/b>\s+<i>(.*)<\/i>/) {
+        = $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1.$ext">.*<\/a> - <b>.*<\/b>\s+<i>(.*)<\/i>/) {
 
       my $day;
       if ($use_time) {
-	(undef, $day) = split(/\s+/, $date);
+        (undef, $day) = split(/\s+/, $date);
       } else {
-	$day = $date;
+        $day = $date;
       }
       push @{$entries{$day}}, $id;
     }
@@ -271,7 +270,7 @@ if ($command eq 'remove') {
   my %entries;
   foreach my $line (@lines) {
     if (my ($id, $author)
-	= $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1\.$ext">.*<\/a> - <b>(.*)<\/b>\s+<i>.*<\/i>/) {
+        = $line =~ /<!--top: (.*)--><li><a href="$mesgdir\/\1\.$ext">.*<\/a> - <b>(.*)<\/b>\s+<i>.*<\/i>/) {
       push @{$entries{$author}}, $id;
     }
   }
@@ -325,11 +324,11 @@ if ($command eq 'remove') {
    foreach my $single (@single) {
      foreach (0 .. $#lines) {
        if ($lines[$_] =~ /<!--top: $single-->/) {
-	 splice(@lines, $_, 3);
-	 $_ -= 3;
+         splice(@lines, $_, 3);
+         $_ -= 3;
        } elsif ($lines[$_] =~ /<!--end: $single-->/) {
-	 splice(@lines, $_, 1);
-	 $_--;
+         splice(@lines, $_, 1);
+         $_--;
        }
      }
      my $filename = "$basedir/$mesgdir/$single.$ext";
@@ -346,27 +345,27 @@ if ($command eq 'remove') {
 
      foreach (my $j = 0; $j <= @lines; $j++) {
        if ($lines[$j] =~ /<!--top: $all-->/) {
-	 $top = $j;
+         $top = $j;
        } elsif ($lines[$j] =~ /<!--end: $all-->/) {
-	 $bottom = $j;
+         $bottom = $j;
        }
      }
      if ($top && $bottom) {
        my $diff = ($bottom - $top) + 1;
        for (my $k = $top;$k <= $bottom;$k++) {
-	 if ($lines[$k] =~ /<!--top: (.*)-->/) {
-	   push(@delete, $1);
-	 }
+         if ($lines[$k] =~ /<!--top: (.*)-->/) {
+           push(@delete, $1);
+         }
        }
        splice(@lines, $top, $diff);
        foreach my $delete (@delete) {
-	 my $filename = "$basedir/$mesgdir/$delete.$ext";
-	 if (-e $filename) {
-	   unlink($filename) || push @not_removed, $delete;
-	 } else {
-	   push @no_file, $delete;
-	 }
-	 push @attempted,$delete;
+         my $filename = "$basedir/$mesgdir/$delete.$ext";
+         if (-e $filename) {
+           unlink($filename) || push @not_removed, $delete;
+         } else {
+           push @no_file, $delete;
+         }
+         push @attempted,$delete;
        }
      } else {
        push(@top_bot, $all);
@@ -401,11 +400,11 @@ if ($command eq 'remove') {
    foreach my $single (@single) {
      foreach my $j (0 .. @lines) {
        if ($lines[$j] =~ /<!--top: $single-->/) {
-	 splice(@lines, $j, 3);
-	 $j -= 3;
+         splice(@lines, $j, 3);
+         $j -= 3;
        } elsif ($lines[$j] =~ /<!--end: $single-->/) {
-	 splice(@lines, $j, 1);
-	 $j--;
+         splice(@lines, $j, 1);
+         $j--;
        }
      }
      my $filename = "$basedir/$mesgdir/$single\.$ext";
