@@ -1,0 +1,12 @@
+FormMail.pl
+README
+EXAMPLES
+ChangeLog
+MANIFEST
+lib/CGI/NMS/Charset.pm
+lib/CGI/NMS/Validator.pm
+lib/CGI/NMS/Script.pm
+lib/CGI/NMS/Script/FormMail.pm
+lib/CGI/NMS/Mailer.pm
+lib/CGI/NMS/Mailer/Sendmail.pm
+lib/CGI/NMS/Mailer/SMTP.pm

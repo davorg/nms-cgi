@@ -1,0 +1,4 @@
+#!/bin/sh
+
+../../src/formmail/FormMail.pl.in | ../../buildtools/inline ../../lib -
+

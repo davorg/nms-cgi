@@ -1,0 +1,7 @@
+buildtools/inline
+package/formmail_compat/README.manifest
+package/formmail_compat/README.install
+package/formmail_compat/FormMail.pl.in
+package/formmail_compat/MANIFEST
+package/formmail_compat/VERSION
+package/formmail_compat/SOURCES
