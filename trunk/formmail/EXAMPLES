@@ -245,7 +245,7 @@ collect target email addresses from web sites.
     $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
     @referers          = qw(www.your.domain);
-    @allow_mail_to     = qw(your-name@your.domain your-name@somewhere-else.domain);
+    @allow_mail_to     = ();
     @recipients        = ();
     %recipient_alias   = (
        'animals' => 'your-name@your.domain,your-name@somewhere-else.domain',
@@ -269,11 +269,12 @@ collect target email addresses from web sites.
 
 The lines that have changed from example 1 are:
 
-    @allow_mail_to     = qw(your-name@your.domain your-name@somewhere-else.domain);
+    @allow_mail_to     = ();
 
-which has changed to allow the extra email address as a
-recipient, and the single %recipient_alias line has
-become the 3 lines:
+which has changed because the addresses mentioned in %recipient_alias
+below are automatically allowed, so we don't need to explicitly allow
+any addresses, and the single %recipient_alias line has become the 3
+ lines:
 
     %recipient_alias   = (
        'animals'  => 'your-name@your.domain,your-name@somewhere-else.domain',
@@ -323,18 +324,6 @@ This example adds an additional form to the same site, this
 time asking people about their favorite plant.  The results
 of this form get mailed to a new address, <foo@your.domain>.
 
-First, we add the address <foo@your.domain> to the
-@allow_mail_to list, so that FormMail.pl will accept the
-new address as a recipient.  Since the @allow_mail_to
-line is now getting a bit long, I've broken it out into
-several lines:
-
-    @allow_mail_to     = qw(
-       your-name@your.domain
-       your-name@somewhere-else.domain
-       foo@your.domain
-    );
-
 An extra line in the %recipient_alias part tells FormMail.pl
 how to handle a recipient value of "plants":
 
@@ -363,11 +352,7 @@ script is now:
     $max_recipients    = 5;
     $mailprog          = '/usr/sbin/sendmail -oi -t';
     @referers          = qw(www.your.domain);
-    @allow_mail_to     = qw(
-       your-name@your.domain
-       your-name@somewhere-else.domain
-       foo@your.domain
-    );
+    @allow_mail_to     = ();
     @recipients        = ();
     %recipient_alias   = (
        'animals' => 'your-name@your.domain,your-name@somewhere-else.domain',
