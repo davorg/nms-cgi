@@ -187,7 +187,7 @@ sub generate_tarballs {
        and die "tar/gzip failed";
 
     foreach my $file (@files) {
-        if (-T $file) {
+        if (-T "$arc_path/$file") {
             $self->_unix2dos("$arc_path/$file");
         }
     }
