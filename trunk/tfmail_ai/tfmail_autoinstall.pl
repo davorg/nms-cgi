@@ -162,6 +162,7 @@ sub app_prepare_for_install {
     app__subst_constant('MAILPROG',       $Config{sendmail_command});
     app__subst_constant('POSTMASTER',     $Config{postmaster_address});
     app__subst_constant('CONFIG_ROOT',    "$Probe{BASEDIR}/cfg");
+    app__subst_constant('LOGFILE_ROOT',   "$Probe{BASEDIR}/log");
     app__subst_constant('ENABLE_UPLOADS', $Config{enable_uploads});
     app__subst_constant('USE_MIME_LITE',  $Config{use_mime_lite});
     app__subst_constant('CHARSET',        $Config{charset});
@@ -173,6 +174,7 @@ sub app_prepare_for_install {
     }
 
     ai_mkdir_p("$Probe{BASEDIR}/cfg");
+    ai_mkdir_p("$Probe{BASEDIR}/log");
 
     my $v = eval q{ require MIME::Lite ; $MIME::Lite::VERSION };
     if (defined $v and $v =~ /^2/) {
