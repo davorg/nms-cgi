@@ -1,6 +1,6 @@
 #! /usr/bin/perl -Tw
 #
-# $Id: rand_link.pl,v 1.9 2002-05-01 08:09:55 gellyfish Exp $
+# $Id: rand_link.pl,v 1.10 2002-06-01 09:16:50 nickjc Exp $
 #
 
 use strict;
@@ -108,7 +108,7 @@ EOERR
    $SIG{__DIE__} = \&fatalsToBrowser;
 }   
 
-open (LINKS, $linkfile)
+open (LINKS, "<$linkfile")
   or die "Can't open link file: $!\n";
 
 my @links = <LINKS>;

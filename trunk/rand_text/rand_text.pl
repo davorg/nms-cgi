@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: rand_text.pl,v 1.9 2002-03-27 20:36:40 davorg Exp $
+# $Id: rand_text.pl,v 1.10 2002-06-01 09:16:50 nickjc Exp $
 #
 
 use strict;
@@ -78,7 +78,7 @@ EOERR
    $SIG{__DIE__} = \&fatalsToBrowser;
 }   
 
-open(FILE, $random_file) 
+open(FILE, "<$random_file") 
   or die "Can't open $random_file: $!\n";
 
 my @phrases;
