@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.10 2001-11-25 11:39:38 gellyfish Exp $
+# $Id: guestbook.pl,v 1.11 2001-11-25 15:28:43 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/11/25 11:39:38  gellyfish
+# * add missing use vars qw($DEBUGGING) from most of the files
+# * sundry other compilation failures
+#
 # Revision 1.9  2001/11/24 11:59:58  gellyfish
 # * documented strfime date formats is various places
 # * added more %ENV cleanup
@@ -39,8 +43,8 @@
 #
 
 use strict;
-use POSIX 'strftime';
-use CGI qw(param);
+use POSIX qw(strftime);
+use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser set_message);
 use Fcntl qw(:DEFAULT :flock :seek);
 
@@ -150,21 +154,38 @@ my ($username, $realname, $comments)
 my ($city, $state, $country)
   = (param('city'), param('state'), param('country'));
 
-my ($url)
-  = param('url');
+my ($url) = param('url');
 
-no_comments() unless $comments;
-no_name()     unless $realname;
+# There is a possibility that the comments can be escaped if passed as
+# the hidden field from the form_error() form
+
+my $encoded_comments = param('encoded_comments') || 0;
+
+$comments = unescape_html($comments) if $encoded_comments;
 
 # crudely Strip out HTML unless we are allowing it
-# usually one would use HTML::Parser
 
-$comments =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs unless $allow_html;
+$comments = strip_html($comments) unless $allow_html;
+
+# remove any HTML from the rest of the fields - HTML should not be allowed
+# anywhere but the comment 
+
+$username = strip_html($username);
+$realname = strip_html($realname);
+$city     = strip_html($city);
+$state    = strip_html($state);
+$country  = strip_html($country);
+
+form_error('no_comments') unless $comments;
+form_error('no_name')     unless $realname;
 
 # substitute newlines in the comments for html line breaks if required.
 
 $comments =~ s%\cM\n%<br />\n%g if $line_breaks;
 
+# Get rid of the $username unless it is a valid e-mail address
+
+$username = '' unless check_email($username);
 
 open (GUEST, "+<$guestbookreal")
   || die "Can't Open $guestbookreal: $!\n";
@@ -179,7 +200,7 @@ truncate GUEST, 0;
 foreach (@lines) {
    if (/<!--begin-->/) {
 
-     if ($entry_order == 1) {
+     if ($entry_order) {
        print GUEST "<!--begin-->\n";
      }
 
@@ -212,7 +233,7 @@ foreach (@lines) {
      }
 
      if ($country){
-       print GUEST " country";
+       print GUEST " $country";
      }
 
      if ($separator) {
@@ -232,139 +253,99 @@ foreach (@lines) {
 
 close (GUEST);
 
-if ($uselog) {
-   write_log('entry');
-}
+write_log('entry') if $uselog;
 
 if ($mail) {
-  open (MAIL, "|$mailprog") || die "Can't open $mailprog!\n";
-
-  print MAIL "To: $recipient\n";
-  print MAIL "Reply-to: $username ($realname)\n";
-  print MAIL "From: $username ($realname)\n";
-  print MAIL "Subject: Entry to Guestbook\n\n";
-  print MAIL "You have a new entry in your guestbook:\n\n";
-  print MAIL "------------------------------------------------------\n";
-  print MAIL "$comments\n";
-  print MAIL "$realname";
-
-  if ($username){
-    print MAIL " <$username>";
-  }
-
-  print MAIL "\n";
-
-  print MAIL "$city'," if $city;
-
-  print MAIL " $state" if $state;
-
-  print MAIL " $country" if $country;
-
-  print MAIL " - $date\n";
-  print MAIL "------------------------------------------------------\n";
-
-  close (MAIL);
+   my $to = $recipient;
+   my $reply = "$username ($realname)";
+   my $from   = "$username ($realname)";
+   my $subject = 'Entry to Guestbook';
+   my $body    = 'You have a new entry in your guestbook:';
+   do_mail($to, $from, $reply, $subject, $body );
 }
 
 if ($remote_mail && $username) {
-  open (MAIL, "|$mailprog -t") || die "Can't open $mailprog!\n";
 
-  print MAIL "To: $username\n";
-  print MAIL "From: $recipient\n";
-  print MAIL "Subject: Entry to Guestbook\n\n";
-  print MAIL "Thank you for adding to my guestbook.\n\n";
-  print MAIL "------------------------------------------------------\n";
-  print MAIL "$comments\n";
-  print MAIL "$realname";
-
-  print MAIL " <$username>" if $username;
-
-  print MAIL "\n";
-
-  print MAIL "$city," if $city;
-
-  print MAIL " $state" if $state;
-
-  print MAIL " $country" if $country;
-
-  print MAIL " - $date\n";
-  print MAIL "------------------------------------------------------\n";
-
-  close (MAIL);
+  my $to = $username;
+  my $from = $recipient;
+  my $reply = $recipient;
+  my $subject = 'Entry to Guestbook';
+  my $body    = 'Thank you for adding to my guestbook.';
+  do_mail($to, $from, $reply, $subject, $body );
 }
 
 # Print Out Initial Output Location Heading
 if ($redirection) {
-  print "Location: $guestbookurl\n\n";
+  print redirect($guestbookurl);
 } else {
   no_redirection();
 }
 
-sub no_comments {
-  print <<END_FORM;
-Content-type: text/html
+sub form_error {
 
+  my ( $why ) = @_;
+
+  $comments = escape_html($comments) if $comments;
+
+  my ( $title, $heading, $text, $comments_field ) ;
+
+  if ( $why eq 'no_name' ) {
+      $realname = '';
+      $title = 'No Name';
+      $heading = 'Your Name appears to be blank';
+      $text =<<EOTEXT;
+The Name Section in the guestbook fillout form appears to
+be blank and therefore your entry to the guestbook was not
+added.  Please add your name in the blank below.
+EOTEXT
+      $comments_field =<<EOCOMMENT;
+    Comments have been retained.
+        <input type="hidden" name="comments" value="$comments" />
+        <input type="hidden" name="comments_encoded" value="1" />
+EOCOMMENT
+   }
+   elsif ( $why eq 'no_comments' ) {
+      $title = 'No Comments';
+      $heading = 'Your Comments appear to be blank';
+      $text =<<EOTEXT;
+The comment section in the guestbook fillout form appears
+to be blank and therefore the Guestbook Addition was not
+added.  Please enter your comments below.
+EOTEXT
+      $comments_field =<<EOCOMMENT;
+      Comments:<br />
+      <textarea name="comments" cols="60" rows="4"></textarea>
+EOCOMMENT
+   }
+   else {
+      $title = 'Unknown Error';
+      $heading = 'Something appears to be wrong with your submission';
+      $text    = 'Please check your input and resubmit'; 
+      $comments_field =<<EOCOMMENT;
+      Comments:<br />
+      <textarea name="comments" cols="60" rows="4">$comments</textarea />
+      <input type="hidden" name="comments_encoded" value="1" />
+EOCOMMENT
+   }
+  
+  print header;
+  print <<END_FORM;
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
-    <title>No Comments</title>
+    <title>$title</title>
      <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body>
-    <h1>Your Comments appear to be blank</h1>
-    <p>The comment section in the guestbook fillout form appears
-      to be blank and therefore the Guestbook Addition was not
-      added.  Please enter your comments below.</p>
+    <h1>$heading</h1>
+    <p>
+      $text
+    </p>
     <form method="post" action="$cgiurl">
-      <p>Your Name:<input type="text" name="realname" size="30"
-                          value="$realname" /><br />
-        E-Mail: <input type=text name="username"
-                       value="$username" size="40" /><br />
-        City: <input type="text" name="city" value="$city" 
-                     size="15" />, 
-        State: <input type="text" name="state" 
-                      value="$state" size="15" /> 
-        Country: <input type="text" name="country" 
-                        value="$country" size="15" /></p>
-      <p>Comments:<br>
-        <textarea name="comments" cols="60" rows="4"></textarea></p>
-      <p><input type="submit" /> * <input type="reset" /></p>
-    </form>
-    <hr />
-    <p>Return to the <a href="$guestbookurl">Guestbook</a>.</p>
-  </body>
-</html>
-END_FORM
-
-  # Log The Error
-  if ($uselog) {
-    write_log('no_comments');
-  }
-
-  exit;
-}
-
-sub no_name {
-  print <<END_FORM;
-Content-type: text/html
-
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html>
-  <head>
-    <title>No Name</title>
-     <link rel="stylesheet" type="text/css" href="$style" />
-  </head>
-  <body>
-    <h1>Your Name appears to be blank</h1>
-    <p>The Name Section in the guestbook fillout form appears to
-      be blank and therefore your entry to the guestbook was not
-      added.  Please add your name in the blank below.</p>
-    <form method="post" action="$cgiurl">
-      <p>Your Name: <input type="text" name="realname" size="30" /><br />
+      <p>Your Name: <input type="text" name="realname" 
+                           value="$realname" size="30" /><br />
         E-Mail: <input type="text" name="username"
                        value="$username" size="40" /><br />
         City: <input type="text" name="city" value="$city" 
@@ -373,8 +354,9 @@ Content-type: text/html
                       value="$state" size="2" /> 
         Country: <input type="text" name="country" value="$country" 
                         size="15" /></p>
-      <p>Comments have been retained.
-        <input type="hidden" name="comments" value="$comments"></p>
+      <p>
+       $comments_field
+      </p>
       <p><input type="submit"> * <input type="reset"></p>
     </form>
     <hr />
@@ -385,9 +367,8 @@ Content-type: text/html
 END_FORM
 
   # Log The Error
-  if ($uselog) {
-    write_log('no_name');
-  }
+
+  write_log($why) if $uselog;
 
   exit;
 }
@@ -400,22 +381,21 @@ sub write_log {
   flock LOG, LOCK_EX
     or die "Can't lock log file: $!\n";
 
+  my $remote = remote_host();
   if ($log_type eq 'entry') {
-    print LOG "$ENV{REMOTE_HOST} - [$shortdate]<br>\n";
+    print LOG "$remote - [$shortdate]<br />\n";
   } elsif ($log_type eq 'no_name') {
-    print LOG "$ENV{REMOTE_HOST} - [$shortdate] - ERR: No Name<br>\n";
+    print LOG "$remote - [$shortdate] - ERR: No Name<br />\n";
   } elsif ($log_type eq 'no_comments') {
-    print LOG "$ENV{REMOTE_HOST} - [$shortdate] - ERR: No ";
-    print LOG "Comments<br>\n";
+    print LOG "$remote - [$shortdate] - ERR: No Comments<br />\n";
   }
 }
 
 # Redirection Option
 sub no_redirection {
 
+  print header();
   print <<END_HTML;
-Content-Type: text/html
-
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -474,5 +454,117 @@ END_HTML
 END_HTML
 
   exit;
+}
+
+sub do_mail
+{
+
+  my ( $to, $from,$reply , $subject, $body ) = @_;
+
+  open (MAIL, "|$mailprog") || die "Can't open $mailprog - $!\n";
+
+  print MAIL <<EOMAIL;
+To: $to
+Reply-to: $reply
+From: $from
+Subject: $subject
+
+$body
+------------------------------------------------------
+$comments
+$realname
+EOMAIL
+
+  if ($username){
+    print MAIL " <$username>";
+  }
+
+  print MAIL "\n";
+
+  print MAIL "$city'," if $city;
+
+  print MAIL " $state" if $state;
+
+  print MAIL " $country" if $country;
+
+  print MAIL " - $date\n";
+  print MAIL "------------------------------------------------------\n";
+
+  close (MAIL);
+}
+
+# subroutine to crudely strip html from a text string
+# ideally we would want to use HTML::Parser or somesuch.
+
+sub strip_html
+{
+   my ( $comments ) = @_;
+   $comments =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs;
+   return $comments;
+}
+
+use vars qw(%escape_html_map %unescape_html_map);
+
+BEGIN
+{
+   %escape_html_map = ( '&' => '&amp;',
+                        '<' => '&lt;',
+                        '>' => '&gt;',
+                        '"' => '&quot;',
+                        "'" => '&#39;',
+                      );
+
+   while ( my ( $key, $value ) = each %escape_html_map )
+   {
+      $unescape_html_map{$value} = $key;
+   }
+}
+
+# subroutine to escape the necessary characters to the appropriate HTML
+# entities
+
+sub escape_html {
+  my $str = shift;
+  my $chars = join '', keys %escape_html_map;
+  $str =~ s/([$chars])/$escape_html_map{$1}/g;
+  return $str;
+}
+
+sub unescape_html {
+  my $str = shift;
+  my $pattern = join '|', map { quotemeta($_) } keys(%unescape_html_map);
+  $str =~ s/($pattern)/$unescape_html_map{$1}/g;
+  return $str;
+}
+
+# basic check on e-mail address - this is very crude and is better achieved
+# by the use of one of the modules
+
+sub check_email {
+  my $email = $_[0];
+
+  # If the e-mail address contains:
+  if ($email =~ /(@.*@)|(\.\.)|(@\.)|(\.@)|(^\.)/ ||
+
+      # the e-mail address contains an invalid syntax.  Or, if the
+      # syntax does not match the following regular expression pattern
+      # it fails basic syntax verification.
+
+      $email !~ /^.+\@(\[?)[a-zA-Z0-9\-\.]+\.([a-zA-Z0-9]+)(\]?)$/) {
+
+    # Basic syntax requires:  one or more characters before the @ sign,
+    # followed by an optional '[', then any number of letters, numbers,
+    # dashes or periods (valid domain/IP characters) ending in a period
+    # and then 2 or 3 letters (for domain suffixes) or 1 to 3 numbers
+    # (for IP addresses).  An ending bracket is also allowed as it is
+    # valid syntax to have an email address like: user@[255.255.255.0]
+
+    # Return a false value, since the e-mail address did not pass valid
+    # syntax.
+    return 0;
+  } else {
+    # Return a true value, e-mail verification passed.
+    return 1;
+  }
 }
 
