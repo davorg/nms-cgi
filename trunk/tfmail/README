@@ -31,6 +31,7 @@ FILES
 In this distribution, you will find the following files:
 
 TFmail.pl      - The main Perl script
+GBview.pl      - A script that allows TFmail to function as a guestbook
 NMStreq.pm     - A Perl module that TFmail.pl needs
 NMStreqUTF8.pm - A Perl module that TFmail.pl needs if you use the 'utf-8'
                  character encoding.
@@ -40,6 +41,7 @@ MIME_Lite.pm   - A Perl module that TFmail.pl needs if you want to use
                  file uploads, unless MIME::Lite is installed on the
                  server
 default.trc    - The main configuration file
+gb.trc         - An example configuration file for a guestbook
 spage.trt      - The template file that controls the layout of the success
                  page
 missing.trt    - The template file that controls the layout of the page
@@ -148,7 +150,7 @@ HTMLFILE_EXT        - The file extension that the HTML files which TFmail
 
 CHARSET             - The character encoding to use for output documents and
                       e-mails.  All user input must be encoded with the same
-                      charset or the output may appear garbled.  The defualt
+                      charset or the output may appear garbled.  The default
                       of 'iso-8859-1' works for many Western languages.  If
                       you need characters that iso-8859-1 cannot represent
                       then you might want to consider setting CHARSET to
@@ -710,6 +712,38 @@ redirect: http://www.your.domain/thankyou.html
   <hr />
  </body>
 </html>
+
+
+ADVANCED GUESTBOOK
+
+The trouble with the guestbook scheme described above is that it writes
+the entries directly into the guestbook HTML file, so you can't change
+the style in which the entries are shown without going back and editing
+all the old entries by hand.
+
+There is an alternative scheme, using the script GBview.pl, which
+formats the guestbook when it is displayed.  GBview.pl also allows you
+to split a long guestbook into multiple pages.
+
+To use the GBview scheme, adapt the example GBview configuration file
+supplied as gb.trc to your requirements, and upload it.  You will also
+need to edit the configuration section of GBview.pl and upload it to
+the same place as TFmail.pl.  Give all the configuration constants in
+GBview.pl the same values that you used for TFmail.pl.
+
+You will need to have the HTMLFILE_ROOT configuration constant set in
+both TFmail and GBview.  Since the HTML file that TFmail rewrites isn't
+viewed directly by the user in this case, it's best to set HTMLFILE_ROOT
+to a location outside of the web server's document root.  See the
+section on CHOOSING SECURE LOCATIONS FOR FILES above.
+
+You will need an addguest.html file, such as the one shown in the
+example above.  You must change the value of the hidden "_config" input
+to "gb" in the HTML form.  You will also need to upload an empty
+gbdata.html file to the HTMLFILE_ROOT directory on the server.
+
+See http://cleaton.net/nms/agb.html for a working example of a guestbook
+of this type.
 
 
 SUPPORT
