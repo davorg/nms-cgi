@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.17 2002-08-04 20:09:04 nickjc Exp $
+# $Id: TFmail.pl,v 1.18 2002-08-06 22:05:11 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -62,7 +62,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.17 $, 10, -1;
+   $VERSION = substr q$Revision: 1.18 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -285,7 +285,7 @@ sub send_main_email
       $confto = $from;
       if ($realname_input)
       {
-         my $realname = $treq->param($realname_input, '');
+         my $realname = join ' ', map {$treq->param($_, '')} split /\s+/, $realname_input;
          $realname =~ tr#a-zA-Z0-9_\-\.\,\'\241-\377# #cs;
          $realname = substr $realname, 0, 100;
          $from = "$from ($realname)" unless $realname =~ /^\s*$/;

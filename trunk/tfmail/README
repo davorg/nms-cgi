@@ -465,7 +465,9 @@ realname_input              - The name of the CGI parameter that will
                               email address was found in the
                               email_input input.  Default: none, so
                               there will be no comment on the From
-                              address.
+                              address.  If you list several inputs here then
+                              their values will be concatenated to make up
+                              the comment.
 
 by_submitter_by             - The phrase added by the {= by_submitter =}
                               template directive when outputting the user's
