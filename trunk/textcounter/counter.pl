@@ -1,8 +1,13 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.9 2002-02-11 09:16:35 gellyfish Exp $
+# $Id: counter.pl,v 1.10 2002-02-26 08:59:28 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.9  2002/02/11 09:16:35  gellyfish
+# * provided method to turn off emission of headers
+# * Fixed the locking race
+# * Turned off uploads and POST
+#
 # Revision 1.8  2002/01/27 14:13:33  davorg
 # Removed Matt's docs.
 # Removed unnecessary reference to lock file.
@@ -36,7 +41,7 @@ use strict;
 use CGI qw(header);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(strftime);
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_header);
 
 # Older Fcntl don't have the SEEK_* constants :(
 
@@ -107,10 +112,12 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_header;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -208,8 +215,7 @@ sub check_uri {
       last;
     }
   }
-
-  die "Bad URI: $ENV{DOCUMENT_URI}" unless $uri_check;
+  die "Bad URI: $count_page" unless $uri_check;
 }
 
 sub create {

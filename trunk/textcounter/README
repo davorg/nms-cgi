@@ -39,7 +39,7 @@ $DEBUGGING    - This should be set to 1 whilst you are installing
                 be output to the browser. This is a security risk and
                 should not be used when the script is live.
 
-$datadir      - The directory where all of the data files associated with
+$data_dir     - The directory where all of the data files associated with
                 this program will be stored.
 
 @valid_uri

@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: icounter.pl,v 1.8 2002-02-14 10:46:50 gellyfish Exp $
+# $Id: icounter.pl,v 1.9 2002-02-26 08:59:28 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2002/02/14 10:46:50  gellyfish
+# * Realized that it didn't do anything
+#
 # Revision 1.7  2001/12/01 19:45:22  gellyfish
 # * Tested everything with 5.004.04
 # * Replaced the CGI::Carp with local variant
@@ -32,16 +35,22 @@ use strict;
 use CGI 'header';
 use Fcntl qw(:DEFAULT :flock);
 use POSIX 'strftime';
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING $done_header);
 
 # We don't need file uploads or POSTed data so switch them off
 # The strange locution is to stop a 'used once' warning.
+
+# Older Fcntl module doesn't have the SEEK_* constants
+
+sub SEEK_SET() { 0; }
+
+# The program does not require any upload or posted data
+# this is done in a strange way to shut up the warnings.
 
 $CGI::POST_MAX = $CGI::POST_MAX = 0;
 $CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
 
 # Configuration
-
 
 #
 # $DEBUGGING must be set in a BEGIN block in order to have it be set before
@@ -54,10 +63,14 @@ BEGIN
    $DEBUGGING = 1;
 }
    
-my $data_dir    = './data/';
-my @valid_uri   = ('/');
-my @invalid_uri = ();
-my $auto_create = 1;
+my $data_dir             = './data/';
+my $digit_url            = '/digits';
+my $digit_ext            = '.gif';
+my @valid_uri            = ('/');
+my @invalid_uri          = ();
+my $auto_create          = 1;
+my $ssi_emit_cgi_headers = 1;
+my @no_header_servers    = qw(Xitami);
 
 # End configuration
 
@@ -88,10 +101,12 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n";
+      print "Content-Type: text/html\n\n" unless $done_header;
 
       print <<EOERR;
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Error</title>
   </head>
@@ -112,23 +127,29 @@ EOERR
    $SIG{__DIE__} = \&fatalsToBrowser;
 }   
 
-print header;
-my $count_page = $ENV{DOCUMENT_URI};
-check_uri();
+# Some servers (notably Xitami) do not give $ENV{DOCUMENT_URI}
+
+my $count_page = $ENV{DOCUMENT_URI} || $ENV{SCRIPT_NAME};
+
+check_server_software();
+
+print header if $ssi_emit_cgi_headers;
+$done_header++;
+
+check_uri($count_page);
 
 $count_page =~ s|/$||;
 $count_page =~ s/[^\w]/_/g;
 
 
-my $count;
-if (-e "$data_dir$count_page") {
-   sysopen(COUNT, "$data_dir$count_page", O_RDWR)
+my $count = 0;
+if (-e "$data_dir/$count_page") {
+   sysopen(COUNT, "$data_dir/$count_page", O_RDWR)
      or die "Can't open count file: $!\n";
-   flock(COUNT, LOCK_SH)
+   flock(COUNT, LOCK_EX)
      or die "Can't lock count file: $!\n";
    my $line;
    chomp($line = <COUNT>);
-   close(COUNT);
    $count = $line;
 } elsif ($auto_create) {
    create();
@@ -138,31 +159,45 @@ if (-e "$data_dir$count_page") {
 
 $count++;
 
-#my $print_count = sprintf("%0${pad_size}d", $count);
-
-sysopen(COUNT, "$data_dir$count_page", O_RDWR)
-  or die "Could_not_open count file: $!";
-flock(COUNT, LOCK_EX)
-  or die "Could not lock count file: $!\n";
 truncate COUNT, 0;
-print COUNT "$count";
+seek COUNT,SEEK_SET,0;
+print COUNT $count;
 close(COUNT);
 
+
+my @digits = split //, $count;
+
+foreach my $digit (@digits )
+{
+  
+  if ($digit_ext !~ /^\./ )
+  {
+     $digit .= '.';
+  }
+
+  my $digit_src = "$digit_url/$digit$digit_ext";
+
+  print qq%<img src="$digit_src" alt="$digit" />%;
+}
+
 sub check_uri {
-  my $uri_check_flag = 0; # Guilty until proven innocent
+  my ( $count_page ) = @_;
+  my $uri_check;
   foreach (@valid_uri) {
-    if ($ENV{DOCUMENT_URI} =~ /\Q$_\E/) {
-      $uri_check_flag = 1;
+    if ($count_page =~ /\Q$_\E/) {
+      $uri_check = 1;
       last;
     }
   }
+
   foreach (@invalid_uri) {
-    if ($ENV{DOCUMENT_URI} =~ /\Q$_\E/) {
-      $uri_check_flag = 0;
+    if ($count_page =~ /\Q$_\E/) {
+      $uri_check = 0;
       last;
     }
   }
-  die "Bad URI: $ENV{DOCUMENT_URI}" unless $uri_check_flag;
+
+  die "Bad URI: $count_page" unless $uri_check;
 }
 
 sub create {
@@ -170,6 +205,15 @@ sub create {
     or die "Can't create count file: $!\n";
   flock(COUNT, LOCK_SH)
     or die "Can't lock count file: $!\n";
-  print COUNT "0";
-  close(COUNT);
 }
+
+sub check_server_software
+{
+     my $server_re = join '|', @no_header_servers;
+
+     if ( $ENV{SERVER_SOFTWARE} && $ENV{SERVER_SOFTWARE} =~ /($server_re)/ )
+     {
+        $ssi_emit_cgi_headers = 0;
+     }
+}
+
