@@ -181,6 +181,10 @@ $postmaster         - The envelope sender address to use for all emails
 
                       <input type="hidden" name="recipient" value="2" />
 
+                      The recipients in %recipient_alias are automatically added
+                      to the allowed recipients list, so there's no need to list
+                      them all in @allow_mail_to as well.
+
 @valid_ENV          - A list of all the environment variables that you want
                       to be able to include in the email. See 'env_report' below.
 
