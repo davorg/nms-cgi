@@ -16,10 +16,11 @@ my $t = NMSTest::ScriptUnderTest->new(
 
 my @tests = 
 (
-  [ 'alias 0', '0',              'zero@secret.domain'                      ],
-  [ 'alias 1', '1',              'one-a@secret.domain,one-b@secret.domain' ],
-  [ 'alias 2', '2',              'two@secret.domain'                       ],
-  [ 'direct',  'x@other.domain', 'x@other.domain'                          ],
+  [ 'alias 0',    '0',              'zero@secret.domain'                      ],
+  [ 'alias 1',    '1',              'one-a@secret.domain,one-b@secret.domain' ],
+  [ 'alias 2',    '2',              'two@secret.domain'                       ],
+  [ 'direct',     'x@other.domain', 'x@other.domain'                          ],
+  [ 'auto allow', 'x',              'x@secret-foo.domain'                     ],
 );
 
 foreach my $test (@tests)
@@ -68,7 +69,8 @@ sub rw_setup
       \%recipient_alias = (
          '0'=>'zero\@secret.domain',
          '1'=>'one-a\@secret.domain,one-b\@secret.domain',
-         '2'=>'two\@secret.domain'
+         '2'=>'two\@secret.domain',
+         'x'=>'x\@secret-foo.domain',
       );
     }x;
 }
