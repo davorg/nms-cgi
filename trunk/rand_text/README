@@ -15,7 +15,7 @@ script archive at  <http://nms-cgi.sourceforge.net/>.
 
 SUMMARY
 
-rand_text chooses a random image from a set of predefined images and
+rand_text chooses a random piece of text from a predefined set and
 displays it on a webpage. It is intended to be used as a Server Side
 Include program.
 
