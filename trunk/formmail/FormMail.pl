@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.82 2002-05-02 16:36:44 nickjc Exp $
+# $Id: FormMail.pl,v 1.83 2002-05-06 19:32:40 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.82 $
+# FormMail.pl $Revision: 1.83 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -66,7 +66,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.82 $, 10, -1;
+  $VERSION = substr q$Revision: 1.83 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -332,10 +332,8 @@ sub check_required {
     if (scalar @allow > 0 and not $emulate_matts_code) {
       $Config{recipient} = $allow[0];
       $hide_recipient = 1;
-    } elsif (%Form) {
-      error('no_recipient')
     } else {
-      error('bad_referer')
+      error('no_recipient')
     }
   }
 
@@ -462,7 +460,7 @@ sub send_mail {
 
   my $xheader = '';
   if ( $secure and defined (my $addr = remote_addr()) ) {
-    $addr =~ /^([\d\.]+)$/ or die "bad remote addr [$addr]";
+    $addr =~ /^\[?([\d\.]+)\]?$/ or die "bad remote addr [$addr]";
     $xheader = "X-HTTP-Client: [$1]\n"
              . "X-Generated-By: NMS FormMail.pl v$VERSION\n";
   }
@@ -877,7 +875,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.82 $
+FormMail $Revision: 1.83 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
