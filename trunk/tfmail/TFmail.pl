@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.13 2002-07-10 08:16:14 nickjc Exp $
+# $Id: TFmail.pl,v 1.14 2002-07-17 20:08:21 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -47,6 +47,7 @@ use constant MIME_LITE => USE_MIME_LITE || ENABLE_UPLOADS;
 
 use Fcntl ':flock';
 use lib LIBDIR;
+use vars qw($TREQ_PKG);
 BEGIN
 {
    if (MIME_LITE)
@@ -62,20 +63,26 @@ BEGIN
       require IO::File;
       import IO::File;
    }
-   if (CHARSET eq 'utf-8')
+
+   if (CHARSET eq 'utf-8' or CHARSET eq 'UTF-8')
    {
-      require NMStreqUTF8;
+      $TREQ_PKG = 'NMStreqUTF8';
+   }
+   elsif (CHARSET =~ /^iso-8859-/i)
+   {
+      $TREQ_PKG = 'NMStreq';
    }
    else
    {
-      require NMStreq;
+      $TREQ_PKG = 'NMStreqWeak';
    }
+   require "$TREQ_PKG.pm";
 }
 
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.13 $, 10, -1;
+  $VERSION = substr q$Revision: 1.14 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -103,7 +110,7 @@ sub main
 {
    local ($CGI::DISABLE_UPLOADS, $CGI::POST_MAX);
 
-   my $treq = (CHARSET eq 'utf-8' ? 'NMStreqUTF8' : 'NMStreq')->new(
+   my $treq = $TREQ_PKG->new(
       ConfigRoot    => CONFIG_ROOT,
       MaxDepth      => MAX_DEPTH,
       ConfigExt     => CONFIG_EXT,
@@ -125,18 +132,18 @@ sub main
 
    if ( check_required_fields($treq) )
    {
-       setup_input_fields($treq);
-       my $confto = send_main_email($treq, $recipients);
-       if ( HTMLFILE_ROOT ne '' )
-       {
-          insert_into_html_files($treq);
-       }
-       if ( LOGFILE_ROOT ne '' )
-       {
-          log_to_file($treq);
-       }
-       send_confirmation_email($treq, $confto);
-       return_html($treq);
+      setup_input_fields($treq);
+      my $confto = send_main_email($treq, $recipients);
+      if ( HTMLFILE_ROOT ne '' )
+      {
+         insert_into_html_files($treq);
+      }
+      if ( LOGFILE_ROOT ne '' )
+      {
+         log_to_file($treq);
+      }
+      send_confirmation_email($treq, $confto);
+      return_html($treq);
    }
    else
    {
