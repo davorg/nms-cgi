@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.46 2002-09-24 21:13:39 nickjc Exp $
+# $Id: wwwboard.pl,v 1.47 2002-09-25 08:19:22 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.46 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.47 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.46 $
+# wwwboard.pl $Revision: 1.47 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -564,25 +564,25 @@ sub main_page {
   my ($ft, $variables) = @_;
 
   if ($variables->{followup}) {
-    insert_followup($ft, $variables, "$basedir/$mesgfile");
+    insert_followup($ft, $variables, "$basedir/$mesgfile", "$mesgdir/");
   } else {
     $ft->linewise_rewrite("$basedir/$mesgfile", sub {
       if (/<!--begin-->/) {
-        $_ .= html_message_line($variables);
+        $_ .= html_message_line($variables, "$mesgdir/");
       }
     });
   }
 }
 
 sub insert_followup {
-  my ($ft, $v, $file) = @_;
+  my ($ft, $variables, $file, $url_prefix) = @_;
 
   my %is_followup_to = map {$_=>1} @{$variables->{followups}};
 
   $ft->linewise_rewrite($file, sub {
 
     if (/\Q<ul><!--insert: $E{$variables->{last_message}}-->/) {
-      $_ .= html_message_line($variables);
+      $_ .= html_message_line($variables, $url_prefix);
     } elsif (m#\(<!--responses: (\d+?)-->(\d+?)\)#) {
       my ($respto, $respcount) = ($1, $2);
       if (exists $is_followup_to{$respto}) {
@@ -596,7 +596,7 @@ sub insert_followup {
 }
   
 sub html_message_line {
-  my ($variables) = @_;
+  my ($variables, $url_prefix) = @_;
 
   my $id      = $variables->{id};
   my $subject = $variables->{subject};
@@ -604,7 +604,7 @@ sub html_message_line {
   my $date    = $variables->{date};
 
   return <<END_HTML;
-<!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
+<!--top: $E{$id}--><li><a href="$E{"$url_prefix$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
 (<!--responses: $E{$id}-->0)
 <ul><!--insert: $E{$id}-->
 </ul><!--end: $E{$id}--></li>
@@ -621,7 +621,7 @@ sub thread_pages {
   return unless $variables->{num_followups};
 
   foreach my $followup_num (@{$variables->{followups}}) {
-    insert_followup($ft, $variables, "$basedir/$mesgdir/$followup_num.$ext");
+    insert_followup($ft, $variables, "$basedir/$mesgdir/$followup_num.$ext", '');
   }
     
 }
