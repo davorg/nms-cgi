@@ -127,7 +127,8 @@ $style              - This is the URL of a CSS stylesheet which will be
                       used for script generated messages.  This probably
                       want's to be the same as the one that you use for all
                       the other pages.  This should be a local absolute URI
-                      fragment.
+                      fragment.  Set $style to '0' or the emtpy string if
+		      you don't want to use style sheets.
 
 $send_confirmation_mail - If this flag is set to 1 then an additional email
                           will be sent to the person who submitted the
@@ -220,7 +221,7 @@ recipient               - The email address to which the form submission
 subject                 - The subject line for the email. For example:
 
                           <input type="hidden" name="subject"
-                                value="Form the feedback form" />
+                                value="From the feedback form" />
 
 redirect                - If this value is present it should be a URL, and
                           the user will be redirected there after a
@@ -250,7 +251,7 @@ alink_color             - The alink color for the success page.
 title                   - The title for the success page.
 
 return_link_url         - The target URL for a link at the end of the
-                           success page. This is normally used to provide
+                          success page. This is normally used to provide
                           a link from the success page back to your main
                           page or back to the page with the form on. For
                           example:
