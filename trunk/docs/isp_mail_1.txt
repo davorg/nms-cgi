@@ -1,0 +1,20 @@
+Hi,
+
+I noticed from your page at:
+
+  [% url %]
+
+that you are recommending that your customers use Matt Wrights FormMail
+program on their websites.  This program is subject to a number of
+security advisory notices regarding it's vulnerability to being
+exploited by spammers to send mail anonymously.  You might want to see:
+
+     <http://www.securitytracker.com/alerts/2001/Mar/1001108.html>
+
+for instance.   Fortunately, we have made a drop in replacement for the
+offending program which is is available at:
+
+     <http://nms-cgi.sourceforge.net/>
+
+If you have any questions about the program please feel free to e-mail
+nms-cgi-support@lists.sourceforge.net .

@@ -1,0 +1,17 @@
+Hi,
+I noticed from your page at:
+
+  [% url %]
+
+That you have recognized the problem with Matt Wright's FormMail program
+and have taken steps to avoid it's abuse by spammers on your customers
+websites.  You might however be interested in the program we have made
+available at:
+
+   http://nms-cgi.sourceforge.net/
+
+We have designed this version of FormMail from the ground up to be
+secure against all of the vulnerabilities found in other similar
+programs.  If you have any questions about this please feel free to
+e-mail nms-cgi-support@lists.sourceforge.net .
+
