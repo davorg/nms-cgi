@@ -106,6 +106,7 @@ BEGIN {
      recipients             => [@recipients],
      recipient_alias        => {%recipient_alias},
      valid_ENV              => [@valid_ENV],
+     locale                 => $locale,
      charset                => $charset,
      date_fmt               => $date_fmt,
      style                  => $style,

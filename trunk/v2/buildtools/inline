@@ -1,4 +1,4 @@
-#!/usr/local/perl58/bin/perl -w
+#!/usr/bin/perl -w
 use strict;
 
 =head1 NAME

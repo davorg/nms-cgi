@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.10 $, 10, -1;
+$VERSION = substr q$Revision: 1.11 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -1260,6 +1260,9 @@ sub success_page {
 
   if ($self->{FormConfig}{'redirect'}) {
     print $self->cgi_object->redirect( $self->{FormConfig}{'redirect'} );
+  }
+  elsif ( $self->{CFG}{'no_content'}) {
+    print $self->cgi_object->header(Status => 204);
   }
   else {
     $self->output_cgi_html_header;

@@ -1,5 +1,6 @@
 #!/bin/sh
-exec perl -w -x $0 ${1+"$@"} # -*- mode: perl; perl-indent-level: 2; -*-
+exec perl -w -x $0 ${1+"$@"}
+# -*- mode: perl; perl-indent-level: 2; -*-
 #!perl -w
 
 ##############################################################
@@ -8,9 +9,9 @@ exec perl -w -x $0 ${1+"$@"} # -*- mode: perl; perl-indent-level: 2; -*-
 ###                                                        ###
 ##############################################################
 
-## $Revision: 1.3 $
-## $Date: 2003-04-13 09:36:45 $
-## $Author: nickjc $
+## $Revision: 1.4 $
+## $Date: 2004-06-30 08:40:47 $
+## $Author: gellyfish $
 ##
 ##   (C) 1999 Karl Fogel <kfogel@red-bean.com>, under the GNU GPL.
 ## 
@@ -78,7 +79,7 @@ use File::Basename;
 my $Log_Source_Command = "cvs log";
 
 # In case we have to print it out:
-my $VERSION = '$Revision: 1.3 $';
+my $VERSION = '$Revision: 1.4 $';
 $VERSION =~ s/\S+\s+(\S+)\s+\S+/$1/;
 
 ## Vars set by options:
@@ -121,6 +122,9 @@ my $After_Header = " ";
 
 # Format more for programs than for humans.
 my $XML_Output = 0;
+
+# Split message into separate <item> elements for $XML_Output
+my $Split_XML_Message = 0;
 
 # Do some special tweaks for log data that was written in FSF
 # ChangeLog style.
@@ -1225,6 +1229,22 @@ sub preprocess_msg_text ()
   if ($XML_Output)
   {
     $text = &xml_escape ($text);
+
+ if ( $Split_XML_Message ) {
+
+ my @items = $text =~ /\s*\*\s*([^*]+)\s*/sg;
+
+ if ( @items ) {
+ $text = '';
+ foreach my $item (@items ) {
+ $text .= "<item>$item</item>\n";
+ }
+ }
+ else {
+ $text = "<item>${text}</item>\n";
+ }
+ }
+
     $text = "<msg>${text}</msg>\n";
   }
   elsif (! $No_Wrap)
@@ -1600,6 +1620,9 @@ sub parse_options ()
     elsif ($arg =~ /^--xml$/) {
       $XML_Output = 1;
     }
+ elsif ( $arg =~ /^(-s|--split-message)$/ ) {
+ $Split_XML_Message = 1;
+ }
     elsif ($arg =~ /^--hide-filenames$/) {
       $Hide_Filenames = 1;
       $After_Header = "";
