@@ -55,7 +55,7 @@ $tarball_dir = $1;
 open CL, "<.pkg/ChangeLog" or die "open .pkg/ChangeLog: $!";
 my $line = <CL>;
 close CL;
-$line =~ /^((\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d)\s/ or
+$line =~ /^(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d)\s/ or
    die "bad changelog first line: [$line]";
 my $version = "$1-$2-$2-$4$5";
 
