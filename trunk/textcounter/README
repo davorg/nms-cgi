@@ -47,8 +47,8 @@ $datadir      - The directory where all of the data files associated with
                 server are allowed to use this program to monitor their hits.
 
                 The rule is that a URI can use this program if it matches one
-                of the expressions in @valid_url _unless_ it matches one of
-                the expressions in @invalid_url.
+                of the expressions in @valid_uri _unless_ it matches one of
+                the expressions in @invalid_uri.
 
 $showlink     - If this variable contains a URL then the text counter will
                 become a link to that URL.
