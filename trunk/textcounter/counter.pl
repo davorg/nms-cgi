@@ -1,14 +1,18 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.2 2001-11-11 17:55:27 davorg Exp $
+# $Id: counter.pl,v 1.3 2001-11-13 09:19:24 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/11/11 17:55:27  davorg
+# Small amount of post-import tidying :)
+#
 # Revision 1.1.1.1  2001/11/11 16:48:59  davorg
 # Initial import
 #
 
 use strict;
 use CGI 'header';
+use CGI qw(fatalsToBrowser);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX 'strftime';
 

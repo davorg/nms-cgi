@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: ssi_rand_image.pl,v 1.2 2001-11-11 17:55:27 davorg Exp $
+# $Id: ssi_rand_image.pl,v 1.3 2001-11-13 09:18:20 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/11/11 17:55:27  davorg
+# Small amount of post-import tidying :)
+#
 # Revision 1.1.1.1  2001/11/11 16:48:57  davorg
 # Initial import
 #
@@ -10,6 +13,7 @@
 use strict;
 use POSIX 'strftime';
 use CGI qw(header img a);
+use CGI::Carp qw(fatalsToBrowser);
 use Fcntl qw(:DEFAULT :flock);
 
 # Configuration

@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: countdown.pl,v 1.2 2001-11-11 17:55:27 davorg Exp $
+# $Id: countdown.pl,v 1.3 2001-11-13 09:14:41 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/11/11 17:55:27  davorg
+# Small amount of post-import tidying :)
+#
 # Revision 1.1.1.1  2001/11/11 16:48:45  davorg
 # Initial import
 #
@@ -11,6 +14,7 @@ use strict;
 use POSIX 'strftime';
 use Time::Local;
 use CGI qw(:standard);
+use CGI::Carp qw(fatalsToBrowser);
 
 # Configuration
 
@@ -27,10 +31,10 @@ $from_date[1]--;
 
 my @diffs = ('X', 12, 'X', 24, 60, 60);
 
-if ($ENV{QUERY_STRING}) {
-  $ENV{QUERY_STRING} =~ s/%2C/,/g;
-  $ENV{QUERY_STRING} =~ s/=//g;
-   @from_date = split(/,/, $ENV{QUERY_STRING});
+if (my $query = query_string()) {
+   $query =~ s/%2C/,/g;
+   $query =~ s/=//g;
+   @from_date = split(/,/, $query);
 }
 
 my @now = reverse((localtime)[0 .. 5]);
@@ -66,7 +70,7 @@ foreach (reverse 0 .. $#from_date) {
 
   if ($diff[$_] < 0) {
     if ($_ == 0) {
-      die "Argh!!";
+      die "Argh!! Time travel not implemented";
     } elsif ($_ == 2) {
       $diff[$_] += $days[$now[1]];
       $now[$_ - 1]++;

@@ -1,14 +1,18 @@
 #!/usr/bin/perl -wT
 #
-# $Id: rand_text.pl,v 1.2 2001-11-11 17:55:27 davorg Exp $
+# $Id: rand_text.pl,v 1.3 2001-11-13 09:17:37 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.2  2001/11/11 17:55:27  davorg
+# Small amount of post-import tidying :)
+#
 # Revision 1.1.1.1  2001/11/11 16:48:57  davorg
 # Initial import
 #
 
 use strict;
 use CGI qw(header);
+use CGI qw(fatalsToBrowser);
 
 # Configuration
 
