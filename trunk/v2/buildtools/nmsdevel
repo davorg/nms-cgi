@@ -1,0 +1,69 @@
+#!/usr/bin/perl -w
+use strict;
+
+use constant BASE => "$ENV{NMS_WORKING_COPY}/v2";
+
+use lib BASE . '/lib';
+use NMSDevel::SourceFileSet::Script;
+use NMSDevel::SourceFileSet::Package;
+
+my ($action, $script) = @ARGV;
+
+my $sset = NMSDevel::SourceFileSet::Script->new(BASE, $script);
+defined $sset or die "no script [$script]";
+
+my @pkg;
+foreach my $package ( map "${script}_$_", qw(compat modules autoinst) ) {
+    my $pset = NMSDevel::SourceFileSet::Package->new(BASE, $package, $sset);
+    $pset and push @pkg, $pset;
+}
+
+
+if ($action eq 'test') {
+    test();
+}
+elsif ($action eq 'upload') {
+    release();
+    tarballs();
+    test();
+    upload();
+}    
+else {
+    die "usage: nmsdevel <test|upload>\n";
+}
+
+
+sub release {
+    $sset->release;
+    foreach my $pkg (@pkg) {
+        $pkg->release;
+	$pkg->write_changelog;
+    }
+}
+
+sub tarballs {
+    foreach my $pkg (@pkg) {
+        $pkg->generate_tarballs;
+    }
+}
+
+sub test {
+    $ENV{NMSTEST_USE_LIB} = "$ENV{NMS_WORKING_COPY}/v2/lib";
+    system(BASE . "/buildtools/run_tests", $script);
+}
+
+sub upload {
+
+    $ENV{NMS_SOURCEFORGE_USERNAME} =~ m|^([\w\-]+)$| or die;
+    my $username = $1;
+
+    my @upload = ();
+    foreach my $pkg (@pkg) {
+        push @upload, $pkg->archive_path . ".tar.gz";
+        push @upload, $pkg->archive_path . ".zip";
+    }
+
+    system('scp', @upload,  "$username\@shell.sourceforge.net:/home/groups/n/nm/nms-cgi/htdocs/v2")
+        and die;
+}
+

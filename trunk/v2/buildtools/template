@@ -1,9 +1,0 @@
-#!/usr/bin/perl -w
-use strict;
-
-use Template;
-
-my $t = Template->new({ RELATIVE => 1 });
-
-$t->process(shift, {}) or die $t->error;
-

@@ -8,9 +8,9 @@ exec perl -w -x $0 ${1+"$@"} # -*- mode: perl; perl-indent-level: 2; -*-
 ###                                                        ###
 ##############################################################
 
-## $Revision: 2.38 $
-## $Date: 2001/02/12 19:54:35 $
-## $Author: kfogel $
+## $Revision: 1.3 $
+## $Date: 2003-04-13 09:36:45 $
+## $Author: nickjc $
 ##
 ##   (C) 1999 Karl Fogel <kfogel@red-bean.com>, under the GNU GPL.
 ## 
@@ -31,11 +31,6 @@ exec perl -w -x $0 ${1+"$@"} # -*- mode: perl; perl-indent-level: 2; -*-
 ## Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ## Boston, MA 02111-1307, USA.
 
-# cvs2cl_cat
-#
-# Modified to use 'cat' instead of 'cvs log' for NMS CVS log cache
-# scheme and imported into NMS CVS tree with -ko, nickjc 21 Jan 2003
-#
 
 
 use strict;
@@ -80,10 +75,10 @@ use File::Basename;
 
 
 # What we run to generate it:
-my $Log_Source_Command = "cat";
+my $Log_Source_Command = "cvs log";
 
 # In case we have to print it out:
-my $VERSION = '$Revision: 2.38 $';
+my $VERSION = '$Revision: 1.3 $';
 $VERSION =~ s/\S+\s+(\S+)\s+\S+/$1/;
 
 ## Vars set by options:
