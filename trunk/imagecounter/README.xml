@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="imagecounter" full_name="Image Counter">
+  <summary>
+    <paragraph>
+Image Counter allows you to have a counter on your web site using graphical
+images as the digits.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>README</filename>
+       <filedesc>This file</filedesc>
+     </file>
+     <file>
+       <filename>icounter.pl</filename>
+       <filedesc>The main program file</filedesc>
+     </file>
+     <file>
+       <filename>digits/*.gif</filename>
+       <filedesc>The sample image files in GIF format</filedesc>
+     </file>
+     <file>
+       <filename>digits/*.png</filename>
+       <filedesc>The sample image files in PNG format</filedesc>
+     </file>
+     <file>
+       <filename>MANIFEST</filename>
+       <filedesc>A list of all the files</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    <paragraph>
+There are a number of variables that you may want to change in icounter.pl
+which alter the way the program works.
+</paragraph>
+    </introduction>
+    <variables>
+   <variable>
+      <var_name>$DEBUGGING</var_name>
+      <description>
+         <paragraph>
+            This should be set 1 whist you are installing and 
+                testing your Image Counter as iit controls whether error
+                messages the program might generate are sent to the
+                client browser.  After you have finished testing and
+                everything is fine then you should set it to 0.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$data_dir</var_name>
+      <description>
+         <paragraph>
+            This is the path to the directory where the counter files
+                will be stored.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$digit_url</var_name>
+      <description>
+         <paragraph>
+            This should be the beginning of the URL for the location
+                where your digit images are.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$digit_ext</var_name>
+      <description>
+         <paragraph>
+            The file extension of the digit files - the default '.gif'
+                is correct for supplied sample digits but if you create
+                your own digits with a different extension (e.g. '.png')
+                then you will have to change this as appropriate.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>@invalid_uri</var_name>
+      <description>
+         <paragraph>
+            Together these two variables control which URIs on your
+                server are allowed to use this program to monitor their hits.
+
+                The rule is that a URI can use this program if it matches one
+                of the expressions in
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$auto_create</var_name>
+      <description>
+         <paragraph>
+            If this variable is true (i.e. 1) then any counters that are
+                not found will be automatically created. If it is false (i.e.
+                0) any counters that are not found will trigger an error.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$ssi_emit_cgi_headers</var_name>
+      <description>
+         <paragraph>
+            This should normally be set to 1.  You may need to
+                        change this to 0 if you are seeing stuff output
+                        that you didn't expect as described below.
+         </paragraph>
+      </description>
+   </variable>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+Image Counter is installed simply by copying the file icounter.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator.
+</paragraph>
+<paragraph>
+You may need to rename icounter.pl to icounter.cgi. Again, your system
+administrator will know if this is the case.
+</paragraph>
+<paragraph>
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x icounter.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+</paragraph>
+<paragraph>
+Then, edit your HTML files and wherever you want to display the counter,
+insert the following:
+</paragraph>
+<paragraph>
+     <!--#exec cgi="/cgi-bin/icounter.pl"-->
+</paragraph>
+<paragraph>
+Note: As this is a "Server Side Include" you will need to ensure that
+your web server has been configured to support SSI. Also, it's possible
+that you may need to rename any files that include SSI calls to give them
+a different extension. A common choice is .shtml. An alternative with
+some web server software is that the files need to be made executable
+in order for the SSI to be recognised.  Your system administrator will
+be able to help you with these details.
+</paragraph>
+<paragraph>
+Some server software does not expect a program run by a server side include
+to output any headers even though it is being run with 'exec cgi' as
+above.  In these cases you are likely to see something like:
+</paragraph>
+<paragraph>
+    Content-Type: text/html
+</paragraph>
+<paragraph>
+above your counter.  You can stop the output of this header by changing the
+configuration variable $ssi_emit_cgi_headers to 0.  Some servers that
+behave like this have already been identified by the NMS developers and
+the program will adjust its own behaviour in those cases, however if you
+know of one we have  not identified please e-mail the support list below
+with the details.
+</paragraph>
+<paragraph>
+Finally you will need to upload the appropriate image files to a directory on
+your web server.  You can use the supplied images or you can make some
+yourself with your favourite graphics software.  There are two sets of digits
+provided, in GIF and PNG formats, but the images are otherwise the same and 
+you only need to upload those files of the format that you choose and
+change the configuration variable $digit_ext as appropriate.  The reason
+for providing two sets of images is that some people prefer not to use GIF
+images due to a patent on the compression method that is used, once the
+NMS developers are happy that the PNG images work on the majority of browsers
+then the .gif files will probably be removed. 
+</paragraph>
+<paragraph>
+The image files need only to be readable by the webserver so it is quite
+safe to change their mode to 0644. 
+</paragraph>
+  </installation>
+</nms_program>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="tests" full_name="">
+  <summary>
+    
+  </summary>
+  <files>
+    
+  </files>
+  <configuration>
+    <introduction>
+    
+    </introduction>
+    <variables>
+
+    </variables>
+  </configuration>
+  <installation>
+      
+  </installation>
+</nms_program>

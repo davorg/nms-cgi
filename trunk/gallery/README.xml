@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="gallery" full_name="Image Gallery">
+  <summary>
+    <paragraph>
+Image Gallery is a program that allows you to display a small series of
+images as a series of individual pages with navigation links between them.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>gallery.pl</filename>
+       <filedesc>The main perl script.</filedesc>
+     </file>
+     <file>
+       <filename>README</filename>
+       <filedesc>This file. Instructions on how to install and use ffa.</filedesc>
+     </file>
+     <file>
+       <filename>gallery.css</filename>
+       <filedesc>An example cascading stylesheet (CSS) file</filedesc>
+     </file>
+     <file>
+       <filename>MANIFEST</filename>
+       <filedesc>List of files</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    
+    </introduction>
+    <variables>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+gallery.pl is installed simply by copying the file gallery.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator
+</paragraph>
+<paragraph>
+You may need to rename gallery.pl to gallery.cgi. Again, your system
+administrator will know if this is the case.
+</paragraph>
+<paragraph>
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x gallery.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+</paragraph>
+<paragraph>
+
+
+</paragraph>
+  </installation>
+</nms_program>

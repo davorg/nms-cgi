@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="countdown" full_name="Countdown">
+  <summary>
+    <paragraph>
+Countdown is a script which allows you to display the amount of time left
+to a given date and time.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>countdown.pl</filename>
+       <filedesc>The main Perl script</filedesc>
+     </file>
+     <file>
+       <filename>README</filename>
+       <filedesc>This file. Instructions on how to install and use countdown</filedesc>
+     </file>
+     <file>
+       <filename>countdown.html</filename>
+       <filedesc>A sample HTML document demonstrating how to use countdown</filedesc>
+     </file>
+     <file>
+       <filename>MANIFEST</filename>
+       <filedesc>List of files</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    <paragraph>
+There are a number of variables that you can change in countdown.pl which
+alter the way that the program works.
+</paragraph>
+    </introduction>
+    <variables>
+   <variable>
+      <var_name>@from_date</var_name>
+      <description>
+         <paragraph>
+            This defines the date that you are counting down to.
+                      It should be a list of six items, representing the
+                      year, month, date, hour, minute and second of the
+                      target date. For example, if you're counting down
+                      to 7th September 2002, the value would be
+                      (2002,9,7,0,0,0).
+                      If you put the value 'XX' in any of the fields then
+                      that field will not be included in the output.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$delimiter</var_name>
+      <description>
+         <paragraph>
+            The value that you want to put between the different
+                      parts of the output. The default is an HTML <br />
+                      tag whihc puts the parts on different lines.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$date_fmt</var_name>
+      <description>
+         <paragraph>
+            The format that the date will be displayed in. This
+                      is a string that contains a number of different 'tags'.
+                      Each tag consists of a
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%Y</var_name>
+      <description>
+         <paragraph>
+            four digit year (2002)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%y</var_name>
+      <description>
+         <paragraph>
+            two digit year (02)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%m</var_name>
+      <description>
+         <paragraph>
+            month of the year (01 to 12)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%b</var_name>
+      <description>
+         <paragraph>
+            short month name (Jan to Dec)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%B</var_name>
+      <description>
+         <paragraph>
+            long month name (January to December)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%d</var_name>
+      <description>
+         <paragraph>
+            day of the month (01 to 31)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%a</var_name>
+      <description>
+         <paragraph>
+            short day name (Sun to Sat)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%A</var_name>
+      <description>
+         <paragraph>
+            long day name (Sunday to Saturday)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%H</var_name>
+      <description>
+         <paragraph>
+            hour in 24 hour clock (00 to 23)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%I</var_name>
+      <description>
+         <paragraph>
+            hour in 12 hour clock (01 to 12)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%p</var_name>
+      <description>
+         <paragraph>
+            AM or PM
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%M</var_name>
+      <description>
+         <paragraph>
+            minutes (00 to 59)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%S</var_name>
+      <description>
+         <paragraph>
+            seconds (00 to 59)
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$DEBUGGING</var_name>
+      <description>
+         <paragraph>
+            This should be set to 1 whilst you are installing 
+                      and testing the script. Once the script is live you
+                      should change it to 0. When set to 1, errors will
+                      be output to the browser. This is a security risk and
+                      should not be used when the script is live.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$emulate_matts_code</var_name>
+      <description>
+         <paragraph>
+            When this variable is set to a true value (e.g. 1)
+                      countdown will work in exactly the same way as its
+                      counterpart at Matt's Script Archive. If it is set
+                      to a false value (e.g. 0) then more advanced features
+                      are switched on.
+         </paragraph>
+      </description>
+   </variable>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+Countdown is installed simply by copying the file countdown.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator.
+</paragraph>
+<paragraph>
+You may need to rename countdown.pl to countdown.cgi. Again, your system
+administrator will know if this is the case.
+</paragraph>
+<paragraph>
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x countdown.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+</paragraph>
+<paragraph>
+Countdown can work in two modes. You can either set it to always return
+a countdown from the same date or you can use a different date each time
+the script is called. To use the same date, simply set the @from_date
+variable in the script (as described above). To use a different date each
+time you need to pass a variable into the script as described below.
+</paragraph>
+<paragraph>
+If you've set the @from_date in the script, then you can simply link to
+the script like this:
+</paragraph>
+<paragraph>
+     <a href="http://your.domain/cgi-bin/countdown.pl">
+         Countdown to my birthday
+     </a>
+</paragraph>
+<paragraph>
+If you pass in a value then this will override whatever is in @from_date
+</paragraph>
+<paragraph>
+     <a href="http://your.domain/cgi-bin/countdown.pl?2002,9,7,0,0,0">
+         Countdown to my birthday
+     </a>
+</paragraph>
+<paragraph>
+You can even prompt the user to input their own date with an HTML form:
+</paragraph>
+<paragraph>
+    <form action="http://your.domain/cgi-bin/countdown.pl">
+      <input type="text" name="date"/><br />
+      Enter your date in the format yyyy,mm,dd,hh,mm,ss<br />
+      <input type="submit" />
+    </form>
+</paragraph>
+  </installation>
+</nms_program>

@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="ssi_rand_image" full_name="SSI Random Image">
+  <summary>
+    <paragraph>
+ssi_rand_image chooses a random image from a set of predefined images and
+displays it on a webpage. It is intended to be used as a Server Side
+Include program.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>ssi_rand_image.pl</filename>
+       <filedesc>The main perl script.</filedesc>
+     </file>
+     <file>
+       <filename>README</filename>
+       <filedesc>This file. Instructions on how to install and use </filedesc>
+     </file>
+     <file>
+       <filename>ssi_rand_image.</filename>
+       <filedesc></filedesc>
+     </file>
+     <file>
+       <filename>MANIFESTO</filename>
+       <filedesc>List of files</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    <paragraph>
+There are a number of variables that you can change in rand_image.pl which
+alter the way that the program works.
+</paragraph>
+    </introduction>
+    <variables>
+   <variable>
+      <var_name>$DEBUGGING</var_name>
+      <description>
+         <paragraph>
+            This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>@images</var_name>
+      <description>
+         <paragraph>
+            The list of images that the random image is chosen from.
+                Each image has three parts to its definition:
+
+                file - the URL of the image file
+                alt  - some brief text to describe the image
+                url  - An optional link URL (see
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$uselog</var_name>
+      <description>
+         <paragraph>
+            Set this value to 1 to log which image is returned each time
+                the program runs.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$logfile</var_name>
+      <description>
+         <paragraph>
+            The path to the logfile, only needed if
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$date_fmt</var_name>
+      <description>
+         <paragraph>
+            The format that the date will be logged in. The default
+                format (
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$link_image</var_name>
+      <description>
+         <paragraph>
+            If this value is true (i.e. 1) and the chosen image has
+                a 'url' component, then the image will be displayed as a
+                link to the given URL.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$align</var_name>
+      <description>
+         <paragraph>
+            The alignment to use when displaying the image.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$border</var_name>
+      <description>
+         <paragraph>
+            The border width (in pixels) to use when displaying the
+                image.
+         </paragraph>
+      </description>
+   </variable>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+ssi_rand_image is installed simply by copying the file ssi_rand_image.pl.pl 
+into your cgi-bin directory. If you don't know where your cgi-bin directory 
+is, then please ask your system administrator
+</paragraph>
+<paragraph>
+You may need to rename ssi_rand_image.pl to ssi_rand_image.cgi. Again, your
+system administrator will know if this is the case.
+</paragraph>
+<paragraph>
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x ssi_rand_image.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+</paragraph>
+<paragraph>
+Then, edit your HTML files and change all the images that you want to
+be randomized to:
+</paragraph>
+<paragraph>
+<!--#exec cgi="http://your.host.com/cgi-bin/ssi_rand_image.pl"-->
+</paragraph>
+<paragraph>
+This is just an example, so be sure to insert the correct URL of your
+ssi_rand_image.pl installation.
+</paragraph>
+<paragraph>
+Note: As this is a "Server Side Include" you will need to ensure that your
+web server has been configured to support SSI. Also, it's possible that you
+may need to rename any files that include SSI calls to give them a different
+extension. A common choice is .shtml. Your system administrator will be able
+to help you with these details.
+</paragraph>
+  </installation>
+</nms_program>

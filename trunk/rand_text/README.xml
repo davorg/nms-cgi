@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="rand_text" full_name="Random Text">
+  <summary>
+    <paragraph>
+rand_text chooses a random piece of text from a predefined set and
+displays it on a webpage. It is intended to be used as a Server Side
+Include program.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>rand_text.pl</filename>
+       <filedesc>The main perl script.</filedesc>
+     </file>
+     <file>
+       <filename>random.txt</filename>
+       <filedesc>A sample text database</filedesc>
+     </file>
+     <file>
+       <filename>README</filename>
+       <filedesc>This file. Instructions on how to install and use </filedesc>
+     </file>
+     <file>
+       <filename>rand_text.</filename>
+       <filedesc></filedesc>
+     </file>
+     <file>
+       <filename>MANIFEST</filename>
+       <filedesc>List of files</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    <paragraph>
+There are a number of variables that you can change in rand_image.pl which
+alter the way that the program works.
+</paragraph>
+    </introduction>
+    <variables>
+   <variable>
+      <var_name>$DEBUGGING</var_name>
+      <description>
+         <paragraph>
+            This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$random_file</var_name>
+      <description>
+         <paragraph>
+            The path to the file containing the text to choose from. The
+                file random.txt in this distribution is an example.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$delimiter</var_name>
+      <description>
+         <paragraph>
+            The character sequence that separates different pieces of text
+                in your text file. The default value ("\n
+         </paragraph>
+      </description>
+   </variable>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+rand_text is installed simply by copying the file rand_text.pl 
+into your cgi-bin directory. If you don't know where your cgi-bin directory 
+is, then please ask your system administrator
+</paragraph>
+<paragraph>
+You may need to rename rand_text.pl to rand_text.cgi. Again, your
+system administrator will know if this is the case.
+</paragraph>
+<paragraph>
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x rand_text.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+</paragraph>
+<paragraph>
+Then, edit your HTML files and wherever you want random text to appear put
+the following code:
+</paragraph>
+<paragraph>
+<!--#exec cgi="http://your.host.com/cgi-bin/rand_text.pl"-->
+</paragraph>
+<paragraph>
+This is just an example, so be sure to insert the correct URL of your
+rand_text.pl installation.
+</paragraph>
+<paragraph>
+Note: As this is a "Server Side Include" you will need to ensure that your
+web server has been configured to support SSI. Also, it's possible that you
+may need to rename any files that include SSI calls to give them a different
+extension. A common choice is .shtml. Your system administrator will be able
+to help you with these details.
+</paragraph>
+  </installation>
+</nms_program>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="rand_image" full_name="">
+  <summary>
+    <paragraph>
+rand_image chooses a random image from a set of predefined images and
+displays it on a webpage.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>rand_image.pl</filename>
+       <filedesc>The main perl script.</filedesc>
+     </file>
+     <file>
+       <filename>README</filename>
+       <filedesc>This file. Instructions on how to install and use rand_image.</filedesc>
+     </file>
+     <file>
+       <filename>MANIFESTO</filename>
+       <filedesc>List of files</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    <paragraph>
+There are a number of variables that you can change in rand_image.pl which
+alter the way that the program works.
+</paragraph>
+    </introduction>
+    <variables>
+   <variable>
+      <var_name>$DEBUGGING</var_name>
+      <description>
+         <paragraph>
+            This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$basedir</var_name>
+      <description>
+         <paragraph>
+            The URL of the directory where your images are located. For
+                example:
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>@files</var_name>
+      <description>
+         <paragraph>
+            The lsit of image files that the random image is chosen from.
+                These filenames will be appended to the
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$uselog</var_name>
+      <description>
+         <paragraph>
+            Set this value to 1 to log which image is returned each time
+                the program runs.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$logfile</var_name>
+      <description>
+         <paragraph>
+            The path to the logfile, only needed if
+         </paragraph>
+      </description>
+   </variable>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+rand_image is installed simply by copying the file rand_image.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator
+</paragraph>
+<paragraph>
+You may need to rename rand_image.pl to rand_image.cgi. Again, your system
+administrator will know if this is the case.
+</paragraph>
+<paragraph>
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x rand_image.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+</paragraph>
+<paragraph>
+Then, edit your HTML files and change all the images that you want to
+be randomized to:
+</paragraph>
+<paragraph>
+<img src="http://your.host.com/cgi-bin/rand_image.pl" />
+</paragraph>
+<paragraph>
+This is just an example, so be sure to insert the correct URL of your
+rand_image.pl installation.
+</paragraph>
+<paragraph>
+
+
+</paragraph>
+  </installation>
+</nms_program>

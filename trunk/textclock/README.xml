@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="textclock" full_name="Text Clock">
+  <summary>
+    <paragraph>
+textclock displays the current time on a web page. It is intended to be used
+as a Server Side Include program.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>textclock.pl</filename>
+       <filedesc>The main perl script.</filedesc>
+     </file>
+     <file>
+       <filename>README</filename>
+       <filedesc>This file. Instructions on how to install and use textclock.</filedesc>
+     </file>
+     <file>
+       <filename>MANIFESTO</filename>
+       <filedesc>List of files</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    <paragraph>
+There are a number of variables that you can change in textclock.pl which
+alter the way that the program works.
+</paragraph>
+    </introduction>
+    <variables>
+   <variable>
+      <var_name>$DEBUGGING</var_name>
+      <description>
+         <paragraph>
+            This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$Display_Time_Zone</var_name>
+      <description>
+         <paragraph>
+            Each of these variables controls the display of the relevant
+                part of the date or time. If the variable is set to 1, then
+                that part of the date/time is displayed. If it is set to 0
+                then that part of the date/time is omitted.
+         </paragraph>
+      </description>
+   </variable>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+textclock is installed simply by copying the file textclock.pl.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator
+</paragraph>
+<paragraph>
+You may need to rename textclock.pl to textclock.cgi. Again, your system
+administrator will know if this is the case.
+</paragraph>
+<paragraph>
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x textclock.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+</paragraph>
+<paragraph>
+Then, edit your HTML files and wherever you want to display the time, insert
+the following:
+</paragraph>
+<paragraph>
+     <!--#exec cgi="/cgi-bin/textclock.pl"-->
+</paragraph>
+<paragraph>
+Note: As this is a "Server Side Include" you will need to ensure that your
+web server has been configured to support SSI. Also, it's possible that you
+may need to rename any files that include SSI calls to give them a different
+extension. A common choice is .shtml. Your system administrator will be able
+to help you with these details.
+</paragraph>
+<paragraph>
+
+
+</paragraph>
+  </installation>
+</nms_program>

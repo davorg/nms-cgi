@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="search" full_name="Simple Search">
+  <summary>
+    <paragraph>
+Simple Search is a simple search engine that performs a quick search of
+a website and displays links to files containing the text search for.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>search.pl</filename>
+       <filedesc>The Simple Search Perl script.</filedesc>
+     </file>
+     <file>
+       <filename>README</filename>
+       <filedesc>This file.  Instructions on how to configure and install</filedesc>
+     </file>
+     <file>
+       <filename>Simple Search.</filename>
+       <filedesc></filedesc>
+     </file>
+     <file>
+       <filename>search.html</filename>
+       <filedesc>A sample HTML file demonstrating how to use Simple Search.</filedesc>
+     </file>
+     <file>
+       <filename>MANIFEST</filename>
+       <filedesc>List of files included with the Simple Search distribution.</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    <paragraph>
+There are a number of variables that you can change in search.pl which
+alter the way that the program works.  $basedir and $baseurl are the two
+most important variables, and must be altered to refer to your website.
+</paragraph>
+    </introduction>
+    <variables>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+Simple Search is installed simply by copying the file search.pl into
+your cgi-bin directory.  If you don't know the location of your cgi-bin
+directory, then please ask your system administrator.
+</paragraph>
+<paragraph>
+Depending on how the HTTP server is configured, you may need to rename
+search.pl to search.cgi.  Again, your system administrator will know if
+this is the case.
+</paragraph>
+<paragraph>
+You will probably need to turn on execute permissions to the file
+search.pl.  If you have shell access to the HTTP server, you can do this
+by running the command `chmod +x search.pl` from the command line.
+If you don't have command line access then there will probably be an
+equivalent function (to change file mode) in your file transfer program.
+</paragraph>
+<paragraph>
+Simple Search will scan and search all directories and subdirectories
+from a start point (defined by $basedir).  There are 4 different
+parameters that can be passed to it:  case, bool, and terms.
+</paragraph>
+<paragraph>
+    case
+</paragraph>
+<paragraph>
+        This parameter defines whether a search will be case-sensitive or
+        case-insensitive.  The default is case-insensitive.
+</paragraph>
+<paragraph>
+    bool
+</paragraph>
+<paragraph>
+        If there is more then one term in the search query, this parameter
+        defines whether the terms AND'ed or OR'ed.  The default is OR.
+</paragraph>
+<paragraph>
+    terms
+</paragraph>
+<paragraph>
+        This parameter contains the terms that will be searched.
+</paragraph>
+<paragraph>
+    directory
+</paragraph>
+<paragraph>
+        This optional parameter will only be used if $emulate_matts_code
+        is set to 0.  It is the zero based index into the configuration
+        variable @subdirs which allows you to specify an alternate
+        starting subdirectory for your search: this might be useful if
+        you have the content on your site arranged in categories by
+        directory.  You will probably want to use a drop-down list so
+        that users of Simple Search don't need to know the numbers.
+</paragraph>
+<paragraph>
+See the search.html file bundled with the Simple Search distriubtion for
+an example of how to fully construct a form to use with simple search.
+As an example, a small form can be embedded into a page using a construct
+similar to the following:
+</paragraph>
+<paragraph>
+    <form method="post" action="/cgi-bin/search.pl">
+        <input type="text" name="terms" size="40" />
+        <input type="submit" />
+    </form>
+</paragraph>
+  </installation>
+</nms_program>

@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="ffa" full_name="Free For All Links">
+  <summary>
+    <paragraph>
+Free For All Links is a program to maintain a simple database of web links.
+Any visitor to the web page can add links to the database.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>ffa.pl</filename>
+       <filedesc>The main perl script.</filedesc>
+     </file>
+     <file>
+       <filename>README</filename>
+       <filedesc>This file. Instructions on how to install and use ffa.</filedesc>
+     </file>
+     <file>
+       <filename>database.txt</filename>
+       <filedesc>A sample database file.</filedesc>
+     </file>
+     <file>
+       <filename>links.html</filename>
+       <filedesc>A sample HTML file.</filedesc>
+     </file>
+     <file>
+       <filename>MANIFEST</filename>
+       <filedesc>List of files.</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    <paragraph>
+In order for this program to work properly on your webserver it will require
+a small amount of configuration before you upload it.
+</paragraph>
+<paragraph>
+All of the configuration is done by editing the program file directly, you
+can do this in your favourite text editor or notepad if you are on Windows.
+You probably don't want to use a wordprocessor to do this unless you are
+certain you can save the file as plain text.
+</paragraph>
+<paragraph>
+Firstly you will need to change the first line of the program:
+</paragraph>
+<paragraph>
+   #!/usr/bin/perl -wT
+</paragraph>
+<paragraph>
+so that it points at the proper location of perl on your webserver - your
+system administrator or webhosting provider should be able to tell you this.
+You only need to change the '/usr/bin/perl' part - all of the rest of the
+line must be left exactly as it is.
+</paragraph>
+<paragraph>
+There are a number of variables that you can change in ffa.pl which
+alter the way that the program works.
+</paragraph>
+    </introduction>
+    <variables>
+   <variable>
+      <var_name>$DEBUGGING</var_name>
+      <description>
+         <paragraph>
+            This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$directory</var_name>
+      <description>
+         <paragraph>
+            The directory path where all of the ffa files are stored.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$linkstitle</var_name>
+      <description>
+         <paragraph>
+            A title. This will be used on some of the generated pages.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$filename</var_name>
+      <description>
+         <paragraph>
+            The filename of the HTML file that will display the links.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$linksurl</var_name>
+      <description>
+         <paragraph>
+            The public URL to the HTML page that will display the links.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$usedatabase</var_name>
+      <description>
+         <paragraph>
+            If this is true (i.e. set to 1) we store the links in a 
+                database text file as well as in the HTML page. If this is
+                false (i.e. set to 0) we store the links only in the HTML
+                page.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$database</var_name>
+      <description>
+         <paragraph>
+            The filename of the database where the links are stored.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$sendmail</var_name>
+      <description>
+         <paragraph>
+            Set to true (i.e. 1) if you want to be notified of new 
+                additions to the list of links.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$mailer</var_name>
+      <description>
+         <paragraph>
+            The path to the mailer (probably sendmail) on your system.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$mail_address</var_name>
+      <description>
+         <paragraph>
+            The address to which notifications of new links are sent.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$style</var_name>
+      <description>
+         <paragraph>
+            The URL of a stylesheet to use on generated HTML pages.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$default_section</var_name>
+      <description>
+         <paragraph>
+            The default category that new links will be added to.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>%sections</var_name>
+      <description>
+         <paragraph>
+            A hash defining the set of sections (or 'categories'). The
+                keys are the section identifiers (as found in the comments
+                in the HTML file) and the values are the descriptive titles
+                of the sections.
+         </paragraph>
+      </description>
+   </variable>
+   <variable>
+      <var_name>$locale</var_name>
+      <description>
+         <paragraph>
+            This determines the language that is used in the date - by
+                default this is blank and the language will probably be
+                english. The following a list of some possible values,
+                however it should be stressed that not all of these will
+                be supported on all systems and also this is not a complete
+                list:
+
+                      Catalan           ca_ES
+                      Croatian          hr_HR
+                      Czech             cs_CZ
+                      Danish            da_DK
+                      Dutc              nl_NL
+                      Estonian          et_EE
+                      Finnish           fi_FI
+                      French            fr_FR
+                      Galician          gl_ES
+                      German            de_DE
+                      Greek             el_GR
+                      Hebrew            he_IL
+                      Hungarian         hu_HU
+                      Icelandic         is_IS
+                      Italian           it_IT
+                      Japanese          ja_JP
+                      Korean            ko_KR
+                      Lithuanian        lt_LT
+                      Norwegian         no_NO
+                      Polish            pl_PL
+                      Portuguese        pt_PT
+                      Romanian          ro_RO
+                      Russian           ru_RU
+                      Slovak            sk_SK
+                      Slovenian         sl_SI
+                      Spanish           es_ES
+                      Swedish           sv_SE
+                      Thai              th_TH
+                      Turkish           tr_TR
+         </paragraph>
+      </description>
+   </variable>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+ffa is installed simply by copying the file ffa.pl into your cgi-bin 
+directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator
+</paragraph>
+<paragraph>
+You may need to rename ffa.pl to ffa.cgi. Again, your system
+administrator will know if this is the case.
+</paragraph>
+<paragraph>
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x ffa.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+</paragraph>
+<paragraph>
+The webserver needs write permission for the path you set up in $directory
+and also for the $database file. Again, ask your system administrator if
+you don't know how to do this.
+</paragraph>
+<paragraph>
+Then, edit the links.html page and put in on your website. You'll need to
+edit the link in the <form> tag so that it points to your copy of ffa.pl.
+</paragraph>
+  </installation>
+</nms_program>

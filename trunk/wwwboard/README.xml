@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<nms_program prog_file="wwwboard" full_name="WWW Board">
+  <summary>
+    <paragraph>
+wwwboard is a script which allows you to create and maintain a discussion
+forum on the web. On the forum, people will be able to post and reply to
+posts.
+</paragraph>
+  </summary>
+  <files>
+         <file>
+       <filename>README</filename>
+       <filedesc>Configuration and installation instructions. This file</filedesc>
+     </file>
+     <file>
+       <filename>wwwboard.pl</filename>
+       <filedesc>Script containing the config and making everything work</filedesc>
+     </file>
+     <file>
+       <filename>wwwboard.html</filename>
+       <filedesc>The HTML web board file that users will see</filedesc>
+     </file>
+     <file>
+       <filename>faq.html</filename>
+       <filedesc>A FAQ file for users of wwwboard</filedesc>
+     </file>
+     <file>
+       <filename>data.txt</filename>
+       <filedesc>Where the file number is stored</filedesc>
+     </file>
+     <file>
+       <filename>messages/</filename>
+       <filedesc>Where the discussion messages will be created and stored</filedesc>
+     </file>
+     <file>
+       <filename>wwwadmin.pl</filename>
+       <filedesc>An administration tool to delete messages</filedesc>
+     </file>
+     <file>
+       <filename>passwd.txt</filename>
+       <filedesc>The encoded password and username for wwwadmin</filedesc>
+     </file>
+     <file>
+       <filename>ADMIN_README</filename>
+       <filedesc>wwwadmin config and install instruction.</filedesc>
+     </file>
+
+  </files>
+  <configuration>
+    <introduction>
+    
+    </introduction>
+    <variables>
+
+    </variables>
+  </configuration>
+  <installation>
+      <paragraph>
+There are a number of files to configure in order to get the wwwboard working.
+During the following you will be guided through the configuration and installation of all the files and settings in order to have a working wwwboard.
+</paragraph>
+<paragraph>
+* wwwboard.pl
+   Settings
+</paragraph>
+<paragraph>
+      $DEBUGGING          - This should be set to 1 whilst you are installing
+                            and testing the script. Once the script is live you
+                            should change it to 0. When set to 1, errors will be
+                            output to the browser. This is a security risk and
+                            should not be used when the script is live.
+</paragraph>
+<paragraph>
+      $emulate_matts_code - This determines whether the program should behave
+                            exactly like the original wwwboard program
+                            from Matt Wright Script Archive.  It should
+                            be set to 1 if you want to emulate the
+                            original program - this is recommended if
+                            you are replacing an existing installation
+                            with this program.  If it is set to 0 then
+                            potentially it will not work with files
+                            produced by the original version - this is
+                            recommended for people installing this for
+                            the first time. It is also more secure to set
+                            it to 0 as the original script had many flaws
+                            which don't show up when not using emulation.
+</paragraph>
+<paragraph>
+      $max_followups      - In the original wwwboard it would be possible
+                            for a person with minimal skill to construct
+                            a request that could create a followup to
+                            every existing message on the board which
+                            could cause wwwboard.html to become extremely
+                            large and potentially effect a Denial of Service
+                            on your site.  By setting this variable to a
+                            reasonably low number you will be able to
+                            reduce the impact of an attack of this sort.
+                            If it is set to zero then any depth of followups
+                            will be allowed.  This setting only takes effect
+                            if $emulate_matts_code is set to 0.
+</paragraph>
+<paragraph>
+      $basedir            - This is the directory from / on the server's
+                            filesystem. It is not the directory that
+                            appears in the web address, although part of
+                            it may be. Neither is it the cgi-bin directory
+                            where you put the wwwboard.pl file. This is
+                            where you upload the wwwboard by ftp. If you
+                            are not running your own server and aren't
+                            sure what this value should be, contact your
+                            system administrator to make sure you have
+                            the right value.
+</paragraph>
+<paragraph>
+      $baseurl            - This is the full website address (URL) to the
+                            directory containing the wwwboard files. This
+                            this the directory that'll contain messages/,
+                            data.txt, wwwboard.html and faq.html. It's
+                            the web equivalent of $basedir.
+</paragraph>
+<paragraph>
+      $cgi_url            - This is the full website address (URL) to the
+                            wwwboard.pl file which will run the wwwboard.
+</paragraph>
+<paragraph>
+      $mesdir             - This is the directory, in $basedir, where the
+                            wwwboard messages will be stored.
+</paragraph>
+<paragraph>
+      $datafile           - This is the name of the file, in $basedir, where
+                            important information for the wwwboard to function
+                            will be stored.
+</paragraph>
+<paragraph>
+      $mesgfile           - This is the name of the HTML file, in $basedir,
+                            which will make your wwwboard.
+</paragraph>
+<paragraph>
+      $faqfile            - This is the name of the Frequently Asked Question
+                            (FAQ) file, in $basedir, which will be used to
+                            answer wwwboard users' questions.
+</paragraph>
+<paragraph>
+      $ext                - This is the extension that will be given to 
+                            various web documents created by wwwboard. You
+                            should leave it as 'html' for most purposes,
+                            although you might want to change it to
+                            'htm' if using MS-DOS.
+</paragraph>
+<paragraph>
+      $title              - This is the title that will be displayed on the
+                            program generated pages.
+</paragraph>
+<paragraph>
+      $style              - This is the web address (URL) of a CSS stylesheet
+                            which will be used for script generated
+                            messages.  This probably want's to be the
+                            same as the one that you use for all the
+                            other pages.  This should be a local absolute
+                            URI fragment.
+</paragraph>
+<paragraph>
+      $show_faq           - If $show_faq is set to 1 then the link for the
+                            wwwboard FAQ will be shown on the generated pages.
+</paragraph>
+<paragraph>
+      $allow_html         - If $allow_html is set to 1 then HTML will not be
+                            removed from the body of the message.
+                            Be warned however that setting this is a
+                            possible security risk allowing malicious
+                            defacement of the page and possible cross
+                            page scripting attacks on this or other site.
+</paragraph>
+<paragraph>
+      $quote_text         - If $quote_text is set to 1 then the text of the
+                            original message will be placed in the
+                            "Post Followup" text box.
+</paragraph>
+<paragraph>
+      $quote_char         - This is the string that will be prepended to each
+                            quoted line if $quote_text described above is set
+                            to 1.
+</paragraph>
+<paragraph>
+      $quote_html         - If $quote_html is set to 1 then if $quote_text is
+                            set to 1 above the original HTML in the
+                            post will be retained in the followup -
+                            otherwise it will be removed.
+</paragraph>
+<paragraph>
+      $subject_line       - When set to 0, the subject will be quoted and
+                            editable. When set to 1, the subject will
+                            be quoted but uneditable. When set to 2,
+                            the subject will not be quoted but will
+                            be editable.
+</paragraph>
+<paragraph>
+      $use_time           - If $use_time is set to 1 then the dates will be
+                            displayed as "$time_fmt $date_fmt" - see note below
+                            about date formats.
+</paragraph>
+<paragraph>
+      $date_fmt
+      $time_fmt           - $date_fmt and $time_fmt describe the format of the
+                            dates that will output - the replacement parameters
+                            you can use here are
+</paragraph>
+<paragraph>
+            %A - the full name of the weekday according to the current locale
+            %B - the full name of the month according to the current locale
+            %m - the month as a number
+            %d - the day of the month as a number
+            %D - the date in the form %m/%d/%y (i.e. the US format )
+            %y - the year as a number without the century
+            %Y - the year as a number including the century
+            %H - the hour as number in the 24 hour clock
+            %M - the minute as a number
+            %S - the seconds as a number
+            %T - the time in 24 hour format (%H:%M:%S)
+            %Z - the time zone (full name or abbreviation)
+</paragraph>
+<paragraph>
+                             If you are going to be running this program
+                             on Apple OSX then you should avoid %Z as there
+                             is a problem with getting the correct timezome
+                             on that OS.
+</paragraph>
+<paragraph>
+      $show_poster_ip     - Set to 1, the client IP address of the poster is
+                            displayed in the message. Otherwise it won't.
+</paragraph>
+<paragraph>
+      $enforce_max_len    - Set to 2, this will force the max length settings
+                            listed below by giving an error. Set to 1,
+                            this will force by truncating too long
+                            text. Set to 0, it will ignore the max
+                            length settings.
+</paragraph>
+<paragraph>
+      %max_len            - Contains the maximum lengths of the data allowed in
+                            the various fields - they must be supplied if
+                            $enforce_max_len is not 0.
+</paragraph>
+<paragraph>
+      $strict_image       - If set to 1 will require that an image url if
+                            supplied must end in one of the common suffixes as
+                            defined in @image_suffixes.
+</paragraph>
+<paragraph>
+      $image_suffixes     - This is a list of the extensions that the image URL
+                            must end with if $strict_image above is set to 1 -
+                            this is to minimize a potential for the entry of
+                            entry of a malicious URL that may be used to attack
+                            another host or disfigure this web page.
+</paragraph>
+<paragraph>
+   Installation
+      You must upload this file to your server's cgi-bin or in a directory where
+      CGI execution is allowed. Make sure the directory and path match the
+      $cgi_url put in the settings. You must also give the file the right
+      permissions. In order to do so, the file must be chmoded to 755 using the
+      following command
+         chmod 755 wwwboard.pl
+</paragraph>
+<paragraph>
+* wwwboard.html
+   Settings
+      <form method="post" action="/cgi-bin/wwwboard.pl">
+                          - This is the only setting to modify in this file. The
+                            only thing you got to make sure of is the action=""
+                            path which has to be the same as the $cgi_url. No
+                            need to put the http://www.yourpage.com, but it
+                            won't hurt if you do.
+</paragraph>
+<paragraph>
+      Other               - Please feel free to change the <title>, headers and
+                            layout of this page. The only things that need to
+                            remain intact are the <form>, <input> and
+                            <textarea> tags.
+</paragraph>
+<paragraph>
+   Installation
+      This is fairly simple. Just put it in your $basedir so that people
+      visiting $baseurl/wwwboard.html will see it. You also have to chmod the
+      file to 777 using the following command
+         chmod 777 wwwboard.html
+</paragraph>
+<paragraph>
+* faq.html
+   Settings
+      This file does not need to be edited. However feel free to change anything
+      you want in it. Just make sure that the links to wwwboard.html work.
+</paragraph>
+<paragraph>
+   Installation
+      This is fairly simple. Just put it in your $basedir so that people
+      visiting $baseurl/wwwboard.html will see it. Normally, you should not need
+      to chmod it. However, it should be chmoded to 644.
+</paragraph>
+<paragraph>
+* messages/
+   Settings
+      None.
+</paragraph>
+<paragraph>
+   Installation
+      This is fairly simple. Just put it in your $basedir. You also have to
+      chmod the directory to 777 using the following command
+         chmod 777 messages/
+</paragraph>
+<paragraph>
+* data.txt
+   Settings
+      None.
+</paragraph>
+<paragraph>
+   Installation
+      Simply upload this file to $basedir, as mentionned in wwwboard.pl. You
+      also have to chmod the file to 666 (no, we are not the devil) using the
+      following command
+         chmod 666 data.txt
+</paragraph>
+<paragraph>
+* Administration files (wwwadmin.pl, passwd.txt, ADMIN_README)
+   The administrative files are not necessary to run the boards. That is, if you
+   do not wish to set them up or use them, you can still have a working
+   wwwboard. They are simply a useful tool for the wwwboard administrator to
+   delete messages and perform other administrative tasks. Their settings and
+   installation procedure is discussed in ADMIN_README.
+</paragraph>
+  </installation>
+</nms_program>
