@@ -1,8 +1,11 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.16 2001-12-10 23:34:37 nickjc Exp $
+# $Id: guestbook.pl,v 1.17 2001-12-11 08:52:16 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.16  2001/12/10 23:34:37  nickjc
+# Strengthened strip_html() when $allow_html is false
+#
 # Revision 1.15  2001/12/09 23:33:53  nickjc
 # bug fix: strip_html was breaking email sending by adding SSI exploit
 # defence stuff to the email address.
@@ -578,6 +581,89 @@ EOMAIL
   close (MAIL);
 }
 
+#
+# HTML handling routines
+#
+use vars qw(%html_entities $html_safe_chars %escape_html_map);
+
+BEGIN
+{
+   %html_entities = (
+    'lt'     => '<',
+    'gt'     => '>',
+    'quot'   => '"',
+    'amp'    => '&',
+  
+    'nbsp'   => "\240", 'iexcl'  => "\241",
+    'cent'   => "\242", 'pound'  => "\243",
+    'curren' => "\244", 'yen'    => "\245",
+    'brvbar' => "\246", 'sect'   => "\247",
+    'uml'    => "\250", 'copy'   => "\251",
+    'ordf'   => "\252", 'laquo'  => "\253",
+    'not'    => "\254", 'shy'    => "\255",
+    'reg'    => "\256", 'macr'   => "\257",
+    'deg'    => "\260", 'plusmn' => "\261",
+    'sup2'   => "\262", 'sup3'   => "\263",
+    'acute'  => "\264", 'micro'  => "\265",
+    'para'   => "\266", 'middot' => "\267",
+    'cedil'  => "\270", 'supl'   => "\271",
+    'ordm'   => "\272", 'raquo'  => "\273",
+    'frac14' => "\274", 'frac12 '=> "\275",
+    'frac34' => "\276", 'iquest' => "\277",
+  
+    'Agrave' => "\300", 'Aacute' => "\301",
+    'Acirc'  => "\302", 'Atilde' => "\303",
+    'Auml'   => "\304", 'Aring'  => "\305",
+    'AElig'  => "\306", 'Ccedil' => "\307",
+    'Egrave' => "\310", 'Eacute' => "\311",
+    'Ecirc'  => "\312", 'Euml'   => "\313",
+    'Igrave' => "\314", 'Iacute' => "\315",
+    'Icirc'  => "\316", 'Iuml'   => "\317",
+    'ETH'    => "\320", 'Ntilde' => "\321",
+    'Ograve' => "\322", 'Oacute' => "\323",
+    'Ocirc'  => "\324", 'Otilde' => "\325",
+    'Ouml'   => "\326", 'times'  => "\327",
+    'Oslash' => "\330", 'Ugrave' => "\331",
+    'Uacute' => "\332", 'Ucirc'  => "\333",
+    'Uuml'   => "\334", 'Yacute' => "\335",
+    'THORN'  => "\336", 'szlig'  => "\337",
+  
+    'agrave' => "\340", 'aacute' => "\341",
+    'acirc'  => "\342", 'atilde' => "\343",
+    'auml'   => "\344", 'aring'  => "\345",
+    'aelig'  => "\346", 'ccedil' => "\347",
+    'egrave' => "\350", 'eacute' => "\351",
+    'ecirc'  => "\352", 'euml'   => "\353",
+    'igrave' => "\354", 'iacute' => "\355",
+    'icirc'  => "\356", 'iuml'   => "\357",
+    'eth'    => "\360", 'ntilde' => "\361",
+    'ograve' => "\362", 'oacute' => "\363",
+    'ocirc'  => "\364", 'otilde' => "\365",
+    'ouml'   => "\366", 'divide' => "\367",
+    'oslash' => "\370", 'ugrave' => "\371",
+    'uacute' => "\372", 'ucirc'  => "\373",
+    'uuml'   => "\374", 'yacute' => "\375",
+    'thorn'  => "\376", 'yuml'   => "\377",
+   );
+
+   #
+   # Build a map for representing characters in HTML.
+   #
+   $html_safe_chars = '()[]{}/?.,\\|;:@#~=+-_*^%$! ' . "\r\n\t";
+   %escape_html_map =
+      map {$_,$_} ( 'A'..'Z', 'a'..'z', '0'..'9',
+                    split(//, $html_safe_chars)
+                  );
+   foreach my $ent (keys %html_entities) {
+     $escape_html_map{$html_entities{$ent}} = "&$ent;";
+   }
+   foreach my $c (0..255) {
+     unless ( exists $escape_html_map{chr $c} ) {
+       $escape_html_map{chr $c} = sprintf '&#%d;', $c;
+     }
+   }
+}
+
 # subroutine to crudely strip html from a text string
 # ideally we would want to use HTML::Parser or somesuch.
 # we will also implement any selective tag replacement here
@@ -601,25 +687,8 @@ sub strip_html
      # mop up any stray start or end of comment tags.
      return "<!-- -->$comments<!-- -->";
    } else {
-     $comments =~ s/<(?:[^>'"]+|".*?"|'.*?')*>//gs;
-     return escape_html($comments);
-   }
-}
-
-use vars qw(%escape_html_map %unescape_html_map);
-
-BEGIN
-{
-   %escape_html_map = ( '&' => '&amp;',
-                        '<' => '&lt;',
-                        '>' => '&gt;',
-                        '"' => '&quot;',
-                        "'" => '&#39;',
-                      );
-
-   while ( my ( $key, $value ) = each %escape_html_map )
-   {
-      $unescape_html_map{$value} = $key;
+     $comments =~ s/<(?:[^>'"]|"[^"]*"|'[^']*')*>//gs;
+     return escape_html(unescape_html($comments));
    }
 }
 
@@ -628,15 +697,20 @@ BEGIN
 
 sub escape_html {
   my $str = shift;
-  my $chars = join '', keys %escape_html_map;
-  $str =~ s/([\Q$chars\E])/$escape_html_map{$1}/g;
+  $str =~ s/([^\w\Q$html_safe_chars\E])/$escape_html_map{$1}/og;
   return $str;
 }
 
 sub unescape_html {
   my $str = shift;
-  my $pattern = join '|', map { quotemeta($_) } keys(%unescape_html_map);
-  $str =~ s/($pattern)/$unescape_html_map{$1}/g;
+  $str =~
+    s/ &( (\w+) | [#](\d+) ) \b (;?)
+     /
+       defined $2 && exists $html_entities{$2} ? $html_entities{$2} :            
+       defined $3 && $3 <= 255                 ? chr $3             :
+       "&$1$4"
+     /gex;
+  
   return $str;
 }
 
