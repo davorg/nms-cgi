@@ -1,8 +1,13 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.22 2001-12-18 22:21:13 nickjc Exp $
+# $Id: guestbook.pl,v 1.23 2001-12-19 23:12:23 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2001/12/18 22:21:13  nickjc
+# * minor HTML filter fixes
+# * started on allowing the style attribute
+# * added non-XHTML (but harmless) NOBR tag
+#
 # Revision 1.21  2001/12/17 23:01:52  nickjc
 # HTML filter fixes
 #
@@ -658,7 +663,7 @@ sub check_url {
 # HTML handling routines
 #
 use vars qw(%html_entities $html_safe_chars %escape_html_map);
-use vars qw(%safe_tags %tag_is_empty
+use vars qw(%safe_tags %safe_style %tag_is_empty
             %auto_deinterleave $auto_deinterleave_pattern);
 
 BEGIN
@@ -922,14 +927,35 @@ BEGIN
     'center'     => \%attr,
     'nobr'       => $none,
   );
+  %safe_style = (
+    'color'            => \&cleanup_attr_color,
+    'background-color' => \&cleanup_attr_color,
+    # XXX TODO: the CSS spec defines loads more, add 'em
+  );
 }
 sub cleanup_attr_style {
-  # XXX TODO: there are many more safe style constructs in the
-  # CSS spec, build up a reasonable subset here.
-  $_ = join ' ',
-     m[ (?: color:[#][0-9a-f]{6} ) |
-        (?: color:\w{2,20}       )
-      ]gxi;
+  my @clean = ();
+  foreach my $elt (split /;/, $_) {
+    next if $elt =~ m#^\s*$#;
+    if ( $elt =~ m#^\s*([\w\-]+)\s*:\s*(.+?)\s*$#s ) {
+      my ($key, $val) = (lc $1, $2);
+      local $_ = $val;
+      my $sub = $safe_style{$key};
+      if (defined $sub) {
+        my $cleanval = &{$sub}();
+        if (defined $cleanval) {
+          push @clean, "$key:$val";
+        } elsif ($DEBUGGING) {
+          push @debug_msg, "style $key: bad value <$val>";
+        }
+      } elsif ($DEBUGGING) {
+        push @debug_msg, "rejected style element <$key>";
+      }
+    } elsif ($DEBUGGING) {
+      push @debug_msg, "malformed style element <$elt>";
+    }
+  }
+  return join '; ', @clean;
 }
 sub cleanup_attr_number {
   /^(\d+)$/ ? $1 : undef;
@@ -945,6 +971,7 @@ sub cleanup_attr_length {
   /^(\d+\%?)$/ ? $1 : undef;
 }
 sub cleanup_attr_color {
+  /^(\w{2,20}|#[\da-fA-F]{6})$/ or die "color <<$_>> bad";
   /^(\w{2,20}|#[\da-fA-F]{6})$/ ? $1 : undef;
 }
 sub cleanup_attr_uri {
@@ -978,17 +1005,17 @@ sub cleanup_html {
   local @stack = ();
 
   s[
-    (?: <!--.*?-->                                 ) |
-    (?: <[?!].*?>                                  ) |
-    (?: <([a-zA-Z]+)((?:[^>'"]|"[^"]*"|'[^']*')*)> ) |
-    (?: </([a-zA-Z]+)>                             ) |
-    (?: (.[^<]*)                                   )
+    (?: <!--.*?-->                                   ) |
+    (?: <[?!].*?>                                    ) |
+    (?: <([a-z0-9]+)\b((?:[^>'"]|"[^"]*"|'[^']*')*)> ) |
+    (?: </([a-z0-9]+)>                               ) |
+    (?: (.[^<]*)                                     )
   ][
-    defined $1 ? cleanup_tag(lc $1, $2)            :
-    defined $3 ? cleanup_close(lc $3)              :
-    defined $4 ? cleanup_cdata($4)                 :
+    defined $1 ? cleanup_tag(lc $1, $2)              :
+    defined $3 ? cleanup_close(lc $3)                :
+    defined $4 ? cleanup_cdata($4)                   :
     ''
-  ]gesx;
+  ]igesx;
 
   # Close anything that was left open
   $_ .= join '', map "</$_->{NAME}>", @stack;
