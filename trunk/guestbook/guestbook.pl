@@ -1,8 +1,14 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.17 2001-12-11 08:52:16 nickjc Exp $
+# $Id: guestbook.pl,v 1.18 2001-12-15 00:19:25 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2001/12/11 08:52:16  nickjc
+# * more general unescape_html(), in preparation for proper HTML filter
+# * more aggressive escape_html()
+# * don't turn entities like '&lt;' into '&amp;lt;' in strip_html() if
+#   $allow_html is 0
+#
 # Revision 1.16  2001/12/10 23:34:37  nickjc
 # Strengthened strip_html() when $allow_html is false
 #
@@ -76,7 +82,7 @@ BEGIN
    sub SEEK_SET() { 0; }
 };
 
-use vars qw($DEBUGGING);
+use vars qw($DEBUGGING @debug_msg);
 
 # sanitize the environment
 
@@ -95,7 +101,7 @@ BEGIN
 {
    $DEBUGGING = 1;
 }
-   
+
 my $guestbookurl  = 'http://your.host.com/~yourname/guestbook.html';
 my $guestbookreal = '/home/yourname/public_html/guestbook.html';
 my $guestlog      = '/home/yourname/public_html/guestlog.html';
@@ -128,7 +134,7 @@ my $remote_mail = 0;
 my $allow_html  = 0;
 my $line_breaks = 0;
 
-# $mailprog is the program that will be used to send mail if that is 
+# $mailprog is the program that will be used to send mail if that is
 # required.  It should be the full path of a program that will accept
 # the message on its standard input, it should also include any required
 # switches.  If $mail is set to 0 above this can be ignores.
@@ -140,7 +146,7 @@ my $mailprog  = '/usr/lib/sendmail -t -oi -oem';
 
 my $recipient = 'you@your.com';
 
-# $long_date_fmt and $short_date_fmt describe the format of the dates that 
+# $long_date_fmt and $short_date_fmt describe the format of the dates that
 # will output - the replacement parameters you can use here are:
 #
 # %A - the full name of the weekday according to the current locale
@@ -181,7 +187,7 @@ BEGIN
       {
          $message = '';
       }
-      
+
       my ( $pack, $file, $line, $sub ) = caller(1);
       my ($id ) = $file =~ m%([^/]+)$%;
 
@@ -209,7 +215,7 @@ EOERR
    };
 
    $SIG{__DIE__} = \&fatalsToBrowser;
-}   
+}
 
 my @now       = localtime();
 my $date      = strftime($long_date_fmt, @now);
@@ -286,10 +292,10 @@ foreach (@lines) {
 
      if ($username){
        if ($linkmail) {
-	 print GUEST qq( &lt;<a href="mailto:$escaped{username}">);
-	 print GUEST "$escaped{username}</a>&gt;";
+         print GUEST qq( &lt;<a href="mailto:$escaped{username}">);
+         print GUEST "$escaped{username}</a>&gt;";
        } else {
-	 print GUEST " &lt;$escaped{username}&gt;";
+         print GUEST " &lt;$escaped{username}&gt;";
        }
      }
 
@@ -391,14 +397,14 @@ EOCOMMENT
    else {
       $title = 'Unknown Error';
       $heading = 'Something appears to be wrong with your submission';
-      $text    = 'Please check your input and resubmit'; 
+      $text    = 'Please check your input and resubmit';
       $comments_field =<<EOCOMMENT;
       Comments:<br />
       <textarea name="comments" cols="60" rows="4">$comments</textarea />
       <input type="hidden" name="comments_encoded" value="1" />
 EOCOMMENT
    }
-  
+
   local $^W; # suppress warnings as we may have missing fields;
 
   print header;
@@ -417,15 +423,15 @@ EOCOMMENT
       $text
     </p>
     <form method="post" action="$cgiurl">
-      <p>Your Name: <input type="text" name="realname" 
+      <p>Your Name: <input type="text" name="realname"
                            value="$realname" size="30" /><br />
         E-Mail: <input type="text" name="username"
                        value="$username" size="40" /><br />
-        City: <input type="text" name="city" value="$city" 
-                     size="15" />, 
-        State: <input type="text" name="state" 
-                      value="$state" size="2" /> 
-        Country: <input type="text" name="country" value="$country" 
+        City: <input type="text" name="city" value="$city"
+                     size="15" />,
+        State: <input type="text" name="state"
+                      value="$state" size="2" />
+        Country: <input type="text" name="country" value="$country"
                         size="15" /></p>
       <p>
        $comments_field
@@ -448,7 +454,7 @@ END_FORM
 
 # Log the Entry or Error
 sub write_log {
-  my ($log_type) = @_;   
+  my ($log_type) = @_;
 
   if ( open(LOG, ">>$guestlog") )
   {
@@ -528,8 +534,13 @@ END_HTML
 
   print " - $date<p>\n";
 
-  # Print End of HTML
+  if (scalar @debug_msg) {
+    print qq|<br /><font color="red">\n|;
+    print map { escape_html($_) . qq|<br />\n| } @debug_msg;
+    print "</font>\n";
+  }
 
+  # Print End of HTML
   print <<END_HTML;
 
     <hr />
@@ -581,138 +592,10 @@ EOMAIL
   close (MAIL);
 }
 
+##############################################################
 #
-# HTML handling routines
+# Validity checks for various contexts.
 #
-use vars qw(%html_entities $html_safe_chars %escape_html_map);
-
-BEGIN
-{
-   %html_entities = (
-    'lt'     => '<',
-    'gt'     => '>',
-    'quot'   => '"',
-    'amp'    => '&',
-  
-    'nbsp'   => "\240", 'iexcl'  => "\241",
-    'cent'   => "\242", 'pound'  => "\243",
-    'curren' => "\244", 'yen'    => "\245",
-    'brvbar' => "\246", 'sect'   => "\247",
-    'uml'    => "\250", 'copy'   => "\251",
-    'ordf'   => "\252", 'laquo'  => "\253",
-    'not'    => "\254", 'shy'    => "\255",
-    'reg'    => "\256", 'macr'   => "\257",
-    'deg'    => "\260", 'plusmn' => "\261",
-    'sup2'   => "\262", 'sup3'   => "\263",
-    'acute'  => "\264", 'micro'  => "\265",
-    'para'   => "\266", 'middot' => "\267",
-    'cedil'  => "\270", 'supl'   => "\271",
-    'ordm'   => "\272", 'raquo'  => "\273",
-    'frac14' => "\274", 'frac12 '=> "\275",
-    'frac34' => "\276", 'iquest' => "\277",
-  
-    'Agrave' => "\300", 'Aacute' => "\301",
-    'Acirc'  => "\302", 'Atilde' => "\303",
-    'Auml'   => "\304", 'Aring'  => "\305",
-    'AElig'  => "\306", 'Ccedil' => "\307",
-    'Egrave' => "\310", 'Eacute' => "\311",
-    'Ecirc'  => "\312", 'Euml'   => "\313",
-    'Igrave' => "\314", 'Iacute' => "\315",
-    'Icirc'  => "\316", 'Iuml'   => "\317",
-    'ETH'    => "\320", 'Ntilde' => "\321",
-    'Ograve' => "\322", 'Oacute' => "\323",
-    'Ocirc'  => "\324", 'Otilde' => "\325",
-    'Ouml'   => "\326", 'times'  => "\327",
-    'Oslash' => "\330", 'Ugrave' => "\331",
-    'Uacute' => "\332", 'Ucirc'  => "\333",
-    'Uuml'   => "\334", 'Yacute' => "\335",
-    'THORN'  => "\336", 'szlig'  => "\337",
-  
-    'agrave' => "\340", 'aacute' => "\341",
-    'acirc'  => "\342", 'atilde' => "\343",
-    'auml'   => "\344", 'aring'  => "\345",
-    'aelig'  => "\346", 'ccedil' => "\347",
-    'egrave' => "\350", 'eacute' => "\351",
-    'ecirc'  => "\352", 'euml'   => "\353",
-    'igrave' => "\354", 'iacute' => "\355",
-    'icirc'  => "\356", 'iuml'   => "\357",
-    'eth'    => "\360", 'ntilde' => "\361",
-    'ograve' => "\362", 'oacute' => "\363",
-    'ocirc'  => "\364", 'otilde' => "\365",
-    'ouml'   => "\366", 'divide' => "\367",
-    'oslash' => "\370", 'ugrave' => "\371",
-    'uacute' => "\372", 'ucirc'  => "\373",
-    'uuml'   => "\374", 'yacute' => "\375",
-    'thorn'  => "\376", 'yuml'   => "\377",
-   );
-
-   #
-   # Build a map for representing characters in HTML.
-   #
-   $html_safe_chars = '()[]{}/?.,\\|;:@#~=+-_*^%$! ' . "\r\n\t";
-   %escape_html_map =
-      map {$_,$_} ( 'A'..'Z', 'a'..'z', '0'..'9',
-                    split(//, $html_safe_chars)
-                  );
-   foreach my $ent (keys %html_entities) {
-     $escape_html_map{$html_entities{$ent}} = "&$ent;";
-   }
-   foreach my $c (0..255) {
-     unless ( exists $escape_html_map{chr $c} ) {
-       $escape_html_map{chr $c} = sprintf '&#%d;', $c;
-     }
-   }
-}
-
-# subroutine to crudely strip html from a text string
-# ideally we would want to use HTML::Parser or somesuch.
-# we will also implement any selective tag replacement here
-# thus all user supplied input that will be displayed should
-# be passed through this before being displayed.
-
-sub strip_html
-{
-   my ( $comments,$allow_html ) = @_;
-
-   $allow_html = defined $allow_html ? $allow_html : 0;
-
-   if ( $allow_html ) {
-     # XXX whitelist based HTML filter goes here XXX
-
-     # remove any comments that could harbour an attempt at an SSI exploit
-     # suggested by Pete Sargeant
-
-     $comments =~ s/<!--.*?-->/ /gs;
-
-     # mop up any stray start or end of comment tags.
-     return "<!-- -->$comments<!-- -->";
-   } else {
-     $comments =~ s/<(?:[^>'"]|"[^"]*"|'[^']*')*>//gs;
-     return escape_html(unescape_html($comments));
-   }
-}
-
-# subroutine to escape the necessary characters to the appropriate HTML
-# entities
-
-sub escape_html {
-  my $str = shift;
-  $str =~ s/([^\w\Q$html_safe_chars\E])/$escape_html_map{$1}/og;
-  return $str;
-}
-
-sub unescape_html {
-  my $str = shift;
-  $str =~
-    s/ &( (\w+) | [#](\d+) ) \b (;?)
-     /
-       defined $2 && exists $html_entities{$2} ? $html_entities{$2} :            
-       defined $3 && $3 <= 255                 ? chr $3             :
-       "&$1$4"
-     /gex;
-  
-  return $str;
-}
 
 # basic check on e-mail address - this is very crude and is better achieved
 # by the use of one of the modules
@@ -743,5 +626,451 @@ sub check_email {
     # Return a true value, e-mail verification passed.
     return 1;
   }
+}
+
+# check the validity of a URL.
+
+sub check_url {
+  my $url = shift;
+
+  $url =~ m< ^ (?:ftp|http|https):// [\w\-\.]+
+               [\w\-.!~*'(|);/?\@&=+\$,%#]*
+             $
+           >x ? 1 : 0;
+}
+
+##############################################################
+#
+# HTML handling routines
+#
+use vars qw(%html_entities $html_safe_chars %escape_html_map);
+use vars qw(%safe_tags %tag_is_empty
+            %auto_deinterleave $auto_deinterleave_pattern);
+
+BEGIN
+{
+  %html_entities = (
+    'lt'     => '<',
+    'gt'     => '>',
+    'quot'   => '"',
+    'amp'    => '&',
+
+    'nbsp'   => "\240", 'iexcl'  => "\241",
+    'cent'   => "\242", 'pound'  => "\243",
+    'curren' => "\244", 'yen'    => "\245",
+    'brvbar' => "\246", 'sect'   => "\247",
+    'uml'    => "\250", 'copy'   => "\251",
+    'ordf'   => "\252", 'laquo'  => "\253",
+    'not'    => "\254", 'shy'    => "\255",
+    'reg'    => "\256", 'macr'   => "\257",
+    'deg'    => "\260", 'plusmn' => "\261",
+    'sup2'   => "\262", 'sup3'   => "\263",
+    'acute'  => "\264", 'micro'  => "\265",
+    'para'   => "\266", 'middot' => "\267",
+    'cedil'  => "\270", 'supl'   => "\271",
+    'ordm'   => "\272", 'raquo'  => "\273",
+    'frac14' => "\274", 'frac12 '=> "\275",
+    'frac34' => "\276", 'iquest' => "\277",
+
+    'Agrave' => "\300", 'Aacute' => "\301",
+    'Acirc'  => "\302", 'Atilde' => "\303",
+    'Auml'   => "\304", 'Aring'  => "\305",
+    'AElig'  => "\306", 'Ccedil' => "\307",
+    'Egrave' => "\310", 'Eacute' => "\311",
+    'Ecirc'  => "\312", 'Euml'   => "\313",
+    'Igrave' => "\314", 'Iacute' => "\315",
+    'Icirc'  => "\316", 'Iuml'   => "\317",
+    'ETH'    => "\320", 'Ntilde' => "\321",
+    'Ograve' => "\322", 'Oacute' => "\323",
+    'Ocirc'  => "\324", 'Otilde' => "\325",
+    'Ouml'   => "\326", 'times'  => "\327",
+    'Oslash' => "\330", 'Ugrave' => "\331",
+    'Uacute' => "\332", 'Ucirc'  => "\333",
+    'Uuml'   => "\334", 'Yacute' => "\335",
+    'THORN'  => "\336", 'szlig'  => "\337",
+
+    'agrave' => "\340", 'aacute' => "\341",
+    'acirc'  => "\342", 'atilde' => "\343",
+    'auml'   => "\344", 'aring'  => "\345",
+    'aelig'  => "\346", 'ccedil' => "\347",
+    'egrave' => "\350", 'eacute' => "\351",
+    'ecirc'  => "\352", 'euml'   => "\353",
+    'igrave' => "\354", 'iacute' => "\355",
+    'icirc'  => "\356", 'iuml'   => "\357",
+    'eth'    => "\360", 'ntilde' => "\361",
+    'ograve' => "\362", 'oacute' => "\363",
+    'ocirc'  => "\364", 'otilde' => "\365",
+    'ouml'   => "\366", 'divide' => "\367",
+    'oslash' => "\370", 'ugrave' => "\371",
+    'uacute' => "\372", 'ucirc'  => "\373",
+    'uuml'   => "\374", 'yacute' => "\375",
+    'thorn'  => "\376", 'yuml'   => "\377",
+  );
+
+  #
+  # Build a map for representing characters in HTML.
+  #
+  $html_safe_chars = '()[]{}/?.,\\|;:@#~=+-_*^%$! ' . "\r\n\t";
+  %escape_html_map =
+     map {$_,$_} ( 'A'..'Z', 'a'..'z', '0'..'9',
+                   split(//, $html_safe_chars)
+                 );
+  foreach my $ent (keys %html_entities) {
+    $escape_html_map{$html_entities{$ent}} = "&$ent;";
+  }
+  foreach my $c (0..255) {
+    unless ( exists $escape_html_map{chr $c} ) {
+      $escape_html_map{chr $c} = sprintf '&#%d;', $c;
+    }
+  }
+
+  #
+  # Tables for use by cleanup_html() (below).
+  #
+  # The main table is %safe_tags, which is a hash by tag name of
+  # all the tags that it's safe to leave in.  The value for each
+  # tag is another hash, and each key of that hash defines an
+  # attribute that the tag is allowed to have.
+  #
+  # The values in the tag attribute hash can be undef (for an
+  # attribute that takes no value, for example the nowrap
+  # attribute in the tag <td align="left" nowrap>) or they can
+  # be coderefs pointing to subs for cleaning up the attribute
+  # values.
+  #
+  # These subs will called with the attribute value in $_, and
+  # they can return either a cleaned attribute value or undef.
+  # If undef is returned then the attribute will be deleted
+  # from the tag.
+  #
+  # The list of tags and attributes was taken from
+  # "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"
+  #
+  # The %tag_is_empty table defines the set of tags that have
+  # no corresponding close tag.
+  #
+  # cleanup_html() moves close tags around to force all tags to
+  # be closed in the correct sequence.  For example, the text
+  # "<h1><i>foo</h1>bar</i>" will be converted to the text
+  # "<h1><i>foo</i></h1>bar".
+  #
+  # The %auto_deinterleave table defines the set of tags which
+  # should be automatically reopened if they're closed early
+  # in this way.  All the tags involved must be in
+  # %auto_deinterleave for the tag to be reopened.  For example,
+  # the text "<b>bb<i>bi</b>ii</i>" will be converted into the
+  # text "<b>bb<i>bi</i></b><i>ii</i>" rather than into the
+  # text "<b>bb<i>bi</i></b>ii", because *both* "b" and "i" are
+  # in %auto_deinterleave.
+  #
+  %tag_is_empty = ( 'hr' => 1, 'br' => 1 );
+  %auto_deinterleave = map {$_,1} qw(
+    tt i b big small u s strike font basefont
+    em strong dfn code q sub sup
+    samp kbd var cite abbr acronym
+  );
+  $auto_deinterleave_pattern = join '|', keys %auto_deinterleave;
+  my %font_attr = (
+    size  => sub { /^(-?\d{1,3})$/     ? $1 : undef },
+    face  => sub { /^([\w, ]{2,100})$/ ? $1 : undef },
+    color => \&cleanup_attr_color,
+  );
+  my %insdel_attr = (
+    'cite'     => \&cleanup_attr_uri,
+    'datetime' => \&cleanup_attr_text,
+  );
+  my %texta_attr = (
+    align => sub { /^(left|center|right)$/i ? lc $1 : undef },
+  );
+  my %cellha_attr = (
+    align   => sub { /^(left|center|right|justify|char)$/i ? lc $1 : undef
+                   },
+    char    => sub { /^([\w\-])$/ ? $1 : undef },
+    charoff => \&cleanup_attr_length,
+  );
+  my %cellva_attr = (
+    valign => sub { /^(top|middle|bottom|baseline)$/i ? lc $1 : undef
+                  },
+  );
+  my %cellhv_attr = ( %cellha_attr, %cellva_attr );
+  my %col_attr = (
+    width => \&cleanup_attr_multilength,
+    span =>  \&cleanup_attr_number,
+    %cellhv_attr,
+  );
+  my %thtd_attr = (
+    abbr    => \&cleanup_attr_text,
+    axis    => \&cleanup_attr_text,
+    headers => \&cleanup_attr_text,
+    scope   => sub { /^(row|col|rowgroup|colgroup)$/i ? lc $1 : undef },
+    rowspan => \&cleanup_attr_number,
+    colspan => \&cleanup_attr_number,
+    %cellhv_attr,
+    nowrap  => undef,
+    bgcolor => \&cleanup_attr_color,
+    width   => \&cleanup_attr_number,
+    height  => \&cleanup_attr_number,
+  );
+  my $none = {};
+  %safe_tags = (
+    'br'         => { 'clear' => sub { /^(left|right|all|none)$/i ? lc $1 : undef }
+                    },
+    'em'         => $none,
+    'strong'     => $none,
+    'dfn'        => $none,
+    'code'       => $none,
+    'samp'       => $none,
+    'kbd'        => $none,
+    'var'        => $none,
+    'cite'       => $none,
+    'abbr'       => $none,
+    'acronym'    => $none,
+    'q'          => { 'cite' => \&cleanup_attr_uri },
+    'blockquote' => { 'cite' => \&cleanup_attr_uri },
+    'sub'        => $none,
+    'sup'        => $none,
+    'tt'         => $none,
+    'i'          => $none,
+    'b'          => $none,
+    'big'        => $none,
+    'small'      => $none,
+    'u'          => $none,
+    's'          => $none,
+    'basefont'   => \%font_attr,
+    'font'       => \%font_attr,
+    'table'      => { 'frame'       => \&cleanup_attr_tframe,
+                      'rules'       => \&cleanup_attr_trules,
+                      %texta_attr,
+                      'bgcolor'     => \&cleanup_attr_color,
+                      'width'       => \&cleanup_attr_length,
+                      'cellspacing' => \&cleanup_attr_length,
+                      'cellpadding' => \&cleanup_attr_length,
+                      'border'      => \&cleanup_attr_number,
+                      'summary'     => \&cleanup_attr_text,
+                    },
+    'caption'    => { 'align' => sub { /^(top|bottom|left|right)$/i ? lc $1 : undef },
+                    },
+    'colgroup'   => \%col_attr,
+    'col'        => \%col_attr,
+    'thead'      => \%cellhv_attr,
+    'tfoot'      => \%cellhv_attr,
+    'tbody'      => \%cellhv_attr,
+    'tr'         => { bgcolor => \&cleanup_attr_color,
+                      %cellhv_attr,
+                    },
+    'th'         => \%thtd_attr,
+    'td'         => \%thtd_attr,
+    'ins'        => \%insdel_attr,
+    'del'        => \%insdel_attr,
+    'a'          => { href => \&cleanup_attr_uri },
+    'h1'         => \%texta_attr,
+    'h2'         => \%texta_attr,
+    'h3'         => \%texta_attr,
+    'h4'         => \%texta_attr,
+    'h5'         => \%texta_attr,
+    'h6'         => \%texta_attr,
+    'p'          => \%texta_attr,
+    'div'        => \%texta_attr,
+    'ul'         => { 'type'    => sub { /^(disc|square|circle)$/i ? lc $1 : undef },
+                      'compact' => undef,
+                    },
+    'ol'         => { 'type'    => \&cleanup_attr_text,
+                      'compact' => undef,
+                      'start'   => \&cleanup_attr_number,
+                    },
+    'li'         => { 'type'  => \&cleanup_attr_text,
+                      'value' => \&cleanup_no_number,
+                    },
+    'dl'         => { 'compact' => undef },
+    'dt'         => $none,
+    'dd'         => $none,
+    'address'    => $none,
+    'pre'        => { 'width' => \&cleanup_attr_number },
+    'center'     => $none,
+  );
+}
+sub cleanup_attr_number {
+  /^(\d+)$/ ? $1 : undef;
+}
+sub cleanup_attr_multilength {
+  /^(\d+(?:\.\d+)?[*%]?)$/ ? $1 : undef;
+}
+sub cleanup_attr_text {
+  tr/-a-zA-Z0-9()[]{}\/?.,\\|;:@#~=+-*^%$! //dc;
+  $_;
+}
+sub cleanup_attr_length {
+  /^(\d+\%?)$/ ? $1 : undef;
+}
+sub cleanup_attr_color {
+  /^(\w{2,20}|#[\da-fA-F]{6})$/ ? $1 : undef;
+}
+sub cleanup_attr_uri {
+  check_url($_) ? $_ : undef;
+}
+sub cleanup_attr_tframe {
+  /^(void|above|below|hsides|lhs|rhs|vsides|box|border)$/i
+  ? lc $1 : undef;
+}
+sub cleanup_attr_trules {
+  /^(none|groups|rows|cols|all)$/i ? lc $1 : undef;
+}
+
+# subroutine to crudely strip html from a text string
+# ideally we would want to use HTML::Parser or somesuch.
+# we will also implement any selective tag replacement here
+# thus all user supplied input that will be displayed should
+# be passed through this before being displayed.
+
+sub strip_html {
+  my ( $comments,$allow_html ) = @_;
+
+  $allow_html = defined $allow_html ? $allow_html : 0;
+
+  return cleanup_html( $comments, ($allow_html ? \%safe_tags : {}) );
+}
+
+use vars qw(@stack $safe_tags);
+sub cleanup_html {
+  local ($_, $safe_tags) = @_;
+  local @stack = ();
+
+  s[
+    (?: <!--.*?-->                                 ) |
+    (?: <[?!].*?>                                  ) |
+    (?: <([a-zA-Z]+)((?:[^>'"]|"[^"]*"|'[^']*')*)> ) |
+    (?: </([a-zA-Z]+)>                             ) |
+    (?: (<?[^<]+)                                  )
+  ][
+    defined $1 ? cleanup_tag(lc $1, $2)            :
+    defined $3 ? cleanup_close(lc $3)              :
+    defined $4 ? cleanup_cdata($4)                 :
+    ''
+  ]gesx;
+
+  # Close anything that was left open
+  $_ .= join '', map "</$_->{NAME}>", @stack;
+
+  # Where we turned <i><b>foo</i></b> into <i><b>foo</b></i><b></b>,
+  # take out the pointless <b></b>.
+  1 while s#<($auto_deinterleave_pattern)\b[^>]*></\1>##go;
+  return $_;
+}
+
+sub cleanup_tag
+{
+  my ($tag, $attrs) = @_;
+
+  unless (exists $safe_tags->{$tag}) {
+    push @debug_msg, "reject tag <$tag>" if $DEBUGGING;
+    return '';
+  }
+
+  my $t = $safe_tags->{$tag};
+  my $safe_attrs = '';
+  while ($attrs =~ s#^\s*(\w+)(?:=(?:([^"'>\s]+)|"([^"]*)"|'([^']*)'))?##) {
+    my $attr = lc $1;
+    my $val = ( defined $2 ? $2                :
+                defined $3 ? unescape_html($3) :
+                defined $4 ? unescape_html($4) :
+                ''
+    );
+    unless (exists $t->{$attr}) {
+      push @debug_msg, "<$tag>: attr '$attr' rejected" if $DEBUGGING;
+      next;
+    }
+    if (defined $t->{$attr}) {
+      local $_ = $val;
+      my $cleaned = &{ $t->{$attr} }();
+      if (defined $cleaned) {
+        $safe_attrs .= qq| $attr="${\( escape_html($cleaned) )}"|;
+        if ($DEBUGGING and $cleaned ne $val) {
+          push @debug_msg, "<$tag>'$attr':val [$val]->[$cleaned]";
+        }
+      } elsif ($DEBUGGING) {
+        push @debug_msg, "<$tag>'$attr':val [$val] rejected";
+      }
+    } else {
+      $safe_attrs .= " $attr";
+    }
+  }
+
+  if (exists $tag_is_empty{$tag}) {
+    return "<$tag$safe_attrs />";
+  } else {
+    my $html = "<$tag$safe_attrs>";
+    unshift @stack, { NAME => $tag, FULL => $html };
+    return $html;
+  }
+}
+
+sub cleanup_close {
+  my $tag = shift;
+
+  # Ignore a close without an open
+  unless (grep {$_->{NAME} eq $tag} @stack) {
+    push @debug_msg, "misplaced </$tag> rejected" if $DEBUGGING;
+    return '';
+  }
+
+  # Close open tags up to the matching open
+  my @close = ();
+  while (scalar @stack and $stack[0]{NAME} ne $tag) {
+    push @close, shift @stack;
+  }
+  push @close, shift @stack;
+
+  my $html = join '', map {"</$_->{NAME}>"} @close;
+
+  # Reopen any we closed early if all that were closed are configured
+  # to be auto deinterleaved.
+  unless (grep {! exists $auto_deinterleave{$_->{NAME}} } @close) {
+    pop @close;
+    $html .= join '', map {$_->{FULL}} reverse @close;
+    unshift @stack, @close;
+  }
+
+  return $html;
+}
+
+sub cleanup_cdata {
+  local $_ = shift;
+
+  s[ (?: & ( [a-zA-Z0-9]{2,15}       |
+             [#][0-9]{2,6}           |
+             [#][xX][a-fA-F0-9]{2,6} | ) \b ;?
+     ) | (.)
+  ][
+     defined $1 ? "&$1;" : $escape_html_map{$2}
+  ]gesx;
+
+  return $_;
+}
+
+# subroutine to escape the necessary characters to the appropriate HTML
+# entities
+
+sub escape_html {
+  my $str = shift;
+  $str =~ s/([^\w\Q$html_safe_chars\E])/$escape_html_map{$1}/og;
+  return $str;
+}
+
+# subroutine to unescape escaped HTML entities.  Note that some entites
+# have no 8-bit character equivalent, see
+# "http://www.w3.org/TR/xhtml1/DTD/xhtml-symbol.ent" for some examples.
+# unescape_html() leaves these entities in their encoded form.
+
+sub unescape_html {
+  my $str = shift;
+  $str =~
+    s/ &( (\w+) | [#](\d+) ) \b (;?)
+     /
+       defined $2 && exists $html_entities{$2} ? $html_entities{$2} :
+       defined $3 && $3 <= 255                 ? chr $3             :
+       "&$1$4"
+     /gex;
+
+  return $str;
 }
 
