@@ -1,7 +1,9 @@
 #!/usr/local/bin/perl -wT
 use strict;
 #
-# NMS sendmail $Revision: 1.4 $
+# $Id: nms_sendmail,v 1.5 2002-08-18 09:00:32 davorg Exp $
+#
+# NMS sendmail $Revision: 1.5 $
 #
 # This program is part of the NMS suite, see
 # <http://nms-cgi.sourceforge.net/> for details.
@@ -72,7 +74,7 @@ by default in Perl versions back to 5.00404.
 
 =head1 VERSION
 
-nms_sendmail $Revision: 1.4 $
+nms_sendmail $Revision: 1.5 $
 
 =head1 MAINTAINERS
 
@@ -92,7 +94,7 @@ and/or modify it under the same terms as Perl itself.
 
 =cut
 
-my $VERSION = ('$Revision: 1.4 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+my $VERSION = ('$Revision: 1.5 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 use IO::Socket;
 use Getopt::Std;
