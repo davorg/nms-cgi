@@ -23,6 +23,15 @@ $package = $1;
 
 system('nmstests',$package) and die "tests failed - aborting release\n";
 
+
+chdir "@{[ CVSBASE ]}/modules" or die "chdir modules: $!";
+system 'cvs diff >/dev/null' and die "first get @{[ CVSBASE ]}/modules in date\n";
+
+
+chdir CVSBASE or die "chdir CVSBASE: $!";
+system 'pub/inline_modules.pl' or die 'pub/inline_modules failed';
+
+
 chdir "@{[ CVSBASE ]}/$package" or die "chdir: $!";
 
 system 'cvs diff >/dev/null' and die "first get @{[ CVSBASE ]}/$package in date\n";
