@@ -26,7 +26,7 @@ used with various types of files, including 'B<.ini>',
 
 =head2 Copyright
 
-$Id: Config.pm,v 1.1.1.1 2003-01-31 01:41:29 neonedge Exp $
+$Id: Config.pm,v 1.2 2003-02-04 22:50:56 neonedge Exp $
 
 Copyright (c) 2000, 2001, Grant Mongardi.
 This program is licensed in the same way as Perl
@@ -500,7 +500,7 @@ sub _initialize {
 
     my($cfg_name,$cfg_value);
 
-    if( open (FILE, "$self->{_cfgfile}") ) {
+    if( open (FILE, "<$self->{_cfgfile}") ) {
 
         while ( <FILE> ) {
             # print "<!-- $_ -->\n";

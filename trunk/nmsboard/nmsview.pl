@@ -1,6 +1,6 @@
 #!c:/Perl/bin/perl -Tw
 #
-# $Id: nmsview.pl,v 1.1.1.1 2003-01-31 01:41:28 neonedge Exp $
+# $Id: nmsview.pl,v 1.2 2003-02-04 22:50:55 neonedge Exp $
 #
 # Part of Next Generation WWWBoard
 #   nmsview.pl - Controls viewing of the NMSBoard data entries.
@@ -18,7 +18,7 @@ use strict;
 use lib "./lib/";
 use CGI qw(:cgi);
 use CGI::NMS::Config;
-use CGI::NMS::Data;
+use CGI::NMS::Scripts::NMSBoard::DataView;
 use vars qw( $DEBUGGING $VERSION );
 BEGIN { $VERSION = "X"; }
 
@@ -27,7 +27,7 @@ $ENV{PATH} =~ /(.*)/ and $ENV{PATH} = $1;
 
 # PROGRAM INFORMATION
 # -------------------
-# nmsview.pl $Revision: 1.1.1.1 $
+# nmsview.pl $Revision: 1.2 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -47,7 +47,10 @@ $ENV{PATH} =~ /(.*)/ and $ENV{PATH} = $1;
 # parameters seems unclear, please see the README file.
 #
 # this is the location of the default configuration file. 
-my $def_cfg = "./.conf/.nms.cfg";
+my $cfg_name = '.nms';
+my $cfg_path = './.conf/';
+my $cfg_ext = 'cfg';
+# my $def_cfg = "./.conf/.nms.cfg";
 #
 # USER CONFIGURATION << END >>
 # ----------------------------
@@ -57,7 +60,10 @@ $| = 1;     # don't buffer output
 my $cgi_data = CGI->new();        # New CGI object
 
 # check if 'cfg' is set via the URL query_string, if so use that.
-$def_cfg = $cgi_data->param('cfg') if( $cgi_data->param('cfg') );
+my $esc_cfg = defined $cgi_data->param('cfg') ? $cgi_data->param('cfg') : $cfg_name;
+$esc_cfg =~ /^(\.*[\w\-]{1,100})$/ or die "bad cfg value [$esc_cfg]";
+$cgi_data->param('cfg', $esc_cfg );
+my $def_cfg = "$cfg_path$esc_cfg.$cfg_ext";
 
 my $cfg = CGI::NMS::Config->new( -file => $def_cfg );
 $DEBUGGING = $cfg->get( 'DEBUGGING' );
@@ -92,15 +98,14 @@ print "Content-type: ", $cfg->get( 'Content_type' ), "\n\n\n";
 my $header = $cfg->get( 'LISTHeader' );
 &print_header( $header );
 
+print "\n<!-- In default -->\n\n" if $DEBUGGING;
 my $data_file = $cfg->get( 'mesgfile' ) if( defined $cfg->get( 'mesgfile' ) );
 if( defined $data_file ) {
 	my $base_dir = $cfg->get( 'basedir' ) if( defined $cfg->get( 'basedir' ) );
-    if( my $data = CGI::NMS::Data->new( "$base_dir/$data_file" ) ) {    # create a NMSData object
+    if( my $data = CGI::NMS::Scripts::NMSBoard::DataView->new( "$base_dir/$data_file" ) ) {    # create a NMSData object
 	    my $tid = 0;
-        while( $tid = $data->print_thread( $cfg, $tid ) ){
-			print "\n\n<!-- $tid -->\n\n";
-		}    # print all threads starting at LIST_ROOT
-		$data->print_form( $cfg, $tid, $cfg );
+        while( $tid = $data->print_thread( $cgi_data, $cfg, $tid ) ){;}    # print all threads starting at LIST_ROOT
+		$data->print_form( $cgi_data, $cfg, $tid );
 	} else {
 	    print $cfg->get( 'DATA_OBJECT_FAIL' ), "$base_dir/$data_file\n";
 	}
@@ -128,19 +133,18 @@ sub show_message {
 # output HTTP and XHTML or HTML headers
 print "Content-type: ", $cfg->get( 'Content_type' ), "\n\n\n";
 my $header = $cfg->get( 'MSGHeader' );
-my $this_id = $cgi_data->param( "msg_id" );
-&print_header( $header, "$this_id" );
+&print_header( $header, $cgi_data->param( "msg_id" ) );
 print "\n<!-- In ShowMsg -->\n\n" if $DEBUGGING;
 my $data_file = $cfg->get( 'mesgfile' ) if( defined $cfg->get( 'mesgfile' ) );
 if( defined $data_file ) {
 	my $base_dir = $cfg->get( 'basedir' ) if( defined $cfg->get( 'basedir' ) );
-    if( my $data = CGI::NMS::Data->new( "$base_dir/$data_file" ) ) {    # create an NMSData object
+    if( my $data = CGI::NMS::Scripts::NMSBoard::DataView->new( "$base_dir/$data_file" ) ) {    # create an NMSData object
 		if( defined $cgi_data->param( "msg_id" ) ) {
-			$data->print_message( $cfg, $cgi_data->param( "msg_id" ) );   # print out message
+			$data->print_message( $cgi_data, $cfg, $cgi_data->param( "msg_id" ) );   # print out message
 		} else {
 			print $cfg->get( 'MSGID_NOT_SPECIFIED' );
 		}
-		$data->print_form( $cfg, $this_id, $cgi_data );
+		$data->print_form( $cgi_data, $cfg, $cgi_data->param( "msg_id" ) );
 	} else {
 		print $cfg->get( 'DATA_OBJECT_FAIL' ), "$base_dir/$data_file\n";
 	}
@@ -171,13 +175,14 @@ my $header = $cfg->get( 'LISTHeader' );
 my $this_id = $cgi_data->param( "msg_id" );
 &print_header( $header, "[$this_id]" );
 
+print "\n<!-- In ShowThr -->\n\n" if $DEBUGGING;
 my $data_file = $cfg->get( 'mesgfile' ) if( defined $cfg->get( 'mesgfile' ) );
 if( defined $data_file ) {
 	my $base_dir = $cfg->get( 'basedir' ) if( defined $cfg->get( 'basedir' ) );
-    if( my $data = CGI::NMS::Data->new( "$base_dir/$data_file" ) ) {    # create a NMSData object
-		if( defined $cgi_data->param( "msg_id" ) ) {
-			$data->print_thread( $cfg, $cgi_data->param( "msg_id" ) );    # print the complete thread specified
-			$data->print_form( $cfg, $cgi_data->param( "msg_id" ), $cgi_data );
+    if( my $data = CGI::NMS::Scripts::NMSBoard::DataView->new( "$base_dir/$data_file" ) ) {    # create a NMSData object
+		if( defined $this_id ) {
+			$data->print_thread( $cgi_data, $cfg, $this_id );    # print the complete thread specified
+			$data->print_form( $cgi_data, $cfg, $this_id );
 		} else {
 			print $cfg->get( 'MSGID_NOT_SPECIFIED' );
 		}
@@ -227,11 +232,11 @@ close( HEAD );
 
 foreach( @tmpl ) {
 	# 'PARSE_ITEM_*' strings in template return the value from the Config object that matches the * part
-	$_ =~ s/PARSE_ITEM_([a-zA-Z0-9_-]+)/$cfg->{ "$1$context" }/g;  # Had to use direct access because get() won't interpolate
+	$_ =~ s/{=\s*NMS_CFG_ITEM_([a-zA-Z0-9_-]+)\s*=}/$cfg->get( "$1$context" )/ge;  
 	if( $id ){
-		$_ =~ s/NMS_ID_NUM/$id/g;
+		$_ =~ s/{=\s*NMS_ID_NUM\s*=}/$id/g;
 	} else {
-		$_ =~ s/NMS_ID_NUM//g;
+		$_ =~ s/{=\s*NMS_ID_NUMs*=}//g;
 	}
 	print $_;
 }
