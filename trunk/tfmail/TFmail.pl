@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.4 2002-05-02 07:50:40 nickjc Exp $
+# $Id: TFmail.pl,v 1.5 2002-05-04 06:59:59 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -57,7 +57,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.4 $, 10, -1;
+  $VERSION = substr q$Revision: 1.5 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -316,7 +316,7 @@ sub send_email
          Subject          => $msg->{Subject},
          'X-Http-Client'  => $x_remote,
          'X-Generated-By' => $x_gen_by,
-         Type             => 'TEXT',
+         Type             => 'text/plain; charset=iso-8859-1',
          Data             => $msg->{body},
          Date             => '',
          Encoding         => 'quoted-printable',
