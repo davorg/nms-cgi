@@ -1,10 +1,10 @@
 #! /usr/bin/perl -Tw
 #
-# $Id: rand_link.pl,v 1.8 2002-03-27 20:36:38 davorg Exp $
+# $Id: rand_link.pl,v 1.9 2002-05-01 08:09:55 gellyfish Exp $
 #
 
 use strict;
-use POSIX qw(strftime);
+use POSIX qw(locale_h strftime);
 use CGI qw(redirect);
 use Fcntl qw(:DEFAULT :flock);
 use vars qw($DEBUGGING $done_headers);
@@ -51,6 +51,8 @@ my $logfile = '/path/to/rand_log';
 # %Z - the time zone (full name or abbreviation)
 
 my $date_format = '%Y-%m-%d %H:%M:%S';
+
+my $locale      = '';
 
 # End configuration
 
@@ -117,6 +119,12 @@ close LINKS;
 
 
 if ($uselog) {
+
+  eval
+  {
+       strftime(LC_TIME, $locale) if $locale;
+  };
+
   my $date = strftime($date_format, localtime());
 
   sysopen (LOG, $logfile, O_RDWR|O_APPEND|O_CREAT)

@@ -1,12 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.14 2002-03-27 20:36:40 davorg Exp $
+# $Id: counter.pl,v 1.15 2002-05-01 08:09:55 gellyfish Exp $
 #
 
 use strict;
 use CGI qw(header virtual_host);
 use Fcntl qw(:DEFAULT :flock);
-use POSIX qw(strftime);
+use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_header);
 
 # Older Fcntl don't have the SEEK_* constants :(
@@ -55,6 +55,8 @@ my $allow_virtual_hosts = 0;
 my $use_single_file     = 0;
 
 my $single_data_file    = 'counter.txt';
+
+my $locale              = '';
 
 # End configuration
 
@@ -215,6 +217,11 @@ sub check_uri {
 sub create {
 
   my ( $counter_file ) = @_;
+
+  eval
+  {
+     setlocale(LC_TIME, $locale) if $locale;
+  };
 
   my $date = strftime('%B %d %Y', localtime);
 

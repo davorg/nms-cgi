@@ -1,10 +1,10 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.14 2002-03-27 20:36:36 davorg Exp $
+# $Id: countdown.pl,v 1.15 2002-05-01 08:09:54 gellyfish Exp $
 #
 
 use strict;
-use POSIX qw(strftime);
+use POSIX qw(locale_h strftime);
 use Time::Local;
 use CGI qw(:standard);
 use vars qw($DEBUGGING $done_headers);
@@ -32,6 +32,11 @@ my $date_fmt = '%H:%M:%S %d/%b/%Y';
 # original countdown.pl did.
 
 my $emulate_matts_code = 1;
+
+# $locale will determine what language dates and times are output as.  If you
+# you are not concerned about this then leave this blank
+
+my $locale = '';
 
 # End configuration
 
@@ -118,6 +123,12 @@ if ( @query_string == 6 ) {
 
 $from_date[0] -= 1900;
 $from_date[1]--;
+
+
+eval 
+{
+   setlocale(LC_TIME, $locale) if $locale;
+};
 
 my $from_date = strftime($date_fmt, reverse @from_date);
 my $now = strftime($date_fmt, reverse @now);

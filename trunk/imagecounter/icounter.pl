@@ -1,12 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: icounter.pl,v 1.11 2002-03-27 20:36:36 davorg Exp $
+# $Id: icounter.pl,v 1.12 2002-05-01 08:09:54 gellyfish Exp $
 #
 
 use strict;
-use CGI 'header';
+use CGI qw(header);
 use Fcntl qw(:DEFAULT :flock);
-use POSIX 'strftime';
 use vars qw($DEBUGGING $done_headers);
 
 # Older Fcntl module doesn't have the SEEK_* constants

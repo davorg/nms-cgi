@@ -119,8 +119,23 @@ alter the way that the program works.
                       requires should be provided here. Your hosting
                       provider or system administrator should be able to
                       tell you what to set this variable to.
+         </paragraph>
+         <paragraph>
+                      A $mailprog setting that works for many UNIX-like
+                      hosts is:
 
-                      A
+                        $mailprog = '/usr/lib/sendmail -oi -t';
+
+                      Some other UNIX-like hosts need:
+
+                        $mailprog = '/usr/sbin/sendmail -oi -t';
+
+                      For hosts that lack a suitable sendmail binary
+                      (such as most Windows systems) we have a Perl 
+                      script which does the job of the sendmail binary,
+                      in the nms_sendmail package at 
+                      <http://nms-cgi.sourceforge.net/>.  See the README
+                      file in the nms_sendmail package for instructions.
          </paragraph>
       </description>
    </variable>
@@ -142,9 +157,18 @@ alter the way that the program works.
       <var_name>@allow_mail_to</var_name>
       <description>
          <paragraph>
-            A list of the email addresses that formmail can send
+                    - A list of the email addresses that formmail can send
                       email to. The elements of this list can be either
-                      simple email addresses (like 'you
+                      simple email addresses (like 'you@your.domain') or
+                      domain names (like 'your.domain'). If it's a domain
+                      name then *any* address at the domain will be allowed.
+         </paragraph>
+         <paragraph>
+                      Example: to allow mail to be sent to 'you@your.domain'
+                      or any address at the host 'mail.your.domain', you
+                      would set:
+
+                      @allow_mail_to = qw(you@your.domain mail.your.domain);
          </paragraph>
       </description>
    </variable>
@@ -152,9 +176,27 @@ alter the way that the program works.
       <var_name>@recipients</var_name>
       <description>
          <paragraph>
-            A list of Perl regular expression patterns that
+                      A list of Perl regular expression patterns that
                       determine who the script will allow mail to be sent
-                      to in addition to those set in
+                      to in addition to those set in @allow_mail_to. This is
+                      present only for compatibility with the original
+                      formmail script.  We strongly advise against having
+                      anything in @recipients as it's easy to make a mistake
+                      with the regular expression syntax and turn your
+                      formmail into an open SPAM relay.
+         </paragraph>
+         <paragraph>
+
+                      There is an implicit $ at the end of the regular
+                      expression, but you need to include the ^ if you want
+                      it anchored at the start.  Note also that since '.' is
+                      a regular expression metacharacter, you'll need to
+                      escape it before using it in domain names.
+         </paragraph>
+         <paragraph>
+                      If that last paragraph makes no sense to you then
+                      please don't put anything in @recipients, stick to
+                      using the less error prone @allow_mail_to.
          </paragraph>
       </description>
    </variable>
@@ -162,16 +204,36 @@ alter the way that the program works.
       <var_name>%recipient_alias</var_name>
       <description>
          <paragraph>
-            A hash for predefining a list of recipients in the
+                      A hash for predefining a list of recipients in the
                       script, and then choosing between them using the
                       recipient form field, while keeping all the email
                       addresses out of the HTML so that they don't get
                       collected by address harvesters and sent junk email.
+          </paragraph>
+           <paragraph>
 
                       For example, suppose you have three forms on your
                       site, and you want each to submit to a different email
                       address and you want to keep the addresses hidden.
-                      You might set up
+                      You might set up %recipient_alias like this:
+          </paragraph>
+           <paragraph>
+
+                      %recipient_alias = (
+                        '1' => 'one@your.domain',
+                        '2' => 'two@your.domain',
+                        '3' => 'three@your.domain',
+                      );
+          </paragraph>
+           <paragraph>
+
+                      In the HTML form that should submit to the recipient
+                      'two@your.domain', you would then set the recipient
+                      with:
+          </paragraph>
+           <paragraph>
+
+                      <input type="hidden" name="recipient" value="2" />
          </paragraph>
       </description>
    </variable>
@@ -189,121 +251,27 @@ alter the way that the program works.
       <var_name>$date_fmt</var_name>
       <description>
          <paragraph>
-            The format that the date will be displayed in. This
+i                     The format that the date will be displayed in. This
                       is a string that contains a number of different 'tags'.
-                      Each tag consists of a
+                      Each tag consists of a % character followed by a letter.
+                      Each tag represents one way of displaying a particular
+                      part of the date or time. Here are some common tags:
          </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%Y</var_name>
-      <description>
          <paragraph>
-            four digit year (2002)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%y</var_name>
-      <description>
-         <paragraph>
-            two digit year (02)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%m</var_name>
-      <description>
-         <paragraph>
-            month of the year (01 to 12)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%b</var_name>
-      <description>
-         <paragraph>
-            short month name (Jan to Dec)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%B</var_name>
-      <description>
-         <paragraph>
-            long month name (January to December)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%d</var_name>
-      <description>
-         <paragraph>
-            day of the month (01 to 31)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%a</var_name>
-      <description>
-         <paragraph>
-            short day name (Sun to Sat)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%A</var_name>
-      <description>
-         <paragraph>
-            long day name (Sunday to Saturday)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%H</var_name>
-      <description>
-         <paragraph>
-            hour in 24 hour clock (00 to 23)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%I</var_name>
-      <description>
-         <paragraph>
-            hour in 12 hour clock (01 to 12)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%p</var_name>
-      <description>
-         <paragraph>
-            AM or PM
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%M</var_name>
-      <description>
-         <paragraph>
-            minutes (00 to 59)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%S</var_name>
-      <description>
-         <paragraph>
-            seconds (00 to 59)
-         </paragraph>
-      </description>
-   </variable>
-   <variable>
-      <var_name>%Z</var_name>
-      <description>
-         <paragraph>
-            the name of the local timezone
+                      %Y - four digit year (2002)
+                      %y - two digit year (02)
+                      %m - month of the year (01 to 12)
+                      %b - short month name (Jan to Dec)
+                      %B - long month name (January to December)
+                      %d - day of the month (01 to 31)
+                      %a - short day name (Sun to Sat)
+                      %A - long day name (Sunday to Saturday)
+                      %H - hour in 24 hour clock (00 to 23)
+                      %I - hour in 12 hour clock (01 to 12)
+                      %p - AM or PM
+                      %M - minutes (00 to 59)
+                      %S - seconds (00 to 59)
+                      %Z - the name of the local timezone
          </paragraph>
       </description>
    </variable>
@@ -315,7 +283,8 @@ alter the way that the program works.
                       used for script generated messages.  This should
 		      probably be the same as the one that you use for all
                       the other pages.  This should be a local absolute URI
-                      fragment.  Set
+                      fragment.  Set $style to '0' or the empty string if
+                      you don't want to use style sheets.
          </paragraph>
       </description>
    </variable>
@@ -323,10 +292,11 @@ alter the way that the program works.
       <var_name>$send_confirmation_mail</var_name>
       <description>
          <paragraph>
-            If this flag is set to 1 then an additional email
+                          If this flag is set to 1 then an additional email
                           will be sent to the person who submitted the
                           form.
-
+         </paragraph>
+         <paragraph>
                           CAUTION: with this feature turned on it's
                           possible for someone to put someone else's email
                           address in the form and submit it 5000 times,
@@ -340,8 +310,31 @@ alter the way that the program works.
       <var_name>$confirmation_text</var_name>
       <description>
          <paragraph>
-            The header and body of the confirmation email
+                          The header and body of the confirmation email
                           sent to the person who submits the form, if the
+                          $send_confirmation_mail flag is set. We use a
+                          Perl 'here document' to allow us to configure it
+                          as a single block of text in the script. In the
+                          example below, everything between the lines
+
+                            $confirmation_text = <<'END_OF_CONFIRMATION';
+
+                          and
+
+                          END_OF_CONFIRMATION
+
+                          is treated as part of the email. Everything
+                          before the first blank line is taken as part of
+                          the email header, and everything after the first
+                          blank line is the body of the email.
+
+    $confirmation_text = <<'END_OF_CONFIRMATION';
+  From: you@your.com
+  Subject: form submission
+
+  Thankyou for your form submission.
+
+  END_OF_CONFIRMATION
          </paragraph>
       </description>
    </variable>

@@ -1,10 +1,10 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.39 2002-04-23 20:20:59 nickjc Exp $
+# $Id: guestbook.pl,v 1.40 2002-05-01 08:09:54 gellyfish Exp $
 #
 
 use strict;
-use POSIX qw(strftime);
+use POSIX qw(locale_h strftime);
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use IO::File;
@@ -14,7 +14,7 @@ use vars qw(
   $guestbookreal $guestlog $cgiurl $emulate_matts_code
   $style $mail $uselog $linkmail $separator $redirection
   $entry_order $remote_mail $allow_html $line_breaks
-  $mailprog $recipient $short_date_fmt $long_date_fmt
+  $mailprog $recipient $short_date_fmt $long_date_fmt $locale
 );
 
 # sanitize the environment
@@ -98,10 +98,12 @@ $recipient = 'you@your.com';
 $long_date_fmt  = '%A, %B %d, %Y at %T (%Z)';
 $short_date_fmt = '%d/%m/%y %T %Z';
 
+$locale         = '';
+
 # End configuration
 
 use vars qw($VERSION);
-$VERSION = ('$Revision: 1.39 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+$VERSION = ('$Revision: 1.40 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -163,6 +165,12 @@ $style_element = $style ?
 
 use vars qw($date $shortdate);
 my @now    = localtime();
+
+eval
+{
+   setlocale(LC_TIME, $locale) if $locale;
+};
+
 $date      = strftime($long_date_fmt, @now);
 $shortdate = strftime($short_date_fmt, @now);
 

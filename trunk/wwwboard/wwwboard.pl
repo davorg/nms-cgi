@@ -1,12 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.23 2002-03-27 20:36:40 davorg Exp $
+# $Id: wwwboard.pl,v 1.24 2002-05-01 08:09:55 gellyfish Exp $
 #
 
 use strict;
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
-use POSIX qw(strftime);
+use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_headers);
 my $VERSION = '1.0';
 
@@ -81,6 +81,7 @@ my %max_len             = ('name'        => 50,
                            'origdate'    => 50);
 my $strict_image        = 1;
 my @image_suffixes      = qw(png jpe?g gif);
+my $locale              = '';
 
 #
 # USER CONFIGURATION << END >>
@@ -336,6 +337,11 @@ sub get_variables {
     $variables->{hidden_body} = $hidden_body;
    
    }
+
+   eval
+   {
+       setlocale(LC_TIME, $locale ) if $locale;
+   };
 
    $variables->{date} = strftime($date_fmt , localtime());
 

@@ -1,10 +1,10 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.79 2002-04-23 20:20:59 nickjc Exp $
+# $Id: FormMail.pl,v 1.80 2002-05-01 08:09:54 gellyfish Exp $
 #
 
 use strict;
-use POSIX qw(strftime);
+use POSIX qw(locale_h strftime);
 use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
 use vars qw(
@@ -12,12 +12,12 @@ use vars qw(
   $allow_empty_ref $max_recipients $mailprog @referers
   @allow_mail_to @recipients %recipient_alias
   @valid_ENV $date_fmt $style $send_confirmation_mail
-  $confirmation_text
+  $confirmation_text $locale
 );
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.79 $
+# FormMail.pl $Revision: 1.80 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -49,6 +49,7 @@ BEGIN
   @recipients        = ();
   %recipient_alias   = ();
   @valid_ENV         = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
+  $locale            = '';
   $date_fmt          = '%A, %B %d, %Y at %H:%M:%S';
   $style             = '/css/nms.css';
   $send_confirmation_mail = 0;
@@ -65,7 +66,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.79 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.80 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -169,6 +170,11 @@ use vars qw(%Config %Form);
 %Form = ();
 
 check_url();
+
+eval
+{
+   setlocale(LC_TIME, $locale) if $locale;
+};
 
 my $date = strftime($date_fmt, localtime);
 
@@ -857,7 +863,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.79 $
+FormMail $Revision: 1.80 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE

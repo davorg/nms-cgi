@@ -1,10 +1,10 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: textclock.pl,v 1.8 2002-03-27 20:36:40 davorg Exp $
+# $Id: textclock.pl,v 1.9 2002-05-01 08:09:55 gellyfish Exp $
 #
 
 use strict;
-use POSIX 'strftime';
+use POSIX qw(locale_h strftime);
 use CGI 'header';
 use vars qw($DEBUGGING $done_headers);
 
@@ -27,6 +27,7 @@ my $Display_Month_Day = 1;
 my $Display_Year      = 1;
 my $Display_Time      = 1;
 my $Display_Time_Zone = 1;
+my $locale            = '';
 
 # End configuration
 
@@ -93,5 +94,10 @@ push @date_fmt, '%Z'       if $Display_Time_Zone;
 
 print header(-type => 'text/plain');
 $done_headers++;
+
+eval
+{
+   setlocale(LC_TIME, $locale ) if $locale;
+};
 
 print strftime(join(' ', @date_fmt), localtime);

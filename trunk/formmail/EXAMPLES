@@ -485,7 +485,7 @@ There are many more configuration options for FormMail.pl
 than those used in these examples.  See the README file for
 details.
 
-In all these examples, I've left the value of the $DEBBUGING
+In all these examples, I've left the value of the $DEBUGGING
 configuration variable set to 1.  It should be changed to 0
 once you have finished setting up your forms, in order to
 restrict the amount of information that a malicious person

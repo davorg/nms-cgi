@@ -1,10 +1,10 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: ssi_rand_image.pl,v 1.9 2002-03-27 20:36:40 davorg Exp $
+# $Id: ssi_rand_image.pl,v 1.10 2002-05-01 08:09:55 gellyfish Exp $
 #
 
 use strict;
-use POSIX qw(strftime);
+use POSIX qw(locale_h strftime);
 use CGI qw(header img a);
 use Fcntl qw(:DEFAULT :flock);
 use vars qw($DEBUGGING $done_headers);
@@ -36,11 +36,12 @@ my $uselog = 1;
 my $logfile = '/path/to/log/file';
 
 my $date_fmt = '%c';
-my $date = strftime $date_fmt, localtime;
 
 my $link_image = 1;
 my $align = 'left';
 my $border = 2;
+
+my $locale = '';
 
 # End configuration
 
@@ -117,6 +118,14 @@ print $output;
 
 # If You want a log, we add to it here.
 if ($uselog) {
+
+   eval
+   {
+      setlocale(LC_TIME, $locale) if $locale ;
+   };
+
+   my $date = strftime $date_fmt, localtime;
+
   sysopen(LOG, $logfile, O_APPEND|O_CREAT|O_RDWR)
     or die "Can't open log file: $!\n";
   flock LOG, LOCK_EX
