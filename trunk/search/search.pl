@@ -1,8 +1,12 @@
-#!/usr/bin/perl -wT
+#!perl -wT
 #
-# $Id: search.pl,v 1.17 2002-02-03 22:06:29 dragonoe Exp $
+# $Id: search.pl,v 1.18 2002-02-05 03:42:39 jfryan Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2002/02/03 22:06:29  dragonoe
+# Added header to script after log. Also cleaned up the pre-header (use & stuff)
+# information so it looks less confusing for newbies and aligned config values.
+#
 # Revision 1.16  2002/02/02 13:57:54  nickjc
 # match the empty string as a valid directory name
 #
@@ -75,7 +79,7 @@ delete @ENV{qw(ENV BASH_ENV IFS)};# ditto
 # <http://www.perl.com/pub/a/language/misc/Artistic.html>
 #
 # For a list of changes see CHANGELOG
-# 
+#
 # For help on configuration or installation see README
 #
 # USER CONFIGURATION SECTION
@@ -87,13 +91,13 @@ delete @ENV{qw(ENV BASH_ENV IFS)};# ditto
 #
 BEGIN { $DEBUGGING      = 1; }
 my $basedir             = '/indigo/html';
-my $baseurl             = '/indigo/html';
-my @files               = ('*.txt','*.html','*.dat', 'src');
+my $baseurl             = '/html';
+my @files               = ('*.html','*/*.html');
 my $title               = "NMS Search Program";
 my $title_url           = 'http://cgi-nms.sourceforge.net';
 my $search_url          = 'http://localhost/search.html';
 my @blocked             = ();
-my $emulate_matts_code  = 1;
+my $emulate_matts_code  = 0;
 my $style               = '';
 #
 # USER CONFIGURATION << END >>
@@ -160,8 +164,8 @@ my $terms = param("terms") ? param("terms") : "";
 
 start_of_html($title, $style);
 
-my @term_list = ();
-my ($wclist, $dirlist) = ('', '');
+my (@term_list,@paths,@hits,@titles);
+my ($wclist, $dirlist, $termlist);
 
 my $startdir;
 
@@ -169,11 +173,22 @@ if ($terms)
 {
     @term_list = split(/\s+/, $terms);
     ($wclist, $dirlist) = build_list(@files);
-
+    my @temp_list = @term_list;
+    $termlist = join ('|', map{quotemeta($_); $_='(?:'.$_.')'}@temp_list);
     # I have taken out the reimplementation hack ;-}
 
     $startdir = $basedir;
     find ( \&do_search, $startdir);
+    if (!$emulate_matts_code)
+    {
+	    my @base = sort {$hits[$b] <=> $hits[$a]} (0 .. $#hits);
+	    @titles  = @titles[@base];
+        @paths   = @paths[@base];
+        for (my $i=0; $i<@hits; $i++)
+        {
+	    	print_result ($baseurl, $paths[$i], $titles[$i]);
+        }
+    }
 }
 else
 {
@@ -200,7 +215,7 @@ sub do_search
         }
         return;
     }
-    return unless ("$dirname$basename" =~ m/$wclist/i);
+    return unless ("$dirname$basename" =~ m/$wclist/io);
     return unless -r _;
     foreach my $blocked (@blocked) {
         return if ($File::Find::dir eq $blocked)
@@ -239,7 +254,17 @@ sub do_search
         $page_title = $1;
     }
 
-    print_result($baseurl, "$dirname$basename", $page_title);
+  	if ($emulate_matts_code) {
+    	print_result($baseurl, "$dirname$basename", $page_title);
+    }
+    else {
+	    my @m = split(/$termlist/i, $string);
+	    my $matches = scalar(@m);
+	    print $matches;
+	    push (@hits, $matches);
+	    push (@paths, "$dirname$basename");
+	    push (@titles, $page_title);
+	}
 }
 
 #
@@ -350,4 +375,3 @@ sub detaint_dirname
     $dirname =~ m|^([-+@\w./]*)$| or die "suspect directory name: $dirname";
     return $1;
 }
-
