@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 2.21 2003-01-27 21:02:01 nickjc Exp $
+# $Id: FormMail.pl,v 2.22 2003-02-21 13:55:24 nickjc Exp $
 #
 
 use strict;
@@ -19,7 +19,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 2.21 $
+# FormMail.pl $Revision: 2.22 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -74,7 +74,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 2.21 $, 10, -1;
+  $VERSION = substr q$Revision: 2.22 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -597,14 +597,14 @@ sub email_start {
     $smtp = IO::Socket::INET->new($mailhost);
     defined $smtp or die "SMTP connect to [$mailhost]: $!";
 
-    my $banner = smtp_getline();
+    my $banner = smtp_response();
     $banner =~ /^2/ or die "bad SMTP banner [$banner] from [$mailhost]";
 
     my $helohost = ($ENV{SERVER_NAME} =~ /^([\w\-\.]+)$/ ? $1 : '.');
     smtp_command("HELO $helohost");
-    smtp_command("MAIL FROM: <$sender>");
+    smtp_command("MAIL FROM:<$sender>");
     foreach my $r (@recipients) {
-      smtp_command("RCPT TO: <$r>");
+      smtp_command("RCPT TO:<$r>");
     }
     smtp_command("DATA", '3');
   }
@@ -654,16 +654,25 @@ sub smtp_command {
   $smtp->print("$cmd\015\012")
       or die "write [$cmd] to SMTP server: $!";
 
-  my $resp = smtp_getline();
+  my $resp = smtp_response();
   unless (substr($resp, 0, 1) eq $want) {
     die "SMTP command [$cmd] gave response [$resp]";
   }
 }
 
+sub smtp_response {
+  my $line = smtp_getline();
+  my $resp = $line;
+  while ($line =~ /^\d\d\d\-/) {
+    $line = smtp_getline();
+    $resp .= $line;
+  }
+  return $resp;
+}
+
 sub smtp_getline {
   my $line = <$smtp>;
   defined $line or die "read from SMTP server: $!";
-  $line =~ tr#\012\015##d;
   return $line;
 }  
 
@@ -1034,7 +1043,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 2.21 $
+FormMail $Revision: 2.22 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
