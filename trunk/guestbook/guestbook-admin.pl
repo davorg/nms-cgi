@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-#   $Id: guestbook-admin.pl,v 1.2 2004-10-28 13:50:10 gellyfish Exp $
+#   $Id: guestbook-admin.pl,v 1.3 2004-10-29 08:11:57 gellyfish Exp $
 #
 # guestbooksadmin.pl - admin script for guestbook.pl, allows for deletion and
 # hiding of comments.
@@ -16,33 +16,39 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use IO::File;
 
-use vars qw($DEBUGGING %inputs $shortdate $comment_num
+use vars qw($DEBUGGING %inputs $shortdate
   $comment_is_hidden $done_headers %actions $password $session_dir
   $guestlog $guestbookreal $myURL $short_date_fmt);
 
 # config section - these variables must be defined before any code runs
-BEGIN {
-    $password       = '';
+BEGIN
+{
+    $DEBUGGING      = 1;
+    $password       = 'password';
     $session_dir    = '/tmp/guestbook-sessions/';
-    $guestlog       = '/usr/local/www/data/guestbook/guestlog.html';
-    $guestbookreal  = '/usr/local/www/data/guestbook/guestbook.html';
-    $myURL          = 'http://cleese/cgi-bin/guestbook-admin.pl';
+    $guestlog       = '/var/www/nms-test/guestbook/guestlog.html';
+    $guestbookreal  = '/var/www/nms-test/guestbook/guestbook.html';
+    $myURL          = 'http://nms-test/cgi-bin/guestbook-admin.pl';
     $short_date_fmt = '%d/%m/%y %T %Z';
 }
 
 # Routines that need to be defined before we use them
-BEGIN {
+BEGIN
+{
 
     # Error messages should be sent to the users browser
     #  from guestbook.pl
-    sub fatalsToBrowser {
+    sub fatalsToBrowser
+    {
         my ($message) = @_;
 
-        if ($DEBUGGING) {
+        if ($DEBUGGING)
+        {
             $message =~ s/</&lt;/g;
             $message =~ s/>/&gt;/g;
         }
-        else {
+        else
+        {
             $message = '';
         }
 
@@ -51,7 +57,8 @@ BEGIN {
 
         if ( $file =~ /^\(eval/ ) { return undef; }
 
-        if ( !$done_headers ) {
+        if ( !$done_headers )
+        {
             print "Content-Type: text/html; charset=iso-8859-1\n\n";
         }
 
@@ -78,7 +85,8 @@ EOERR
     }
 
     # from guestbook.pl
-    sub strip_nonprintable {
+    sub strip_nonprintable
+    {
         my $text = shift;
         return '' unless defined $text;
         $text =~ tr#\t\n\040-\176\240-\377# #cs;
@@ -87,47 +95,13 @@ EOERR
 
     # Log the Entry or Error
     # from guestbook.pl
-    sub write_log {
-        my ($log_type) = @_;
-
-        my $found_close_body = 0;
-
-        rewrite_file(
-            $guestlog,
-            sub {
-                if ( not defined ) {
-
-                    # Matt's original guestlog.html is missing these close
-                    # tags, so if we don't find </body> we append them to
-                    # make guestlog.html into valid XHTML.
-                    $_ = "</body>\n</html>\n" unless $found_close_body;
-                }
-                if ( defined and m#</body>#i ) {
-                    $found_close_body = 1;
-                    my $remote = remote_host();
-                    my $logline;
-                    if ( $log_type eq 'entry' ) {
-                        $logline = "$remote - [$shortdate]<br />\n";
-                    }
-                    elsif ( $log_type eq 'no_name' ) {
-                        $logline =
-                          "$remote - [$shortdate] - ERR: No Name<br />\n";
-                    }
-                    elsif ( $log_type eq 'no_comments' ) {
-                        $logline =
-                          \"$remote - [$shortdate] - ERR: No Comments<br />\n";
-                    }
-                    $_ = "$logline$_";
-                }
-            }
-        );
-    }
 
     $SIG{__DIE__} = \&fatalsToBrowser;
 }
 
 # check for the login cookie sent by the browser as a valid login cookie
-sub has_login_cookie {
+sub has_login_cookie
+{
 
     # check for existing login cookie
     return -f $session_dir . $inputs{cookie};
@@ -135,7 +109,8 @@ sub has_login_cookie {
 
 # check whether a given cookie is a valid cookie and > 6 hours old. this is
 # used in cleaning up old cookies.
-sub is_old_cookie {
+sub is_old_cookie
+{
     my $filename = shift;
     local $_;
 
@@ -148,17 +123,24 @@ sub is_old_cookie {
 }
 
 # print html fragments for admin functions
-sub add_admin_html {
-    print
-qq%<a href="$myURL?action=delete&entry=$comment_num&cookie=$inputs{cookie}">delete comment</a>\n%;
-    print
-qq%<a href="$myURL?action=hide&entry=$comment_num&cookie=$inputs{cookie}">hide/unhide comment (currently %;
+sub add_admin_html
+{
+    my ($comment_num) = @_;
+
+    print <<EODELETE;
+<a href="$myURL?action=delete&entry=$comment_num&cookie=$inputs{cookie}">
+delete comment</a>
+EODELETE
+    print <<EOHIDE;
+<a href="$myURL?action=hide&entry=$comment_num&cookie=$inputs{cookie}">hide/unhide comment (currently 
+EOHIDE
     print 'not ' unless $comment_is_hidden;
     print qq%hidden)</a><br /><br />\n%;
 }
 
 # show the admin view of guestbook.html
-sub view_guestbook_as_admin {
+sub view_guestbook_as_admin
+{
     local $_;
 
     die "Not logged in!" if ( !&has_login_cookie );
@@ -166,19 +148,33 @@ sub view_guestbook_as_admin {
     my $in = new IO::File->new("<$guestbookreal") or die "<$guestbookreal: $!";
 
     print header();
-    $comment_num = -1;
-    while (<$in>) {
+    print html_top();
+
+    my $comment_num = -1;
+    my $in_comment  = 0;
+    while (<$in>)
+    {
         chomp;
-        if (/^<!-- comment start -->$/) { ++$comment_num; }
-        if (/^<!-- comment hidden$/)    { $comment_is_hidden = 1; next; }
-        if (/<\/body>/)                 {
-            print
-qq%<a href="$myURL?action=logout&cookie=$inputs{cookie}">Logout</a>\n%;
+        if (/^<!-- comment start -->$/)
+        {
+            $comment_num++;
+            $in_comment = 1;
         }
-        print $_ . "\n" unless /^-->/;
-        if (/^<!-- comment end -->$/) {
-            &add_admin_html();
+        if (/^<!-- comment hidden$/) { $comment_is_hidden = 1; next; }
+        if (/<\/body>/i)
+        {
+            print <<EOBOD;
+<a href="$myURL?action=logout&cookie=$inputs{cookie}">Logout</a>\n
+</body>
+EOBOD
+        }
+        print $_ . "\n" unless ( /^-->/ or !$in_comment );
+        if (/^<!-- comment end -->$/)
+        {
+            add_admin_html($comment_num);
+            print "<hr />\n";
             $comment_is_hidden = 0;
+            $in_comment        = 0;
         }
 
     }
@@ -189,7 +185,8 @@ qq%<a href="$myURL?action=logout&cookie=$inputs{cookie}">Logout</a>\n%;
 }
 
 # show a login page before we can get started
-sub show_login_page {
+sub show_login_page
+{
     print <<EOP;
 Content-type: text/html
 
@@ -215,24 +212,33 @@ EOP
 
 # check whether the given password is correct, and setup the environment if it
 # is. redirect to either the login page or the admin view, accordingly
-sub process_login {
+sub process_login
+{
     local $_;
     my ( @old_files, $file );
     my $now = time;
 
     # first, garbage collect sessions over 6 hours old
     opendir SESSION_DIR, $session_dir
-      or die "could not open session directory";
+      or die "could not open session directory $session_dir";
     @old_files = grep { &is_old_cookie($_) } ( readdir SESSION_DIR );
     closedir SESSION_DIR;
-    foreach $file (@old_files) {
-        if ( $file =~ /(\w{40})/ ) {
+    foreach $file (@old_files)
+    {
+        if ( $file =~ /(\w{40})/ )
+        {
             unlink( $session_dir . $1 );
         }
     }
 
+    if ( $inputs{password} eq 'password' )
+    {
+        die "You have not changed the password\n";
+    }
+
     # now verify password
-    if ( $password and $password eq $inputs{password} ) {
+    if ( $password and $password eq $inputs{password} )
+    {
 
         # Successful login. Things to do.
         #  generate cookie.
@@ -270,7 +276,8 @@ sub process_login {
 # toggle an entry's hidden status
 # most of this code is a replication of rewrite_file. this could be refactored
 # later
-sub do_toggle_hidden {
+sub do_toggle_hidden
+{
     die "Not logged in!" if ( !&has_login_cookie );
 
     my $lock = IO::File->new(">>$guestbookreal.lck")
@@ -282,10 +289,12 @@ sub do_toggle_hidden {
 
     my $in = new IO::File->new("<$guestbookreal") or die "<$guestbookreal: $!";
 
-    $comment_num = 0;
-    my $hiding = 0;
-    while (<$in>) {
-        if ( !$temp->print($_) ) {
+    my $comment_num = 0;
+    my $hiding      = 0;
+    while (<$in>)
+    {
+        if ( !$temp->print($_) )
+        {
             my $write_err = $!;
             $temp->close;
             unlink "$guestbookreal.tmp";
@@ -293,11 +302,14 @@ sub do_toggle_hidden {
         }
         last if /^<!-- comment start -->\n$/;
     }
-    while (<$in>) {
+    while (<$in>)
+    {
         chomp;
-        if (/^<!-- comment start -->$/) {
+        if (/^<!-- comment start -->$/)
+        {
             ++$comment_num;
-            if ( !$temp->print( $_ . "\n" ) ) {
+            if ( !$temp->print( $_ . "\n" ) )
+            {
                 my $write_err = $!;
                 $temp->close;
                 unlink "$guestbookreal.tmp";
@@ -306,32 +318,38 @@ sub do_toggle_hidden {
             next;
         }
 
-        if ( $inputs{entry} != $comment_num ) {
+        if ( $inputs{entry} != $comment_num )
+        {
 
             # not the comment we're after. save it.
-            if ( !$temp->print( $_ . "\n" ) ) {
+            if ( !$temp->print( $_ . "\n" ) )
+            {
                 my $write_err = $!;
                 $temp->close;
                 unlink "$guestbookreal.tmp";
                 die "write to $guestbookreal.tmp: $write_err";
             }
         }
-        else {
+        else
+        {
 
             # comment we're going to do something to.
 
             # first, decide whether we are starting to deal with a hidden
             # comment
-            if (/^<!-- comment hidden/) {
+            if (/^<!-- comment hidden/)
+            {
 
                 # hidden comment. skip this line, then save lines until we
                 # find the --> marker, then skip that, then increment the
                 # comment number, and save the rest of the file.
-                while (<$in>) {
+                while (<$in>)
+                {
                     chomp;
                     last if /^--\>/;
 
-                    if ( !$temp->print( $_ . "\n" ) ) {
+                    if ( !$temp->print( $_ . "\n" ) )
+                    {
                         my $write_err = $!;
                         $temp->close;
                         unlink "$guestbookreal.tmp";
@@ -346,16 +364,20 @@ sub do_toggle_hidden {
             # marker, the current line, then lines until we find the end of
             # comment marker, then write the end of hidden text marker, then
             # the end of comment marker, then save the rest of the file
-            if ( !$temp->print("<!-- comment hidden\n$_\n") ) {
+            if ( !$temp->print("<!-- comment hidden\n$_\n") )
+            {
                 my $write_err = $!;
                 $temp->close;
                 unlink "$guestbookreal.tmp";
                 die "write to $guestbookreal.tmp: $write_err";
             }
-            while (<$in>) {
+            while (<$in>)
+            {
                 chomp;
-                if (/^<!-- comment end -->/) {
-                    if ( !$temp->print( "-->\n" . $_ . "\n" ) ) {
+                if (/^<!-- comment end -->/)
+                {
+                    if ( !$temp->print( "-->\n" . $_ . "\n" ) )
+                    {
                         my $write_err = $!;
                         $temp->close;
                         unlink "$guestbookreal.tmp";
@@ -364,7 +386,8 @@ sub do_toggle_hidden {
                     last;
                 }
 
-                if ( !$temp->print( $_ . "\n" ) ) {
+                if ( !$temp->print( $_ . "\n" ) )
+                {
                     my $write_err = $!;
                     $temp->close;
                     unlink "$guestbookreal.tmp";
@@ -377,7 +400,8 @@ sub do_toggle_hidden {
         }
 
     }
-    if ( !$temp->close ) {
+    if ( !$temp->close )
+    {
         my $close_err = $!;
         unlink "$guestbookreal.tmp";
         die "close $guestbookreal.tmp: $close_err";
@@ -396,7 +420,8 @@ sub do_toggle_hidden {
 # delete an entry
 # most of this code is a replication of rewrite_file. this could be refactored
 # later
-sub do_delete_entry {
+sub do_delete_entry
+{
     die "Not logged in!" if ( !&has_login_cookie );
 
     my $lock = IO::File->new(">>$guestbookreal.lck")
@@ -408,34 +433,34 @@ sub do_delete_entry {
 
     my $in = new IO::File->new("<$guestbookreal") or die "<$guestbookreal: $!";
 
-    $comment_num = 0;
-    while (<$in>) {
-        if ( !$temp->print($_) ) {
-            my $write_err = $!;
-            $temp->close;
-            unlink "$guestbookreal.tmp";
-            die "write to $guestbookreal.tmp: $write_err";
-        }
-        last if /^<!-- comment start -->\n$/;
-    }
-
-    while (<$in>) {
+    my $comment_num = -1;
+    my $in_comment  = 0;
+    while (<$in>)
+    {
         chomp;
-        if (/^<!-- comment start -->$/)       { ++$comment_num; }
-        if ( $inputs{entry} != $comment_num ) {
-            if ( !$temp->print( $_ . "\n" ) ) {
+        if (/^<!-- comment start -->$/)
+        {
+            $comment_num++;
+            $in_comment = 1;
+        }
+        if ( $inputs{entry} != $comment_num or !$in_comment )
+        {
+            if ( !$temp->print( $_ . "\n" ) )
+            {
                 my $write_err = $!;
                 $temp->close;
                 unlink "$guestbookreal.tmp";
                 die "write to $guestbookreal.tmp: $write_err";
             }
         }
-        if ( $inputs{entry} == $comment_num and /^<!-- comment end -->$/ ) {
-            ++$comment_num;
+        if (/^<!-- comment end -->$/)
+        {
+            $in_comment = 0;
         }
 
     }
-    if ( !$temp->close ) {
+    if ( !$temp->close )
+    {
         my $close_err = $!;
         unlink "$guestbookreal.tmp";
         die "close $guestbookreal.tmp: $close_err";
@@ -452,8 +477,10 @@ sub do_delete_entry {
 }
 
 # invalidate the current session
-sub do_logout {
-    if ( $inputs{cookie} =~ /(\w{40})/ ) {
+sub do_logout
+{
+    if ( $inputs{cookie} =~ /(\w{40})/ )
+    {
         unlink( $session_dir . $1 );
     }
 
@@ -466,7 +493,8 @@ $| = 1;
 delete @ENV{qw(ENV BASH_ENV IFS PATH)};
 
 # setup our allowed variables
-foreach my $input (qw(password action entry cookie)) {
+foreach my $input (qw(password action entry cookie))
+{
     my $t = param($input);
     $t = url_param($input) unless defined $t;
     $inputs{$input} = strip_nonprintable($t);
@@ -489,3 +517,18 @@ $shortdate = strftime( $short_date_fmt, localtime );
 &{ $actions{ $inputs{action} } }() if defined( $actions{ $inputs{action} } );
 die "Unknown action";
 
+sub html_top
+{
+    return <<EOTOP;
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Guestbook Administration</title>
+  </head>
+  <body>
+     <h1>Administer Guestbook entries</h1>
+     <hr />
+EOTOP
+}

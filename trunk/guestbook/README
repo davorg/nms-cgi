@@ -1,7 +1,7 @@
 COPYRIGHT
 
 Guestbook
-Copyright 2001 London Perl Mongers, All rights reserved
+Copyright 2001 - 2004 London Perl Mongers, All rights reserved
 
 LICENSE
 
@@ -22,11 +22,14 @@ FILES
 
 In this distribution you will find five files:
 
-README         - This file. Instructions on how to install and use guestbook
-guestbook.pl   - The main Perl program file.
-guestbook.html - The file in which the guestbook entries are saved.
-addguest.html  - The form that visitors will use for a guestbook entry.
-guestlog.html  - A log file of those who have added entries to guestbook.
+README               - This file. Instructions on how to install and use 
+                       guestbook.
+guestbook.pl         - The main Perl program file.
+guestbook-admin.pl   - A program to perform adminstrative tasks on the
+                       guestbook.
+guestbook.html       - The file in which the guestbook entries are saved.
+addguest.html        - The form that visitors will use for a guestbook entry.
+guestlog.html        - A log file of those who have added entries to guestbook.
 
 
 CONFIGURATION
@@ -39,14 +42,17 @@ can do this in your favourite text editor or notepad if you are on Windows.
 You probably don't want to use a wordprocessor to do this unless you are
 certain you can save the file as plain text.
 
-Firstly you will need to change the first line of the program:
+Firstly you may need to change the first line of the program:
 
    #!/usr/bin/perl -wT
 
 so that it points at the proper location of perl on your webserver - your
 system administrator or webhosting provider should be able to tell you this.
 You only need to change the '/usr/bin/perl' part - all of the rest of the
-line must be left exactly as it is.
+line must be left exactly as it is. If your site is hosted on a Windows
+server then you probably shouldn't change it at all but you should read the
+FAQ at http://nms-cgi.sf.net/faq_prob.html if you have an error like
+'Too late for "-T"'.
 
 There are a number of variables that you should change in guestbook.pl which
 alter the way that the program works.
@@ -56,10 +62,13 @@ setup of your webserver you should ask your system administrator or
 web hosting provider.
 
 $DEBUGGING     - This should be set to 1 whilst you are installing
-                 and testing the script. Once the script is live you
-                 should change it to 0. When set to 1, errors will
-                 be output to the browser. This is a security risk and
-                 should not be used when the script is live.
+                 and testing the script. If you are reporting a problem to
+                 the NMS team then they will be able to give you better
+                 help if you can give the message when this is set to 1.
+                 Once the script is live and working you should change
+                 it to 0. When set to 1, errors will be output to the
+                 browser. This is a potential security risk and should
+                 not be used when the script is live.
 
 $guestbookurl  - The public URL of your guestbook.html file.
 
@@ -120,8 +129,10 @@ $postmaster    - The envelope sender address to use for all emails
 
 $uselog        - If this variable is set to 1 then all new entries to the
                  guestbook will be recorded in a short log, also any
-                 errors will be recorded.  If you don't want this
-                 facility then set this to 0.
+                 errors will be recorded.  This log may help you to identify
+                 people who are abusing your guestbook as it contains the
+                 internet address that oriniated the entries.
+                 If you don't want this facility then set this to 0.
 
 $linkmail      - If this is set to 1 then the e-mail addresses that
                  visitors enter will be added as mailto: links rather than
@@ -144,7 +155,7 @@ $redirection   - If this variable is set to 1 then the program will issue
 
 $entry_order   - If this is set to 1 then new entries will be added to the
                  top of the guestbook page, if it is set to 0 they will be
-                 added at the end.
+                 added at the end. 
 
 $remote_mail   - When this is set to 1 then the visitor who makes the
                  guestbook entry will be sent a confirmation e-mail
@@ -169,21 +180,101 @@ $line_breaks  -  When set to 1 all of the carriage returns in the visitors
                  comments will be changed to <br /> - this is probably not
                  necessary if $allow_html is set to 1.
 
+
+$long_date_fmt 
+$short_date_fmt - These describe the format of the dates that guestbook
+                  will output, $long_date_fmt is used in the guestbook page
+                  itself and $short_date_fmt is used in the log file (if you
+                  are using it.)  The provided defaults are probably alright
+                  for most uses but can be changed to suit your needs. They
+                  use codes to represent different parts of the date and time
+                  but you can also put your own literal text in (anything that
+                  doesn't start with a '%'). Some of these codes will use the
+                  setting of $locale (described below) to display in the proper
+                  language and/or style.  The replacement parameters you 
+                  can use here include:
+				
+				         %A - the full name of the weekday according to the 
+                          current locale
+				         %B - the full name of the month according to the 
+                          current local
+				         %m - the month as a number
+				         %d - the day of the month as a number
+				         %D - the date in the form %m/%d/%y (i.e. the US format )
+				         %y - the year as a number without the century
+				         %Y - the year as a number including the century
+				         %H - the hour as number in the 24 hour clock
+				         %M - the minute as a number
+				         %S - the seconds as a number
+				         %T - the time in 24 hour format (%H:%M:%S)
+				         %Z - the time zone (full name or abbreviation)
+
+
 $timezone     -   If set this will over-ride the timezone as set on the
                   server.  The timezone is a three upper case letter code
                   with an optional offset from UTC (The time in London) and
                   a code for daylight saving time.  Some examples might be:
 
-                       AST4ADT   America/Thule
-                       CST6CDT   America/Chicago
                        EST5EDT   America/New_York
                        MST7MDT   America/Denver
                        PST8PDT   America/Los_Angeles
                        YST9YDT   America/Anchorage
+                       CET       European Central Time
                        ROC       Asia/Taipei
                        ROK       Asia/Seoul
                        NZ        Pacific/Auckland
                        MET       Europe/Paris
+
+$locale     -  If this is set it should be set to a valid locale setting
+               for your system. This will affect primarily the language
+               that is used for displaying the names of days and months
+               in the guestbook page. Some example settings are:
+
+                            Catalan           ca_ES
+                            Croatian          hr_HR
+                            Czech             cs_CZ
+                            Danish            da_DK
+                            Dutc              nl_NL
+                            Estonian          et_EE
+                            Finnish           fi_FI
+                            French            fr_FR
+                            Galician          gl_ES
+                            German            de_DE
+                            Greek             el_GR
+                            Hebrew            he_IL
+                            Hungarian         hu_HU
+                            Icelandic         is_IS
+                            Italian           it_IT
+                            Japanese          ja_JP
+                            Korean            ko_KR
+                            Lithuanian        lt_LT
+                            Norwegian         no_NO
+                            Polish            pl_PL
+                            Portuguese        pt_PT
+                            Romanian          ro_RO
+                            Russian           ru_RU
+                            Slovak            sk_SK
+                            Slovenian         sl_SI
+                            Spanish           es_ES
+                            Swedish           sv_SE
+                            Thai              th_TH
+                            Turkish           tr_TR
+
+                  of course this is not complete and the proper display
+                  of some of the characters may depend on the browser
+                  settings. You may want to ask your ISP about the 
+                  correct setting.
+
+$hide_new_entries - If this is set to 1 then any new entries on the guestbook
+                    will be commented out and not visible in the 
+                    guestbook page.  These entries can be 'unhidden' using the
+                    guestbook-admin.pl program you should have got as part
+                    of this package.  If this is set you probably want to
+                    amend your addguest page to indicate that the comments
+                    might not show up at once (otherwise you may get
+                    frustrated visitors adding multiple entries thinking that
+                    their submission hasn't worked). 
+
 
 You will need also to edit the addguest.html file so that the line :
 
@@ -209,17 +300,67 @@ On some systems you may need to rename guestbook.pl to guestbook.cgi
 (or some other extension that the web server uses to indicate a CGI
 program.) Again, your system administrator will know if this is the case.
 
-You will probably need to turn on execute permissions to the file. You can
+You may need to turn on execute permissions to the file (Windows servers,
+for example, do not need this as they will use the location of the program and
+the extension to determine how the program is to be run.)  You can
 do this by running the command "chmod +x guestbook.pl" from your command
 line. If you don't have command line access to your web server then there
 will probably be an equivalent function in your file transfer program.
 
+ADMINISTRATION
+
+The guestbook-admin.pl program that you received with the guestbook 
+provides some basic facilities for administering your guestbook: you can
+hide (and un-hide) entries and delete them. The program should be installed
+in the same way as the main guestbook.pl except there are fewer configuration
+variables to change.  Those with the same name are described above the others
+are:
+
+$password      -  This is the password for the administration page, you 
+                  must change this to something only you know before you
+                  use the program, if you do not change it the program
+                  will not work.  You should choose a password that is
+                  difficult to guess, longer than eight characters and
+                  probably containing both alphabetic, numeric and
+                  punctuation characters. The program cannot enforce
+                  an unguessable password (the programs that do this
+                  are likely to be several times larger than this one
+                  and far more difficult to install,) so it is your
+                  responsibility to choose a good one.
+
+$session_dir   -  This is a directory that the program will use to record
+                  logins to the administration page, it should be writeable
+                  by the user that the web server runs CGI programs as, and
+                  should *not* be readable via a browser, the directory
+                  must exist as well - a sub-directory of /tmp (on a Unix
+                  like system) or C:\temp (on windows) would be ideal but
+                  you may not have access to those, you may be able to use
+                  a sub-directory of that in which you have your CGI programs
+                  but if you are in doubt please consult your ISP.  You
+                  probably don't want to use the same directory for 
+                  different installations of the admin program.
+
+$myURL         -  This should be the URL for the guestbook-admin.pl as it
+                  appears on your website.  It is probably not a good idea
+                  to provide a link to this from any other pages on the
+                  website however.
+
 SUPPORT
 
-For support of this script please email:
+Many of the problems that people may have with installing or using this
+program are already described in our FAQ ( Frequently Asked Questions) page
+that can be found at:
+
+   http://nms-cgi.sf.net/
+
+The searchable archives of our support list are also available at sourceforge
+via the link above - most of the problems that you are likely to be
+experiencing have already been discussed on our mailling lists.
+
+For further support of this script please email:
 
   <nms-cgi-support@lists.sourceforge.net>
 
 This mailling list is read by the NMS developers and other helpful people
-who will try to help you solve your problem.
+who will try to help you solve your problem. 
 
