@@ -1,8 +1,11 @@
 #!/usr/bin/perl -w
 #
-# $Id: FormMail.pl,v 1.5 2001-11-14 09:10:11 gellyfish Exp $
+# $Id: FormMail.pl,v 1.6 2001-11-20 17:39:20 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2001/11/14 09:10:11  gellyfish
+# Added extra check on the referer.
+#
 # Revision 1.4  2001/11/13 21:40:46  gellyfish
 # Changed all of the sub calls to be without '&'
 #
@@ -163,7 +166,7 @@ sub parse_form {
                   missing_fields_redirect
                  );
 
-  @Config{@fields} = '' x @fields;
+  @Config{@fields} = ('') x @fields;
 
   my @field_order;
 
@@ -182,6 +185,8 @@ sub parse_form {
       $Config{$_} =~ s/(\s+|\n)?,(\s+|\n)?/,/g;
       $Config{$_} =~ s/(\s+)?\n+(\s+)?//g;
       $Config{$_} = [split(/,/, $Config{$_})];
+    } else {
+      $Config{$_} = [];
     }
   }
 
@@ -298,6 +303,10 @@ END_HTML_FOOTER
 }
 
 sub send_mail {
+  if ("$Config{recipient}$Config{email}$Config{realname}$Config{subject}" =~ /\r|\n/) {
+    die 'multiline variable in mail header, unsafe to continue';
+  }
+
   open(MAIL,"|$mailprog -oi -t")
     || die "Can't open sendmail\n";
 
