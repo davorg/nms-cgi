@@ -253,6 +253,11 @@ sub _rewrite_script
       &{ $rewriter }();
    }
 
+   if ($ENV{NMSTEST_USE_LIB})
+   {
+      s|^#?\s*use lib .*|use lib '$ENV{NMSTEST_USE_LIB}';|m;
+   }
+
    $self->{SCRIPT} =~ m|([^/]+)$| or croak "bad: <$self->{SCRIPT}>";
    my $file = "$self->{CGIBIN}/$1";
    $self->{Opts}{SCRIPT_FILENAME} = $file;
