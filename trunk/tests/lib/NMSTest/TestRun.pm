@@ -363,12 +363,13 @@ sub _substitute_dates
 
    my $daypat = join '|', @days;
    my $monpat = join '|', @months;
+   my $c = '(:|&#58;)';
 
    foreach my $r (@$results)
    {
-      $r =~ s[($daypat), ($monpat) \d\d?, \d{4} at \d\d:\d\d:\d\d]
+      $r =~ s[($daypat), ($monpat) \d\d?, \d{4} at \d\d${c}\d\d${c}\d\d]
              [Sunday, December 31, 2002 at 23:58:00]og;
-      $r =~ s{\[\d\d/\d\d/\d\d \d\d:\d\d:\d\d [A-Z]{3}\]}
+      $r =~ s{\[\d\d/\d\d/\d\d \d\d${c}\d\d${c}\d\d [A-Z]{3}\]}
              {[31/12/02 23:58:00]}og;
    }
 }
