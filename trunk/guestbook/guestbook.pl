@@ -1,8 +1,11 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.20 2001-12-16 11:46:14 nickjc Exp $
+# $Id: guestbook.pl,v 1.21 2001-12-17 23:01:52 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.20  2001/12/16 11:46:14  nickjc
+# Ensure regexp matches all text in cleanup_html()
+#
 # Revision 1.19  2001/12/15 22:22:59  nickjc
 # * added $url validity check
 # * misc minor fixes and tidying
@@ -779,8 +782,8 @@ BEGIN
   );
   $auto_deinterleave_pattern = join '|', keys %auto_deinterleave;
   my %font_attr = (
-    size  => sub { /^(-?\d{1,3})$/     ? $1 : undef },
-    face  => sub { /^([\w, ]{2,100})$/ ? $1 : undef },
+    size  => sub { /^(-?\d{1,3})$/       ? $1 : undef },
+    face  => sub { /^([\w\-, ]{2,100})$/ ? $1 : undef },
     color => \&cleanup_attr_color,
   );
   my %insdel_attr = (
@@ -788,16 +791,21 @@ BEGIN
     'datetime' => \&cleanup_attr_text,
   );
   my %texta_attr = (
-    align => sub { /^(left|center|right)$/i ? lc $1 : undef },
+    align => sub { s/middle/center/i;
+                   /^(left|center|right)$/i ? lc $1 : undef
+                 },
   );
   my %cellha_attr = (
-    align   => sub { /^(left|center|right|justify|char)$/i ? lc $1 : undef
+    align   => sub { s/middle/center/i;
+                     /^(left|center|right|justify|char)$/i
+                     ? lc $1 : undef
                    },
     char    => sub { /^([\w\-])$/ ? $1 : undef },
     charoff => \&cleanup_attr_length,
   );
   my %cellva_attr = (
-    valign => sub { /^(top|middle|bottom|baseline)$/i ? lc $1 : undef
+    valign => sub { s/center/middle/i;
+                    /^(top|middle|bottom|baseline)$/i ? lc $1 : undef
                   },
   );
   my %cellhv_attr = ( %cellha_attr, %cellva_attr );
