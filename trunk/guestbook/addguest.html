@@ -1,28 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
   <html>
     <head>
-    <title>Add to our Guestbook</title>
+      <title>Add to our Guestbook</title>
     </head>
     <body>
       <h1>Add to our Guestbook</h1>
 
       <p>Fill in the blanks below to add to our guestbook.  
 	The only blanks that you have to fill in are the comments and name 
-	section.  Thanks!</p><hr>
-	<form method=POST action="http://your.host.com/cgi-bin/guestbook.pl">
-	  <p>Your Name:<input type=text name=realname size=30><br>
-		E-Mail: <input type=text name=username size=40><br>
-		    URL: <input type=text name=url size=50><br>
-			City: <input type=text name=city size=15>, 
-			  State: <input type=text name=state size=2> 
-			    Country: <input type=text value=USA name=country size=15><p>
-				Comments:<br>
-				  <textarea name=comments COLS=60 ROWS=4></textarea><p>
-				    <input type=submit> * <input type=reset>
+	section.  Thanks!</p><hr />
+	<form method="post" action="http://your.host.com/cgi-bin/guestbook.pl">
+	  <p>Your Name:<input type="text" name="realname" size="30" /><br />
+		E-Mail: <input type="text" name="username" size="40" /><br />
+		    URL: <input type="text" name="url" size="50" /><br />
+			City: <input type="text" name="city" size="15" />, 
+			  State: <input type="text" name="state" size="2" /> 
+			    Country: <input type="text" value="USA" name="country" size="15" /></p>
+	  <p>Comments:<br />
+	      <textarea name="comments" cols="60" rows="4"></textarea></p>
+	  <p><input type="submit" /> * <input type="reset" /></p>
 	</form>
-      </p>
-	<hr>
+	<hr />
 	  <p>* <a href="http://your.host.com/guestbook.html">Back to the 
-	      Guestbook Entries</a><br>
-	      Script and Guestbook Created by: <a href="http://www.dave.org.uk/scripts/nms/">Dave Cross</a>.
+	      Guestbook Entries</a><br />
+	      Script and Guestbook Created by: <a href="http://nms-cgi.sourceforge.net">nms guestbook</a>.</p>
     </body>
   </html>
