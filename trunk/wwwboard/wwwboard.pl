@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.31 2002-08-24 08:26:25 nickjc Exp $
+# $Id: wwwboard.pl,v 1.32 2002-08-25 07:39:23 nickjc Exp $
 #
 
 use strict;
@@ -8,7 +8,7 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_headers);
-my $VERSION = substr q$Revision: 1.31 $, 10, -1;
+my $VERSION = substr q$Revision: 1.32 $, 10, -1;
 
 BEGIN
 { 
@@ -291,7 +291,7 @@ sub get_variables {
   }
 
   if ($Form->{subject}) {
-    $variables->{subject} = escape_html($Form->{subject});
+    $variables->{subject} = $Form->{subject};
   } else {
     error('no_subject',{ Form => $Form });
   }
@@ -319,14 +319,16 @@ sub get_variables {
     $body =~ s/\cM//g;
     $body =~ s|\n\n|</p><p>|g;
     $body =~ s%\n%<br />%g;
-     
+
+    $variables->{'body'} = $body;
+
   } else {
     error('no_body',{Form => $Form});
   }
 
   if ($quote_text) 
   {
-    my $hidden_body = $variables->{'body'};
+    my $hidden_body = $Form->{'body'};
 
     if ( $quote_html ) 
     {
@@ -844,7 +846,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.31 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.32 $ =~ /(\d+)\.(\d+)/);
 
 =head1 NAME
 
