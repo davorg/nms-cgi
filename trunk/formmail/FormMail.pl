@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.56 2002-03-13 00:49:36 nickjc Exp $
+# $Id: FormMail.pl,v 1.57 2002-03-13 23:52:52 nickjc Exp $
 #
 
 use strict;
@@ -11,7 +11,7 @@ use vars qw($DEBUGGING $done_headers);
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.56 $
+# FormMail.pl $Revision: 1.57 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -53,7 +53,7 @@ END_OF_CONFIRMATION
 # ----------------------------
 # (no user serviceable parts beyond here)
 
-my $VERSION = ('$Revision: 1.56 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+my $VERSION = ('$Revision: 1.57 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
 # We don't need file uploads or very large POST requests.
 # Annoying locution to shut up 'used only once' warning in older perl
@@ -636,7 +636,7 @@ sub error {
   my ($error, @error_fields) = @_;
   my ($host, $missing_field, $missing_field_list);
 
-  my ($title, $heading,$error_body);
+  my ($title, $error_body);
 
   if ($error eq 'bad_referer') {
     my $referer = referer();
@@ -646,7 +646,6 @@ sub error {
     if ( $referer =~ m|^https?://([\w\.]+)|i) {
        $host = $1;
        $title = 'Bad Referrer - Access Denied';
-       $heading = $title;
        $error_body =<<EOBODY;
 <p>
   The form attempting to use FormMail resides at <tt>$escaped_referer</tt>,
@@ -661,11 +660,24 @@ sub error {
   Add <tt>'$host'</tt> to your <tt><b>\@referers</b></tt> array.
 </p>
 EOBODY
-    }
-    else {
-      $title = 'Formail';
-      $heading = $title;
-      $error_body = '<p><b>Badness!</b></p>';
+    } elsif (length $referer) {
+       $title = 'Malformed Referrer - Access Denied';
+       $error_body =<<EOBODY;
+<p>
+  The referrer value <tt>$escaped_referer</tt> cannot be parsed, so
+  it is not possible to check that the referring page is allowed to
+  access this program.
+</p>
+EOBODY
+    } else {
+       $title = 'Missing Referrer - Access Denied';
+       $error_body =<<EOBODY;
+<p>
+  Your browser did not send a <tt>Referer</tt> header with this
+  request, so it is not possible to check that the referring page
+  is allowed to access this program.
+</p>
+EOBODY
     }
  }
  elsif ($error eq 'bad_method') {
@@ -676,7 +688,6 @@ EOBODY
      $ref = 'that you just filled in';
    }
    $title = 'Error: GET request';
-   $heading = $title;
    $error_body =<<EOBODY;
 <p>
   The form $ref fails to specify the POST method, so it would not
@@ -694,7 +705,6 @@ EOBODY
 
    my $recipient = escape_html($Config{recipient});
    $title = 'Error: Bad or Missing Recipient';
-   $heading = $title;
    $error_body =<<EOBODY;
 <p>
   There was no recipient or an invalid recipient specified in the
@@ -720,7 +730,6 @@ EOBODY
                                  map { '<li>' . escape_html($_) . "</li>\n" }
                                  @error_fields;
         $title = 'Error: Blank Fields';
-        $heading = $title;
         $error_body =<<EOBODY;
 <p>
     The following fields were left blank in your submission form:
@@ -773,7 +782,7 @@ EOBODY
   <body>$debug_warnings
     <table border="0" width="600" bgcolor="#9C9C9C" align="center" summary="">
       <tr>
-        <th class="c1">$heading</th>
+        <th class="c1">$title</th>
       </tr>
     </table>
     <table border="0" width="600" bgcolor="#CFCFCF">
@@ -823,7 +832,7 @@ __END__
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.56 $
+FormMail $Revision: 1.57 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1247,6 +1256,9 @@ nms-cgi-support@lists.sourceforge.net
 =head1 CHANGELOG
 
  $Log: not supported by cvs2svn $
+ Revision 1.56  2002/03/13 00:49:36  nickjc
+ * Added an X-Generated-By header.
+
  Revision 1.55  2002/03/12 23:58:57  nickjc
  minor POD tweak for its new context
 
