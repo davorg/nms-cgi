@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.54 2004-07-23 21:37:04 codehelpgpg Exp $
+# $Id: wwwboard.pl,v 1.55 2004-10-11 16:11:00 gellyfish Exp $
 #
 use strict;
 use CGI qw(:standard);
@@ -13,12 +13,13 @@ use vars qw(
   $quote_text $quote_char $quote_html $subject_line $use_time $temp
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset @bannedwords $word
+  $extra_strict
 );
-BEGIN { $VERSION = substr q$Revision: 1.54 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.55 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.54 $
+# wwwboard.pl $Revision: 1.55 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -1261,7 +1262,7 @@ equivalent HTML entities.
 =cut
 
 use vars qw(%eschtml_map);
-%eschtml_map = (
+%eschtml_map = ( 
                  ( map {chr($_) => "&#$_;"} (0..255) ),
                  '<' => '&lt;',
                  '>' => '&gt;',
@@ -1353,7 +1354,7 @@ sub _strip_nonprint_weak
    $string =~ s/\0+/ /g;
    return $string;
 }
-
+   
 =item _escape_html_weak ( STRING )
 
 Returns a copy of STRING with any HTML metacharacters escaped.
@@ -1473,7 +1474,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$revision: 1.5 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$revision: 1.6 $ =~ /(\d+)\.(\d+)/);
 
 use CGI::NMS::Charset;
 
@@ -1490,13 +1491,13 @@ CGI::NMS::HTMLFilter - whitelist based HTML filter
 
    use CGI::NMS::HTMLFilter;
 
-   my $filter = CGI::NMS::HTMLFilter->new;
+   my $filter = CGI::NMS::HTMLFilter->new; 
    my $safe_html = $filter->filter($untrused_html);
 
 
    #
    # More advanced usage:
-   #
+   # 
 
    use CGI::NMS::Charset;
    use CGI::NMS::HTMLFilter;
@@ -1565,14 +1566,14 @@ scripting hazard.
 
 =item C<allow_src>
 
-By default, the filter won't allow constructs that cause
+By default, the filter won't allow constructs that cause 
 the browser to fetch things automatically, such as C<E<lt>imgE<gt>>
 tags and C<background> attributes.  If this option is present and
 true then those constructs will be allowed.
 
 =item C<allow_href>
 
-By default, the filter won't allow constructs that cause the
+By default, the filter won't allow constructs that cause the 
 browser to fetch things if the user clicks on something, such
 as the C<href> attribute in C<E<lt>aE<gt>> tags.  Set this option
 to a true value to allow this type of construct.
@@ -1600,7 +1601,7 @@ sub new
                 OPTS    => \%opts,
                 TAGS    => { %_Attributes },
               };
-
+                
    if (exists $opts{deny_tags})
    {
       foreach my $deny (@{ $opts{deny_tags} })
@@ -1652,7 +1653,7 @@ sub filter
    # holding the name of the tag, a FULL key holding the full
    # text of the filtered tag (including anglebrackets) and
    # a CTX key holding the context that the tag provides.
-   #
+   # 
    # The stack starts off holding a single fake tag, needed
    # to define the top level context.
    #
@@ -1852,11 +1853,11 @@ sub _filter_cdata
 {
    my ($self, $cdata) = @_;
 
-   # Discard the CDATA if it's somewhere that CDATA shouldn't be,
+   # Discard the CDATA if it's somewhere that CDATA shouldn't be, 
    # like <table>hello</table>
    return ' ' if $cdata =~ /\S/ and not $_Context{ $self->{STACK}[0]{CTX} }{CDATA};
 
-   $cdata =~
+   $cdata =~ 
     s[ (?: & ( [a-zA-Z0-9]{2,15}       |
                [#][0-9]{2,6}           |
                [#][xX][a-fA-F0-9]{2,6}
@@ -1880,7 +1881,7 @@ replaced with the characters they represent.
 =cut
 
 use vars qw(%_unescape_map);
-%_unescape_map = (
+%_unescape_map = ( 
                    ( map { ("\&\#$_\;" => chr($_)) } (1..255) ),
                    '&amp;'  => '&',
                    '&lt;'   => '<',
@@ -1986,7 +1987,7 @@ my %inline = (
   'font'  => 'Inline',
   'nobr'  => 'Inline',
 );
-
+  
 my %flow = (
   %inline,
   'ins'        => 'Flow',
@@ -2020,8 +2021,6 @@ my %table = (
   'colgroup' => 'colgroup',
   'col'      => 'EMPTY',
   'tr'       => 'th_td',
-  'th'       => 'Flow',
-  'td'       => 'Flow',
 );
 
 %_Context = (
@@ -2161,7 +2160,7 @@ my %thtd_attr = (
 
 %_Attributes = (
 
-  'br'         => {
+  'br'         => { 
                     'clear' => sub { $_[0] =~ /^(left|right|all|none)$/i ? lc $1 : undef }
                   },
   'em'         => \%attr,
@@ -2278,7 +2277,7 @@ C<%_Attributes> hash are named subs rather than anonymous coderefs.
 
 Handles the C<style> attribute.
 
-=cut
+=cut 
 
 use vars qw(%_safe_style);
 %_safe_style = (
@@ -2324,7 +2323,7 @@ sub _attr_src
 
    ($filter->{OPTS}{allow_src} and $filter->url_is_valid($_[0])) ? $_[0] : undef;
 }
-
+   
 =item _attr_a_href ( INPUT, ATTRNAME, TAGNAME, FILTER )
 
 A handler for the C<href> attribute in the C<a> tag, allowing C<mailto>
@@ -2333,7 +2332,7 @@ URLs if the filter is so configured.
 =cut
 
 sub _attr_a_href
-{
+{ 
 
    if ($_[0] =~ /^mailto:([\w\-\.\,\=\*]{1,100}\@[\w\-\.]{1,100})$/i)
    {
@@ -2356,9 +2355,9 @@ sub _attr_href
 {
    my $filter = $_[3];
 
-   ($filter->{OPTS}{allow_href} and $filter->url_is_valid($_[0])) ? $_[0] : undef;
+   ($filter->{OPTS}{allow_href} and $filter->url_is_valid($_[0])) ? $_[0] : undef; 
 }
-
+   
 =item _attr_number ( INPUT, ATTRNAME, TAGNAME, FILTER )
 
 A handler for attributes who's value should be a positive integer

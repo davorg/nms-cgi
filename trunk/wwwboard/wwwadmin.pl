@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwadmin.pl,v 1.27 2004-07-23 21:29:04 codehelpgpg Exp $
+# $Id: wwwadmin.pl,v 1.28 2004-10-11 16:10:59 gellyfish Exp $
 #
 
 use strict;
@@ -12,11 +12,11 @@ use vars qw(
   $basedir $baseurl $cgi_url $mesgdir $datafile $mesgfile
   $passwd_file $ext $title $style $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.27 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.28 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.27 $
+# wwwadmin.pl $Revision: 1.28 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -981,7 +981,7 @@ equivalent HTML entities.
 =cut
 
 use vars qw(%eschtml_map);
-%eschtml_map = (
+%eschtml_map = ( 
                  ( map {chr($_) => "&#$_;"} (0..255) ),
                  '<' => '&lt;',
                  '>' => '&gt;',
@@ -1073,7 +1073,7 @@ sub _strip_nonprint_weak
    $string =~ s/\0+/ /g;
    return $string;
 }
-
+   
 =item _escape_html_weak ( STRING )
 
 Returns a copy of STRING with any HTML metacharacters escaped.
