@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.70 2002-04-08 07:36:52 nickjc Exp $
+# $Id: FormMail.pl,v 1.71 2002-04-08 17:20:26 proub Exp $
 #
 
 use strict;
@@ -16,7 +16,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.70 $
+# FormMail.pl $Revision: 1.71 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -63,7 +63,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = ('$Revision: 1.70 $' =~ /(\d+\.\d+)/ ? $1 : '?');
+  $VERSION = ('$Revision: 1.71 $' =~ /(\d+\.\d+)/ ? $1 : '?');
 
   # Merge @allow_mail_to and @recipients into a single list of regexps
   push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
@@ -192,12 +192,7 @@ sub check_referer
   if ($referer && ($referer =~ m!^https?://([^/]*\@)?([^/]+)!i)) {
     my $refHost;
 
-    if (defined($1) and (! $secure)) {
-      $refHost = $1;
-      chop $refHost;
-    } else {
-      $refHost = $2;
-    }
+    $refHost = $2;
 
     foreach my $test_ref (@referers) {
       if ($refHost =~ m|\Q$test_ref\E$|i) {
@@ -843,7 +838,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.70 $
+FormMail $Revision: 1.71 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
