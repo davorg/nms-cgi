@@ -534,6 +534,11 @@ confirmation_subject        - The subject for the confirmation email, if it
                               is activated by the confirmation_template
                               directive above.
 
+confirmation_email_from     - The email address that the confirmation will
+                              have as the From: address.  Default is the
+                              value of POSTMASTER as configured in the TFmail
+                              program itself.
+
 logfile                     - The name of a file to which data will be
                               appended for each successful run of the
                               script.  The name is relative to the
