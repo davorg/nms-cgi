@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2001-11-25 16:01:11 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2001-11-25 21:45:06 $ )
 
 =head1 DESCRIPTION
 
@@ -11,7 +11,7 @@ about the I<nms> project and the programs therein.
 
 I<nms> is an attempt to provide replacements for all of the scripts from
 Matt's Script Archive. MSA is probably the most well-known archive of
-CGI programs currently available on the web. Amongst the Perl community,
+CGI programs currently available on the web. Among the Perl community,
 the MSA scripts are known to be badly-written, buggy and insecure.
 
 I<nms> was started when a group of Perl programmers got tired of telling
@@ -64,7 +64,7 @@ The programs are badly written. Whilst many people simply install these
 programs and never look at the code, others will read CGI program code as
 a way to learn to write their own CGI programs. We therefore feel it is
 important that our scripts reflect the best Perl coding practices. Others
-don't share our views and many people have learnt very bad coding habits
+don't share our views and many people have learned very bad coding habits
 from reading Matt Wright's code.
 
 =back
@@ -156,12 +156,12 @@ a range of browsers as possible.
 
 XHTML is largely a case of tightening up on some of the bad habits that
 HTML let you get away with. All tags must be explicitly closed and all
-presentation inforamtion is stored in a stylesheet.
+presentation information is stored in a stylesheet.
 
 =head2 What's this $emulate_matts_code thing all about ?
 
 In some cases, Matt's way of doing things isn't the best. However we've
-set ourselves the target that all of our progrma should exactly the same
+set ourselves the target that all of our programs should exactly the same
 way as Matt's originals. If you set C<$emulate_matts_code> to 1, then
 the <nms> script will work exactly the the same way. If you set it to
 0, then our script will be free to do some things in a more sensible way, 
@@ -173,7 +173,7 @@ You shouldn't believe everything that bk tells you :)
 
 C<use strict> (together with C<-w>) are a great way to keep a huge range
 of bugs out of your scripts. Even though the I<nms> project team are all
-very experienced Perl programmers, we all insist on using then in all of
+very experienced Perl programmers, we all insist on using them in all of
 our scripts.
 
 =head2 Why don't the programs decode the parameters like other PERL programs ?
@@ -191,13 +191,13 @@ there that will do it for you?
 
 =head2 Why don't you use C<cgi-lib.pl> like everyone else does ?
 
-C<cgi-lib.pl> was create for writing CGI programs back in the days of Perl 4,
+C<cgi-lib.pl> was created for writing CGI programs back in the days of Perl 4,
 but we've come a long way since then. CGI.pm does all that C<cgi-lib.pl>
 did... and much, much more.
 
 =head2 But isn't the CGI module terribly big and slow ?
 
-It's certainly big! But becuase of the way it's written, only functions that
+It's certainly big! But because of the way it's written, only functions that
 you actually use will be loaded into memory. This means that it will have 
 very little effect on the size or speed of your program.
 
@@ -212,12 +212,12 @@ wrong is to kill the program.
 
 =head2 Isn't C<flock> something that sheep do ?
 
-Yes, but it's also something that you should do everytime that you access
+Yes, but it's also something that you should do every time that you access
 a file that can be accessed by other processes. If you're storing data from
 a web page in a file and your web page becomes popular, it is likely that
 two visitors can be saving data at the same time. If they both try to write
-to the file simulataneously, then the file can become corrupted. If they
-both try to flock (for "file lock") firest, then olny the first one will
-be successful. The second will be forced to wait unti the first unlocks the
-file. Thise leads to many less corrupt files and is therefore a good idea.
+to the file simultaneously, then the file can become corrupted. If they
+both try to flock (for "file lock") first, then only the first one will
+be successful. The second will be forced to wait until the first unlocks the
+file. This leads to many less corrupt files and is therefore a good idea.
 
