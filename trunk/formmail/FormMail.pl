@@ -1,8 +1,15 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.32 2002-01-31 17:26:43 proub Exp $
+# $Id: FormMail.pl,v 1.33 2002-02-03 20:47:06 dragonoe Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.32  2002/01/31 17:26:43  proub
+# no longer accepting email addresses with % characters in the name portion
+#   (to avoid spoofing sendmail addressing on some systems) - revert
+#   to old behavior when $emulate_matts_code is true
+# when $emulate_matts_code is true, verify email addresses in a
+#   case-insensitive manner.
+#
 # Revision 1.31  2002/01/30 19:04:45  proub
 # now properly handling referer URLs involving authentication info (e.g.
 #   http://www.dave.org.uk@actual.referer.com, or
@@ -129,93 +136,37 @@ use Socket;                  # for the inet_aton()
 use CGI qw(:standard);
 use vars qw($DEBUGGING);
 
-# Configuration
-
+# PROGRAM INFORMATION
+# -------------------
+# FormMail.pl v1.32
 #
-# $DEBUGGING must be set in a BEGIN block in order to have it be set before
-# the program is fully compiled.
-# This should almost certainly be set to 0 when the program is 'live'
+# This program is licensed in the same way as Perl
+# itself. You are free to choose between the GNU Public
+# License <http://www.gnu.org/licenses/gpl.html>  or
+# the Artistic License
+# <http://www.perl.com/pub/a/language/misc/Artistic.html>
 #
-
-BEGIN
-{
-   $DEBUGGING = 1;
-}
-   
-
+# For a list of changes see CHANGELOG
 # 
-# Emulate as far as possible the original behaviour of the original
-# beware that turning this on will lower the level of security.
-
+# For help on configuration or installation see README
+#
+# USER CONFIGURATION SECTION
+# --------------------------
+# Modify these to your own settings. You might have to
+# contact your system administrator if you do not run
+# your own web server. If the purpose of these
+# parameters seems unclear, please see the README file.
+#
+BEGIN { $DEBUGGING = 1; }
 my $emulate_matts_code = 0;
-
-
-# If $secure is set to 1 then a set of security checks which are potentially
-# incompatible with the original FormMail will kick in. 
-# setting $emulate_matts_code will cause this to be ignored.
-
 my $secure = 1;
-
-
-# the mailer that should be used to send the mail message.
-# this should be the full path to a program that will read a message
-# from STDIN.  Any switches that the program requires should be provided here
-
 my $mailprog = '/usr/lib/sendmail -oi -t';
-
-# a list of referring hosts.  If $secure is set then if these are IP numbers
-# the IP of the referring host will be determined and checked against this
-# (this is to encourage people not to remove the check when their web host
-# might have a large number of names)
-
 my @referers = qw(dave.org.uk 209.207.222.64 localhost);
-
-# A list of the email addresses and/or hosts that this script will send
-# mail to.  Individual email addresses can be specified, or host names
-# can be specified to allow mail to be sent to any address at that host.
-
 my @allow_mail_to = qw(you@your.domain some.one.else@your.domain localhost);
-
-# The recipients array is the old way of adding to the list of allowed
-# destination email addresses.  It still works (for compatibility with
-# older versions) but its use should be avoided.  See the README for
-# more details.
-
 my @recipients = ();
-
 my @valid_ENV = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
-
-# $date_fmt describes the format of the date that will output - the
-# replacement parameters use here are:
-#
-# %A - the full name of the weekday according to the current locale
-# %B - the full name of the month according to the current local
-# %d - the day of the month as a number
-# %Y - the year as a number including the century
-# %H - the hour as number in the 24 hour clock
-# %M - the mimute as a number
-# %S - the seconds as a number
-#
-
 my $date_fmt = '%A, %B %d, %Y at %H:%M:%S';
-
-# $style is the URL of a CSS stylesheet which will be used for script
-# generated messages.  This probably want's to be the same as the one
-# that you use for all the other pages.  This should be a local absolute
-# URI fragment.
-
 my $style = '/css/nms.css';
-
-# If $send_confirmation_mail is set to 1, then an additional email will
-# be sent to the person who submitted the form.  The details of the
-# confirmation email can be edited below.
-#
-# CAUTION: with this feature turned on it's possible for someone
-# to put someone else's email address in the form and submit it
-# 5000 times, causing this script to send a flood of email to a
-# third party.  This third party is likely to blame you for the
-# email flood attack.
-#
 my $send_confirmation_mail = 0;
 my $confirmation_text = <<'END_OF_CONFIRMATION';
 From: you@your.com
@@ -224,8 +175,11 @@ Subject: form submission
 Thankyou for your form submission.
 
 END_OF_CONFIRMATION
+#
+# USER CONFIGURATION << END >>
+# ----------------------------
+# (no user serviceable parts beyond here)
 
-# End configuration
 
 # Merge @allow_mail_to and @recipients into a single list of regexps
 push @recipients, map { /\@/ ? "^\Q$_\E\$" : "\@\Q$_\E\$" } @allow_mail_to;
