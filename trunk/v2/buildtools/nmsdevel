@@ -69,5 +69,8 @@ sub upload {
 
     system('scp', @upload,  "$username\@shell.sourceforge.net:/home/groups/n/nm/nms-cgi/htdocs/")
         and die;
+
+    system('ssh', "$username\@shell.sourceforge.net", '/home/groups/n/nm/nms-cgi/post_upload')
+        and die;
 }
 

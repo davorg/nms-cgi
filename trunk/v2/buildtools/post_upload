@@ -1,0 +1,39 @@
+#!/usr/bin/perl -w
+use strict;
+
+chdir '/home/groups/n/nm/nms-cgi/htdocs' or die "chdir: $!";
+
+opendir D, '.' or die "opendir: $!";
+my @files = readdir D;
+closedir D;
+
+my %dont_delete;
+foreach my $file (@files) {
+    next unless $file =~ /^([\w\-]+)\.VERSION$/;
+    my $name = $1;
+
+    open V, "<$name.VERSION" or die "open: $!";
+    my $version = <V>;
+    close V;
+    $version =~ /^([\w\-\.]+)$/ or die "bad $file";
+    $version = $1;
+
+    unless (-d "$name-$version") {
+        system("gzip -dc $name-$version.tar.gz | tar xf -") and die;
+	unlink $name;
+	symlink "$name-$version", $name or die "symlink: $!";
+    }
+
+    $dont_delete{"$name-$version"} = 1;
+}
+
+my @delete;
+foreach my $file (@files) {
+    next unless $file =~ /^(\w+_(?:compat|modules|autoinst))-(\w+)(\.tar\.gz|\.zip|$)$/;
+    my ($name, $ver, $ext) = ($1, $2, $3);
+    next if $dont_delete{"$name-$ver"};
+    push @delete, "$name-$ver$ext";
+}
+
+system('rm', '-rf', '--', @delete) and die;
+
