@@ -32,9 +32,8 @@ ChangeLog      - The change history of these files
 
 CONFIGURATION
 
-There is only one piece of configuration required - you need
-to set either the name or IP address of an SMTP relay that
-nms_sendmail can use to send out mail.
+You need to configure either the name or IP address of an SMTP
+relay that nms_sendmail can use to send out mail.
 
 Your system administrator or hosting provider should be able
 to give you the name or IP address of an SMTP relay that
@@ -53,6 +52,13 @@ or:
 
   my $mailhost = '10.3.45.253';
 
+Depending on the SMTP server software that your chosen SMTP
+relay uses, you may also need to set the $helohost
+configuration variable to a valid host name.  The name of
+the web server is best:
+
+   my $helohost = 'www.my.domain';
+
 INSTALLATION
 
 The nms_sendmail script is installed by simply copying it
@@ -65,10 +71,10 @@ nms_sendmail directly.
 
 If you're using an account on a shared server and don't
 have access to any location outside the document root,
-then it's worth asking your hosting provider to install 
+then it's worth asking your hosting provider to install
 nms_sendmail outside the document root for you.
 
-The next best place to install nms_sendmail is in a 
+The next best place to install nms_sendmail is in a
 subdirectory to which your web server is configured to
 deny all access.
 
