@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwadmin.pl,v 1.26 2004-07-23 21:13:17 codehelpgpg Exp $
+# $Id: wwwadmin.pl,v 1.27 2004-07-23 21:29:04 codehelpgpg Exp $
 #
 
 use strict;
@@ -12,11 +12,11 @@ use vars qw(
   $basedir $baseurl $cgi_url $mesgdir $datafile $mesgfile
   $passwd_file $ext $title $style $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.26 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.27 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.26 $
+# wwwadmin.pl $Revision: 1.27 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -172,7 +172,7 @@ html_header();
 $done_headers = 1;
 
 
-if (request_method eq 'post') {
+if (request_method eq 'POST') {
   my $FORM = parse_form();
   check_passwd($FORM);
 
