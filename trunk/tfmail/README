@@ -502,6 +502,54 @@ no_email                    - Set this to a true value to prevent the main
                               that if you're using TFmail.pl to record data
                               to a log file and don't need it mailed as well.
 
+
+INLINE TEMPLATES
+
+If you don't want to have a separate file for each template, you can
+choose to put some or all of the templates directly into the
+configuration file instead, putting a '%' character at the start of
+each line.
+
+For example, rather than having the configuration file line:
+
+
+email_template: my_email_template
+
+
+... and a separate my_email_template.trt file with the text:
+
+
+%% NMS email template file %%
+This is the email.
+
+remote address: {= env.REMOTE_ADDR =}
+user agent:     {= env.HTTP_USER_AGENT =}
+referer:        {= env.HTTP_REFERER =}
+
+The name they entered was: {= param.name =}
+
+
+... you could just have the block:
+
+
+email_template:
+%This is the email.
+%
+%remote address: {= env.REMOTE_ADDR =}
+%user agent:     {= env.HTTP_USER_AGENT =}
+%referer:        {= env.HTTP_REFERER =}
+%
+%The name they entered was: {= param.name =}
+
+
+... in the configuration file.  You can do this for any of the 
+configuration variables listed above that expect a template file
+as a value.
+
+Note that you must leave out the %% NMS ???? template file %%
+line when using an inline template like this.
+
+
 FILE UPLOADS
 
 To enable file uploads, you will need to set the ENABLE_UPLOADS constant

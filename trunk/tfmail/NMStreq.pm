@@ -7,7 +7,7 @@ use IO::File;
 use POSIX qw(strftime);
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.4 $, 10, -1;
+$VERSION = substr q$Revision: 1.5 $, 10, -1;
 
 =head1 NAME
 
@@ -175,13 +175,14 @@ sub new
 
 =over
 
-=item process_template ( FILENAME, CONTEXT, DEST )
+=item process_template ( TEMPLATE, CONTEXT, DEST )
 
-Reads in the template FILENAME, which must be the path to a
-template file, relative to the configuration root and without
-the file extension.  Data is substituted for any template
-directives in the template file, and the resulting document
-is passed out to DEST.
+Reads in the template TEMPLATE, which can either be an inline
+template as a multiline string or the path to a template file,
+relative to the configuration root and without the file
+extension.  Data is substituted for any template directives
+in the template, and the resulting document is passed out to
+DEST.
 
 CONTEXT is a string describing the context of the output
 document, and must be either C<html> or C<email>.  If CONTEXT
@@ -203,7 +204,7 @@ into a string, which becomes the return value.
 
 sub process_template
 {
-   my ($self, $filename, $context, $dest) = @_;
+   my ($self, $template, $context, $dest) = @_;
 
    my ($ret, $coderef);
    if (defined $dest)
@@ -217,8 +218,8 @@ sub process_template
       $coderef = sub { $ret .= $_[0] };
    }
 
-   my $template = $self->_compile_template($filename, $context);
-   $self->_run_template($template, $context, $coderef);
+   my $complied = $self->_compile_template($template, $context);
+   $self->_run_template($complied, $context, $coderef);
 
    return $ret;
 }
@@ -495,10 +496,12 @@ module.
 
 =over
 
-=item _compile_template ( FILENAME, CONTEXT )
+=item _compile_template ( TEMPLATE, CONTEXT )
 
-Reads a template file for context CONTEXT from file
-FILENAME, and compiles it to the following internal
+Reads in a template for context CONTEXT from TEMPLATE
+(which can be either a template filename relative to the
+configuration root or an inline template as a multiline
+string) and compiles it to the following internal
 representation:
 
 The compiled template is an array ref, each element of
@@ -561,15 +564,27 @@ error.
 
 sub _compile_template
 {
-   my ($self, $filename, $context) = @_;
+   my ($self, $template, $context) = @_;
 
-   my $fh = $self->_open_file($filename, "$context template");
+   my @lines;
+   if ($template =~ /%/)
+   {
+      # An inline template as a string
+      @lines = map { /^%(.*)/ ? ("$1\n") : () } split /\n/, $template;
+   }
+   else
+   {
+      # The name of a template in an external file
+      my $fh = $self->_open_file($template, "$context template");
+      @lines = <$fh>;
+      $fh->close;
+   }
 
    my $compiled = [];
    my @stack = ($compiled);
 
    local $_;
-   while(<$fh>)
+   foreach(@lines)
    {
       # Suppress newline on control directive alone on a line
       s#^\s*(\{\= \s*[A-Z]+\s*[\s\w\-\.]+ \=\})\s*\n#$1#x;
@@ -600,7 +615,6 @@ sub _compile_template
 
       push @{ $stack[0] }, $_ if length;
    }
-   $fh->close;
 
    return $compiled;
 }
