@@ -20,7 +20,7 @@ to a given date and time.
 
 FILES
 
-In this distribution, you will find four files:
+In this distribution, you will find three files:
 
 cookie.lib     - The cookie library.
 README         - This file. Instructions on how to install and use cookie.lib
