@@ -181,7 +181,9 @@ and real name followed the the string "by ", if there are email
 address and realname inputs in the form.  If TFmail can't work out
 the user's email address then the {= by_submitter =} directive
 produces nothing.  The "by " string was made part of the directive
-output so that the sentence would make sense in either case.
+output so that the sentence would make sense in either case.  The
+word 'by' can be replaced by setting the "by_submitter_by"
+configuration directive to the required text.
 
 The {= FOREACH input_field =} directive repeats the lines between
 the FOREACH line and the END line for each field in the form who's
@@ -376,6 +378,10 @@ realname_input              - The name of the CGI parameter that will
                               email_input input.  Default: none, so
                               there will be no comment on the From
                               address.
+
+by_submitter_by             - The phrase added by the {= by_submitter =}
+                              template directive when outputing the user's
+                              email address.  Default: 'by'.
 
 redirect                    - If this configuration value is set, then it
                               must be a URL and TFmail will generate a

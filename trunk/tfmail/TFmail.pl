@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.6 2002-05-07 21:38:07 nickjc Exp $
+# $Id: TFmail.pl,v 1.7 2002-05-12 16:49:29 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -60,7 +60,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.6 $, 10, -1;
+  $VERSION = substr q$Revision: 1.7 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -268,11 +268,12 @@ sub send_emails
       if ($realname_input)
       {
          my $realname = $treq->param($realname_input, '');
-         $realname =~ tr#a-zA-Z0-9_\-\.\,\'# #cs;
+         $realname =~ tr#a-zA-Z0-9_\-\.\,\'\241-\377# #cs;
          $realname = substr $realname, 0, 100;
-         $from = "$from ($realname)";
+         $from = "$from ($realname)" unless $realname =~ /^\s*$/;
       }
-      $treq->install_directive('by_submitter', "by $from ");
+      my $by = $treq->config('by_submitter_by', 'by');
+      $treq->install_directive('by_submitter', "$by $from ");
    }
 
    my $template = $treq->config('email_template', 'email');
