@@ -24,7 +24,7 @@ In this distribution, you will find three files:
 
 rand_link.pl   - The main perl script.
 README         - This file. Instructions on how to install and use rand_link.
-MANIFESTO      - List of files.
+MANIFEST       - List of files.
 rand_link.html - A sample HTML file.
 
 CONFIGURATION
