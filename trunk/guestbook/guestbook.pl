@@ -1,8 +1,12 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.15 2001-12-09 23:33:53 nickjc Exp $
+# $Id: guestbook.pl,v 1.16 2001-12-10 23:34:37 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.15  2001/12/09 23:33:53  nickjc
+# bug fix: strip_html was breaking email sending by adding SSI exploit
+# defence stuff to the email address.
+#
 # Revision 1.14  2001/12/01 17:53:11  gellyfish
 # * Fixed up some 5.004.04 compatibility issues
 # * Started rationalization of HTML handling
@@ -586,18 +590,20 @@ sub strip_html
 
    $allow_html = defined $allow_html ? $allow_html : 0;
 
-   $comments =~ s/(?:<[^>'"]*|".*?"|'.*?')+>//gs unless $allow_html;
+   if ( $allow_html ) {
+     # XXX whitelist based HTML filter goes here XXX
 
-   # remove any comments that could harbour an attempt at an SSI exploit
-   # suggested by Pete Sargeant
+     # remove any comments that could harbour an attempt at an SSI exploit
+     # suggested by Pete Sargeant
 
-   $comments =~ s/<!--.*?-->/ /gs;
+     $comments =~ s/<!--.*?-->/ /gs;
 
-   # mop up any stray start or end of comment tags.
-
-   $comments = "<!-- -->$comments<!-- -->";
-
-   return $comments;
+     # mop up any stray start or end of comment tags.
+     return "<!-- -->$comments<!-- -->";
+   } else {
+     $comments =~ s/<(?:[^>'"]+|".*?"|'.*?')*>//gs;
+     return escape_html($comments);
+   }
 }
 
 use vars qw(%escape_html_map %unescape_html_map);
