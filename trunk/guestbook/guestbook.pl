@@ -1,8 +1,11 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.6 2001-11-14 23:00:13 davorg Exp $
+# $Id: guestbook.pl,v 1.7 2001-11-16 09:06:53 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/11/14 23:00:13  davorg
+# More XHTML fixes.
+#
 # Revision 1.5  2001/11/14 22:21:17  davorg
 # Changed script archive URL to Sourceforge.
 # Added link to support mailing list.
@@ -24,8 +27,9 @@ use strict;
 use POSIX 'strftime';
 use CGI qw(param);
 use CGI::Carp qw(fatalsToBrowser set_message);
-
 use Fcntl qw(:DEFAULT :flock);
+
+use vars qw($DEBUGGING);
 
 # Configuration
 
