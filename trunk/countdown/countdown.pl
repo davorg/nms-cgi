@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.11 2002-01-27 13:06:15 gellyfish Exp $
+# $Id: countdown.pl,v 1.12 2002-01-28 20:46:27 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/01/27 13:06:15  gellyfish
+# Bugfix as reported via sourceforge
+#
 # Revision 1.10  2002/01/25 16:37:09  gellyfish
 # Put the missing log messages back
 #
@@ -69,10 +72,10 @@ my $date_fmt = '%H:%M:%S %d/%b/%Y';
 
 my $style = '/css/nms.css';
 
-# If $EMULATE_MATTS_CODE is set to 1 then this will behave exactly as the
+# If $emulate_matts_code is set to 1 then this will behave exactly as the
 # original countdown.pl did.
 
-my $EMULATE_MATTS_CODE = 1;
+my $emulate_matts_code = 1;
 
 # End configuration
 
@@ -207,7 +210,7 @@ my @units = qw(Year Month Day Hour Minute Second);
 my $diff;
 
 for my $diff_index (0 .. $#diff) {
-  if ($diff[$diff_index] == 0 and !$EMULATE_MATTS_CODE) {
+  if ($diff[$diff_index] == 0 and !$emulate_matts_code) {
     $skip[$diff_index] = 1;
   }
   next if $skip[$diff_index];

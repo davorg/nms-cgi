@@ -71,7 +71,7 @@ $DEBUGGING          - This should be set to 1 whilst you are installing
                       be output to the browser. This is a security risk and
                       should not be used when the script is live.
 
-$EMULATE_MATTS_CODE - When this variable is set to a true value (e.g. 1)
+$emulate_matts_code - When this variable is set to a true value (e.g. 1)
                       countdown will work in exactly the same way as its
                       counterpart at Matt's Script Archive. If it is set
                       to a false value (e.g. 0) then more advanced features
