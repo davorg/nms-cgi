@@ -1,6 +1,6 @@
 #!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.32 2002-04-01 19:12:02 nickjc Exp $
+# $Id: guestbook.pl,v 1.33 2002-04-05 22:30:53 nickjc Exp $
 #
 
 use strict;
@@ -383,7 +383,7 @@ EOCOMMENT
       <p><input type="submit"> * <input type="reset"></p>
     </form>
     <hr />
-    <p>Return to the <a href="$guestbookurl">Guestbook</a>.
+    <p>Return to the <a href="$guestbookurl">Guestbook</a></p>.
   </body>
 </html>
 
@@ -450,7 +450,7 @@ sub no_redirection {
       been added to the guestbook.</p>
     <hr />
     <p>Here is what you submitted:</p>
-    <p><b>$comments</b><br>
+    <p><b>$comments</b></p><br />
 
 END_HTML
 
@@ -478,7 +478,7 @@ END_HTML
 
   print " $escaped{country}" if $country;
 
-  print " - $date<p>\n";
+  print " - $date\n";
 
   if (scalar @debug_msg) {
     print qq|<br /><font color="red">\n|;
@@ -1082,6 +1082,7 @@ sub cleanup_cdata {
 
 sub escape_html {
   my $str = shift;
+  defined $str or $str = '';
   $str =~ s/([^\w\Q$html_safe_chars\E])/$escape_html_map{$1}/og;
   return $str;
 }
