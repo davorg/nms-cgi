@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.38 2002-02-14 08:45:04 nickjc Exp $
+# $Id: FormMail.pl,v 1.39 2002-02-21 09:17:29 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.38  2002/02/14 08:45:04  nickjc
+# * fixed silly error in body attribute checking
+#
 # Revision 1.37  2002/02/14 01:33:20  proub
 # Updated unit tests to reflect new check_email behavior (specifically,
 #   disallowing % in names when emulate_matts_code is in effect)
@@ -289,6 +292,10 @@ my %valid_ENV;
 #
 # unitTest();
 
+my $style_element = $style ?
+                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
+                    : '';
+
 check_url();
 
 my $date = strftime($date_fmt, localtime);
@@ -486,10 +493,15 @@ sub return_html {
 <html>
   <head>
      <title>$title</title>
-     <link rel="stylesheet" type="text/css" href="$style" />
+     $style_element;
+     <style>
+       h1.title {
+                   text-align : center;
+                }
+     </style>
   </head>
   <body $attr>$debug_warnings
-    <h1 align="center">$title</h1>
+    <h1 class="title">$title</h1>
     <p>Below is what you submitted to $recipient on $date</p>
     <p><hr size="1" width="75%" /></p>
 EOHTML
@@ -867,7 +879,7 @@ EOBODY
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>$title</title>
-    <link rel="stylesheet" type="text/css" href="$style" />
+    $style_element;
     <style type="text/css">
     <!--
        body {
