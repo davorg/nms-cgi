@@ -21,7 +21,7 @@ my @tests = (
   [ 'query by IP', 'http://x/x.htm?127.0.0.1',    1,    0 ],
   [ 'vpath by IP', 'http://x/x.htm/127.0.0.1',    0,    0 ],
   [ 'vpath by IP', 'http://x/x.htm/127.0.0.1',    1,    0 ],
-  [ 'user by IP',  'http://127.0.0.1@x.x/x.htm',  0,    1 ],
+  [ 'user by IP',  'http://127.0.0.1@x.x/x.htm',  0,    0 ],
   [ 'user by IP',  'http://127.0.0.1@x.x/x.htm',  1,    0 ],
   [ 'host by IP',  'http://127.0.0.1.x.domain/',  0,    0 ],
   [ 'host by IP',  'http://127.0.0.1.x.domain/',  1,    0 ],
