@@ -1,13 +1,13 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-03-14 21:33:59 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-05-22 09:53:00 $ )
 
 =head1 DESCRIPTION
 
 This document seeks to answer some of the questions that people might
 want to ask about the I<nms> project and the programs therein.
 
-=head2 What is this I<nms> thing all about ?
+=head2 What is this I<nms> thing all about?
 
 I<nms> is an attempt to provide replacements for all of the scripts from
 Matt's Script Archive. MSA is probably the most well-known archive of
@@ -18,7 +18,7 @@ I<nms> was started when a group of Perl programmers got tired of telling
 people not to use Matt's programs and getting the reply "But what shall I
 use instead?"
 
-=head2 But there are perfectly good programs already out there, why bother ?
+=head2 But there are perfectly good programs already out there, why bother?
 
 Actually, there aren't really.
 
@@ -39,7 +39,7 @@ The programs are insecure. Putting a CGI program on your web site is very
 risky. It means that you are allowing anyone to run a program on your web
 server. Unless these programs have been written very carefully, you may
 be allowing unscrupulous people (known as crackers) to gain access to more
-information then you intend. Eventually the crackers may be able to take
+information than you intend. Eventually the crackers may be able to take
 control of your web server.
 
 Perl makes it very easy to write secure programs. Unfortunately, most CGI
@@ -51,7 +51,7 @@ The programs are buggy. Many of the other programs have had no kind of
 code review. This means that they often still have bugs in which can cause
 problems on your web site. You may be the first person to discover this
 bug. The support you get from the authors of these programs can be very
-patchy. I have never got a reply from Matt Wright when I've reported a
+patchy. I have never received a reply from Matt Wright when I've reported a
 bug in his scripts.
 
 The I<nms> project has a large number of developers, therefore each line of
@@ -69,7 +69,14 @@ from reading Matt Wright's code.
 
 =back
 
-=head2 What programs are there available in the collection ?
+=head2 What does Matt Wright think about all this?
+
+Matt has a page on his web site which is generally very positive about
+I<nms>.
+
+E<lt>http://www.scriptarchive.com/nms.htmlE<gt>
+
+=head2 What programs are available in the collection?
 
 The exact list will increase over time. Here is the list of what we have
 currently available:
@@ -122,40 +129,40 @@ B<Text Counter> Text counter
 
 =back
 
-=head2 How are the programs licensed ?
+=head2 How are the programs licensed?
 
 The programs are licensed in the same way as Perl itself. That is you are 
 free to choose between the GNU Public License
 E<lt>http://www.gnu.org/licenses/gpl.htmlE<gt> or the Artistic License
 E<lt>http://www.perl.com/pub/a/language/misc/Artistic.htmlE<gt>.
 
-=head2 But I have programs that do the same thing already, why change them ?
+=head2 But I have programs that do the same thing already, why change them?
 
 Because the programs you may already use aren't as good as these. See
-"L<But there are perfectly good programs already out there, why bother ?">
+"L<But there are perfectly good programs already out there, why bother?">
 above for more details.
 
-=head2 Why do you keep calling them programs and not scripts ?
+=head2 Why do you keep calling them programs and not scripts?
 
 The two terms can be interchangeable. We like to use the term "program"
 as it carries an implication that the code has been designed more carefully.
 The term "scripts" can imply that the code has just been "thrown together"
 with no real thought. For CGI programs, this can be very dangerous.
 
-=head2 Why Perl and not (Python|Tcl|Ruby) ?
+=head2 Why Perl and not (Python|Tcl|Ruby)?
 
 Because we like Perl :)
 
 But also because Perl is still the most commonly used programming language
 for writing CGI programs.
 
-=head2 Why CGI and not (PHP|ASP|Java Servlets) ?
+=head2 Why CGI and not (PHP|ASP|Java Servlets)?
 
 Because CGI is still the most commonly used architecture for dynamic web
 pages - despite what you might hear from the marketing departments at
 Sun or Microsoft.
 
-=head2 What's with all this XML stuff ? Shouldn't the programs output HTML ?
+=head2 What's with all this XML stuff? Shouldn't the programs output HTML?
 
 All of our scripts output valid XHTML. XHMTL is the newest standard for
 HTML. It replaces HTML 4.01. We strongly believe that by adhering to 
@@ -166,7 +173,7 @@ XHTML is largely a case of tightening up on some of the bad habits that
 HTML let you get away with. All tags must be explicitly closed and all
 presentation information is stored in a stylesheet.
 
-=head2 What's this $emulate_matts_code thing all about ?
+=head2 What's this $emulate_matts_code thing all about?
 
 In some cases, Matt's way of doing things isn't the best. However we've
 set ourselves the target that all of our programs should work exactly the
@@ -184,7 +191,7 @@ of bugs out of your scripts. Even though the I<nms> project team are all
 very experienced Perl programmers, we all insist on using them in all of
 our scripts. You should too.
 
-=head2 Why don't the programs decode the parameters like other PERL programs ?
+=head2 Why don't the programs decode the parameters like other PERL programs?
 
 Actually it's "Perl", not "PERL" :-)
 
@@ -197,19 +204,19 @@ library called CGI.pm which will do all your CGI parameter decoding for you.
 Why bother writing your own (potentially buggy) code when there's code right
 there that will do it for you?
 
-=head2 Why don't you use C<cgi-lib.pl> like everyone else does ?
+=head2 Why don't you use C<cgi-lib.pl> like everyone else does?
 
 C<cgi-lib.pl> was created for writing CGI programs back in the days of Perl 4,
 but we've come a long way since then. CGI.pm does all that C<cgi-lib.pl>
 did... and much, much more.
 
-=head2 But isn't the CGI module terribly big and slow ?
+=head2 But isn't the CGI module terribly big and slow?
 
 It's certainly big! But because of the way it's written, only functions that
 you actually use will be loaded into memory. This means that it will have 
 very little effect on the size or speed of your program.
 
-=head2 What's with all this C<die> stuff all over the programs ?
+=head2 What's with all this C<die> stuff all over the programs?
 
 This is another major problem with many other CGI programs. They always 
 assume that everything they try to do will work. For example, if they 
@@ -218,7 +225,7 @@ opened successfully. We believe that it's vitally important to check for
 these things and in many cases the only appropriate action when things go
 wrong is to kill the program.
 
-=head2 Isn't C<flock> something that sheep do ?
+=head2 Isn't C<flock> something that sheep do?
 
 Yes, but it's also something that you should do every time that you access
 a file that can be accessed by other processes. If you're storing data from
@@ -227,9 +234,9 @@ two visitors can be saving data at the same time. If they both try to write
 to the file simultaneously, then the file can become corrupted. If they
 both try to flock (for "file lock") first, then only the first one will
 be successful. The second will be forced to wait until the first unlocks the
-file. This leads to many less corrupt files and is therefore a good idea.
+file. This leads to far fewer corrupt files and is therefore a good idea.
 
-=head2 The programs keep crashing with C<flock unimplemented>, why ?
+=head2 The programs keep crashing with C<flock unimplemented>, why?
 
 Hasn't anyone told you that Windows 98 is not a server operating system?
 
@@ -239,14 +246,14 @@ would have to behave completely differently.  You could try commenting out
 the lines in the affected programs with a '#', but you should be warned
 that this will lead to other side effects as these operating systems
 implement a 'mandatory non-blocking lock' on files open for writing: that is
-to say that is if one process has a file open so it can write to it and a
+to say that if one process has a file open so it can write to it and a
 second process attempts to open the same file (whether for writing or reading
 only) then the second attempt will simply fail and there will be an error
-message.  This is alright for testing or development purpose where you are
-unlikely to have more than person using the program at the same time, but
+message.  This is alright for testing or development purposes where you are
+unlikely to have more than one person using the program at the same time, but
 would be far from ideal for a public website.
 
-=head2 Why don't the programs use C<Net::SMTP> to send mail ?
+=head2 Why don't the programs use C<Net::SMTP> to send mail?
 
 Firstly, because Net::SMTP is not available as part of the core Perl 
 distribution except for in the development version leading to Perl 5.8.
@@ -258,7 +265,7 @@ any of these things and the code to support them is likely to run into
 hundreds of lines and require several other modules.  Also Net::SMTP requires
 an SMTP relay to be available on the local network.
 
-=head2 But I don't have C<sendmail> on my webserver, what can I do ?
+=head2 But I don't have C<sendmail> on my webserver, what can I do?
 
 Well, if your webserver has a Unix-like operating system it is likely that
 it has a program that performs a similar function for the preferred MTA
@@ -270,8 +277,8 @@ administrator or web hosting provider for more information on this.
 
 If you are on a Windows webserver then you probably don't have a local MTA
 at all, although this is not say that you will not be able to use C<FormMail>.
-You should ask your System Administrator or web hosting provider is the
-program C<blat> is available, C<blat> is command line program for Windows
+You should ask your System Administrator or web hosting provider if the
+program C<blat> is available, C<blat> is a command line program for Windows
 that enables you to send e-mail in a similar way to C<sendmail>, if it is
 not available you could get your own copy and upload it to your own website
 at a push, however it does require some configuration so you should read the
@@ -287,7 +294,7 @@ Blat is available from  http://www.interlog.com/~tcharron/blat.html
 Microsofts sendmail port is at 
 ftp://ftp.microsoft.com/developr/drg/unix-to-windows/ports/sendmail/sm1121.zip
 
-=head2 Is Simple Search broken - it can't find text in my PDF files ?
+=head2 Is Simple Search broken - it can't find text in my PDF files?
 
 The 'text' in a  PDF file is stored as a page description, a sort of image 
 file really, so the text that appears in the acrobat viewer doesn't 
@@ -296,7 +303,7 @@ you can see this for yourself by doing 'strings *.pdf'.  Simple Search
 really is *simple*, it looks for the plaintext strings that are specified 
 on the form in the specified files, it won't find them in a PDF file.
 
-A quick hack that we really don't think we would ever consider to put in 
+A quick hack that we really don't think we would ever consider putting in 
 the standard search.pl, because it depends on Ghostscript, would be to 
 change, in the file search.pl, the line:
 
@@ -315,7 +322,7 @@ to :
 
 
 This does depend on there being a recent version of Ghostscript installed 
-and ps2ascii being locate as above (it might of course be /usr/local/bin 
+and ps2ascii being located as above (it might of course be /usr/local/bin 
 or /opt/bin or wherever :).
 
 The above comes with no warranty whatsoever. 
