@@ -1,76 +1,79 @@
-Text Clock Version 1.00
+COPYRIGHT
+
+Text Clock  Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
+
+LICENSE
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at <http://nms-cgi.sourceforge.net/>
+URL
 
-TextClock is a Perl CGI script which is meant to be run from Server Side 
-Includes. When this script is implemented, it can be used to show browsers 
-several variations of the current time and/or date.
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>.
 
-There are two files included with this script:
-    1) README 	- This file; includes detailed installation 
-                  instructions.
-    2) textclock.pl - The Perl script which generates the headers 
-                  and sends the current time and/or date to 
-                  your user.
+SUMMARY
 
-Should you encounter any problems running this script, such as Method Not
-Implemented, try changing the name of the program to nph-textclock.cgi, 
-as some servers require the use of .cgi extensions.  Otherwise, this 
-script must be placed in your cgi-bin.  There are several variables which
-must be edited in the textclock.pl script.
+textclock displays the current tme on a web page. It is intended to be used
+as a Server Side Include program.
 
-TEXTCLOCK.PL -
+FILES
 
-    There are up to nine variables in the textclock.pl script, however
-    if you wish to receive the default display, you need not edit any
-    of them.  You can mix and match all of these options and see which
-    kind of clock you like the best.  You can get the clock to display
-    only the day of the week, only the date, only the time, everything
-    or make up your own combination!
+In this distribution, you will find three files:
 
-    $Display_Week_Day = '1';
-        If this option is set to '1', the day of the week will be 
-        displayed; Possible Values: Monday, Tuesday, Wednesday,
-        Thursday, Friday, Saturday and Sunday.  Setting this option
-        to '0' will suppress the printing of the Day of the Week.
+textclock.pl  - The main perl script.
+README        - This file. Instructions on how to install and use textclock.
+MANIFESTO     - List of files
 
-    $Display_Month = '1';
-        If this option is set to '1', the month will be printed.
-        Possible values include: January, February, March, April, May,
-        June, July, August, September, October, November and December.
-        If this option is set to '0', the month will not be displayed.
+CONFIGURATION
 
-    $Display_Month_Day = '1';
-        If this option is set to '1', the day of the month is
-        displayed, containing a value from 01 - 31.  Setting this to
-        '0' will hide the Day of the Month.
+There are a number of variables that you can change in textclock.pl which
+alter the way that the program works.
 
-    $Display_Year = '1';
-        If this option is set to '1', the four digit year is 
-        displayed, and it can be hidden by setting this to '0'.
+$DEBUGGING    - This should be set to 1 whilst you are installing
+                and testing the script. Once the script is live you
+                should change it to 0. When set to 1, errors will
+                be output to the browser. This is a security risk and
+                should not be used when the script is live.
 
-    $Display_Time = '1';
-        If this option is set to '1', a twenty four hour clock is
-        displayed.  Otherwise, if it is set to '0', it is supressed.
-
-    $Display_Time_Zone = '1';
-        Setting this to '1' allows users to your site to know what
-        time zone the date is being displayed from.
+$Display_Week_Day
+$Display_Month
+$Display_Month_Day
+$Display_Year
+$Display_Time
+$Display_Time_Zone
+              - Each of these variables controls the display of the relevant
+                part of the date or time. If the variable is set to 1, then
+                that part of the date/time is displayed. If it is set to 0
+                then that part of the date/time is omitted.
 
 
-##############################################################################
+INSTALLATION
 
-How to Call This Script From Your Web Page
-------------------------------------------
+textclock is installed simply by copying the file textclock.pl.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator
 
-Calling this script from a web page is fairly simple.  You just use a standard
-Server Side Include call, such as:
+You may need to rename textclock.pl to textclock.cgi. Again, your system
+administrator will know if this is the case.
 
-	<!--#exec cgi="/url/path/to/textclock.cgi"-->
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x textclock.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
+
+Then, edit your HTML files and wherever you want to display the time, insert
+the following:
+
+     <!--#exec cgi="/cgi-bin/textclock.pl"-->
+
+Note: As this is a "Server Side Include" you will need to ensure that your
+web server has been configured to support SSI. Also, it's possible that you
+may need to rename any files that include SSI calls to give them a different
+extension. A common choice is .shtml. Your system administrator will be able
+to help you with these details.
+
 
 SUPPORT
 
