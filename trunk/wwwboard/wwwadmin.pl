@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwadmin.pl,v 1.22 2002-09-15 17:24:05 nickjc Exp $
+# $Id: wwwadmin.pl,v 1.23 2003-04-16 17:01:43 nickjc Exp $
 #
 
 use strict;
@@ -12,11 +12,11 @@ use vars qw(
   $basedir $baseurl $cgi_url $mesgdir $datafile $mesgfile
   $passwd_file $ext $title $style $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.22 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.23 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.22 $
+# wwwadmin.pl $Revision: 1.23 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -68,6 +68,18 @@ BEGIN
 
 $done_headers = 0;
 
+sub html_header {
+    if ($CGI::VERSION >= 2.57) {
+        # This is the correct way to set the charset
+        print header('-type'=>'text/html', '-charset'=>$charset);
+    }
+    else {
+        # However CGI.pm older than version 2.57 doesn't have the
+        # -charset option so we cheat:
+        print header('-type' => "text/html; charset=$charset");
+    }
+}
+
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
 # This is basically the same as what CGI::Carp does inside but simplified
@@ -94,7 +106,7 @@ BEGIN
 
       return undef if $file =~ /^\(eval/;
 
-      print "Content-Type: text/html\n\n" unless $done_headers;
+      html_header() unless $done_headers;
 
       print <<EOERR;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -153,7 +165,7 @@ $ENV{PATH} =~ /(.*)/ and $ENV{PATH} = $1;
 
 use vars qw(%HTML);
 
-print header;
+html_header();
 $done_headers = 1;
 
 
