@@ -45,7 +45,7 @@ foreach my $testset (@testsets)
    mkdir_p($outdir);
 
    # rmdir_r($datdir);
-   system('rm','-r',$datdir) and die "rm failed";
+   -e $datdir and system('rm','-r',$datdir) and die "rm failed";
    mkdir_p($datdir);
 
    rmdir_r($resdir);
