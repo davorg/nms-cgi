@@ -28,7 +28,7 @@ foreach my $test (@tests)
    $expected_recipient = $test->[2];
    $t->run_test(
       TEST_ID  => "recipient_alias $test->[0]",
-      CGI_ARGS => ['foo=foo', "recipient=$test->[1]"],
+      CGI_ARGS => ['foo=foo', "recipient=$test->[1]", "sort=order:foo,recipient"],
    );
 }
 

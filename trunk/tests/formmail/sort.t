@@ -7,13 +7,6 @@ use NMSTest::ScriptUnderTest;
 
 use vars qw(@output_order);
 
-my $t = NMSTest::ScriptUnderTest->new(
-  SCRIPT       => 'formmail/FormMail.pl',
-  REWRITERS    => [ \&rw_setup ],
-  HTTP_REFERER => 'http://foo.domain/',
-  CHECKER      => 'LocalChecks',
-);
-
 my @tests = (
 
    # NAME       INPUTS       SORT                 PBF   OUTPUT ORDER
@@ -35,7 +28,7 @@ my @tests = (
    [ 'notconf0', 'z',        'order:sort,z',      0,    'z'          ], 
    [ 'notconf1', 'z',        'order:sort,z',      1,    'sort,z'     ], 
    [ 'space',    'x x,yz',   'order:yz,x x',      0,    'yz,x x'     ],
-   [ 'spaced',   'x x,yz',   'order: yz , x x',  0,    'yz,x x'     ],
+   [ 'spaced',   'x x,yz',   'order: yz , x x',   0,    'yz,x x'     ],
    [ 
      'big',
 
@@ -59,32 +52,47 @@ my @tests = (
    ],
 );
 
-
-foreach my $test (@tests)
+use vars qw($emulate);
+foreach $emulate (0, 1)
 {
-   my ($name, $inputs, $sort, $pbf, $outputs) = @$test;
-
-   my @args = (
-                 "print_blank_fields=$pbf",
-	         (map {"$_=hic"} split /,/, $inputs),
-	      );
-   unshift @args, "sort=$sort" if defined $sort;
-
-   @output_order = split /,/, $outputs;
-
-   $t->run_test(
-     TEST_ID     => "sort $name",
-     CGI_ARGS    => \@args,
-     CHECKS      => 'xhtml nodie goodorder',
+   my $t = NMSTest::ScriptUnderTest->new(
+     SCRIPT       => 'formmail/FormMail.pl',
+     REWRITERS    => [ \&rw_setup ],
+     HTTP_REFERER => 'http://foo.domain/',
+     CHECKER      => 'LocalChecks',
    );
+
+   foreach my $test (@tests)
+   {
+      my ($name, $inputs, $sort, $pbf, $outputs) = @$test;
+      next if $name eq 'notconf1' and $emulate == 0;
+   
+      my @args = (
+                    "print_blank_fields=$pbf",
+   	         (map {"$_=hic"} split /,/, $inputs),
+   	      );
+      unshift @args, "sort=$sort" if defined $sort;
+   
+      @output_order = split /,/, $outputs;
+   
+      $t->run_test(
+        TEST_ID     => "sort e=$emulate $name",
+        CGI_ARGS    => [@args, 'recipient=foo@foo.domain'],
+        CHECKS      => 'xhtml nodie goodorder',
+      );
+   }
+
 }
 
 sub LocalChecks::check_goodorder
 {
    my ($self) = @_;
 
-   $self->{PAGES}{OUT}   =~ m#sort:.*order# and die "sort value shown\n";
-   $self->{PAGES}{MAIL1} =~ m#sort:.*order# and die "sort value mailed\n";
+   if ($emulate)
+   {
+      $self->{PAGES}{OUT}   =~ m#sort:.*order# and die "sort value shown\n";
+      $self->{PAGES}{MAIL1} =~ m#sort:.*order# and die "sort value mailed\n";
+   }
 
    my @out = $self->{PAGES}{OUT} =~ m#<p><b>([^<]+):</b>\s*(?:hic)?</p>#g;
    foreach (@out) { s/&#39;/'/g }
@@ -113,7 +121,8 @@ sub array_comp
 
 sub rw_setup
 {
-   s|\s+\@referers\s*=\s*qw\(.*?\)| \@referers = qw(foo.domain)|;
-   s|\s+\@allow_mail_to\s*=.*?;| \@allow_mail_to = qw(foo\@foo.domain);|;
+   s| +\@referers\s*=\s*qw\(.*?\)| \@referers = qw(foo.domain)| or die;
+   s| +\@allow_mail_to\s*=.*?;| \@allow_mail_to = qw(foo\@foo.domain);| or die;
+   s| +\$emulate_matts_code\s*=.*?;| \$emulate_matts_code = $emulate;| or die;
 }
 
