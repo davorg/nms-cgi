@@ -6,6 +6,7 @@ use constant BASE => "$ENV{NMS_WORKING_COPY}/v2";
 use lib BASE . '/lib';
 use NMSDevel::SourceFileSet::Script;
 use NMSDevel::SourceFileSet::Package;
+use Net::FTP;
 
 my ($action, $script) = @ARGV;
 
