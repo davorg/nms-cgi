@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.15 2002-05-01 08:09:55 gellyfish Exp $
+# $Id: counter.pl,v 1.16 2002-06-02 10:05:27 nickjc Exp $
 #
 
 use strict;
@@ -137,7 +137,9 @@ my $counter_file = $data_dir;
 
 if ( $allow_virtual_hosts )
 {
-    $counter_file .= virtual_host() . '_';
+    my $vh = virtual_host();
+    $vh =~ /^([\w\-\.]+)$/ and $counter_file .= $1;
+    $counter_file .= '_';
 }
 
 if ( $use_single_file )
