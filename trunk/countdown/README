@@ -43,7 +43,7 @@ alter the way that the program works.
 
 $delimiter          - The value that you want to put between the different
                       parts of the output. The default is an HTML <br />
-                      tag whihc puts the parts on different lines.
+                      tag which puts the parts on different lines.
 
 $date_fmt           - The format that the date will be displayed in. This
                       is a string that contains a number of different 'tags'.
