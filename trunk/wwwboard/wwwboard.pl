@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.10 2001-12-01 19:45:22 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.11 2002-01-15 20:34:03 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/12/01 19:45:22  gellyfish
+# * Tested everything with 5.004.04
+# * Replaced the CGI::Carp with local variant
+#
 # Revision 1.9  2001/11/26 13:40:05  nickjc
 # Added \Q \E around variables in regexps where metacharacters in the
 # variables shouldn't be interpreted by the regex engine.
@@ -240,29 +244,27 @@ EOERR
 
    $SIG{__DIE__} = \&fatalsToBrowser;
 }   
+
 if ( $use_time ) {
    $date_fmt = "$time_fmt $date_fmt";
 }
 
-# Nasty global variables. Need to localise them
-my ($date, $followup, $subject, @followup_num, $message_img, $origemail,
-    $origname, $origdate, $long_date, $name, @followups, $num_followups,
-    $body, $last_message, $origsubject, $message_url_title, $hidden_body,
-    $email, $message_url);
 
 my $id = get_number();
-my %Form = parse_form();
-get_variables();
-new_file();
-main_page();
 
-if ($num_followups >= 1) {
-  thread_pages();
-}
 
-return_html();
-increment_num(); # Is this necessary with the current implementation of
-                 # get_number() ?
+my $Form = parse_form();
+
+my $variables = get_variables($Form,$id);
+
+new_file($variables);
+main_page($variables);
+
+thread_pages($variables);
+
+return_html($variables);
+increment_num($variables); # Is this necessary with the current implementation 
+                           # of get_number() ?
 
 sub get_number {
   sysopen(NUMBER, "$basedir/$datafile", O_RDWR|O_CREAT)
@@ -313,59 +315,69 @@ sub parse_form {
       }
     }
   }
-
-  return %Form;
+  return \%Form;
 }
 
 ###############
 # Get Variables
 
 sub get_variables {
-  if ($Form{followup}) {
-    $followup = 1;
-    @followup_num = split(/,/, $Form{followup});
+
+  my ( $Form,$id ) = @_;
+
+  my $variables = {id   => $id,
+                   Form => $Form}; # Just in case ;-}
+
+  my @followup_num;
+
+  if ($Form->{followup}) {
+    $variables->{followup} = 1;
+    @followup_num = split(/,/, $Form->{followup});
 
     my %fcheck;
     foreach my $fn (@followup_num) {
       error('followup_data') if $fn !~ /^\d+$/ || $fcheck{$fn};
-      $fcheck{$fn} = 1;
+      $fcheck{$fn}++;
     }
+
+    # WTF!
 
     @followup_num = keys %fcheck;
 
-    @followups = @followup_num;
-    $num_followups = @followup_num;
-    $last_message = pop(@followups);
-    $origdate = $Form{origdate};
-    $origname = $Form{origname};
-    $origsubject = $Form{origsubject};
+    $variables->{followups} = \@followup_num;
+    $variables->{num_followups} = scalar @followup_num;
+    $variables->{last_message} = pop(@{$variables->{followups}});
+    $variables->{origdate} = $Form->{origdate};
+    $variables->{origname} = $Form->{origname};
+    $variables->{origsubject} = $Form->{origsubject};
   } else {
-    $followup = $num_followups = 0;
+    $variables->{followup} = $variables->{num_followups} = 0;
   }
 
-  if ($Form{name}) {
-    $name = $Form{name};
+  if (my $name = $Form->{name}) {
     $name =~ s/\"//g;
     $name =~ s/<//g;
     $name =~ s/>//g;
     $name =~ s/\&//g;
+
+    $variables->{name} = $name;
   } else {
     error('no_name');
   }
 
-  if ($Form{email} =~ /.*\@.*\..*/) {
-    $email = $Form{email};
+  if ($Form->{email} =~ /(.*\@.*\..*)/) {
+    $variables->{email} = $1;
   }
 
-  if ($Form{subject}) {
-    $subject = escape_html($Form{subject});
+  if ($Form->{subject}) {
+    $variables->{subject} = escape_html($Form->{subject});
   } else {
     error('no_subject');
   }
 
-  if ($Form{'url'} =~ /.*\:.*\..*/ && $Form{'url_title'}) {
-    $message_url = $Form{'url'};
-    $message_url_title = $Form{'url_title'};
+  if ($Form->{'url'} =~ /(.*\:.*\..*)/ && $Form->{'url_title'}) {
+    $variables->{message_url} = $1;
+    $variables->{message_url_title} = $Form->{'url_title'};
   }
 
   my $image_suffixes = '.+';
@@ -376,12 +388,11 @@ sub get_variables {
 
      $image_suffixes = "($image_suffixes)";
   }
-  if ($Form{'img'} =~ m%^.+tp://.*\.image_suffixes$%) {
-    $message_img = $Form{'img'};
+  if ($Form->{'img'} =~ m%^(.+tp://.*\.$image_suffixes)$%) {
+    $variables->{message_img} = $1;
   }
 
-  if ($Form{'body'}) {
-    $body = $Form{'body'};
+  if (my $body = $Form->{'body'}) {
     $body = strip_html($body,$allow_html);
     $body = "<p>$body</p>";
     $body =~ s/\cM//g;
@@ -392,7 +403,7 @@ sub get_variables {
     # it would allow someone to subvert $allow_html by putting escaped stuff
     # in the message and having the script expand it.
 
-    $body = unescape_html($body);
+    $variables->{body} = unescape_html($body);
      
   } else {
     error('no_body');
@@ -400,7 +411,8 @@ sub get_variables {
 
   if ($quote_text) 
   {
-    $hidden_body = $body;
+    my $hidden_body = $variables->{body};
+
     if ( $quote_html ) 
     {
        $hidden_body = escape_html($hidden_body);
@@ -409,31 +421,41 @@ sub get_variables {
     {
        $hidden_body = strip_html($hidden_body,$allow_html);
     }
+
+    $variables->{hidden_body} = $hidden_body;
    
    }
 
-   $date = strftime($date_fmt , localtime());
+   $variables->{date} = strftime($date_fmt , localtime());
+
+   return $variables;
 }
 
 #####################
 # New File Subroutine
 
 sub new_file {
-  open(NEWFILE,">$basedir/$mesgdir/$id.$ext")
-    || die "$! [$basedir/$mesgdir/$id.$ext]";
+
+  my ($variables) = @_;
+
+  open(NEWFILE,">$basedir/$mesgdir/$variables->{id}.$ext")
+    || die "$! [$basedir/$mesgdir/$variables->{id}.$ext]";
 
   my $faq = $show_faq ? qq( [ <a href="$baseurl/$faqfile">FAQ</a> ]) : '';
-  my $print_name = $email ? qq(<a href="mailto:$email">$name</a> ) : $name;
+  my $print_name = $variables->{email} ? 
+            qq(<a href="mailto:$variables->{email}">$variables->{name}</a> ) : 
+            $variables->{name};
   my $ip = $show_poster_ip ? "($ENV{REMOTE_ADDR})" : '';
-  my $pr_follow = $followup ? 
+  my $pr_follow = $variables->{followup} ? 
     qq(<p>In Reply to:
-       <a href="$last_message.$ext">$origsubject</a> posted by ) .
-	 $origemail ? qq(<a href="$origemail">$origname</a>) 
-	   : $origname . "on $origdate:</p>" : '';
-  my $img = $message_img ? 
-    qq(<p align="center"><img src="$message_img"></p>\n) : '';
-  my $url = $message_url ? 
-    qq(<ul><li><a href="$message_url">$message_url_title</a></li></ul><br>) :
+       <a href="$variables->{last_message}.$ext">$variables->{origsubject}</a> posted by ) .
+	 $variables->{origemail} ? 
+         qq(<a href="$variables->{origemail}">$variables->{origname}</a>) 
+	   : $variables->{origname} . "on $variables->{origdate}:</p>" : '';
+  my $img = $variables->{message_img} ? 
+    qq(<p align="center"><img src="$variables->{message_img}"></p>\n) : '';
+  my $url = $variables->{message_url} ? 
+    qq(<ul><li><a href="$variables->{message_url}">$variables->{message_url_title}</a></li></ul><br>) :
       '';
 
   print NEWFILE <<END_HTML;
@@ -442,11 +464,11 @@ sub new_file {
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
-    <title>$subject</title>
+    <title>$variables->{subject}</title>
     <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body>
-    <h1 align="center">$subject</h1>
+    <h1 align="center">$variables->{subject}</h1>
     <hr />
     <p align="center">
       [ <a href="#followups">Follow Ups</a> ]
@@ -456,32 +478,37 @@ sub new_file {
     </p>
 
   <hr />
-  <p>Posted by $print_name $ip on $date</p>
+  <p>Posted by $print_name $ip on $variables->{date}</p>
 
-  $followup $img
+  $variables->{followup} $img
 
-  $body<br />$url
+  $variables->{body}<br />$url
 
   <hr />
   <p><a name="followups">Follow Ups:</a><br />
-  <ul><!--insert: $id-->
-  </ul><!--end: $id-->
+  <ul><!--insert: $variables->{id}-->
+  </ul><!--end: $variables->{id}-->
   <br /><hr />
   <p><a name="postfp">Post a Followup</a></p>
   <form method=POST action="$cgi_url">
 END_HTML
 
-  my $follow_ups = @followup_num ? map { "$_," } @followup_num : '';
+  my $follow_ups = @{$variables->{followups}}  ? 
+                    join ',', @{$variables->{followup_num}} : '';
+
+  $follow_ups .= ',' if length($follow_ups);
+
+  my $id = $variables->{id};
 
   print NEWFILE qq(<input type="hidden" name="followup" value="$follow_ups$id" />);
 
-  print NEWFILE qq(<input type=hidden name="origname" value="$name" />);
-  print NEWFILE qq(<input type=hidden name="origemail" value="$email" />)
-    if $email;
+  print NEWFILE qq(<input type=hidden name="origname" value="$variables->{name}" />);
+  print NEWFILE qq(<input type=hidden name="origemail" value="$variables->{email}" />)
+    if $variables->{email};
 
   print NEWFILE <<END_HTML;
-<input type="hidden" name="origsubject" value="$subject" />
-<input type="hidden" name="origdate" value="$date" />
+<input type="hidden" name="origsubject" value="$variables->{subject}" />
+<input type="hidden" name="origdate" value="$variables->{date}" />
 <table>
 <tr>
 <td>Name:</td>
@@ -492,6 +519,8 @@ END_HTML
 <td><input type="text" name="email" size="50" /></td>
 </tr>
 END_HTML
+
+  my $subject = $variables->{subject};
 
   $subject = 'Re: ' . $subject unless $subject =~ /^Re:/i;
 
@@ -506,7 +535,7 @@ END_HTML
   print NEWFILE "<tr><td>Comments:</td>\n";
   print NEWFILE qq(<td><textarea name="body" COLS="50" ROWS="10">\n);
   if ($quote_text) {
-    print NEWFILE map { "$quote_char $_\n" } split /\n/, $hidden_body;
+    print NEWFILE map { "$quote_char $_\n" } split /\n/, $variables->{hidden_body};
     print NEWFILE "\n";
   }
   print NEWFILE "</textarea></td></tr>\n";
@@ -544,6 +573,8 @@ END_HTML
 # Main WWWBoard Page Subroutine
 
 sub main_page {
+
+   my ( $variables ) = @_;
   open(MAIN,"$basedir/$mesgfile") ||
     die "$! [$basedir/$mesgfile]";
 
@@ -551,7 +582,13 @@ sub main_page {
   close(MAIN);
 
   open(MAIN,">$basedir/$mesgfile") || die $!;
-  if ($followup == 0) {
+
+  my $id = $variables->{id};
+  my $name = $variables->{name};
+  my $subject = $variables->{subject};
+  my $date = $variables->{date};
+
+  if ($variables->{followup} == 0) {
     foreach (@main) {
       if (/<!--begin-->/) {
 	print MAIN <<END_HTML;
@@ -568,9 +605,9 @@ END_HTML
   } else {
     foreach (@main) {
       my $work = 0;
-      if (/<ul><!--insert: $last_message-->/) {
+      if (/<ul><!--insert: $variables->{last_message}-->/) {
 	print MAIN <<END_HTML;
-<ul><!--insert: $last_message-->
+<ul><!--insert: $variables->{last_message}-->
 <!--top: $id--><li><a href="$mesgdir/$id.$ext">$subject</a> - <b>$name</b> <i>$date</i>
 (<!--responses: $id-->0)
 <ul><!--insert: $id-->
@@ -580,7 +617,7 @@ END_HTML
 	my $response_num = $1;
 	my $num_responses = $2;
 	$num_responses++;
-	foreach my $followup_num (@followup_num) {
+	foreach my $followup_num (@{$variables->{followup}}) {
 	  if ($followup_num == $response_num) {
 	    print MAIN "(<!--responses: $followup_num-->$num_responses)\n";
 	    $work = 1;
@@ -601,21 +638,34 @@ END_HTML
 # Add Followup Threading to Individual Pages
 sub thread_pages {
 
-  foreach my $followup_num (@followup_num) {
+  my ($variables) = @_;
+
+  return unless $variables->{num_followups};
+
+  my $id = $variables->{id};
+  my $subject = $variables->{subject};
+  my $name    = $variables->{name};
+  my $date    = $variables->{date};
+
+  foreach my $followup_num (@{$variables->{followup_num}}) {
     open(FOLLOWUP, "$basedir/$mesgdir/$followup_num.$ext")
       || die "$!";
 
     my @followup_lines = <FOLLOWUP>;
     close(FOLLOWUP);
 
-    open(FOLLOWUP, ">$basedir/$mesgdir/$followup_num.$ext")
+    open(FOLLOWUP, "<+$basedir/$mesgdir/$followup_num.$ext")
       || die "$!";
+
+    flock FOLLOWUP, LOCK_EX or die "Can't lock $!\n";
+
+    seek FOLLOWUP, SEEK_SET,0;
 
     foreach (@followup_lines) {
       my $work = 0;
-      if (/<ul><!--insert: $last_message-->/) {
+      if (/<ul><!--insert: $variables->{last_message}-->/) {
 	print FOLLOWUP<<END_HTML;
-<ul><!--insert: $last_message-->
+<ul><!--insert: $variables->{last_message}-->
 <!--top: $id--><li><a href="$id\.$ext">$subject</a> <b>$name</b> <i>$date</i>
 (<!--responses: $id-->0)
 <ul><!--insert: $id-->
@@ -625,7 +675,7 @@ END_HTML
 	my $response_num = $1;
 	my $num_responses = $2;
 	$num_responses++;
-	foreach $followup_num (@followup_num) {
+	foreach $followup_num (@{$variables->{followups}}) {
 	  if ($followup_num == $response_num) {
 	    print FOLLOWUP "(<!--responses: $followup_num-->$num_responses)\n";
 	    $work = 1;
@@ -643,12 +693,15 @@ END_HTML
 }
 
 sub return_html {
+
+  my ( $variables ) = @_;
+
   print header;
 
-  my $url = $message_url ? 
-    qq(<p><b>Link:</b> <a href="$message_url">$message_url_title</a></p>) : '';
-  my $img = $message_img ? 
-    qq(<p><b>Image:</b> <img src="$message_img"></p>) : '';
+  my $url = $variables->{message_url} ? 
+    qq(<p><b>Link:</b> <a href="$variables->{message_url}">$variables->{message_url_title}</a></p>) : '';
+  my $img = $variables->{message_img} ? 
+    qq(<p><b>Image:</b> <img src="$variables->{message_img}"></p>) : '';
 
   print <<END_HTML;
 <?xml version="1.0" encoding="UTF-8"?>
@@ -656,22 +709,22 @@ sub return_html {
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
-    <title>Message Added: $subject</title>
+    <title>Message Added: $variables->{subject}</title>
     <link rel="stylesheet" type="text/css" href="$style" />
   </head>
   <body>
-    <h1 align="center">Message Added: $subject</h1>
+    <h1 align="center">Message Added: $variables->{subject}</h1>
     <p>The following information was added to the message board:</p>
     <hr>
-    <p><b>Name:</b> $name<br>
-      <b>E-Mail:</b> $email<br>
-      <b>Subject:</b> $subject<br>
+    <p><b>Name:</b> $variables->{name}<br>
+      <b>E-Mail:</b> $variables->{email}<br>
+      <b>Subject:</b> $variables->{subject}<br>
       <b>Body of Message:</b></p>
-      <p>$body</p>
+      <p>$variables->{body}</p>
     $url
     $img
 
-    <p><b>Added on Date:</b> $date</p>
+    <p><b>Added on Date:</b> $variables->{date}</p>
     <hr>
     <p align="center">[ <a href="$baseurl/$mesgdir/$id.$ext">Go to Your Message</a> ] [ <a href="$baseurl/$mesgfile">$title</a> ]</p>
   </body>
@@ -680,6 +733,7 @@ END_HTML
 }
 
 sub increment_num {
+  my ($variables) = @_;
   open(NUM,">$basedir/$datafile") || die $!;
   print NUM $id;
   close(NUM);
@@ -774,9 +828,13 @@ END_HTML
 
 sub rest_of_form {
 
+  my ( $variables ) = @_;
+
   print qq(<form method="POST" action="$cgi_url">\n);
 
-  if ($followup == 1) {
+  my %Form = $variables->{Form};
+
+  if ($variables->{followup} == 1) {
     print qq(<input type="hidden" name="origsubject" value="$Form{origsubject}" />\n);
     print qq(<input type="hidden" name="origname" value="$Form{origname}" />\n);
     print qq(<input type="hidden" name="origemail" value="$Form{origemail}" />\n);
