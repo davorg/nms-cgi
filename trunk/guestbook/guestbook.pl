@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.47 2004-05-07 09:09:04 gellyfish Exp $
+# $Id: guestbook.pl,v 1.48 2004-10-28 13:50:10 gellyfish Exp $
 #
 
 use strict;
@@ -121,7 +121,7 @@ $locale         = '';
 }
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.47 $, 10, -1;
+$VERSION = substr q$Revision: 1.48 $, 10, -1;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -234,7 +234,7 @@ rewrite_file($guestbookreal, sub
      $_ = '' unless $entry_order;
      $_ .= "<!-- comment start -->\n";
 
-     $_ .= "<div class='comments'\n";
+     $_ .= qq%<div class="comments">\n%;
      $_ .= "<b>$comments</b><br />\n";
 
      if ($linkname and $inputs{'url'}) {
