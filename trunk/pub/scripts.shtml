@@ -33,13 +33,14 @@
     <table border="1">
       <tr>
 	<th>Script</th><th>Description</th><th>.tar.gz</th><th>.zip</th>
-	<th>Last Update</th>
+	<th>Version</th><th>Last Update</th>
       </tr>
       <tr>
 	<td>Cookie Lib</td>
 	<td>Library of subroutines for manipulating cookies</td>
         <td><a href="cookielib.tar.gz">cookielib.tar.gz</a></td>
         <td><a href="cookielib.zip">cookielib.zip</a></td>
+	<td><!--#include file="cookielib.VER"--></td>
 	<td><!--#flastmod file="cookielib.tar.gz"--></td>
       </tr>
       <tr>
@@ -47,6 +48,7 @@
 	<td>Count down the time to a certain date</td>
         <td><a href="countdown.tar.gz">countdown.tar.gz</a></td>
         <td><a href="countdown.zip">countdown.zip</a></td>
+	<td><!--#include file="countdown.VER"--></td>
 	<td><!--#flastmod file="countdown.tar.gz"--></td>
       </tr>
       <tr>
@@ -54,6 +56,7 @@
 	<td>Simple database of web links</td>
 	<td><a href="ffa.tar.gz">ffa.tar.gz</a></td>
 	<td><a href="ffa.zip">ff.zip</a></td>
+	<td><!--#include file="ffa.VER"--></td>
 	<td><!--#flastmod file="ffa.tar.gz"--></td>
       </tr>
       <tr>
@@ -61,6 +64,7 @@
 	<td>Send emails from web forms</td>
 	<td><a href="formmail.tar.gz">formmail.tar.gz</a></td>
 	<td><a href="formmail.zip">formmail.zip</a></td>
+	<td><!--#include file="formmail.VER"--></td>
 	<td><!--#flastmod file="formmail.tar.gz"--></td>
       </tr>
       <tr>
@@ -68,6 +72,7 @@
 	<td>A simple guest book script</td>
 	<td><a href="guestbook.tar.gz">guestbook.tar.gz</a></td>
 	<td><a href="guestbook.zip">guestbook.zip</a></td>
+	<td><!--#include file="guestbook.VER"--></td>
  	<td><!--#flastmod file="guestbook.tar.gz"--></td>
       </tr>
       <tr>
@@ -75,6 +80,7 @@
 	<td>Image counter</td>
 	<td><a href="imagecounter.tar.gz">imagecounter.tar.gz</a></td>
 	<td><a href="imagecounter.zip">imagecounter.zip</a></td>
+	<td><!--#include file="imagecounter.VER"--></td>
  	<td><!--#flastmod file="imagecounter.tar.gz"--></td>
       </tr>
       <tr>
@@ -82,6 +88,7 @@
 	<td>"sendmail" replacement</td>
 	<td><a href="nms_sendmail.tar.gz">nms_sendmail.tar.gz</a></td>
 	<td><a href="nms_sendmail.zip">nms_sendmail.zip</a></td>
+	<td><!--#include file="nms_sendmail.VER"--></td>
  	<td><!--#flastmod file="nms_sendmail.tar.gz"--></td>
       </tr>
 <!--
@@ -90,6 +97,7 @@
 	<td>Display information about your Perl installation</td>
 	<td><a href="perldiver.tar.gz">perldiver.tar.gz</a></td>
 	<td><a href="perldiver.zip">perldiver.zip</a></td>
+	<td><!--#include file="perldiver.VER"--></td>
 	<td><!--#flastmod file="perldiver.tar.gz"--></td>
       </tr>
 -->
@@ -98,6 +106,7 @@
 	<td>Display a random image</td>
 	<td><a href="rand_image.tar.gz">rand_image.tar.gz</a></td>
 	<td><a href="rand_image.zip">rand_image.zip</a></td>
+	<td><!--#include file="rand_image.VER"--></td>
 	<td><!--#flastmod file="rand_image.tar.gz"--></td>
       </tr>
       <tr>
@@ -105,6 +114,7 @@
 	<td>Display a random link</td>
 	<td><a href="rand_link.tar.gz">rand_link.tar.gz</a></td>
 	<td><a href="rand_link.zip">rand_link.zip</a></td>
+	<td><!--#include file="rand_link.VER"--></td>
 	<td><!--#flastmod file="rand_link.tar.gz"--></td>
       </tr>
       <tr>
@@ -112,6 +122,7 @@
 	<td>Display a randomly chosen piece of text</td>
 	<td><a href="rand_text.tar.gz">rand_text.tar.gz</a></td>
 	<td><a href="rand_text.zip">rand_text.zip</a></td>
+	<td><!--#include file="rand_text.VER"--></td>
 	<td><!--#flastmod file="rand_text.tar.gz"--></td>
       </tr>
       <tr>
@@ -119,6 +130,7 @@
 	<td>Simple web site search engine</td>
 	<td><a href="search.tar.gz">search.tar.gz</a></td>
 	<td><a href="search.zip">search.zip</a></td>
+	<td><!--#include file="search.VER"--></td>
 	<td><!--#flastmod file="search.tar.gz"--></td>
       </tr>
       <tr>
@@ -126,6 +138,7 @@
 	<td>Display a random image using SSI</td>
 	<td><a href="ssi_rand_image.tar.gz">ssi_rand_image.tar.gz</a></td>
 	<td><a href="ssi_rand_image.zip">ssi_rand_image.zip</a></td>
+	<td><!--#include file="ssi_rand_image.VER"--></td>
 	<td><!--#flastmod file="ssi_rand_image.tar.gz"--></td>
       </tr>
       <tr>
@@ -133,6 +146,7 @@
 	<td>Display the time</td>
 	<td><a href="textclock.tar.gz">textclock.tar.gz</a></td>
 	<td><a href="textclock.zip">textclock.zip</a></td>
+	<td><!--#include file="textclock.VER"--></td>
 	<td><!--#flastmod file="textclock.tar.gz"--></td>
       </tr>
       <tr>
@@ -140,6 +154,7 @@
 	<td>Text counter</td>
 	<td><a href="textcounter.tar.gz">textcounter.tar.gz</a></td>
 	<td><a href="textcounter.zip">textcounter.zip</a></td>
+	<td><!--#include file="textcounter.VER"--></td>
 	<td><!--#flastmod file="textcounter.tar.gz"--></td>
       </tr>
       <tr>
@@ -147,6 +162,7 @@
 	<td>Improved Form Mail</td>
 	<td><a href="tfmail.tar.gz">tfmail.tar.gz</a></td>
 	<td><a href="tfmail.zip">tfmail.zip</a></td>
+	<td><!--#include file="tfmail.VER"--></td>
 	<td><!--#flastmod file="tfmail.tar.gz"--></td>
       </tr>
     </table>
