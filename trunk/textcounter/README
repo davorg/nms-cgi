@@ -1,7 +1,7 @@
 COPYRIGHT
 
-Text Counter Version 1.00
-Copyright 2001 London Perl Mongers, All rights reserved
+Text Counter 
+Copyright 2001 - 2004 London Perl Mongers, All rights reserved
 
 LICENSE
 
@@ -67,6 +67,31 @@ $pad_size     - The minimum size of the number displayed. For example, if
 $ssi_emit_cgi_headers - This should normally be set to 1.  You may need to
                         change this to 0 if you are seeing stuff output
                         that you didn't expect as described below.
+
+$allow_virtual_hosts  - If this is set to 1 then a single textcounter can
+                        be used for multiple web sites with a different
+                        virtual host name without the risk of the counters
+                        for similarly named pages clashing.  The counter
+                        files will be created with the virtual host name
+                        prepended.
+
+$canonicalize  - If this is set to 1 then an attempt will be made to make
+                 the path part of the URL of the calling page the same for
+                 all equivalent requests by stripping multiple occurrences
+                 of non-word characters (such as '/' or '.') to a single '_'.
+                 This will prevent multiple files from being created for a
+                 page called as http://foo/index.shtml, http://foo/./index.shtml
+                 etc.  If you are upgrading your textcounter then you should
+                 check that you don't already have multiple files for the
+                 same page - if you do and you don't want to potentially
+                 reset your counter you should set this to 0.
+
+@allow_hosts   - If you are concerned that your counter might be accessed by
+                 pages outside your site (or you are seeing counter files
+                 with hostnames that you don't recognize) then setting this
+                 to a space separated list of the hostnames that you want
+                 to access the counter will prevent the counter being
+                 incremented for pages on sites not in the list.  
 
 INSTALLATION
 

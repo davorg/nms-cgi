@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.18 2002-07-23 20:44:51 nickjc Exp $
+# $Id: counter.pl,v 1.19 2004-10-19 08:49:13 gellyfish Exp $
 #
 
 use strict;
@@ -50,13 +50,17 @@ my $ssi_emit_cgi_headers = 1;
 
 my @no_header_servers = qw(Xitami);
 
-my $allow_virtual_hosts = 0;
+my $allow_virtual_hosts = 1;
 
 my $use_single_file     = 0;
 
 my $single_data_file    = 'counter.txt';
 
 my $locale              = '';
+
+my $canonicalize        = 1;
+
+my @allow_hosts         = qw();
 
 # End configuration
 
@@ -120,11 +124,15 @@ check_server_software();
 
 print header if $ssi_emit_cgi_headers;
 
+my $vh = virtual_host();
+check_host($vh) || die "bad host : '$vh'\n";
+
 check_uri($count_page) || die "bad URI : '$count_page'\n";
 
+my $can = $canonicalize ? '+' : '';
 
 $count_page =~ s|/$||;
-$count_page =~ s/[^\w]/_/g;
+$count_page =~ s/[^\w]$can/_/g;
 $count_page =~ /^(\w+)$/ or die 'failed to wordify count_page';
 $count_page = $1;
 
@@ -246,4 +254,28 @@ sub check_server_software
      {
         $ssi_emit_cgi_headers = 0;
      }   
+}
+
+sub check_host
+{
+   my ( $host ) = @_;
+
+   my $rc = 0;
+   if ( @allow_hosts )
+   {
+      foreach my $check_host (@allow_hosts)
+      {
+         if ( $host eq $check_host )
+         {
+            $rc = 1;
+            last;
+         }
+      }
+   }
+   else
+   {
+      $rc = 1;
+   }
+
+   return $rc;
 }
