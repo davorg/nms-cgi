@@ -1,59 +1,65 @@
-Simple Search Version 1.0
+NOTICE
+
+Please note that some (most) of these sections are incomplete. We hope to get them
+replaced before Monday 28th Jan 2001. In the meantime please consult the appropriate
+README files from Matt's Script Archive <http://www.worldwidemart.com/scripts/> for
+futher details.
+
+COPYRIGHT
+
+Countdown Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
+
+LICENSE
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
-Scripts Archive at <http://nms-cgi.sourceforge.net/>
+URL
 
-The simple search script was written to allow people to set up a search of 
-their site, so their users could enter keywords and find all documents 
-matching those keywords.  It was written to be simple, so there are not 
-many options.  When the search returns pages, it returns them in no real 
-order, and they are referenced with the <title> tag of that page (if one
-exists).
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>
 
-The instructions below explain how to set up and configure the Simple Search 
-script.  The script should have come with three files:
+SUMMARY
 
-  1) README      - Useful installation instructions (this file).
-  2) search.pl   - The Perl script which does the searching.
-  3) search.html - A sample HTML Search Page.
+Simple Search is a simple search engine designed for a quick search of a website.
 
-SEARCH.PL
-=========
+FILES
 
-This script is the one that you will need to define what files you want to 
-be searched and the locations of those files.  First you need to define the 
+In this distribution, you will find four files:
+
+search.pl      - The main Perl script
+README         - This file. Instructions on how to install and use search
+countdown.html - A sample HTML document demonstrating how to use search
+MANIFEST       - List of files
+
+CONFIGURATION
+
+This script is the one that you will need to define what files you want to
+be searched and the locations of those files.  First you need to define the
 variables:
 
   $basedir = '';
-    This is the base directory to the files you will want to search.  If 
-    you have all of your files in /home/joe/public_html and you want to 
-    search files that are in /home/joe/public_html/work and 
-    /home/joe/public_html/fun, then you would set your base directory to 
-    /home/joe/public_html/ and then put the subdirectories into the @files 
-    array, since they will be combined at run time. The $basedir variable 
-    just saves you the time of having to type out the basedir over and over 
-    again for every file you want to include.
+    This is the base directory to the files you will want to search.  This should
+    be the closest as possible to the root directory as you can; it should
+    encompass everything you want searched.  Files and folders you want blocked
+    should be placed in the @blocked array; everything else will be searched.
+    Also note that this is a directory on the server, not the web.
 
   $baseurl = '';
     This is very similar to the basedir variable except that it will be used
     as a base reference to the files you want to search in terms of the web.
-    For the example above with user joe, his baseurl would probably be 
-    something like: http://joe.host.com/~joe/ so that when the searched files
-    are appended to this baseurl, they form a complete url to his files to
-    place in the results.
+    In plain english, this variable will be used in generating links to the
+    results.  Think of it as the equivalant to $basedir, but instead of a
+    directory on the server, its the directory on the web.
 
   @files = ();
-    This is an array that includes all of the files you want to search.  The
-    directory paths and filenames should be in reference to $basedir.  Wild
-    cards are allowed in this array, so if joe wanted to search all html
-    files in fun/ and work/, he would set his @files array up as: @files =
-    ('fun/*.html','work/*.html');  You can also search whole directories at
-    one time, like: @files = ('fun/','work/');  This would search all files
-    located in these directories.  Putting exact filenames will search only
-    that filename.
+    This is an array of file types searched.  You have a few markers you can use:
+    * - wildcard.  Use to fill in holes, such as: sear*.html  Use it to tighten up the search criteria.
+    / - directory marker.
+    . - use to indicate file exstension.
+    If there are no markers in the element, it will be treated as a file extension;
+    All files with that file extention that match the search will be "found".
 
   $title = "";
     This variable is used to display the title of your page in the search
@@ -66,32 +72,45 @@ variables:
     This is the url to the search.html page you set up, so that it can be
     referenced from in the results page if users want to make another search.
 
-That is all of the variables that need to be configured in your script. You 
-must also chmod this script to 755 so that all users can execute it and place 
-it in your cgi-bin or change the name to search.cgi.  Now you simply have to 
+  @blocked = ();
+    This is an array of files that will be blocked.  Full names, relative
+    to $basedir are needed.  These files will NEVER show up in any search.
+
+That is all of the variables that need to be configured in your script. You
+must also chmod this script to 755 so that all users can execute it and place
+it in your cgi-bin or change the name to search.cgi.  Now you simply have to
 edit the search.html page and you are ready to go!
-------------------------------------------------------------------------------
 
-SEARCH.HTML
-===========
+INSTALLATION
 
-This page needs only a little changing.  You will probably want to change the 
-title and header of this page to match your site, and you may want to change 
-the background and other features of it to make it fit into your site better.
+Simple Search is installed simply by copying the file search.pl into your
+cgi-bin directory. If you don't know where your cgi-bin directory is, then
+please ask your system administrator.
 
-The main thing you will need to change is the action="" of your script from 
-the fake url, to the url of your search.pl script.  Once you have changed 
-this, and have implemented the changes listed above in search.pl, the search 
-program should work.
+You may need to rename search.pl to search.cgi. Again, your system
+administrator will know if this is the case.
 
-search.html should be chmoded 744 so that it is readable by everyone.
-------------------------------------------------------------------------------
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x countdown.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
 
-README
-======
+Simple Search will scan and search all directories and subdirectories from a
+start point.  There are 3 different parameters that can be passed to it:
+case, bool, and terms.
+$case  - can be Sensitive or Insensitive.  Default is Insensitive.
+$bool  - Type of search, although only affects searches with multiple terms.
+         Can be AND or OR.  Default is OR.
+$terms - the terms that will be searched.
 
-Just read it!
-------------------------------------------------------------------------------
+See the search.html example bundled with Simple Search of how to fully construct
+a form to use with simple search.  Also note that a small form can be embedded into
+a page using a construct similar to this:
+
+<form method="POST" action="/cgi-bin/search.pl">
+<input type="text" name="terms" size="20" />
+<input type="submit" />
+</form>
 
 SUPPORT
 
