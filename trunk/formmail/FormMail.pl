@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.88 2002-05-25 23:01:02 nickjc Exp $
+# $Id: FormMail.pl,v 1.89 2002-05-26 14:09:34 nickjc Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ use vars qw(
 
 # PROGRAM INFORMATION
 # -------------------
-# FormMail.pl $Revision: 1.88 $
+# FormMail.pl $Revision: 1.89 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -67,7 +67,7 @@ END_OF_CONFIRMATION
 # (no user serviceable parts beyond here)
 
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.88 $, 10, -1;
+  $VERSION = substr q$Revision: 1.89 $, 10, -1;
 
   # Merge @allow_mail_to and @recipients into a single list of regexps,
   # automatically adding any recipients in %recipient_alias.
@@ -910,7 +910,7 @@ sub escape_html {
 
 =head1 COPYRIGHT
 
-FormMail $Revision: 1.88 $
+FormMail $Revision: 1.89 $
 Copyright 2001 London Perl Mongers, All rights reserved
 
 =head1 LICENSE
@@ -1110,6 +1110,49 @@ In the HTML form that should submit to the recipient
 'two@your.domain', you would then set the recipient with:
 
   <input type="hidden" name="recipient" value="2" />
+
+=item $locale
+
+This determines the language that is used in the date - by
+default this is blank and the language will probably be
+english. The following a list of some possible values,
+however it should be stressed that not all of these will
+be supported on all systems and also this is not a complete
+list:
+
+        Catalan           ca_ES
+        Croatian          hr_HR
+        Czech             cs_CZ
+        Danish            da_DK
+        Dutc              nl_NL
+        Estonian          et_EE
+        Finnish           fi_FI
+        French            fr_FR
+        Galician          gl_ES
+        German            de_DE
+        Greek             el_GR
+        Hebrew            he_IL
+        Hungarian         hu_HU
+        Icelandic         is_IS
+        Italian           it_IT
+        Japanese          ja_JP
+        Korean            ko_KR
+        Lithuanian        lt_LT
+        Norwegian         no_NO
+        Polish            pl_PL
+        Portuguese        pt_PT
+        Romanian          ro_RO
+        Russian           ru_RU
+        Slovak            sk_SK
+        Slovenian         sl_SI
+        Spanish           es_ES
+        Swedish           sv_SE
+        Thai              th_TH
+        Turkish           tr_TR
+
+=item $charset
+
+The character set to use for output documents.
 
 =item @valid_ENV
 
