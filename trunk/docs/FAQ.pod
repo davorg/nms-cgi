@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-03-09 11:39:06 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-03-14 21:33:59 $ )
 
 =head1 DESCRIPTION
 
@@ -169,10 +169,10 @@ presentation information is stored in a stylesheet.
 =head2 What's this $emulate_matts_code thing all about ?
 
 In some cases, Matt's way of doing things isn't the best. However we've
-set ourselves the target that all of our programs should exactly the same
-way as Matt's originals. If you set C<$emulate_matts_code> to 1, then
-the I<nms> script will work exactly the the same way. If you set it to
-0, then our script will be free to do some things in a more sensible way, 
+set ourselves the target that all of our programs should work exactly the
+same way as Matt's originals. If you set C<$emulate_matts_code> to 1, then
+the I<nms> script will work exactly the the same way. If you set it to 0,
+then our script will be free to do some things in a more sensible way, 
 but it might not be able to deal with data created with Matt's scripts.
 
 =head2 I've heard that C<use strict;> is gay ..
