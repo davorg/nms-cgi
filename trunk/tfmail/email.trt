@@ -1,6 +1,5 @@
 %% NMS email template file %%
-Below is the result of your feedback form.  It was submitted
-{= by_submitter =}on {= date =}.
+Web site information request {= by_submitter =}on {= date =}.
 ----------------------------------------------------------------------
 
 {= FOREACH input_field =}
