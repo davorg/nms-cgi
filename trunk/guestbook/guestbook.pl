@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.12 2001-11-26 13:40:05 nickjc Exp $
+# $Id: guestbook.pl,v 1.13 2001-12-01 11:44:43 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.12  2001/11/26 13:40:05  nickjc
+# Added \Q \E around variables in regexps where metacharacters in the
+# variables shouldn't be interpreted by the regex engine.
+#
 # Revision 1.11  2001/11/25 15:28:43  gellyfish
 # * Added security features
 # * more refactoring
@@ -101,7 +105,7 @@ my $separator   = 1;
 my $redirection = 0;
 my $entry_order = 1;
 my $remote_mail = 0;
-my $allow_html  = 1;
+my $allow_html  = 0;
 my $line_breaks = 0;
 
 # $mailprog is the program that will be used to send mail if that is 
@@ -170,6 +174,15 @@ $comments = unescape_html($comments) if $encoded_comments;
 # crudely Strip out HTML unless we are allowing it
 
 $comments = strip_html($comments) unless $allow_html;
+
+# remove any comments that could harbour an attempt at an SSI exploit
+# suggested by Pete Sargeant
+
+$comments =~ s/<!--.*?-->/ /gs;
+
+# mop up any stray start or end of comment tags.
+
+$comments = "<!-- -->$comments<!-- -->";
 
 # remove any HTML from the rest of the fields - HTML should not be allowed
 # anywhere but the comment 
