@@ -1,0 +1,106 @@
+=head1 NAME
+
+Frequently Asked Questions about the Perl used in the I<nms> CGI programs.
+
+E<lt>-- $Date: 2002-09-14 16:06:29 $ --E<gt>
+
+=head1 DESCRIPTION
+
+These are answers to some common questions about our Perl style
+and project usage of Perl.
+
+
+=head2 I've heard that C<use strict;> is gay ..
+
+You shouldn't believe everything that bk tells you :)
+
+C<use strict> (together with C<-w>) is a great way to keep a huge range
+of bugs out of your scripts. Even though the I<nms> project team are all
+very experienced Perl programmers, we all insist on using them in all of
+our scripts. You should too.
+
+=head2 Why don't the programs decode the parameters like other PERL programs?
+
+Actually it's "Perl", not "PERL" :-)
+
+The vast majority of Perl CGI programs seem to decode the CGI parameters
+using a buggy piece of code that probably originated in Matt's scripts.
+This code has a number of problems so we don't use it.
+
+Fortunately, since Perl 5.004_04, the Perl distribution has included a
+library called CGI.pm which will do all your CGI parameter decoding for you.
+Why bother writing your own (potentially buggy) code when there's code right
+there that will do it for you?
+
+=head2 Why don't you use C<cgi-lib.pl> like everyone else does?
+
+C<cgi-lib.pl> was created for writing CGI programs back in the days of Perl 4,
+but we've come a long way since then. CGI.pm does all that C<cgi-lib.pl>
+did... and much, much more.
+
+=head2 But isn't the CGI module terribly big and slow?
+
+It's certainly big! But because of the way it's written, only functions that
+you actually use will be loaded into memory. This means that it will have 
+very little effect on the size or speed of your program.
+
+=head2 What's with all this C<die> stuff all over the programs?
+
+This is another major problem with many other CGI programs. They always 
+assume that everything they try to do will work. For example, if they 
+open a file to read some data from it, they don't check that the file was
+opened successfully. We believe that it's vitally important to check for 
+these things and in many cases the only appropriate action when things go
+wrong is to kill the program.
+
+=head2 Isn't C<flock> something that sheep do?
+
+Yes, but it's also something that you should do every time that you access
+a file that can be accessed by other processes. If you're storing data from
+a web page in a file and your web page becomes popular, it is likely that
+two visitors can be saving data at the same time. If they both try to write
+to the file simultaneously, then the file can become corrupted. If they
+both try to flock (for "file lock") first, then only the first one will
+be successful. The second will be forced to wait until the first unlocks the
+file. This leads to far fewer corrupt files and is therefore a good idea.
+
+=head2 Why don't the programs use C<Net::SMTP> to send mail?
+
+Firstly, because Net::SMTP is not available as part of the core Perl 
+distribution except for in the development version leading to Perl 5.8.
+
+Secondly, because the I<nms> developers feel that it is better to use
+the queuing, MX lookup and retry capabilities of the local message transfer
+agent (MTA) to deliver mail messages - the Net::SMTP module does not do
+any of these things and the code to support them is likely to run into
+hundreds of lines and require several other modules.  Also Net::SMTP requires
+an SMTP relay to be available on the local network.
+
+=head2 Where can I learn more Perl?
+
+
+If you wish to learn more Perl, you should look at Randall Schwartz's
+book Learning Perl, published by O'Reilly and Associates
+E<lt>http://www.oreilly.com/catalog/lperl3/E<gt>.
+
+E<lt>http://www.perl.com/E<gt> is also a good starting point.
+=head2 The programs keep crashing with C<flock unimplemented>, why?
+
+Hasn't anyone told you that Windows 98 is not a server operating system?
+
+Unfortunately on Windows 95 and 98 there is no support whatsoever for
+advisory locking like C<flock>, Perl does not try to emulate it because it
+would have to behave completely differently.  You could try commenting out
+the lines in the affected programs with a '#', but you should be warned
+that this will lead to other side effects as these operating systems
+implement a 'mandatory non-blocking lock' on files open for writing: that is
+to say that if one process has a file open so it can write to it and a
+second process attempts to open the same file (whether for writing or reading
+only) then the second attempt will simply fail and there will be an error
+message.  This is alright for testing or development purposes where you are
+unlikely to have more than one person using the program at the same time, but
+would be far from ideal for a public website.
+
+
+=cut
+

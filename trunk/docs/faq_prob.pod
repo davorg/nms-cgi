@@ -1,0 +1,387 @@
+=head1 NAME
+
+Frequently Asked Questions about running the I<nms> CGI programs.
+If a question is not specific to 
+
+E<lt>-- $Date: 2002-09-14 16:06:29 $ --E<gt>
+
+=head1 DESCRIPTION
+
+These are hopefully answers to question you will have when installing
+or running our programs.
+
+
+=head2 How do I report a problem?
+
+It is very easy to report a problem badly. 
+
+Saying "It doesn't work" is easy, and also pretty useless if you want
+us to help fix it.  Our support form requests most of the information
+needed for generic cases, but there's a nice big text box for the
+stuff specific to you, but we don't know what that is. Here's how to
+figure it out and tell us.
+
+Make sure you've read the entirity of this FAQ page.  We cover a lot
+of common problems here, and you'll get a solution faster by reading
+this.  Please also check that you are using the latest release of the
+program.
+
+If you have a problem which isn't covered here, then you should
+include everything you have done in the report. This will make your
+problem report long. Don't worry about this, as it is good. We would
+rather have to read long problem reports, which include the
+information we need, than read a short bug report, and go several
+rounds of email to get that information.
+
+If you have edited the program, paste in everything from the 
+start of the program to the line which denotes the End of User
+Configurable Settings. You will probably not have changed most
+of these lines. It doesn't matter.
+
+If you think that there might be a problem with one of your changes,
+and you think you know which one it is, but don't know how to correct
+it, include E<strong>allE<strong> the information anyway. It's easier
+to ignore what we know we don't need, than to ask for information we
+might.
+
+this on their own time.
+
+
+=head2 There is a conflict between NMS documentation and Matt's.  Which is right?
+
+For our programs, our documentation is definitive :-) .
+Where the program and the documentation do not match this is
+considered a bug to be found and corrected. Additionally, if
+you find some of our documentation unclear, please report
+that to the support list and we will take a look to see if it
+can be improved.
+
+There are, occassionally, small changes between what Matt did, and
+what we do. These are all documented, including why.  Please see
+the next question for details.
+
+
+=head2 What's this $emulate_matts_code thing all about?
+
+In some cases, Matt's way of doing things isn't the best. However we've
+set ourselves the target that all of our programs should be able to
+work exactly the same way as Matt's originals. If you set
+C<$emulate_matts_code> to 1, then the I<nms> script will work exactly
+the the same way. If you set it to , then our script will be free to
+do some things in a more sensible way, but it might not be able to
+deal with data created with Matt's scripts.
+
+
+
+
+=head2 I'm getting a "Badness" error. What does this mean?
+
+It means that you should check for a newer version of the
+relevant program. This error was significantly more common
+in older versions of our programs. 
+
+If you still get the error with the latest version, see above on
+submitting support requests.
+
+
+
+=head2 The programs keep crashing with C<flock unimplemented>, why?
+
+Hasn't anyone told you that Windows 98 is not a server operating system?
+
+Unfortunately on Windows 95 and 98 there is no support whatsoever for
+advisory locking like C<flock>, Perl does not try to emulate it because it
+would have to behave completely differently.  You could try commenting out
+the lines in the affected programs with a '#', but you should be warned
+that this will lead to other side effects as these operating systems
+implement a 'mandatory non-blocking lock' on files open for writing: that is
+to say that if one process has a file open so it can write to it and a
+second process attempts to open the same file (whether for writing or reading
+only) then the second attempt will simply fail and there will be an error
+message.  This is alright for testing or development purposes where you are
+unlikely to have more than one person using the program at the same time, but
+would be far from ideal for a public website.
+
+
+=head2 But I don't have C<sendmail> on my web-server, what can I do?
+
+Well, if your web-server has a Unix-like operating system it is likely that
+it has a program that performs a similar function for the preferred MTA
+on that system.  C<QMail> has a program called C<qmail-inject> which takes
+similar command line options to C<sendmail>, indeed on some systems the
+program that is available as C<sendmail> is actually C<qmail-inject>. Exim
+and Postfix also have their own equivalents - you should ask your system
+administrator or web hosting provider for more information on this.
+
+If you are on a Windows web-server then you probably don't have a local MTA
+at all, although this is not to say that you will not be able to use 
+C<FormMail>.
+
+As part of the I<nms> project a program called C<nms_sendmail> has been
+released that provides the same function as sendmail.  This can be
+downloaded from the same place that you downloaded FormMail and its
+installation is described in the associated README file.
+
+=head2 Is Simple Search broken - it can't find text in my PDF files?
+
+The 'text' in a  PDF file is stored as a page description, a sort of image 
+file really, so the text that appears in the acrobat viewer doesn't 
+actually appear literally in the file.  If you are on a Unix-like system 
+you can see this for yourself by doing 'strings *.pdf'.  Simple Search 
+really is *simple*, it looks for the plain-text strings that are specified 
+on the form in the specified files, it won't find them in a PDF file.
+
+A quick hack that we really don't think we would ever consider putting in 
+the standard search.pl, because it depends on Ghostscript, would be to 
+change, in the file search.pl, the line:
+
+    open(FILE, "<$File::Find::name") or return;
+
+to :
+
+    if ( $File::Find::name =~ /\.pdf$/i )
+    {
+       open(FILE, "/usr/bin/ps2ascii $File::Find::name|") or return;
+    }
+    else
+    {  
+       open(FILE, "<$File::Find::name") or return;
+    }
+
+
+This does depend on there being a recent version of Ghostscript installed 
+and ps2ascii being located as above (it might of course be /usr/local/bin 
+or /opt/bin or wherever :).
+
+The above comes with no warranty whatsoever. 
+
+=head2  My ISP won't let me use formmail because they say it is insecure.
+
+Well for one thing you could tell them that you are using the NMS FormMail
+and that is secure from all of the known problems with earlier Form to Email
+programs and more besides :)  On the other hand they have every right to be
+skeptical of that claim.
+
+Part of the problem is that there are other Form to E-Mail programs that
+are widely used that will allow mail to be sent to anyone by anyone on the
+Internet and this fact has become widely known, as a consequence there
+are spammers out there who are using search engines to find instances
+of FormMail.pl on the Internet which they can try to use to send spam
+anonymously in the belief that all FormMail programs can be made to
+do this.
+
+The very fact of this scanning and testing by spammers seems to upset
+some ISPs (probably rightly) and they have taken steps to remove or disable
+any CGI program called 'formmail.pl'.
+
+However there is absolutely no reason why FormMail.pl has to be called
+that, when you upload it you can changes its name to 'twinklepops.pl'
+or anything at all and as long as you remember to change the form as
+well then it will work perfectly fine.
+
+You could also mail your ISP and point them to the NMS project -- for
+the benefit of both you and their other customers.
+
+
+=head2 I am getting the Error ' Too late for "-T" option', what can I do ?
+
+The '-T' turns on Perl's taint checking, this basically means that data
+coming from outside the program is marked as 'tainted' (untrustworthy) and
+attempts to use that data in certain ways will result in an error in the
+program unless the data is checked carefully.  All secure CGI programs
+should use taint checking, as the Internet is a fundamentally insecure
+medium.
+
+That you are getting this error probably suggests that your web server
+is Microsoft IIS.  If the administrator of the web server is open to
+making changes to the configuration probably the best idea would be to
+have them create a new association for your cgi-bin directory for files
+with a .plt extension:
+
+   .plt   -->  C:\perl\bin\perl.exe -T %s %s
+
+where the C:\perl\bin\ should be changed to the appropriate path to where
+the perl executable is installed.  You should then rename any NMS programs
+you want to use with a .plt extension rather than .pl.  The way that this
+configuration is actually done differs between versions of IIS, so you will
+need to consult the documentation for your version if you want to do it
+yourself.
+
+The reason that you have to do this is because Windows does not have the
+notion of the shebang (#!) line that Unix has to tell the OS how to run an
+interpreted program (using associations between an extension and a program
+that will run it instead).  When a Perl program is run by Windows it is
+always as if it had been run like:
+
+    perl program.pl
+
+(Apache on Windows appears to behave like Unix but infact this behaviour
+is emulated ).   Now when Perl runs reads a program file in before running
+it one of the first things that it does is to check the check the shebang
+line and if it contains 'perl' it will parse it to find if there are any
+switches there that should be applied and (with one or two exceptions) it
+applies them (as an aside, if 'perl' is not found in the line it will try
+to use what is found there as program to be executed with the script name
+as an argument).  The '-T' is one of the exceptions because by the time
+that perl has discovered that you want to turn taint checking on it is
+already too late to ensure that all of the environment that the program
+inherits is properly 'tainted' and rather than compromise the security
+checks that tainting affords it is safer to abandon the program
+altogether.
+
+Of course because the taint checking is based on the source of the data
+and how it is being used and because this don't really change from one
+environment to another it is fairly safe to say that if we have tested the
+program with the '-T' switch than it is relatively safe to remove it if
+you have to.  Of course if you remove tainting and then make alterations
+to the program such that new data is introduced or existing data is used
+in a different way then you may be unwittingly introducing a new
+vulnerability.
+
+=head2 I'm getting 'Missing Referrer - Access Denied' with FormMail
+
+This happens if your browser doesn't send the HTTP 'referer' header,
+preventing FormMail from checking that the referring page is on the
+allowed list.  Some personal firewalls cause this problem, by removing
+the referer header from all outgoing HTTP requests.
+
+The fix is to set the '$allow_empty_ref' configuration variable to 1 in
+the FormMail script.  If the copy of FormMail.pl that you're using
+doesn't have $allow_empty_ref, then you need to grab a newer version 
+from E<lt>http://nms-cgi.sourceforge.net/scripts.shtmlE<gt>.
+
+=head2 I would like to use 'windmail' instead of 'nms_sendmail' but I keep getting an error.
+
+Windmail is a commercial program for Windows that can be used as a 
+replacement for the 'sendmail' that is found on Unix systems.  It will work
+in the NMS FormMail if you set $mailprog is set to:
+
+   $mailprog = 'c:/path/to/windmail.exe -t';
+
+(Obviously adjusting the path as necessary).  This will enable the mail to
+be sent, but, because NMS FormMail is careful to check the success of the
+running of $mailprog and because windmail uses an exit code of 1 rather than
+0 to indicate success an error message will be generated after the mail has
+been sent.   This can be worked round by making a small alteration to the
+program.  
+
+In FormMail.pl you should find the line that is like:
+
+ close (MAIL) || die "close mailprog: \$?=$?,\$!=$!";
+
+and change it to something like:
+
+ if ( close(MAIL) and $? != 256 ) {
+     die "close mailprog: \$?=$?,\$!=$!";
+ }
+
+This will stop the error message.
+
+
+=head2 When I try to run your program, I get an "Internal Server Error". What does that mean?
+
+This (rather useless) error message generally means that your webserver
+tried to execute the program, but execution failed. This is most
+likely to be caused by the Perl program not being valid Perl. 
+
+Perl tries to run your program, finds an error, and throws up
+warnings. The webserver interprets these warnings as output from the 
+CGI which it can't understand, and throws out an Internal Server
+Error. 
+
+If you have access to your web server's error logs, you can probably
+get more information as to precisely what caused the problem. If not, 
+try the next question.
+
+
+=head2 How do I fix this "Internal Server Error" ?
+
+Firstly, if the program, as you downloaded it from our website, does
+not work
+
+Internal Server Errors, where you have edited the program yourself,
+are most commonly caused by typos during editing. These typos result
+in the program not being valid Perl, and errors confusing the
+webserver.
+
+What you should initially do, is check every line you edited, to check
+that you have not left a set of quotes or brackets (of any variety)
+open. Having an opening ' without a corresponding " is a very common
+problem, and not easy to spot (especially when you have one of each
+and don't notice they are different).
+
+If you really can not see what the problem is, try redownloading
+the program from our website, and uploading it to your webserver
+without any changes. If the problem goes away, then make your changes
+to the program one at a time, testing each time you make a change.
+This makes debugging much easier. 
+
+If everything works, compare the version that works, with your
+original that didn't, and see where the original was broken. 
+
+If it still doesn't work, then contact our support list, and 
+include all the information you possibly can.
+
+
+=head2 I call the FormMail program and get "close mailprog: $?=256,$!= at ..."?
+
+See the next question -- it is the same problem and solution.
+
+
+=head2 I call the FormMail program and get Broken Pipe errors?
+
+That error often indicates that $mail_prog is not correctly set for
+your system. Correct it and try again.
+
+
+=head2 FormMail allows invalid e-mail addresses to be entered. Why?
+
+foo@example isn't a malformed e-mail address, it just happens              
+to be invalid on the internet.  Email addresses with no dots in                 
+are valid and may occur in intranets, so if we were to block them               
+then the scripts would break for some people.     
+
+
+=head2 I try to open guestbook.pl on my Mac, and the document is too large.
+
+Try a text editor which can cope with larger files.  BBedit has been 
+recommended by Mac users in the past.
+
+
+=head2 I get an error telling me to use POST method, but I already am.
+
+This can be caused by a webserver which is configured to redirect
+anything at 
+  http://example.com/
+to 
+  http://www.example.com/
+and the form being configured to POST to
+  http://example.com/cgi-bin/thing.pl
+
+This will not work, and you should set the action address to the
+real name for your server. Ie - your action line should be 
+  http://www.example.com/cgi-bin/thing.pl
+
+
+=head2 I use one of your programs but want it to do something more.  Will you do it?
+
+If that program is FormMail, see the next question. But the
+answer depends on what it is you want it to do. The answer is
+generally maybe.
+
+Feature requests which include an offer to actually do the work
+are also appreciated.
+
+
+=head2 I use FormMail but want it to do something more. Will you do it?
+
+That depends.
+
+You probably first want to look at TFmail which is a more advanced
+version of FormMail which includes enhanced features such as
+templating of the email message, a confirmation page, and the
+capability to send uploaded files as attachments.
+
+
+
+=cut
