@@ -185,7 +185,7 @@ sub request {
   local $ENV{ENV}  = '';
 
   $self->{CGI} = CGI->new;
-  $self->{Done_Headers} = 0;
+  $self->{Done_Header} = 0;
 
   my $old_locale;
   if ($self->{CFG}{locale}) {
