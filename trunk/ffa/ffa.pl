@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.14 2002-03-27 20:36:36 davorg Exp $
+#  $Id: ffa.pl,v 1.15 2002-06-08 00:40:50 nickjc Exp $
 #
 
 use strict;
@@ -199,10 +199,6 @@ unless ($url or $title) {
     exit;
 }
 
-print header;
-
-$done_headers++; 
-
 no_url()   unless $url;
 no_title() unless $title;
 
@@ -268,7 +264,6 @@ rename( $tmpnam, $filename) || die "Can't rename $tmpnam - $!\n";
 close (LOCK);
 
 print redirect($linksurl);
-
 
 if ($usedatabase) 
 {
