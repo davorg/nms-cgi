@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.35 2002-04-11 22:39:20 nickjc Exp $
+# $Id: guestbook.pl,v 1.36 2002-04-13 09:00:30 nickjc Exp $
 #
 
 use strict;
@@ -9,7 +9,13 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use IO::File;
 
-use vars qw($DEBUGGING $done_headers @debug_msg);
+use vars qw(
+  $DEBUGGING $done_headers @debug_msg $guestbookurl
+  $guestbookreal $guestlog $cgiurl $emulate_matts_code
+  $style $mail $uselog $linkmail $separator $redirection
+  $entry_order $remote_mail $allow_html $line_breaks
+  $mailprog $recipient $short_date_fmt $long_date_fmt
+);
 
 # sanitize the environment
 
@@ -29,10 +35,10 @@ BEGIN
    $DEBUGGING = 1;
 }
 
-my $guestbookurl  = 'http://your.host.com/~yourname/guestbook.html';
-my $guestbookreal = '/home/yourname/public_html/guestbook.html';
-my $guestlog      = '/home/yourname/public_html/guestlog.html';
-my $cgiurl        = 'http://your.host.com/cgi-bin/guestbook.pl';
+$guestbookurl  = 'http://your.host.com/~yourname/guestbook.html';
+$guestbookreal = '/home/yourname/public_html/guestbook.html';
+$guestlog      = '/home/yourname/public_html/guestlog.html';
+$cgiurl        = 'http://your.host.com/cgi-bin/guestbook.pl';
 
 # $emulate_matts_code determines whether the program should behave exactly
 # like the original guestbook program.  It should be set to 1 if you
@@ -41,37 +47,37 @@ my $cgiurl        = 'http://your.host.com/cgi-bin/guestbook.pl';
 # then potentially it will not work with files produced by the original
 # version - this is recommended for people installing this for the first time.
 
-my $emulate_matts_code = 1;
+$emulate_matts_code = 1;
 
 # $style is the URL of a CSS stylesheet which will be used for script
 # generated messages.  This probably want's to be the same as the one
 # that you use for all the other pages.  This should be a local absolute
 # URI fragment.
 
-my $style = '/css/nms.css';
+$style = '/css/nms.css';
 
 
-my $mail        = 0;
-my $uselog      = 1;
-my $linkmail    = 1;
-my $separator   = 1;
-my $redirection = 0;
-my $entry_order = 1;
-my $remote_mail = 0;
-my $allow_html  = 0;
-my $line_breaks = 0;
+$mail        = 0;
+$uselog      = 1;
+$linkmail    = 1;
+$separator   = 1;
+$redirection = 0;
+$entry_order = 1;
+$remote_mail = 0;
+$allow_html  = 0;
+$line_breaks = 0;
 
 # $mailprog is the program that will be used to send mail if that is
 # required.  It should be the full path of a program that will accept
 # the message on its standard input, it should also include any required
 # switches.  If $mail is set to 0 above this can be ignores.
 
-my $mailprog  = '/usr/lib/sendmail -t -oi -oem';
+$mailprog  = '/usr/lib/sendmail -t -oi -oem';
 
 # $recipient is the address of the person who should be mailed if $mail is
 # set to 1 above.
 
-my $recipient = 'you@your.com';
+$recipient = 'you@your.com';
 
 # $long_date_fmt and $short_date_fmt describe the format of the dates that
 # will output - the replacement parameters you can use here are:
@@ -89,8 +95,8 @@ my $recipient = 'you@your.com';
 # %T - the time in 24 hour format (%H:%M:%S)
 # %Z - the time zone (full name or abbreviation)
 
-my $long_date_fmt  = '%A, %B %d, %Y at %T (%Z)';
-my $short_date_fmt = '%d/%m/%y %T %Z';
+$long_date_fmt  = '%A, %B %d, %Y at %T (%Z)';
+$short_date_fmt = '%d/%m/%y %T %Z';
 
 # End configuration
 
@@ -105,7 +111,7 @@ BEGIN
    {
       my ( $message ) = @_;
 
-      if ( $main::DEBUGGING )
+      if ( $DEBUGGING )
       {
          $message =~ s/</&lt;/g;
          $message =~ s/>/&gt;/g;
@@ -147,27 +153,33 @@ EOERR
    $SIG{__DIE__} = \&fatalsToBrowser;
 }
 
-my $style_element = $style ?
-                    qq%<link rel="stylesheet" type="text/css" href="$style" />%
-                  : '';
+use vars qw($style_element);
+$style_element = $style ?
+                 qq%<link rel="stylesheet" type="text/css" href="$style" />%
+               : '';
 
+use vars qw($date $shortdate);
 my @now       = localtime();
-my $date      = strftime($long_date_fmt, @now);
-my $shortdate = strftime($short_date_fmt, @now);
+$date      = strftime($long_date_fmt, @now);
+$shortdate = strftime($short_date_fmt, @now);
 
-my ($username, $realname, $comments)
+use vars qw($username $realname $comments);
+($username, $realname, $comments)
   = (param('username'), param('realname'), param('comments'));
 
-my ($city, $state, $country)
+use vars qw($city $state $country);
+($city, $state, $country)
   = (param('city'), param('state'), param('country'));
 
-my ($url) = param('url');
+use vars qw($url);
+$url = param('url');
 $url = '' if $url and not check_url_valid($url);
 
 # There is a possibility that the comments can be escaped if passed as
 # the hidden field from the form_error() form
 
-my $encoded_comments = param('encoded_comments') || 0;
+use vars qw($encoded_comments);
+$encoded_comments = param('encoded_comments') || 0;
 
 form_error('no_comments') unless $comments;
 
@@ -188,7 +200,8 @@ $username = '' unless check_email($username);
 # Escape any HTML in the rest of the fields - HTML should not
 # be allowed anywhere but the comment.
 
-my %escaped = (
+use vars qw(%escaped);
+%escaped = (
  username => escape_html($username),
  realname => escape_html($realname),
  city     => escape_html($city),
