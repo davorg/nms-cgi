@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.35 2002-08-26 07:35:29 nickjc Exp $
+# $Id: wwwboard.pl,v 1.36 2002-08-26 08:54:12 nickjc Exp $
 #
 
 use strict;
@@ -8,7 +8,7 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_headers);
-my $VERSION = substr q$Revision: 1.35 $, 10, -1;
+my $VERSION = substr q$Revision: 1.36 $, 10, -1;
 
 BEGIN
 { 
@@ -155,7 +155,7 @@ EOERR
 
 
 my $html_style = $style ?
-                 qq%<link rel="stylesheet" type="text/css" href="$style" />%
+                 qq%<link rel="stylesheet" type="text/css" href="$E{$style}" />%
                : '';
 
 if ( $use_time ) {
@@ -163,10 +163,12 @@ if ( $use_time ) {
 }
 
 
-my $id = get_number();
-
-
 my $Form = parse_form();
+
+open LOCK, ">>$basedir/.lock" or die "open >>$basedir/.lock: $!";
+flock LOCK, LOCK_EX or die "flock $basedir/.lock: $!";
+
+my $id = get_number();
 
 my $variables = get_variables($Form,$id);
 
@@ -175,13 +177,14 @@ main_page($variables);
 
 thread_pages($variables);
 
+close LOCK;
+
 return_html($variables);
 
 sub get_number {
   sysopen(NUMBER, "$basedir/$datafile", O_RDWR|O_CREAT)
     || die "Can't open number file: $!\n";
-  flock(NUMBER, LOCK_EX)
-    || die "Can't lock number file: $!\n";
+
   my $num = <NUMBER> || 0;
 
   if ($num =~ /^(\d+)$/) {
@@ -361,9 +364,6 @@ sub new_file {
   open(NEWFILE,">$basedir/$mesgdir/$variables->{id}.$ext")
     || die "Open: $! [$basedir/$mesgdir/$variables->{id}.$ext]";
 
-  flock(NEWFILE,LOCK_EX)
-    || die "Flock: $! [$basedir/$mesgdir/$variables->{id}.$ext]";
-
   my $html_faq = $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
   my $html_print_name = $variables->{email} ? 
             qq(<a href="$E{"mailto:$variables->{email}"}">$E{$variables->{name}}</a> ) : 
@@ -519,12 +519,6 @@ sub main_page {
 
    my ( $variables ) = @_;
 
-  open(MAIN_LOCK,">>$basedir/$mesgfile.lck") ||
-    die "Open: $! [$basedir/$mesgfile.lck]";
-
-  flock(MAIN_LOCK,LOCK_EX) ||
-    die "Flock: $! [$basedir/$mesgfile.lck]";
-
   open(MAIN,"<$basedir/$mesgfile") ||
     die "Open: $! [$basedir/$mesgfile]";
 
@@ -589,8 +583,6 @@ END_HTML
 
   rename "$basedir/$mesgfile.tmp", "$basedir/$mesgfile"
    or die "rename $basedir/$mesgfile.tmp => $basedir/$mesgfile - $!";
-
-  close(MAIN_LOCK);
 }
 
 ############################################
@@ -608,21 +600,13 @@ sub thread_pages {
 
   foreach my $followup_num (@{$variables->{followups}}) {
 
-    open(FOLLOWUP_LOCK, ">>$basedir/$mesgdir/$followup_num.lck")
-      || die "$!";
-
-    flock FOLLOWUP_LOCK, LOCK_EX or die "Can't lock $!\n";
-
     open(FOLLOWUP, "<$basedir/$mesgdir/$followup_num.$ext")
       || die "$!";
 
     my @followup_lines = <FOLLOWUP>;
     close(FOLLOWUP);
 
-
     open(FOLLOWUP, ">$basedir/$mesgdir/$followup_num.tmp") || die "$!"; 
-
-    flock FOLLOWUP, LOCK_EX or die "Can't lock $!\n";
 
     foreach (@followup_lines) {
       my $work = 0;
@@ -851,7 +835,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.35 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.36 $ =~ /(\d+)\.(\d+)/);
 
 =head1 NAME
 
