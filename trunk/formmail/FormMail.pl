@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.10 2001-11-25 16:07:40 gellyfish Exp $
+# $Id: FormMail.pl,v 1.11 2001-11-26 09:20:20 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2001/11/25 16:07:40  gellyfish
+# A couple of nits
+#
 # Revision 1.9  2001/11/25 11:39:38  gellyfish
 # * add missing use vars qw($DEBUGGING) from most of the files
 # * sundry other compilation failures
@@ -86,7 +89,7 @@ my $mailprog = '/usr/lib/sendmail -oi -t';
 
 my @referers = qw(dave.org.uk 209.207.222.64 localhost);
 
-my @recipients = (@referers);
+my @recipients = @referers;
 
 my @valid_ENV = qw(REMOTE_HOST REMOTE_ADDR REMOTE_USER HTTP_USER_AGENT);
 
@@ -123,7 +126,7 @@ BEGIN
    my $error_message = sub {
                              my ($message ) = @_;
                              print "<h1>It's all gone horribly wrong</h1>";
-                             print escape_html($message) if $DEBUGGING;
+                             print $message if $DEBUGGING;
                             };
   set_message($error_message);
 }   
@@ -249,7 +252,7 @@ sub check_required {
 
     foreach (split /,/, $Config{recipient}) {
       foreach my $r (@recipients) {
-	if (/$r/) {
+	if (/$r/ && check_email($_)) {
 	  push @valid, $_;
 	  last;
 	}
@@ -286,23 +289,22 @@ sub return_html {
     print redirect $Config{redirect};
   } else {
     print header;
-    print "<html>\n <head>\n";
 
     my $title = escape_html( $Config{title} || 'Thank You' );
     my $recipient = escape_html($Config{recipient});
+    my $attr = body_attributes(); # surely this should be done with CSS
 
-    print "  <title>$title</title>\n";
-    print qq%  <link rel="stylesheet" type="text/css" href="$style" />\n%;
-    print " </head>\n <body";
-
-    body_attributes(); # surely this should be done with CSS
-
-    print ">\n  <center>\n";
-
-    print qq(<h1 align="center">$title</h1>\n);
-
-    print "<p>Below is what you submitted to $recipient on ";
-    print "$date<p><hr size="1" width="75%" /></p>\n";
+    print <<EOHTML;
+<html>
+  <head>
+     <title>$title</title>
+     <link rel="stylesheet" type="text/css" href="$style" />
+  </head>
+  <body $attr>
+    <h1 align="center">$title</h1>
+    <p>Below is what you submitted to $recipient on $date</p>
+    <p><hr size="1" width="75%" /></p>
+EOHTML
 
     my @sorted_fields;
     if ($Config{sort}) {
@@ -328,7 +330,7 @@ sub return_html {
       }
     }
 
-    print "<p><hr size="1" width="75%" /></p>\n";
+    print qq{<p><hr size="1" width="75%" /></p>\n};
 
     if ($Config{return_link_url} && $Config{return_link_title}) {
       print "<ul>\n";
@@ -341,7 +343,7 @@ sub return_html {
         <hr size="1" width="75%" />
         <p align="center">
            <font size="-1">
-             <a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> 
+             <a href="http://nms-cgi.sourceforge.net/">FormMail</a> 
              &copy; 2001  London Perl Mongers
            </font>
         </p>
@@ -359,18 +361,22 @@ sub send_mail {
     die 'multiline variable in mail header, unsafe to continue';
   }
 
+  my $subject = $Config{subject} || 'WWW Form Submission';
+
   open(MAIL,"|$mailprog")
     || die "Can't open sendmail\n";
 
-  print MAIL "To: $Config{recipient}\n";
-  print MAIL "From: $Config{email} ($Config{realname})\n";
+  print MAIL <<EOMAIL;
+To: $Config{recipient}
+From: $Config{email} ($Config{realname})
+Subject: $subject
 
-  my $subject = $Config{subject} || 'WWW Form Submission';
-  print MAIL "Subject: $subject\n\n";
+Below is the result of your feedback form.  It was submitted by
+$Config{realname} ($Config{email}) on $date
+$dashes
 
-  print MAIL "Below is the result of your feedback form.  It was submitted by\n";
-  print MAIL "$Config{realname} ($Config{email}) on $date\n";
-  print MAIL "$dashes\n\n";
+
+EOMAIL
 
   if ($Config{print_config}) {
     foreach (@{$Config{print_config}}) {
@@ -410,7 +416,7 @@ sub send_mail {
 }
 
 sub check_email {
-  my $email = $_[0];
+  my ($email) = @_;
 
   # If the e-mail address contains:
   if ($email =~ /(@.*@)|(\.\.)|(@\.)|(\.@)|(^\.)/ ||
@@ -445,146 +451,150 @@ sub body_attributes {
 	       alink_color => 'alink',
 	       text_color  => 'text');
 
+  my $attr = '';
+
   foreach (keys %attrs) {
-    print qq( $attrs{$_}="), escape_html($Config{$_}), '"' if $Config{$_};
+    $attr .= qq( $attrs{$_}="), escape_html($Config{$_}), '"' if $Config{$_};
   }
+
+  return $attr;
 }
 
-sub error { 
+sub error {
   my ($error, @error_fields) = @_;
   my ($host, $missing_field, $missing_field_list);
 
+  my ($title, $heading,$error_body);
+
   if ($error eq 'bad_referer') {
-    if (referer() =~ m|^https?://([\w\.]+)|i) {
-      $host = $1;
-      print header();
-      print <<END_ERROR_HTML;
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <title>Bad Referrer - Access Denied</title>
-  <link rel="stylesheet" type="text/css" href="$style" />
- </head>
- <body bgcolor="#FFFFFF" text="#000000">
-   <table border="0" width="600" bgcolor="#9C9C9C" align="center">
-    <tr><th><font size="+2">Bad Referrer - Access Denied</font></th></tr>
-   </table>
-   <table border="0" width="600" bgcolor="#CFCFCF" align="center">
-    <tr><td><p>The form attempting to use FormMail
-     resides at <tt>${\( escape_html($ENV{'HTTP_REFERER'}) )}</tt>, which is
-     not allowed to access this cgi script.</p>
+    my $referer = referer();
+    my $escaped_referer = escape_html($referer);
 
-     <p>If you are attempting to configure FormMail to run with this form, 
-     you need to add the following to \@referers, explained in detail in the 
-     README file.</p>
-
-     <p>Add <tt>'$host'</tt> to your <tt><b>\@referers</b></tt> array.</p>
-     <hr size="1" />
-     <p align="center"><font size="-1"><a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001
-       London Perl Mongers</font></p>
-    </td></tr>
-   </table>
- </body>
-</html>
-END_ERROR_HTML
-
-} else {
-  print header();
-  print <<END_ERROR_HTML;
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
- <head>
-  <title>FormMail</title>
-  <link rel="stylesheet" type="text/css" href="$style" />
- </head>
- <body bgcolor="#FFFFFF" text="#000000">
-   <table border="0" width="600" bgcolor="#9C9C9C" align="center">
-    <tr><th><font size="+2">FormMail</font></th></tr>
-    <tr><td>Badness!</td></tr>
-    <tr><th><font size="+1"><a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001 London Perl Mongers</font></th></tr>
-   </table>
- </body>
-</html>
-END_ERROR_HTML
-
-  }
-} elsif ($error eq 'no_recipient') {
-  print header();
-  print <<END_ERROR_HTML;
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
- <head>
-  <title>Error: Bad/No Recipient</title>
-  <link rel="stylesheet" type="text/css" href="$style" />
- </head>
- <body bgcolor="#FFFFFF" text="#000000">
-   <table border="0" width="600" bgcolor="#9C9C9C" align="center">
-    <tr><th><font size="+2">Error: Bad/No Recipient</font></th></tr>
-   </table>
-   <table border="0" width="600" bgcolor="#CFCFCF" align="center">
-    <tr><td>There was no recipient or an invalid recipient specified in 
-     the data sent to FormMail. Please make sure you have filled in the 
-     <tt>recipient</tt> form field with an e-mail address that has been 
-     configured in <tt>\@recipients</tt>.  More information on filling in 
-     <tt>recipient</tt> form fields and variables can be found in the README 
-     file.<hr size="1" />
-     The recipient was: [${\( escape_html($Config{recipient}) )}]<hr />
-     <p align="center"><font size="-1">
-      <a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001 London Perl Mongers<br></font></p>
-    </td></tr>
-   </table>
- </body>
-</html>
-
-END_ERROR_HTML
-
-} elsif ($error eq 'missing_fields') {
-  if ($Config{'missing_fields_redirect'}) {
-    print redirect($Config{missing_fields_redirect});
-  } else {
-    foreach $missing_field (@error_fields) {
-      $missing_field_list .= "      <li>${\( escape_html($missing_field) )}</li>\n";
+    if ( $referer =~ m|^https?://([\w\.]+)|i) {
+       $host = $1;
+       $title = 'Bad Referrer - Access Denied';
+       $heading = $title;
+       $error_body =<<EOBODY;
+<p>
+  The form attempting to use FormMail resides at <tt>$escaped_referer</tt>, 
+  which is not allowed to access this program.
+</p>
+<p>
+  If you are attempting to configure FormMail to run with this form, 
+  you need to add the following to \@referers, explained in detail in the 
+  README file.
+</p>
+<p>
+  Add <tt>'$host'</tt> to your <tt><b>\@referers</b></tt> array.
+</p>
+EOBODY
     }
+    else {
+      $title = 'Formail';
+      $heading = $title;
+      $error_body = '<p><b>Badness!</b></p>';
+    }
+ }
+ elsif ( $error eq 'no_recipient') {
+   
+   my $recipient = escape_html($Config{recipient});
+   $title = 'Error: Bad or Missing Recipient';
+   $heading = $title;
+   $error_body =<<EOBODY;
+<p>
+  There was no recipient or an invalid recipient specified in the
+  data sent to FormMail. Please make sure you have filled in the
+  <tt>recipient</tt> form field with an e-mail address that has
+  been configured in <tt>\@recipients</tt>. More information on
+  filling in <tt>recipient</tt> form fields and variables can be
+  found in the README file.  
+</p>
+<hr size="1" /> 
+<p>
+ The recipient was: [ $recipient ]
+</p>
+EOBODY
+  }
+  elsif ( $error eq 'missing_fields' ) {
+     if ( $Config{'missing_fields_redirect'} ) {
+        print  redirect($Config{'missing_fields_redirect'});
+        exit;
+      }
+      else {        
+        my $missing_field_list = map { '<li>' . escape_html($_) . "</li>\n" }
+                                 @error_fields;
+        $title = 'Error: Blank Fields';
+        $heading = $title;
+        $error_body =<<EOBODY;
+<p>
+    The following fields were left blank in your submission form:
+</p>
+<div class="c2">
+   <ul>
+     $missing_field_list
+   </ul>
+</div>
+<p>
+    These fields must be filled in before you can successfully 
+    submit the form.
+</p>
 
-    print header();
-    print <<END_ERROR_HTML;
+<p>
+    Please use your back button to return to the form and
+    try again.
+</p>
+EOBODY
+     }
+  }
+
+  print header();
+  print <<END_ERROR_HTML;
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
- <head>
-  <title>Error: Blank Fields</title>
-  <link rel="stylesheet" type="text/css" href="$style" />
- </head>
-   <table border="0" width="600" bgcolor="#9C9C9C" align="center">
-    <tr><th><font size="+2">Error: Blank Fields</font></th></tr>
-   </table>
-   <table border="0" width="600" bgcolor="#CFCFCF">
-    <tr><td><p>The following fields were left blank in your submission 
-      form:</p>
-     <ul>
-$missing_field_list
-     </ul>
-
-     <p>These fields must be filled in before you can successfully submit 
-     the form.</p>
-     <p>Please use your back button to return to the form and try again.</p>
-     <hr size="1" />
-     <p align="center"><font size="-1">
-      <a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001 London Perl Mongers
-     </font></p>
-    </td></tr>
-   </table>
-  </center>
- </body>
+  <head>
+    <title>$title</title>
+    <link rel="stylesheet" type="text/css" href="$style" />
+    <style type="text/css">
+    <!--
+       body {
+              background-color: #FFFFFF;
+              color: #000000;
+             }
+       p.c2 {
+              font-size: 80%; 
+              text-align: center;
+            }
+       th.c1 {
+               font-size: 143%;
+             }
+       p.c3 {font-size: 80%; text-align: center}
+       div.c2 {margin-left: 2em}
+     -->
+    </style>
+  </head>
+  <body>
+    <table border="0" width="600" bgcolor="#9C9C9C" align="center" summary="">
+      <tr>
+        <th class="c1">$heading</th>
+      </tr>
+    </table>
+    <table border="0" width="600" bgcolor="#CFCFCF">
+      <tr>
+        <td>
+          $error_body
+          <hr size="1" />
+          <p class="c3">
+            <a href="http://nms-cgi.sourceforge.net/">FormMail</a>
+            &copy; 2001 London Perl Mongers
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
-
 END_ERROR_HTML
-}
-}
-
-exit;
+   exit;
 }
 
 use vars qw(%escape_html_map);
@@ -602,6 +612,8 @@ BEGIN
 sub escape_html {
   my $str = shift;
 
-  $str =~ s/([&<>"'])/$escape_html_map{$1}/g;
+  my $chars = join '', keys %escape_html_map;
+
+  $str =~ s/([$chars])/$escape_html_map{$1}/g;
   return $str;
 }
