@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.15 2002-06-08 00:40:50 nickjc Exp $
+#  $Id: ffa.pl,v 1.16 2002-06-08 07:50:09 gellyfish Exp $
 #
 
 use strict;
@@ -41,7 +41,7 @@ BEGIN
 # $directory is the full filesystem path to the files that are associated
 # with this program. The webserver needs write permissions for this path.
 
-my $directory  = '/usr/local/apache/htdocs/links';
+my $directory  = '/home/www/nms-test/links';
 
 # This is the title that will be displayed for some of the pages.
 
@@ -59,7 +59,7 @@ my $filename          = "$directory/links.html";
 
 # $linksurl is the public URL of the links page.
 
-my $linksurl          = "http://localhost/links/links.html";
+my $linksurl          = "http://nms-test.gellyfish.com/links/links.html";
 
 # Store all links in database file ?
 
@@ -199,6 +199,7 @@ unless ($url or $title) {
     exit;
 }
 
+
 no_url()   unless $url;
 no_title() unless $title;
 
@@ -300,6 +301,8 @@ sub datestamp
 
 sub no_url 
 {
+   print header;
+   $done_headers++;
    print start_html('-title'   => 'ERROR: No URL',
                     '-BGCOLOR' => '#FFFFFF',
                     '-style' => { src  => $style } );
@@ -326,6 +329,9 @@ EIEIO
 
 sub no_title 
 {
+   print header;
+   $done_headers++;
+
    print start_html('-title'   => 'ERROR: No Title',
                     '-BGCOLOR' => '#FFFFFF',
                     '-style' => { src  => $style } );
@@ -353,6 +359,9 @@ EIEIO
 
 sub repeat_url 
 {
+   print header;
+   $done_headers++;
+
    print start_html('-title'   => 'ERROR: Repeat URL',
                     '-BGCOLOR' => '#FFFFFF',
                     '-style'   => { src  => $style } );
