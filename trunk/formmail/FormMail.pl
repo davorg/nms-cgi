@@ -1,8 +1,12 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.6 2001-11-20 17:39:20 nickjc Exp $
+# $Id: FormMail.pl,v 1.7 2001-11-23 13:57:36 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.6  2001/11/20 17:39:20  nickjc
+# * Fixed a problem with %Config initialisation
+# * Reduced the scope for SPAM relaying
+#
 # Revision 1.5  2001/11/14 09:10:11  gellyfish
 # Added extra check on the referer.
 #
@@ -86,7 +90,7 @@ BEGIN
                              my ($message ) = @_;
                              print "Content-Type: text/html\n\n";
                              print "<h1>It's all gone horribly wrong</h1>";
-                             print $message if $DEBUGGING;
+                             print escape_html($message) if $DEBUGGING;
                             };
   set_message($error_message);
 }   
@@ -247,9 +251,10 @@ sub return_html {
     print header;
     print "<html>\n <head>\n";
 
-    my $title = $Config{title} || 'Thank You';
+    my $title = escape_html( $Config{title} || 'Thank You' );
+    my $recipient = escape_html($Config{recipient});
 
-    print "  <title>$title}</title>\n";
+    print "  <title>$title</title>\n";
 
     print " </head>\n <body";
 
@@ -259,7 +264,7 @@ sub return_html {
 
     print qq(<h1 align="center">$title</h1>\n);
 
-    print "<p>Below is what you submitted to $Config{recipient} on ";
+    print "<p>Below is what you submitted to $recipient on ";
     print "$date<p><hr size=1 width=75%></p>\n";
 
     my @sorted_fields;
@@ -281,7 +286,7 @@ sub return_html {
 
     foreach (@sorted_fields) {
       if ($Config{print_blank_fields} || $Form{$_}) {
-	print "<p><b>$_:</b> $Form{$_}</p>\n";
+	print '<p><b>', escape_html($_), ':</b> ', escape_html($Form{$_}), "</p>\n";
       }
     }
 
@@ -289,7 +294,8 @@ sub return_html {
 
     if ($Config{return_link_url} && $Config{return_link_title}) {
       print "<ul>\n";
-      print qq(<li><a href="$Config{return_link_url}">$Config{return_link_title}</a>\n);
+      print '<li><a href="', escape_html($Config{return_link_url}),
+         '">', escape_html($Config{return_link_title}), "</a>\n";
       print "</ul>\n";
     }
 
@@ -394,7 +400,7 @@ sub body_attributes {
 	       text_color => 'text');
 
   foreach (keys %attrs) {
-    print qq( $attrs{$_}="$Config{$_}") if $Config{$_};
+    print qq( $attrs{$_}="), escape_html($Config{$_}), '"' if $Config{$_};
   }
 }
 
@@ -418,8 +424,8 @@ Content-type: text/html
    </table>
    <table border="0" width="600" bgcolor="#CFCFCF" align="center">
     <tr><td><p>The form attempting to use FormMail
-     resides at <tt>$ENV{'HTTP_REFERER'}</tt>, which is not allowed to access
-     this cgi script.</p>
+     resides at <tt>${\( escape_html($ENV{'HTTP_REFERER'}) )}</tt>, which is
+     not allowed to access this cgi script.</p>
 
      <p>If you are attempting to configure FormMail to run with this form, 
      you need to add the following to \@referers, explained in detail in the 
@@ -473,7 +479,7 @@ Content-type: text/html
      configured in <tt>\@recipients</tt>.  More information on filling in 
      <tt>recipient</tt> form fields and variables can be found in the README 
      file.<hr size=1>
-     The recipient was: [$Config{recipient}]<hr>
+     The recipient was: [${\( escape_html($Config{recipient}) )}]<hr>
      <p align="center"><font size="-1">
       <a href="http://www.dave.org.uk/scripts/nms/">FormMail</a> &copy; 2001 London Perl Mongers<br></font></p>
     </td></tr>
@@ -488,7 +494,7 @@ END_ERROR_HTML
     print redirect($Config{missing_fields_redirect});
   } else {
     foreach $missing_field (@error_fields) {
-      $missing_field_list .= "      <li>$missing_field</li>\n";
+      $missing_field_list .= "      <li>${\( escape_html($missing_field) )}</li>\n";
     }
 
     print <<END_ERROR_HTML;
@@ -527,4 +533,23 @@ END_ERROR_HTML
 
 exit;
 }
+
+use vars qw(%escape_html_map);
+BEGIN
+{
+   %escape_html_map = ( '&' => '&amp;',
+                        '<' => '&lt;',
+                        '>' => '&gt;',
+                        '"' => '&quot;',
+                        "'" => '&#39;',
+                      );
+}
+
+sub escape_html {
+  my $str = shift;
+
+  $str =~ s/([&<>"'])/$escape_html_map{$1}/g;
+  return $str;
+}
+
 
