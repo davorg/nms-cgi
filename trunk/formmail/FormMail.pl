@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.19 2001-12-15 22:42:00 nickjc Exp $
+# $Id: FormMail.pl,v 1.20 2002-01-01 01:22:27 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.19  2001/12/15 22:42:00  nickjc
+# * Added a validity check on the redirect URLs
+# * Moved the nonprintable character striping code to a sub
+#
 # Revision 1.18  2001/12/09 22:31:22  nickjc
 # * anchor recipient checks at end (as per README) unless $emulate_matts_code
 # * move repeated check_email call out one loop level
@@ -463,7 +467,7 @@ sub send_mail {
   }
 
   open(MAIL,"|$mailprog")
-    || die "Can't open sendmail\n";
+    || die "Can't open $mailprog\n";
 
   if ( $secure and defined (my $addr = remote_addr()) ) {
     print MAIL "X-HTTP-Client: [$addr]\n";
