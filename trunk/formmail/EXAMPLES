@@ -115,32 +115,32 @@ Here is an example of what the HTML source for the form might
 look like:
 
 
-  <?xml version="1.0" encoding="iso-8859-1"?>
-  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-  <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-   <title>What is your favorite animal ?</title>
-   <link rel="stylesheet" type="text/css" href="/css/nms.css" />
-  </head>
-  <body>
-   <form method="POST" action="/cgi-bin/FormMail.pl">
-    <table>
-     <tr>
-      <td>What is your name ?</td>
-      <td><input type="text" name="name" /></td>
-     </tr>
-     <tr>
-      <td>What is your favorite animal ?</td>
-      <td><input type="text" name="animal" /></td>
-     </tr>
-     <tr colspan="2">
-      <td><input type="submit" /></td>
-     </tr>
-    </table>
-   </form>
-  </body>
-  </html>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <title>What is your favorite animal ?</title>
+ <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+</head>
+<body>
+ <form method="POST" action="/cgi-bin/FormMail.pl">
+  <table>
+   <tr>
+    <td>What is your name ?</td>
+    <td><input type="text" name="name" /></td>
+   </tr>
+   <tr>
+    <td>What is your favorite animal ?</td>
+    <td><input type="text" name="animal" /></td>
+   </tr>
+   <tr colspan="2">
+    <td><input type="submit" /></td>
+   </tr>
+  </table>
+ </form>
+</body>
+</html>
 
 
 One thing that I've glossed over here is style sheets.  You
@@ -181,33 +181,33 @@ extra line to the HTML form.  The new line is
 
 With this line added, the HTML now looks like:
 
-  <?xml version="1.0" encoding="iso-8859-1"?>
-  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-  <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-   <title>What is your favorite animal ?</title>
-   <link rel="stylesheet" type="text/css" href="/css/nms.css" />
-  </head>
-  <body>
-   <form method="POST" action="/cgi-bin/FormMail.pl">
-    <input type="hidden" name="subject" value="Favorite Animal" />
-    <table>
-     <tr>
-      <td>What is your name ?</td>
-      <td><input type="text" name="name" /></td>
-     </tr>
-     <tr>
-      <td>What is your favorite animal ?</td>
-      <td><input type="text" name="animal" /></td>
-     </tr>
-     <tr colspan="2">
-      <td><input type="submit" /></td>
-     </tr>
-    </table>
-   </form>
-  </body>
-  </html>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <title>What is your favorite animal ?</title>
+ <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+</head>
+<body>
+ <form method="POST" action="/cgi-bin/FormMail.pl">
+  <input type="hidden" name="subject" value="Favorite Animal" />
+  <table>
+   <tr>
+    <td>What is your name ?</td>
+    <td><input type="text" name="name" /></td>
+   </tr>
+   <tr>
+    <td>What is your favorite animal ?</td>
+    <td><input type="text" name="animal" /></td>
+   </tr>
+   <tr colspan="2">
+    <td><input type="submit" /></td>
+   </tr>
+  </table>
+ </form>
+</body>
+</html>
 
 
 Since the subject is set in the HTML form rather than in the
@@ -287,34 +287,34 @@ The HTML form now has a hidden "recipient" input with a value
 of "animals":
 
 
-  <?xml version="1.0" encoding="iso-8859-1"?>
-  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-  <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-   <title>What is your favorite animal ?</title>
-   <link rel="stylesheet" type="text/css" href="/css/nms.css" />
-  </head>
-  <body>
-   <form method="POST" action="/cgi-bin/FormMail.pl">
-    <input type="hidden" name="subject" value="Favorite Animal" />
-    <input type="hidden" name="recipient" value="animals" />
-    <table>
-     <tr>
-      <td>What is your name ?</td>
-      <td><input type="text" name="name" /></td>
-     </tr>
-     <tr>
-      <td>What is your favorite animal ?</td>
-      <td><input type="text" name="animal" /></td>
-     </tr>
-     <tr colspan="2">
-      <td><input type="submit" /></td>
-     </tr>
-    </table>
-   </form>
-  </body>
-  </html>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <title>What is your favorite animal ?</title>
+ <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+</head>
+<body>
+ <form method="POST" action="/cgi-bin/FormMail.pl">
+  <input type="hidden" name="subject" value="Favorite Animal" />
+  <input type="hidden" name="recipient" value="animals" />
+  <table>
+   <tr>
+    <td>What is your name ?</td>
+    <td><input type="text" name="name" /></td>
+   </tr>
+   <tr>
+    <td>What is your favorite animal ?</td>
+    <td><input type="text" name="animal" /></td>
+   </tr>
+   <tr colspan="2">
+    <td><input type="submit" /></td>
+   </tr>
+  </table>
+ </form>
+</body>
+</html>
 
 
 EXAMPLE 4: Multiple forms with different recipients
@@ -394,34 +394,34 @@ Finally, the HTML form for the plants page will look like
 this:
 
 
-  <?xml version="1.0" encoding="iso-8859-1"?>
-  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-  <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-   <title>What is your favorite plant ?</title>
-   <link rel="stylesheet" type="text/css" href="/css/nms.css" />
-  </head>
-  <body>
-   <form method="POST" action="/cgi-bin/FormMail.pl">
-    <input type="hidden" name="subject" value="Favorite Plant" />
-    <input type="hidden" name="recipient" value="plants" />
-    <table>
-     <tr>
-      <td>What is your name ?</td>
-      <td><input type="text" name="name" /></td>
-     </tr>
-     <tr>
-      <td>What is your favorite plant ?</td>
-      <td><input type="text" name="plant" /></td>
-     </tr>
-     <tr colspan="2">
-      <td><input type="submit" /></td>
-     </tr>
-    </table>
-   </form>
-  </body>
-  </html>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <title>What is your favorite plant ?</title>
+ <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+</head>
+<body>
+ <form method="POST" action="/cgi-bin/FormMail.pl">
+  <input type="hidden" name="subject" value="Favorite Plant" />
+  <input type="hidden" name="recipient" value="plants" />
+  <table>
+   <tr>
+    <td>What is your name ?</td>
+    <td><input type="text" name="name" /></td>
+   </tr>
+   <tr>
+    <td>What is your favorite plant ?</td>
+    <td><input type="text" name="plant" /></td>
+   </tr>
+   <tr colspan="2">
+    <td><input type="submit" /></td>
+   </tr>
+  </table>
+ </form>
+</body>
+</html>
 
 
 EXAMPLE 5: You want to be able to reply to the emails
@@ -445,38 +445,38 @@ just add an "email" field to the form and rename the
 "name" input to "realname":
 
 
-  <?xml version="1.0" encoding="iso-8859-1"?>
-  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-  <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-   <title>What is your favorite plant ?</title>
-   <link rel="stylesheet" type="text/css" href="/css/nms.css" />
-  </head>
-  <body>
-   <form method="POST" action="/cgi-bin/FormMail.pl">
-    <input type="hidden" name="subject" value="Favorite Plant" />
-    <input type="hidden" name="recipient" value="plants" />
-    <table>
-     <tr>
-      <td>What is your name ?</td>
-      <td><input type="text" name="realname" /></td>
-     </tr>
-     <tr>
-      <td>What is your email address ?</td>
-      <td><input type="text" name="email" /></td>
-     </tr>
-     <tr>
-      <td>What is your favorite plant ?</td>
-      <td><input type="text" name="plant" /></td>
-     </tr>
-     <tr colspan="2">
-      <td><input type="submit" /></td>
-     </tr>
-    </table>
-   </form>
-  </body>
-  </html>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <title>What is your favorite plant ?</title>
+ <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+</head>
+<body>
+ <form method="POST" action="/cgi-bin/FormMail.pl">
+  <input type="hidden" name="subject" value="Favorite Plant" />
+  <input type="hidden" name="recipient" value="plants" />
+  <table>
+   <tr>
+    <td>What is your name ?</td>
+    <td><input type="text" name="realname" /></td>
+   </tr>
+   <tr>
+    <td>What is your email address ?</td>
+    <td><input type="text" name="email" /></td>
+   </tr>
+   <tr>
+    <td>What is your favorite plant ?</td>
+    <td><input type="text" name="plant" /></td>
+   </tr>
+   <tr colspan="2">
+    <td><input type="submit" /></td>
+   </tr>
+  </table>
+ </form>
+</body>
+</html>
 
 
 NOTES
