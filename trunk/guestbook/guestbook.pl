@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.44 2003-01-18 08:50:38 nickjc Exp $
+# $Id: guestbook.pl,v 1.45 2003-08-16 10:41:54 nickjc Exp $
 #
 
 use strict;
@@ -13,7 +13,7 @@ use IO::File;
 use vars qw(
   $DEBUGGING $done_headers @debug_msg $guestbookurl
   $guestbookreal $guestlog $cgiurl $emulate_matts_code
-  $style $mail $uselog $linkmail $separator $redirection
+  $style $mail $uselog $linkmail $linkname $separator $redirection
   $entry_order $remote_mail $allow_html $line_breaks $postmaster
   $mailprog $recipient $short_date_fmt $long_date_fmt $locale $timezone
 );
@@ -61,6 +61,7 @@ $style = '/css/nms.css';
 $mail        = 0;
 $uselog      = 1;
 $linkmail    = 1;
+$linkname    = 1;
 $separator   = 1;
 $redirection = 0;
 $entry_order = 1;
@@ -120,7 +121,7 @@ $locale         = '';
 }
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.44 $, 10, -1;
+$VERSION = substr q$Revision: 1.45 $, 10, -1;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -234,7 +235,7 @@ rewrite_file($guestbookreal, sub
 
      $_ .= "<b>$comments</b><br />\n";
 
-     if ($inputs{'url'}) {
+     if ($linkname and $inputs{'url'}) {
        $_ .= qq(<a href="$escaped{'url'}">$escaped{realname}</a>);
      } else {
        $_ .= $escaped{realname};

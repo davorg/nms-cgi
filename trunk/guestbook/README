@@ -128,6 +128,9 @@ $linkmail      - If this is set to 1 then the e-mail addresses that
                  just as plain text.  You may not want to do this if you
                  are concerned that spammers might harvest the addresses.
 
+$linkname      - If this is set to 1 then the home page URL that visitors
+                 enter will be used to make the "name" field into a link.
+
 $separator     - This determines how the entries in the guestbook page are
                  separated.  If it is set to 1 then the entries will be
                  separated by a horizontal rule (<hr />).  If it is set
