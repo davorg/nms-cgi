@@ -1,6 +1,6 @@
 =head1 NAME
 
-Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-02-23 15:04:09 $ )
+Frequently Asked Questions about the I<nms> CGI programs ( $Date: 2002-02-23 15:23:46 $ )
 
 =head1 DESCRIPTION
 
@@ -258,7 +258,7 @@ any of these things and the code to support them is likely to run into
 hundreds of lines and require several other modules.  Also Net::SMTP requires
 an SMTP relay to be available on the local network.
 
-=head2 But I don't have c<sendmail> on my webserver, what can I do ?
+=head2 But I don't have C<sendmail> on my webserver, what can I do ?
 
 Well, if your webserver has a Unix-like operating system it is likely that
 it has a program that performs a similar function for the preferred MTA
