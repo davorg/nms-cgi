@@ -294,11 +294,12 @@
       <tr>
         <td align="left" valign="top">
           <address>
-              General Enquiries: 
-	      <a href="mailto:davorg@users.sourceforge.net">Dave Cross</a>
-              <br />
               Support:
               <a href="mailto:nms-cgi-support@lists.sourceforge.net">nms-cgi-support@lists.sourceforge.net</a>
+              <br />
+              General Enquiries: 
+	      <a href="mailto:davorg@users.sourceforge.net">Dave Cross</a> 
+              (please do not use this address for support)
           </address>
 <!-- Created: Sat Aug 11 16:11:48 BST 2001 -->
 <!-- hhmts start -->
