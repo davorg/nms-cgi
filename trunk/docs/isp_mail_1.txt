@@ -4,10 +4,10 @@ I noticed from your page at:
 
   [% url %]
 
-that you are recommending that your customers use Matt Wrights FormMail
+that you are recommending that your customers use Matt Wright's FormMail
 program on their websites.  This program is subject to a number of
-security advisory notices regarding it's vulnerability to being
-exploited by spammers to send mail anonymously.  You might want to see:
+security advisory notices regarding its vulnerability to being exploited
+by spammers to send mail anonymously.  You might want to see:
 
      <http://www.securitytracker.com/alerts/2001/Mar/1001108.html>
 
