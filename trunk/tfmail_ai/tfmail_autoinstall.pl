@@ -17,16 +17,22 @@ $ai->add_cgi('GBview', '../tfmail/GBview.pl');
 print $ai->output_script, <<'END_LOCAL_CODE';
 
 sub app_config_is_valid {
-    app__sendmail_command_ok() and
-    app__postmaster_ok()       and
-    app__charset_ok()
-    ;
+        ( app__sendmail_command_ok() or app__smtp_relay_ok() )
+   and  app__postmaster_ok()
+   and  app__charset_ok()
+   ;
 }
 
 sub app__sendmail_command_ok {
     my $sc = $Config{sendmail_command} || '';
     return 0 unless length $sc;
     return 0 unless $sc =~ m#^(\S+)#;
+    return 1;
+}
+
+sub app__smtp_relay_ok {
+    my $relay = $Config{smtp_relay} || '';
+    return 0 unless $relay =~ /^[\w\-\.]+$/;
     return 1;
 }
 
@@ -43,79 +49,97 @@ sub app__charset_ok {
 sub app_edit_config_html {
     my ($sme, $pme, $cse) = ('', '', '');
 
-    unless (app__sendmail_command_ok()) {
+    unless (app__sendmail_command_ok() or app__smtp_relay_ok()) {
         $sme = <<END;
-<p><b>You must set a value for this field.</b></p>
+<p>
+ <font color="red">You must set either <b>sendmail location</b> or
+ <b>SMTP relay</b> above.  Your system administrator or hosting provider
+ should be able to tell you how to set one or other of these for your
+ web server.</font>
+</p>
 END
     }
 
     unless (app__postmaster_ok()) {
         $pme = <<END;
-<p><b>You must enter a valid email address here.</b></p>
+<p><font color="red">You must enter a valid email address here.</font></p>
 END
     }
 
     unless (app__charset_ok()) {
         $cse = <<END;
-<p><b>You must enter the name of a character set here, e.g. <tt>iso-8859-1</tt>.</b></p>
+<p><font color="red">You must enter the name of a character set here, e.g.
+<tt>iso-8859-1</tt>.</font></p>
 END
     }
 
     print <<END;
-$sme<p>
-Sendmail command: the shell command that must be run on the web server
-to fire up a sendmail compatible binary and have it read a message from
-its standard input and get message recipients from the header.
-</p>
+<h1>Installation Settings</h1>
 <p>
-You system administrator or hosting provider should be able to tell you
-how to set this for your web server.
+ Please adjust the installation settings below until you're happy with them.
+ Text in <font color="red">red</font> marks places where you need to make a
+ change before TFmail can be installed.
 </p>
-<p>
-If there is no sendmail compatible binary available then you can use
-nms_sendmail, which you can get from
-<a href="http://nms-cgi.sourceforge.net/scripts.shtml">the NMS site</a>.
-Using nms_sendmail, the correct setting setting for this field would be:
-<tt>${\( ai_eschtml("$^X -wT PATH/nms_sendmail -oi -t") )}</tt>,
-but with <tt>PATH</tt> replaced by the full filesystem path to the
-directory into which you upload nms_sendmail.  It may help you to know
-that the full filesystem path of the directory into which you uploaded
-this autoinstall CGI script is <tt>${\( $Probe{CGI_BIN} )}</tt>.
-</p>
-<p><input type="text" value="${\( ai_eschtml($Config{sendmail_command}) )}"
-name="sendmail_command" size="80" /></p>
-<hr />
-$pme<p>
-Postmaster Address: the address to use as the envelope sender of mail sent
-by the script.  If in dought, put your own email address here.</p>
-<p><input type="text" value="${\( ai_eschtml($Config{postmaster_address}) )}"
-name="postmaster_address" size="80" /></p>
 <hr />
 <p>
-<input type="checkbox" name="debugging"
-${\( $Config{debugging} ? ' checked="checked" value="1"' : '' )} />
-Tick here if you want debugging mode switched on.  You should have this
-on if you're having trouble getting the script working but turn it off
-for normal operation.
+ <b>Sendmail location</b>: the location of the <tt>sendmail</tt> program on
+ the web server, e,g <tt>/usr/lib/sendmail</tt>.  If this web server has no
+ <tt>sendmail</tt> program then leave this blank and set <b>SMTP relay</b>
+ below instead.
 </p>
 <p>
-<input type="checkbox" name="enable_uploads"
-${\( $Config{enable_uploads} ? ' checked="checked" value="1"' : '' )} />
-Tick here if you want to be able to set up forms where the user uploads
-a file and it comes through to you as an attachment to the email.
+ <input type="text" value="${\( ai_eschtml($Config{sendmail_command}) )}"
+ name="sendmail_command" size="80" />
+</p>
+<hr />
+<p>
+ <b>SMTP relay</b>: the host name or IP address of an SMTP server that will
+ relay outgoing emails for this web server.  You only need to set this if
+ there is no <tt>sendmail</tt> program on the web server.
 </p>
 <p>
-<input type="checkbox" name="use_mime_lite"
-${\( $Config{use_mime_lite} ? ' checked="checked" value="1"' : '' )} />
-Tick here if you want <tt>TFmail</tt> to use the <tt>MIME::Lite</tt>
-Perl module to send emails.  With this ticked your emails are less
-likely to be scrambled by mail servers but the script may start up
-slower on some systems.
+ <input type="text" value="${\( ai_eschtml($Config{smtp_relay}) )}"
+ name="smtp_relay" size="50" />
 </p>
-<p>Character set:
-<input type="text" size="20" name="charset"
-value="${\( ai_eschtml($Config{charset}) )}" />
+$sme
+<hr />
+<p>
+ <b>Postmaster Address</b>: the address to use as the envelope sender of
+ mail sent by the script.  If in dought, put your own email address here.
 </p>
+<p>
+ <input type="text" value="${\( ai_eschtml($Config{postmaster_address}) )}"
+ name="postmaster_address" size="80" />
+</p>
+$pme
+<hr />
+<p>
+ <input type="checkbox" name="debugging"
+ ${\( $Config{debugging} ? ' checked="checked" value="1"' : '' )} />
+ Tick here if you want debugging mode switched on.  You should have this
+ on if you're having trouble getting the script working, but turn it off
+ for normal operation.
+</p>
+<p>
+ <input type="checkbox" name="enable_uploads"
+ ${\( $Config{enable_uploads} ? ' checked="checked" value="1"' : '' )} />
+ Tick here if you want to be able to set up forms where the user uploads
+ a file and it comes through to you as an attachment to the email.
+</p>
+<p>
+ <input type="checkbox" name="use_mime_lite"
+ ${\( $Config{use_mime_lite} ? ' checked="checked" value="1"' : '' )} />
+ Tick here if you want <tt>TFmail</tt> to use the <tt>MIME::Lite</tt>
+ Perl module to send emails.  With this ticked your emails are less
+ likely to be scrambled by mail servers but the script may start up
+ slower on some systems.
+</p>
+<hr />
+<p>
+ <b>Character set</b>: <input type="text" size="20" name="charset"
+ value="${\( ai_eschtml($Config{charset}) )}" />
+</p>
+$cse
 END
 }
 
@@ -124,7 +148,7 @@ sub app_get_config_from_inputs {
 
     defined $cgi->param('postmaster_address') or return 0;
 
-    foreach my $p (qw(postmaster_address sendmail_command charset)) {
+    foreach my $p (qw(postmaster_address sendmail_command smtp_relay charset)) {
         $Config{$p} = $cgi->param($p) || '';
     }
 
@@ -140,11 +164,11 @@ sub app_fill_in_missing_defaults {
     unless ($Config{sendmail_command}) {
         foreach my $bin (qw(/usr/sbin/sendmail /usr/lib/sendmail
 	                    /usr/bin/sendmail /bin/sendmail
-			    /var/qmail/bin/sendmail
+                        /var/qmail/bin/sendmail
                         )) {
             if (-x $bin and not -d $bin) {
-	        $Config{sendmail_command} = "$bin -oi -t";
-		last;
+	            $Config{sendmail_command} = $bin;
+              last;
             }
         }
     }
@@ -157,9 +181,18 @@ sub app_fill_in_missing_defaults {
 
 sub app_prepare_for_install {
     
+    my $mailprog;
+    if ( length $Config{sendmail_command} ) {
+        $mailprog = $Config{sendmail_command};
+        $mailprog .= " -oi -t" unless $mailprog =~ /\S\s+\S/;
+    }
+    else {
+        $mailprog = "SMTP:$Config{smtp_relay}";
+    }
+
     app__subst_constant('DEBUGGING',      $Config{debugging});
     app__subst_constant('LIBDIR',         $Probe{LIBDIR});
-    app__subst_constant('MAILPROG',       $Config{sendmail_command});
+    app__subst_constant('MAILPROG',       $mailprog);
     app__subst_constant('POSTMASTER',     $Config{postmaster_address});
     app__subst_constant('CONFIG_ROOT',    "$Probe{BASEDIR}/cfg");
     app__subst_constant('LOGFILE_ROOT',   "$Probe{BASEDIR}/log");

@@ -40,10 +40,9 @@ FILES
 In this distribution, you will find the following files:
 
 tfmail_install.pl - A CGI script that will install TFmail on your server
-README            -   This file. Instructions on how to install and use TFmail
-EXAMPLES          -   Some examples of the use of TFmail
-ChangeLog         -   The change history of these files
-MANIFEST          -   List of files
+README            - This file. Instructions on how to install and use TFmail
+ChangeLog         - The change history of these files
+MANIFEST          - List of files
 
 SCRIPT CONFIGURATION
 
