@@ -23,14 +23,14 @@ if ($action eq 'test') {
     tarballs();
     test();
 }
-elsif ($action eq 'upload') {
+elsif ($action eq 'release') {
     release();
     tarballs();
     test();
     upload();
 }    
 else {
-    die "usage: nmsdevel <test|upload>\n";
+    die "usage: nmsdevel <test|release>\n";
 }
 
 
