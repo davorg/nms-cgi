@@ -1,167 +1,175 @@
+COPYRIGHT
+
 Guestbook Version 1.00
 Copyright 2001 London Perl Mongers, All rights reserved
+
+LICENSE
 
 This script is free software; you are free to redistibute it
 and/or modify it under the same terms as Perl itself.
 
+URL
+
+The most up to date version of this script is available from the nms
 Scripts Archive at  <http://nms-cgi.sourceforge.net/>
 
-There are five files included in the Guestbook package.  Below is a brief 
-summary of them:
-        1) README - This file.
-        2) guestbook.pl - The Perl Script.
-        3) guestbook.html - The actual guestbook file.
-        4) addguest.html - The fill-out form for a guestbook entry.
-        5) guestlog.html - A short log of those who have added.
+SUMMARY
 
-Below is a more detailed explanation of each file and what to do with it!
-____________________
+The Guestbook is a program that allows visitors to your website to leave
+a message on the Guestbook page.
 
-GUESTBOOK.PL - This is the Perl script that actually writes new entries to 
-files and returns the entry to the user.  This file will need to be placed
-in the cgi-bin of your server and chmoded to a+rx.  There are a few things 
-that need to be changed in this file:
+FILES
 
-   # Set Variables
-   $guestbookurl - The url address of your guestbook.html file
-   $guestbookreal - The system location of your guestbook.html file
-   $guestlog - The system location of your guestlog.html file
-   $cgiurl - The url portion of the address to the guestbook.pl file
+In this distribution you will find five files:
 
-The file guestbook.pl needs to be placed in your server's cgi-bin and 
-chmoded read/execute for users of your httpd. (chmod a+rx)
-
-There are several options that you have to decide whether
-or not to use.  Below is a brief description of what each one does.  
-While choosing what options you want to have on keep in mind that a '1' 
-will turn them on and a '0' will turn them off.
-
-Option 1:  $mail - This option will allow you to be notified via 
-an E-Mail address when a new entry arrives in your guestbook.  
-The entry will be mailed to you as a notification.  If you should 
-choose to turn this variable on you will need to fill in the 2 
-variables that go along with it:
-
-   $recipient - Your E-Mail address, so that the mailing 
-                program will know who to mail the entry to.
-   $mailprog -  The location of your sendmail program on your 
-                host machine.
-
-Option 2:  $uselog - This will allow you the ability to use my 
-short log feature.  It is already turned on so you will have to 
-change it to 0 if you do not wish to use it. I have implemented 
-this feature, since there are probably many people who feel no need
-to have a log when people are making entries to a file anyway.  
-Keep in mind it will show errors which is one nice aspect about it.
-
-Option 3:  $linkmail - Turning this option on will make the 
-address links in your guestbook become hyperlinked.  So instead of
-simply having (name@some.host) it will put 
-(<a href="mailto:name@some.host">name@some.host</a>) so that anyone 
-can simply click on the address to email them.
-
-Option 4:  $separator - While looking at many other guestbooks 
-I noticed that many people prefer to separate entries with 
-a Horizontal Rule <hr> instead of a Paragraph Separator <p>, which 
-I used in my old scripts.  I have now given you the option to 
-choose.  By changing the 0 in the script to a 1 you will turn on 
-the <hr> separator and turn off the <p> separator.  The 0 option 
-will do the reverse of that; turn on <p> and turn off <hr>.
-
-Option 5: $redirection - Although Netscape and other browsers handle 
-the auto-redirection that I have implemented quite nicely, I have
-noticed that it does not work with lynx (a text based browser). 
-I have given you the option of using auto-redirection or not.  
-Lynx can still add to your guestbook with it, they will just get an 
-error message when they do.  This may not be true for all systems 
-though.  It seemed that when we upgraded to httpd 1.4 this problem 
-started occurring.  By choosing 1 you will enable auto redirection 
-and 0 will return a page to the user telling them their entry has 
-been received and click here to get back to the guestbook.
-
-Option 6: $entry_order - When this script was first written, entries 
-were always added next to the top, so you and other users did not
-have to always see the same guestbook entry when they visited your
-pages.  The rest of the enties scrolled beneath the newest, from
-newest to oldest.  I have had requests that I make an option
-available so that people can have a guestbook which would read
-from oldest to newest.  This is how you would go about doing that.
-Set this option to '0' and the newest entries will be added below
-the rest of the entries.  Keep this option at '1' and the guestbook
-will act like previous versions, adding the newest entry to the top.
-
-Option 7: $remote_mail - Many users of the guestbook have requested 
-that a form letter be automatically sent to the remote user when
-they fill in the guestbook.  Turning this option on will tell the
-script to automatically mail any user who leaves an email address.
-You can specify the contents of the mail mesage by editing the
-section of the script that sends mail to the remote user.  By 
-default it sends a message that says, "Thank you for adding to my 
-guestbook." and then shows them their entry.  If you should
-choose to turn this variable on you will need to fill in the 2
-variables that go along with it:
-
-    $recipient - Your E-Mail address, so that the mailing
-                 program will know who to mail the entry to.
-    $mailprog -  The location of your sendmail program on your
-                 host machine.
-
-CAUTION: with this option turned on it's possible for someone
-to put someone else's email address in the form and submit it
-5000 times, causing this script to send a flood of email to a
-third party.  This third party is likely to blame you for the
-email flood attack.
-
-Option 8: $allow_html = "";
-This option allows you to turn on or off the use of HTML tags by 
-users of your guestbook.  Setting this variable to '1' allows 
-users to imbed html tags such as <b> or <H1> or <a href=""></a> 
-into your html document.  Setting this variable to '0' will not 
-allow them to use any html syntax in their comments or any other 
-field.  You can still link to their email address by turning 
-$link_mail to '1'.
-
-Option 9: $line_breaks - This option allows you to decide whether 
-or not you want line breaks in the comment field to be turned into 
-<br>'s in the html thing to retain the look of the guestbook entry.  
-Common setting would be off, because sometimes people accidentally 
-put in extra line breaks.
-
-____________________
+README         - This file. Instructions on how to install and use guestbook
+guestbook.pl   - The main Perl program file.
+guestbook.html - The file in which the guestbook entries are saved.
+addguest.html  - The form that visitors will use for a guestbook entry.
+guestlog.html  - A log file of those who have added entries to guestbook.
 
 
-GUESTBOOK.HTML - This is the file that you will link to that will contain the 
-Guestbook Entries.  You will need to have this set at write/read permission 
-for the users (chmod a+rw).  You will probably need to edit the url for the 
-link to the addguest.html file and edit the url at the end of this page to 
-point back to your home page.  You will also want to edit the title and 
-heading spaces.  Do not delete the line <!--begin--> from this 
-guestbook, or else the script will have no way of knowing where to begin the 
-editing.  The <!--begin--> line is the only necessary line in your 
-guestbook.html file, but the link to the addguest.html file is also a good 
-idea.  :)
-____________________
+CONFIGURATION
 
-ADDGUEST.HTML - This is a fill-out form to add a new entry into the 
-guestbook.  You will need to edit parts of it to correct urls and 
-names of things, but leave the basic field names in place in the form.  You 
-will also need to change the action of the form to point to the guestbook.pl 
-file you placed in your cgi-bin.  The action of the form should be the same 
-as the $cgiurl variable you configured in your guestbook.pl file.
-____________________
+In order for this program to work properly on your webserver it will require
+a small amount of configuration before you upload it.
 
-GUESTLOG.HTML - This is a short log that lists domains and times that entries 
-were created.  Much easier to browse and it will point out those failed entries 
-when users did not specify a name or comments.  This file will also need 
-read/write permission given to it.  To avoid long scripting (call me lazy if 
-you want :-) ) I left the log file so that newest entries are added at the 
-bottom.  This should be apparent though since the entries all come with a 
-short date added.  You can get around using this by changing the option 
-$uselog in the guestbook.pl file.
+All of the configuration is done by editing the program file directly, you
+can do this in your favourite text editor or notepad if you are on Windows.
+You probably don't want to use a wordprocessor to do this unless you are
+certain you can save the file as plain text.
+
+Firstly you will need to change the first line of the program:
+
+   #!/usr/bin/perl -wT
+
+so that it points at the proper location of perl on your webserver - your
+system administrator or webhosting provider should be able to tell you this.
+You only need to change the '/usr/bin/perl' part - all of the rest of the
+line must be left exactly as it is.
+
+There are a number of variables that you should change in guestbook.pl which
+alter the way that the program works.
+
+If you are unsure of the appropriate value for variables that relate to the
+setup of your webserver you should ask your system administrator or
+web hosting provider.
+
+$DEBUGGING     - This should be set to 1 whilst you are installing
+                 and testing the script. Once the script is live you
+                 should change it to 0. When set to 1, errors will
+                 be output to the browser. This is a security risk and
+                 should not be used when the script is live.
+
+$guestbookurl  - The public URL of your guestbook.html file.
+
+$guestbookreal - The filesystem location of your guestbook.html file on the
+                 webserver.
+
+$guestlog      - The filesystem location of your guestlog.html file on the
+                 webserver.
+
+$cgiurl        - The public URL of the guestbook.pl file.
+
+$style         - The URL of a CSS stylesheet that will be used for the
+                 HTML that is generated by the program.
+
+$mail          - If this is set to 1 then you will be notified by e-mail
+                 of any new entries.  If it is set then the next two
+                 variables must be set correctly.  If you don't want to
+                 receive e-mail then set this to 0.
+
+$recipient     - The e-mail address of the person who wants to receive
+                 notification of new guestbook entries.
+                
+$mailprog      - The full path to the program that will be used to send
+                 e-mail - this should also include any command line
+                 options that might be required.
+
+$uselog        - If this variable is set to 1 then all new entries to the
+                 guestbook will be recorded in a short log, also any
+                 errors will be recorded.  If you don't want this
+                 facility then set this to 0.
+
+$linkmail      - If this is set to 1 then the e-mail addresses that 
+                 visitors will be added as mailto: links rather than
+                 just as plain text.  You may not want to do this if you
+                 are concerned that spammers might harvest the addresses.
+
+$separator     - This determines how the entries in the guestbook page are
+                 separated.  If it is set to 1 then the entries will be
+                 separated by a horizontal rule (<hr />).  If it is set
+                 to 0 then they will be place in separate paragraphs.
+
+$redirection   - If this variable is set to 1 then the program will issue
+                 a browser redirection to the guestbook page after the entry
+                 has been added. If it is set to 0 then the visitor will be
+                 presented with a page with a link to the modified guestbook
+                 page.
+
+$entry_order   - If this is set to 1 then new entries will be added to the
+                 top of the guestbook page, if it is set to 0 they will be
+                 added at the end.
+
+$remote_mail   - When this is set to 1 then the visitor who makes the
+                 guestbook entry will be sent a confirmation e-mail 
+                 ( assuming they have entered a valid address ) - you
+                 will need to have set $mailprog and $recipient as described
+                 above.  You should think carefully about setting this
+                 variable as it would be simple for someone to turn your
+                 guestbook into an anonymous mail-bomb if they were to
+                 enter someone elses e-mail address and repeatedly submit
+                 the form.
+
+$allow_html    - If this is set to 0 then all HTML will be stripped from
+                 the visitor comments before being added to the guestbook
+                 page.  If it is set to 1 then a relatively safe set of
+                 HTML elements will be allowed in the input - please see
+                 the code in guestbook.pl to find which tags are allowed.
+                 Previous versions of this program allowed a user to enter
+                 any HTML they wanted which allowed the possibility of
+                 third party scripting attacks or defacement of the page.
+
+$line_breaks  -  When set to 1 all of the carriage returns in the visitors
+                 comments will be changed to <br /> - this is probably not
+                 necessary if $allow_html is set to 1.
+
+
+You will need also to edit the addguest.html file so that the line :
+
+   <form method="post" action="http://your.host.com/cgi-bin/guestbook.pl">
+
+has the action attribute pointing to the URL of your guestbook program.
+
+You might also want to edit this and the guestbook.html so that it matches
+the appearance of your website - being careful that you don't remove the
+'<!--begin-->' comment that the program uses to know where to enter the
+new entries.
+
+INSTALLATION
+
+ll that is need to install the Guestbook is to copy the guestbook.pl file
+to the cgi-bin directory (or whatever is appropriate for your system - you
+should ask your system administrator or web hosting provider about this if
+you are unsure ) on your web server and to copy the addguest.html, 
+guestbook.html and guestlog.html to the location that you will have entered
+in the configuration above.
+
+On some systems you may need to rename guestbook.pl to guestbook.cgi
+(or some other extension that the web server uses to indicate a CGI
+program.) Again, your system administrator will know if this is the case.
+
+You will probably need to turn on execute permissions to the file. You can
+do this by running the command "chmod +x guestbook.pl" from your command
+line. If you don't have command line access to your web server then there
+will probably be an equivalent function in your file transfer program.
 
 SUPPORT
 
 For support of this script please email:
 
   <nms-cgi-support@lists.sourceforge.net>
+
+This mailling list is read by the NMS developers and other helpful people
+who will try to help you solve your problem.
 
