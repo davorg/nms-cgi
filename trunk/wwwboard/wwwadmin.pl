@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwadmin.pl,v 1.21 2002-09-15 09:15:26 nickjc Exp $
+# $Id: wwwadmin.pl,v 1.22 2002-09-15 17:24:05 nickjc Exp $
 #
 
 use strict;
@@ -12,11 +12,11 @@ use vars qw(
   $basedir $baseurl $cgi_url $mesgdir $datafile $mesgfile
   $passwd_file $ext $title $style $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.21 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.22 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwadmin.pl $Revision: 1.21 $
+# wwwadmin.pl $Revision: 1.22 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -765,7 +765,7 @@ END
 
     ERROR_PAGE => <<"END",
 <head><title>[% Title %]</title>
-$html_style;
+$html_style
 </head>
 <body>
 <center><h1>[% Title %]</h1></center>
