@@ -30,26 +30,27 @@ FILES
 
 In this distribution, you will find the following files:
 
-TFmail.pl      - The main Perl script
-GBview.pl      - A script that allows TFmail to function as a guestbook
-NMStreq.pm     - A Perl module that TFmail.pl needs
-NMSCharset.pm  - Another Perl module that TFmail.pl needs
-MIME_Lite.pm   - A Perl module that TFmail.pl needs if you want to use
-                 file uploads, unless MIME::Lite is installed on the
-                 server
-default.trc    - The main configuration file
-gb.trc         - An example configuration file for a guestbook
-spage.trt      - The template file that controls the layout of the success
-                 page
-missing.trt    - The template file that controls the layout of the page
-                 presented to the user if some required fields have been
-                 left blank
-email.trt      - The template file that controls the layout of the email
-                 body
-README         - This file. Instructions on how to install and use TFmail
-EXAMPLES       - Some examples of the use of TFmail
-ChangeLog      - The change history of these files
-MANIFEST       - List of files
+TFmail.pl        - The main Perl script
+TFmail_config.pl - A script to help with setting up the configuration files.
+GBview.pl        - A script that allows TFmail to function as a guestbook
+NMStreq.pm       - A Perl module that TFmail.pl needs
+NMSCharset.pm    - Another Perl module that TFmail.pl needs
+MIME_Lite.pm     - A Perl module that TFmail.pl needs if you want to use
+                   file uploads, unless MIME::Lite is installed on the
+                   server
+default.trc    -   The main configuration file
+gb.trc         -   An example configuration file for a guestbook
+spage.trt      -   The template file that controls the layout of the success
+                   page
+missing.trt    -   The template file that controls the layout of the page
+                   presented to the user if some required fields have been
+                   left blank
+email.trt      -   The template file that controls the layout of the email
+                   body
+README         -   This file. Instructions on how to install and use TFmail
+EXAMPLES       -   Some examples of the use of TFmail
+ChangeLog      -   The change history of these files
+MANIFEST       -   List of files
 
 SCRIPT CONFIGURATION
 
@@ -227,6 +228,20 @@ would need to guess the URL:
 which is harder.  Be aware however that this is a weak form of
 security.  Web server bugs and configuration errors that allow
 this type of precaution to be bypassed are relatively common.
+
+
+THE CONFIGURATION SCRIPT
+
+If you wish, you can upload the TFmail_config.pl script and use
+that to interactively create all the .trt and .trc files that
+you'll need, instead of editing and uploading the .trt and .trc
+files.
+
+See the comments at the top of TFmail_config.pl for directions as
+to how to configure that script.
+
+TFmail_config.pl is quite new, and should be considered to be an
+experimental feature.
 
 
 OUTPUT CUSTOMIZATION

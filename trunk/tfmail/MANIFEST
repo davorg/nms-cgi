@@ -1,4 +1,5 @@
 tfmail/TFmail.pl
+tfmail/TFmail_config.pl
 tfmail/GBview.pl
 tfmail/NMStreq.pm
 tfmail/NMSCharset.pm
