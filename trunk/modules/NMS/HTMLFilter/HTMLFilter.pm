@@ -4,7 +4,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
 
 use CGI::NMS::Charset;
 
@@ -853,7 +853,7 @@ sub _attr_src
 {
    my $filter = $_[3];
 
-   ($filter->{opts}{allow_src} and $filter->url_is_valid($_[0])) ? $_[0] : undef;
+   ($filter->{OPTS}{allow_src} and $filter->url_is_valid($_[0])) ? $_[0] : undef;
 }
    
 =item _attr_a_href ( INPUT, ATTRNAME, TAGNAME, FILTER )
@@ -869,7 +869,7 @@ sub _attr_a_href
    if ($_[0] =~ /^mailto:([\w\-\.\,\=\*]{1,100}\@[\w\-\.]{1,100})$/i)
    {
       my $filter = $_[3];
-      return ($filter->{opts}{allow_a_mailto} ? "mailto:$1" : undef);
+      return ($filter->{OPTS}{allow_a_mailto} ? "mailto:$1" : undef);
    }
    else
    {
@@ -887,7 +887,7 @@ sub _attr_href
 {
    my $filter = $_[3];
 
-   ($filter->{opts}{allow_href} and $filter->url_is_valid($_[0])) ? $_[0] : undef; 
+   ($filter->{OPTS}{allow_href} and $filter->url_is_valid($_[0])) ? $_[0] : undef; 
 }
    
 =item _attr_number ( INPUT, ATTRNAME, TAGNAME, FILTER )
