@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.17 2002-07-20 08:56:39 gellyfish Exp $
+#  $Id: ffa.pl,v 1.18 2002-07-23 20:38:33 nickjc Exp $
 #
 
 use strict;
@@ -381,7 +381,7 @@ EIEIO
 
 sub strip_nonprintable {
    my $text = shift;
-   $text=~ tr#\011\012\040-\176\200-\377##dc;
+   $text=~ tr#\011\012\040-\176\200-\377# #cs;
    return $text;
 }
 
