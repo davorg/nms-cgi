@@ -1,10 +1,19 @@
 #!perl -Tw
 #
-# $Id: search.pl,v 1.22 2002-02-27 09:04:29 gellyfish Exp $
+# $Id: search.pl,v 1.23 2002-03-03 21:52:45 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.22  2002/02/27 09:04:29  gellyfish
+# * Added question about simple search and PDF to FAQ
+# * Suppressed output of headers in fatalsToBrowser if $done_headers
+# * Suppressed output of '<link rel...' if not $style
+# * DOCTYPE in fatalsToBrowser
+# * moved redirects until after possible cause of failure
+# * some small XHTML fixes
+#
 # Revision 1.21  2002/02/13 15:09:20  jfryan
-# Expanded detaint_dirname to include a colon so that win32 paths would pass taint checking
+# Expanded detaint_dirname to include a colon so that win32 paths would 
+# pass taint checking
 #
 # Revision 1.20  2002/02/05 04:24:38  jfryan
 # Added $hit_threshhold config var and also moved output functions to end
@@ -16,8 +25,9 @@
 # Added sorted results guarded by a $emulate_matts_code
 #
 # Revision 1.17  2002/02/03 22:06:29  dragonoe
-# Added header to script after log. Also cleaned up the pre-header (use & stuff)
-# information so it looks less confusing for newbies and aligned config values.
+# Added header to script after log. Also cleaned up the pre-header (use &
+# stuff) information so it looks less confusing for newbies and aligned
+# config values.
 #
 # Revision 1.16  2002/02/02 13:57:54  nickjc
 # match the empty string as a valid directory name
@@ -80,6 +90,10 @@ use File::Find;
 $ENV{PATH} = '/bin:/usr/bin';# sanitize the environment
 delete @ENV{qw(ENV BASH_ENV IFS)};# ditto
 
+$CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX = $CGI::POST_MAX = 4096;
+
+
 # PROGRAM INFORMATION
 # -------------------
 # search.pl v1.17
@@ -117,7 +131,7 @@ my $style               = '';
 # amount of hits per page that are required for the match to be outputted
 
 my $hit_threshhold      = 1;
-
+my @subdirs             = ('','/manual','/vmanual');
 
 #
 # USER CONFIGURATION << END >>
@@ -183,9 +197,10 @@ my $style_element = $style ?
                   : '';
 
 # Parse Form Search Information
-my $case  = param("case") ? param("case") : "Insensitive";
-my $bool  = param("boolean") ? param("boolean") : "OR";
-my $terms = param("terms") ? param("terms") : "";
+my $case   = param("case") ? param("case") : "Insensitive";
+my $bool   = param("boolean") ? param("boolean") : "OR";
+my $terms  = param("terms") ? param("terms") : "";
+my $seldir = param("directory") ? @subdirs[param("directory")] : "";
 
 # Print page headers
 
@@ -204,16 +219,26 @@ if ($terms)
     $termlist = join ('|', map{$_=quotemeta($_); $_='(?:'.$_.')'}@temp_list);
     # I have taken out the reimplementation hack ;-}
 
-    $startdir = $basedir;
+    if ( $emulate_matts_code ) 
+    {
+      $startdir = $basedir;
+    }
+    else
+    {
+       $startdir = "$basedir$seldir";
+    }
+
     find ( \&do_search, $startdir);
     if (!$emulate_matts_code)
     {
-	    my @base = sort {$hits[$b] <=> $hits[$a]} (0 .. $#hits);
-	    @titles  = @titles[@base];
+        my @base = sort {$hits[$b] <=> $hits[$a]} (0 .. $#hits);
+        @titles  = @titles[@base];
         @paths   = @paths[@base];
-        for (my $i=0; $i<@hits; $i++)
+
+        for my $i (0 .. $#hits)
         {
-	    	print_result ($baseurl, $paths[$i], $titles[$i]) if ($hits[$i] >= $hit_threshhold);
+           print_result($baseurl, $paths[$i], $titles[$i]) 
+                 if ($hits[$i] >= $hit_threshhold);
         }
     }
 }
@@ -245,7 +270,12 @@ sub do_search
     return unless ("$dirname$basename" =~ m/$wclist/io);
     return unless -r _;
     foreach my $blocked (@blocked) {
-        return if ($File::Find::dir eq $blocked)
+        if ($emulate_matts_code ) {
+           return if $File::Find::dir eq $blocked;
+        }
+        else {         
+           return if $File::Find::dir =~ /$blocked/)
+        }
     }
 
     open(FILE, "<$File::Find::name") or return;
@@ -277,21 +307,21 @@ sub do_search
 
     my $page_title = $basename;
 
-    if ($string =~ /<title>(.+?)<\/title>/is) {
+    if ($string =~ m%<title>(.+?)</title>%is) {
         $page_title = $1;
     }
 
-  	if ($emulate_matts_code) {
-    	print_result($baseurl, "$dirname$basename", $page_title);
+    if ($emulate_matts_code) {
+        print_result($baseurl, "$dirname$basename", $page_title);
     }
     else {
-	    my @m = split(/$termlist/i, $string);
-	    my $matches = scalar(@m);
-	    print $matches;
-	    push (@hits, $matches);
-	    push (@paths, "$dirname$basename");
-	    push (@titles, $page_title);
-	}
+        my @m = split(/$termlist/i, $string);
+        my $matches = scalar(@m);
+        print $matches;
+        push (@hits, $matches);
+        push (@paths, "$dirname$basename");
+        push (@titles, $page_title);
+    }
 }
 
 #
@@ -302,6 +332,7 @@ sub do_search
 #
 # Treats '*' like the shell does, all else is literal.
 #
+
 sub build_list
 {
     my @files = @_;
@@ -342,7 +373,7 @@ sub detaint_dirname
     my ($dirname) = @_;
 
     # Pattern from File/Find.pm in Perl 5.6.1
-    $dirname =~ m|^([:\-+@\w./]*)$| or die "suspect directory name: $dirname";
+    $dirname =~ m|^([:\\+@\w./-]*)$| or die "suspect directory name: $dirname";
     return $1;
 }
 
