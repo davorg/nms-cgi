@@ -1,8 +1,13 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.17 2001-12-05 14:28:24 nickjc Exp $
+# $Id: FormMail.pl,v 1.18 2001-12-09 22:31:22 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.17  2001/12/05 14:28:24  nickjc
+# * Don't do things on GET if $secure
+# * Eliminate some warnings in send_email
+# * Restrict realname slightly if $secure
+#
 # Revision 1.16  2001/12/04 08:55:03  nickjc
 # stricter check_email if $secure
 #
@@ -318,8 +323,9 @@ sub check_required {
     my @valid;
 
     foreach (split /,/, $Config{recipient}) {
+      next unless check_email($_);
       foreach my $r (@recipients) {
-	if (/$r/ && check_email($_)) {
+	if ( /(?:$r)$/ or $emulate_matts_code and /$r/ ) {
 	  push @valid, $_;
 	  last;
 	}
