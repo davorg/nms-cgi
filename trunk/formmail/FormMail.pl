@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.39 2002-02-21 09:17:29 gellyfish Exp $
+# $Id: FormMail.pl,v 1.40 2002-02-22 12:08:30 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.39  2002/02/21 09:17:29  gellyfish
+# Stylesheet elements will not be added if $style is empty
+#
 # Revision 1.38  2002/02/14 08:45:04  nickjc
 # * fixed silly error in body attribute checking
 #
@@ -493,7 +496,7 @@ sub return_html {
 <html>
   <head>
      <title>$title</title>
-     $style_element;
+     $style_element
      <style>
        h1.title {
                    text-align : center;
@@ -879,7 +882,7 @@ EOBODY
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>$title</title>
-    $style_element;
+    $style_element
     <style type="text/css">
     <!--
        body {
