@@ -136,6 +136,14 @@ LOGFILE_ROOT        - The filesystem path to the directory under which log
 LOGFILE_EXT         - The file extension that log files must have.  Default:
                       .log
 
+HTMLFILE_ROOT       - The filesystem path to the directory under which any HTML
+                      files that you wish TFmail to modify live.  Leave this set
+                      to the empty string unless you want to use TFmail to
+                      modify HTML files on your server.
+
+HTMLFILE_EXT        - The file extension that the HTML files which TFmail
+                      modifies must have.  Default: .html
+
 CHARSET             - The character encoding to use for output documents and
                       e-mails.  All user input must be encoded with the same
                       charset or the output may appear garbled.  The defualt
@@ -511,6 +519,12 @@ log_template                - The template file used to construct the text
                               that gets appended to the log file if the
                               logfile setting above is set.  Default: log
 
+modify_html_files           - A list of the names of one or more HTML files
+                              into which TFmail should insert text, relative
+                              to the HTMLFILE_ROOT directory and without the
+                              HTMLFILE_EXT file extension.  See the section
+                              below on inserting text into HTML files.
+
 no_email                    - Set this to a true value to prevent the main
                               e-mail from being sent.  You might wish to do
                               that if you're using TFmail.pl to record data
@@ -589,6 +603,111 @@ and you might put in the HTML form:
 
   A picture of yourself:
   <input type="file" name="picture" />
+
+
+INSERTING TEXT INTO HTML FILES
+
+As well as sending email and writing log files, TFmail can be made to
+insert some text into the middle of an existing HTML file.  The
+HTMLFILE_ROOT constant in the script should be set to the filesystem
+path under which all of the HTML files that you might want TFmail to
+modify reside.
+
+For example, to use TFmail.pl as a guestbook script, with your
+guestbook stored in the file /www/sites/31337/guestbook.html, you
+might set the HTMLFILE_ROOT constant to '/www/sites/31337' and put
+the following in a guestbook.trc file:
+
+
+%% NMS configuration file %%
+
+no_email: 1
+
+modify_html_files: guestbook
+
+htmlfile_template_guestbook:
+%   <p><b>Date:</b>{= date =}</p>
+%   <p><b>Name:</b>{= param.name =}</p>
+%   <p><b>Comments:</b>{= param.comments =}</p>
+%   <hr />
+
+required: name,comments
+
+missing_template:
+%<?xml version="1.0" encoding="iso-8859-1"?>
+%<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+% "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+%<html>
+% <head>
+%  <title>Missing Fields</title>
+%  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+% </head>
+% <body>
+%  <p>
+%   You must fill in both the <b>name</b> and <b>comments</b> fields.
+%   Please try again.
+%  </p>
+%  <form method="post">
+%   <input type="hidden" name="_config" value="guestbook" />
+%   <p>Your Name: <input type="text" name="name" size="30" value="{= param.name =}" /></p>
+%   <p>
+%    Comments:<br />
+%    <textarea name="comments" cols="60" rows="4">{= param.comments =}</textarea>
+%   </p>
+%   <p><input type="submit" /> * <input type="reset" /></p>
+%  </form>
+%  <hr />
+% </body>
+%</html>
+
+redirect: http://www.your.domain/thankyou.html
+
+
+... and you might put something like this in the guestbook.html file:
+
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <title>Guestbook</title>
+  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+ </head>
+ <body>
+  <h1>Guestbook</h1>
+  <p>Thank you for visiting our pages.  We would love it if you would 
+   <a href="addguest.html">Add</a> to this guestbook we are keeping!</p>
+  <hr />
+<!-- NMS insert below -->
+ </body>
+</html>
+
+
+... and addguest.html would probably look something like:
+
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+ <head>
+  <title>Add to our Guestbook</title>
+  <link rel="stylesheet" type="text/css" href="/css/nms.css" />
+ </head>
+ <body>
+  <h1>Add to our Guestbook</h1>
+  <p>Fill in the blanks below to add to our guestbook.</p>
+  <hr />
+  <form method="post" action="http://www.your.domain/cgi-bin/TFmail.pl">
+   <input type="hidden" name="_config" value="guestbook" />
+   <p>Your Name: <input type="text" name="name" size="30" /></p>
+   <p>Comments:<br /><textarea name="comments" cols="60" rows="4"></textarea></p>
+   <p><input type="submit" /> * <input type="reset" /></p>
+  </form>
+  <hr />
+ </body>
+</html>
 
 
 SUPPORT

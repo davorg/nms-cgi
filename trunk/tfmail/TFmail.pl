@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.12 2002-06-09 08:43:39 nickjc Exp $
+# $Id: TFmail.pl,v 1.13 2002-07-10 08:16:14 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -20,6 +20,8 @@ use constant ENABLE_UPLOADS => 0;
 use constant USE_MIME_LITE  => 1;
 use constant LOGFILE_ROOT   => '';
 use constant LOGFILE_EXT    => '.log';
+use constant HTMLFILE_ROOT  => '';
+use constant HTMLFILE_EXT   => '.html';
 use constant CHARSET        => 'iso-8859-1';
 
 # USER CONFIGURATION << END >>
@@ -55,6 +57,11 @@ BEGIN
       require MIME_Lite if $@;
       import MIME::Lite;
    }
+   if (HTMLFILE_ROOT ne '')
+   {
+      require IO::File;
+      import IO::File;
+   }
    if (CHARSET eq 'utf-8')
    {
       require NMStreqUTF8;
@@ -68,7 +75,7 @@ BEGIN
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.12 $, 10, -1;
+  $VERSION = substr q$Revision: 1.13 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -120,7 +127,14 @@ sub main
    {
        setup_input_fields($treq);
        my $confto = send_main_email($treq, $recipients);
-       log_to_file($treq);
+       if ( HTMLFILE_ROOT ne '' )
+       {
+          insert_into_html_files($treq);
+       }
+       if ( LOGFILE_ROOT ne '' )
+       {
+          log_to_file($treq);
+       }
        send_confirmation_email($treq, $confto);
        return_html($treq);
    }
@@ -472,11 +486,6 @@ sub log_to_file
 {
    my ($treq) = @_;
 
-   unless ( LOGFILE_ROOT )
-   {
-      return;
-   }
-
    my $file = $treq->config('logfile', '');
    return unless $file;
    $file =~ m#^([\/\-\w]{1,100})$# or die "bad logfile name [$file]";
@@ -493,6 +502,89 @@ sub log_to_file
    );
 
    close LOG or die "close [$file] after append: $!";
+}
+
+=item insert_into_html_files ( TREQ )
+
+Inserts template output into one or more HTML files, if configured
+to do so.
+
+=cut
+
+sub insert_into_html_files
+{
+   my ($treq) = @_;
+
+   my @files = split /[\s ,]+/, $treq->config('modify_html_files', '');
+   foreach my $file (@files)
+   {
+      $file =~ m#^([\/\-\w]{1,100})$# or die "bad htmlfile name [$file]";
+      $file = $1;
+      my $path = "@{[ HTMLFILE_ROOT ]}/$file@{[ HTMLFILE_EXT ]}";
+
+      my $template = $treq->config("htmlfile_template_$file", '');
+      die "missing [htmlfile_template_$file] config directive" unless $template;
+
+      rewrite_html_file($treq, $path, $template);
+   }
+}
+
+=item rewrite_html_file ( TREQ, FILENAME, TEMPLATE )
+
+Rewrites the HTML file FILENAME, inserting the result of running
+the template TEMPLATE either above or below the HTML comment
+that marks the correct location.
+
+=cut
+
+sub rewrite_html_file
+{
+   my ($treq, $filename, $template) = @_;
+
+   my $lock = IO::File->new(">>$filename.lck") or die
+      "open $filename.lck: $!";
+   flock $lock, LOCK_EX or die "flock $filename: $!";
+
+   my $temp = IO::File->new(">$filename.tmp") or die
+      "open >$filename.tmp: $!";
+
+   my $in = IO::File->new("<$filename") or die
+      "open <$filename: $!";
+
+   while( defined(my $line = <$in>) )
+   {
+      if ($line =~ /^<!-- NMS insert (above|below) -->\s*$/)
+      {
+         if ($1 eq 'above')
+         {
+            $treq->process_template($template, 'html', $temp);
+            $temp->print($line);
+         }
+         else
+         {
+            $temp->print($line);
+            $treq->process_template($template, 'html', $temp);
+         }
+      }
+      else
+      {
+         $temp->print($line);
+      }
+   }
+ 
+   unless ($temp->close)
+   {
+      my $close_err = $!;
+      unlink "$filename.tmp";
+      die "close $filename.tmp: $close_err";
+   }
+
+   $in->close;
+
+   rename "$filename.tmp", $filename or die
+      "rename $filename.tmp -> $filename: $!";
+
+   $lock->close;
 }
 
 =item missing_html ( TREQ )
