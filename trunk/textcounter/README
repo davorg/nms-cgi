@@ -64,6 +64,10 @@ $pad_size     - The minimum size of the number displayed. For example, if
                 your number is 100 and $pad_size is set to 5, then the number
                 will be displayed as 00100.
 
+$ssi_emit_cgi_headers - This should normally be set to 1.  You may need to
+                        change this to 0 if you are seeing stuff output
+                        that you didn't expect as described below.
+
 INSTALLATION
 
 textcounter is installed simply by copying the file textcounter.pl into your
@@ -89,6 +93,18 @@ may need to rename any files that include SSI calls to give them a different
 extension. A common choice is .shtml. Your system administrator will be able
 to help you with these details.
 
+Some server software does not expect a program run by a server side include
+to output any headers even though it is being run with 'exec cgi' as
+above.  In these cases you are likely to see something like:
+
+    Content-Type: text/html
+
+above your counter.  You can stop the output of this header by changing the
+configuration variable $ssi_emit_cgi_headers to 0.  Some servers that
+behave like this have already been identified by the NMS developers and
+the program will adjust its own behaviour in those cases, however if you
+know of one we have  not identified please e-mail the support list below
+with the details.
 
 SUPPORT
 

@@ -1,8 +1,12 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.8 2002-01-27 14:13:33 davorg Exp $
+# $Id: counter.pl,v 1.9 2002-02-11 09:16:35 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.8  2002/01/27 14:13:33  davorg
+# Removed Matt's docs.
+# Removed unnecessary reference to lock file.
+#
 # Revision 1.7  2001/12/01 19:45:22  gellyfish
 # * Tested everything with 5.004.04
 # * Replaced the CGI::Carp with local variant
@@ -34,6 +38,16 @@ use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(strftime);
 use vars qw($DEBUGGING);
 
+# Older Fcntl don't have the SEEK_* constants :(
+
+sub SEEK_SET() { 0; }
+
+# This program does not require uploads or POSTed form data
+# The strange locution is to prevent a 'used once' warning
+
+$CGI::DISABLE_UPLOADS = $CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX = $CGI::POST_MAX = 0;
+
 # Configuration
 
 #
@@ -60,6 +74,10 @@ my $auto_create = 1;
 my $show_date = 1;
 
 my $pad_size = 5;
+
+my $ssi_emit_cgi_headers = 1;
+
+my @no_header_servers = qw(Xitami);
 
 # End configuration
 
@@ -112,11 +130,17 @@ EOERR
 
    $SIG{__DIE__} = \&fatalsToBrowser;
 }   
-print header;
 
-my $count_page = $ENV{DOCUMENT_URI};
+# Some servers (notably Xitami) do not give $ENV{DOCUMENT_URI}
 
-check_uri();
+my $count_page = $ENV{DOCUMENT_URI} || $ENV{SCRIPT_NAME};
+
+check_server_software();
+
+print header if $ssi_emit_cgi_headers;
+
+check_uri($count_page);
+
 
 $count_page =~ s|/$||;
 $count_page =~ s/[^\w]/_/g;
@@ -125,11 +149,10 @@ my ($date, $count);
 if (-e "$data_dir$count_page") {
    sysopen(COUNT, "$data_dir$count_page", O_RDWR)
      or die "Can't open count file: $!\n";
-   flock(COUNT, LOCK_SH)
+   flock(COUNT, LOCK_EX)
      or die "Can't lock count file: $!\n";
    my $line;
    chomp($line = <COUNT>);
-   close(COUNT);
 
    ($date, $count) = split(/\|\|/,$line);
 } elsif ($auto_create) {
@@ -140,6 +163,11 @@ if (-e "$data_dir$count_page") {
 
 # Increment Count.
 $count++;
+
+truncate COUNT, 0;
+seek COUNT,SEEK_SET,0;
+print COUNT "$date\|\|$count";
+close(COUNT);
 
 my $print_count = sprintf("%0${pad_size}d", $count);
 
@@ -154,32 +182,28 @@ if ($show_date) {
   }
 } else {
   if ($show_link) {
-    print "<a href=\"$show_link\">$print_count</a>";
+    print qq(<a href="$show_link">$print_count</a>);
   } else {
     print "$print_count";
   }
 }
 
-sysopen(COUNT, "$data_dir$count_page", O_RDWR)
-  or die "Could_not_open count file: $!";
-flock(COUNT, LOCK_EX)
-  or die "Could not lock count file: $!\n";
-truncate COUNT, 0;
-print COUNT "$date\|\|$count";
-close(COUNT);
 
 sub check_uri {
+
+  my ( $count_page ) = @_;
+
   my $uri_check;
 
   foreach (@valid_uri) {
-    if ($ENV{DOCUMENT_URI} =~ /\Q$_\E/) {
+    if ($count_page =~ /\Q$_\E/) {
       $uri_check = 1;
       last;
     }
   }
 
   foreach (@invalid_uri) {
-    if ($ENV{DOCUMENT_URI} =~ /\Q$_\E/) {
+    if ($count_page =~ /\Q$_\E/) {
       $uri_check = 0;
       last;
     }
@@ -193,11 +217,19 @@ sub create {
 
   sysopen(COUNT, "$data_dir$count_page", O_CREAT|O_RDWR) 
     or die "Can't create count file: $!\n";
-  flock(COUNT, LOCK_SH)
+  flock(COUNT, LOCK_EX)
     or die "Can't lock count file: $!\n";
 
   print COUNT "$date||0";
-  close(COUNT);
-
   return $date;
+}
+
+sub check_server_software
+{
+     my $server_re = join '|', @no_header_servers;
+
+     if ( $ENV{SERVER_SOFTWARE} && $ENV{SERVER_SOFTWARE} =~ /($server_re)/ )
+     {
+        $ssi_emit_cgi_headers = 0;
+     }   
 }
