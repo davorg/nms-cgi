@@ -24,3 +24,5 @@
 # character to interpose another module into the current module.  This
 # can be useful for creating a module that consists of many directories
 # spread out over the entire source repository.
+
+NMS &countdown &ffa &guestbook &imagecounter &pub &rand_image &rand_link &rand_text &search &ssi_rand_image &textclock &textcounter &wwwboard
