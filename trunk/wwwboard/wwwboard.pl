@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.24 2002-05-01 08:09:55 gellyfish Exp $
+# $Id: wwwboard.pl,v 1.25 2002-06-24 10:43:48 gellyfish Exp $
 #
 
 use strict;
@@ -206,7 +206,7 @@ sub parse_form {
     foreach (keys %max_len) {
       if (length($Form{$_}) > $max_len{$_}) {
         if ($enforce_max_len == 2) {
-          &error('field_size');
+          error('field_size',{Form => \%Form});
         } else {
           $Form{$_} = substr($Form{$_}, 0, $max_len{$_});
         }
@@ -234,7 +234,7 @@ sub get_variables {
 
     my %fcheck;
     foreach my $fn (@followup_num) {
-      error('followup_data') if $fn !~ /^\d+$/ || $fcheck{$fn};
+      error('followup_data',{Form => $Form}) if $fn !~ /^\d+$/ || $fcheck{$fn};
       $fcheck{$fn}++;
     }
 
@@ -271,7 +271,7 @@ sub get_variables {
 
     $variables->{name} = $name;
   } else {
-    error('no_name');
+    error('no_name',{ Form => $Form});
   }
 
   if ($Form->{email} =~ /(.*\@.*\..*)/) {
@@ -284,7 +284,7 @@ sub get_variables {
   if ($Form->{subject}) {
     $variables->{subject} = escape_html($Form->{subject});
   } else {
-    error('no_subject');
+    error('no_subject',{ Form => $Form });
   }
 
   if ($Form->{'url'} =~ /(.*\:.*\..*)/ && $Form->{'url_title'}) {
@@ -318,7 +318,7 @@ sub get_variables {
     $variables->{'body'} = unescape_html($body);
      
   } else {
-    error('no_body');
+    error('no_body',{Form => $Form});
   }
 
   if ($quote_text) 
@@ -704,7 +704,7 @@ END_HTML
 }
 
 sub error {
-  my ($error) = @_;
+  my ($error, $variables) = @_;
 
   print header;
   $done_headers++;
