@@ -1,0 +1,97 @@
+COPYRIGHT
+
+Countdown Version 1.00
+Copyright 2001 London Perl Mongers, All rights reserved
+
+LICENSE
+
+This script is free software; you are free to redistibute it
+and/or modify it under the same terms as Perl itself.
+
+URL
+
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>
+
+SUMMARY
+
+Countdown is a script which allows you to display the amount of time left
+to a given date and time.
+
+FILES
+
+In this distribution, you will find four files:
+
+cookie.lib     - The cookie library.
+README         - This file. Instructions on how to install and use cookie.lib
+MANIFEST       - List of files
+
+CONFIGURATION AND INSTALLATION
+
+Simply put it in your cgi-bin, set proper permissions, and then
+require "path/to/cookie.lib";
+
+USAGE
+      SetCookieExpDate ('date');
+            This variable defines the expiration date of your cookie.
+            When this date arrives the browser will ask the user if
+            they want to delete the cookie, and that it is ok to do so.
+            This date must always be represented as:
+            Wdy, DD-Mon-YYYY HH:MM:SS GMT
+            and always has to be in GMT time.  An example would be:
+            Wed, 09-Nov-1999 00:00:00 GMT.  By default, if this is
+            not filled in, the browser will delete the cookie when the
+            session ends.
+
+      SetCookiePath ('path');
+            This path defines where under your domain the cookies
+            should be sent.  For instance, if your URL is:
+            http://domain.xxx/your_dir/, there is no reason for the
+            browser to send the Cookie header to the base domain name.
+            Therefore, you would set this to '/your_dir';  However,
+            because this can be set through the script, set it to
+            whatever directory will use this most often or whichever
+            directory you want as default.  If nothing is placed here,
+            the default will be assumed to be the script or page which
+            created the cookie.
+
+      SetCookieDomain ('domain');
+            This sets the base domain to which the browse passes the
+            cookie.  If you have a domain: www.host.xxx, your.host.xxx
+            and host.xxx, which all will use this, you would set this
+            variable to: '.host.xxx'.  Default is the current domain;
+
+      SetSecureCookie (1);
+            This sets whether or not you want to restrict the
+            transmission of the cookie to a secure server.  If this flag
+            is set to 1, by default the cookies you create will only be
+            sent to secure servers by the client.  Default is 0.
+
+      GetCookies (@cookies)
+            Will retrieve the cookies listed in @cookies and put their values
+            in %Cookies, a hash in the main program.  Only the cookies listed
+            in the array will be returned.  The function returns true for success,
+            0 for failure
+
+      SetCookies (%new_cookies)
+            Will set new cookies listed in %new_cookies.  Each element a name/value pair.
+            This has to be done before finishing the Content-type header with the 2nd newline,
+            such as:
+            print "Content-type\n";
+            SetCookies (%Cookies)
+            print "\n";
+
+      GetCompressedCookies
+            Exactly like GetCookies, but kept for backwards compatibility
+
+      SetCompressedCookies (@cookies)
+            Will set multiple cookies as a single cookie; useful if the domain you are on is running
+            out of cookie space (a single domain may only use up to 20 cookies).  Use it similarly to
+            SetCookies.
+
+SUPPORT
+
+For support of this script please email:
+
+  <nms-cgi-support@lists.sourceforge.net>
+
