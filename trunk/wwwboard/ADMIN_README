@@ -1,48 +1,70 @@
-##############################################################################
-# WWWBoard Admin                Version 2.0 ALPHA 2.1                        #
-# Copyright 1996 Matt Wright    mattw@worldwidemart.com                      #
-# Created 10/21/95              Last Modified 11/25/95                       #
-# Scripts Archive at:           http://www.worldwidemart.com/scripts/        #
-##############################################################################
-# COPYRIGHT NOTICE                                                           #
-# Copyright 1996 Matthew M. Wright  All Rights Reserved.                     #
-#                                                                            #
-# WWWBoard may be used and modified free of charge by anyone so long as      #
-# this copyright notice and the comments above remain intact.  By using this #
-# code you agree to indemnify Matthew M. Wright from any liability that      #  
-# might arise from it's use.                                                 #  
-#                                                                            #
-# Selling the code for this program without prior written consent is         #
-# expressly forbidden.  In other words, please ask first before you try and  #
-# make money off of my program.                                              #
-#                                                                            #
-# Obtain permission before redistributing this software over the Internet or #
-# in any other medium.  In all cases copyright and header must remain intact.#
-##############################################################################
+COPYRIGHT:
+----------
 
-WWWAdmin is finally here!  I know it used to be a pain to have to maintain 
-WWWBoard without a program, so I am currently developing WWWAdmin.  Right 
-now it performs the basic functions, which allow you to remove messages and 
-change your password.  I will explain each different process and how to set
-up this program below.  I will also list some of the features you can expect
-in upcoming releases.
+wwwadmin.pl Version 1.00 (part of wwwboard)
+Copyright 2001,2002 London Perl Mongers, All rights reserved
 
-The variables and options in WWWAdmin should correspond directly to those in 
-WWWBoard.  In all except two cases, you can copy the variables out of 
-wwwboard.pl and place them in wwwadmin.pl.  There is one new variable in 
-wwwadmin.pl and one variable that will need to be changed:
+LICENSE:
+--------
 
-	$cgi_url = "http://your.host.xxx/cgi-bin/wwwadmin.pl";
-		This variable needs to be changed from the url to 
-	   wwwboard.pl to the url to wwwadmin.pl.  This may simply mean 
-	   changing the file name at the end of the url.
+This script is free software; you are free to redistribute it
+and/or modify it under the same terms as Perl itself.
 
-	$passwd_file = "passwd.txt";
-		This is a new variable and simply gives the filename of the 
-	   password file in relation to $basedir.  So if you place this 
-	   file in $basedir, you can simply set this variable equal to the 
-	   filename, which is most commonly passwd.txt
-____________________________________________________________________________
+URL:
+----
+
+The most up to date version of this script is available from the nms
+script archive at  <http://nms-cgi.sourceforge.net/>
+
+SUMMARY:
+--------
+
+wwwadmin.pl is a script which allows you maintain and administer a discussion
+forum on the web.
+
+FILES:
+------
+
+Here are the files pertaining to wwwadmin:
+  wwwadmin.pl   - An administration tool to delete messages
+  passwd.txt    - The encoded password and username for wwwadmin
+  ADMIN_README  - wwwadmin config and install instruction.
+
+CONFIGURATION and INSTALLATION:
+-------------------------------
+
+The configuration of wwwadmin.pl is very similar to wwwboard.pl. In fact, for all but two parameter settings, it should be the same as in wwwboad.pl (ie. copy paste them over from wwwboard.pl). Here is what should be set and how wwwadmin should be installed:
+
+* wwwadmin.pl
+   Settings (remember to carry other parameters over from wwwboard.pl):
+
+      $cgi_url     - This is the full website address (URL) to the wwwboard.pl
+                     file which will run the wwwboard.
+
+      $passwd_file - This is the name of the file, in $basedir, where the
+                     username and password for the board administrator will be
+		     stored.
+
+   Installation:
+      You must upload this file to your server's cgi-bin or in a directory where
+      CGI execution is allowed. Make sure the directory and path match the
+      $cgi_url put in the settings. You must also give the file the right
+      permissions. In order to do so, the file must be chmoded to 755 using the
+      following command:
+         chmod 755 wwwboard.pl
+
+* password.txt
+   Settings:
+      None.
+
+   Installation:
+      Simply upload this file to $basedir, as mentionned in wwwadmin.pl. You
+      also have to chmod the file to 666 (no, we are not the devil) using the
+      following command:
+         chmod 666 password.txt
+
+USAGE:
+------
 
 RUNNING WWWADMIN.
 	WWWAdmin is a self-contained script, in that all you have to do is 
@@ -123,20 +145,9 @@ correct old username and password, you will be given a response that
 tells you the new username and password.  Do not forget your password, 
 because it will be encrypted in the passwd.txt file, just like your Unix 
 login password.  You will need to re-download the wwwadmin tool...
-__________________________________________________________________________
 
-FUTURE FEATURES
-===============
-	I will continue to work on this admin tool and hopefully make it much 
-more powerful.  To do this, I need to know what you would like to be 
-able to do with it.  Some of my ideas include being able to edit any 
-post, and possibly moving them around in hierarchies.  Let me know what 
-else you would like to see this thing do.
-__________________________________________________________________________
+SUPPORT:
+--------
 
-HISTORY
-
-Version 2.0 A2	- 11/25/95	- Released WWWAdmin Tool with WWWBoard 2.0
-				  ALPHA 2
-__________________________________________________________________________
-Matt Wright - mattw@worldwidemart.com
+For support of this script please suscribe to and email:
+  <nms-cgi-support@lists.sourceforge.net>
