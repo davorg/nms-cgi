@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: search.pl,v 1.13 2002-01-16 09:34:26 gellyfish Exp $
+# $Id: search.pl,v 1.14 2002-01-27 12:40:41 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.13  2002/01/16 09:34:26  gellyfish
+# Put back the missing log messages
+#
 # Revision 1.12  2002/01/16 09:26:40  gellyfish
 # Put the mysteriously dissapeared Log keyword
 #
@@ -345,7 +348,7 @@ END_HTML
 
 sub File::Find::chdir
 {
-   return CORE::chdir(main::detaint_dirname($_[0]);
+   return CORE::chdir(main::detaint_dirname($_[0]));
 }
 
 sub detaint_dirname
