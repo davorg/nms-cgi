@@ -97,7 +97,7 @@ sub write_changelog {
 
     my $pid = fork;
     defined $pid or die "fork: $!";
-    if ($pid == 0) {
+    if ($pid) {
         wait;
     }
     else {
