@@ -1,6 +1,6 @@
 #! /usr/bin/perl -wT
 #
-# $Id: rand_image.pl,v 1.10 2002-07-23 21:00:17 nickjc Exp $
+# $Id: rand_image.pl,v 1.11 2002-10-21 19:37:36 nickjc Exp $
 #
 
 use strict;
@@ -30,7 +30,7 @@ BEGIN
 # It might be necessary to add new extenstion => content type pairs to
 # the %content_type below if you are using file extenstions that are not
 # among the defaults.
-`
+
 my $use_redirect = 0;
 my $baseurl = 'http://nms-test.gellyfish.com/images/';
 my $basedir = '/var/www/nms-test/images/';
