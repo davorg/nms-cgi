@@ -7,7 +7,7 @@ use IO::File;
 use POSIX qw(strftime);
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.7 $, 10, -1;
+$VERSION = substr q$Revision: 1.8 $, 10, -1;
 
 =head1 NAME
 
@@ -238,6 +238,17 @@ be any of:
 If VALUE is a string then that string will be substituted
 for the NAME template directive.
 
+=item C<a reference to a string>
+
+If VALUE is a scalar reference then the referenced string
+will be substituted for the NAME template directive, without
+any context dependent processing.  The string goes directly to
+the output document, without HTML metacharacter escaping in
+an html context or sanitisation in an email context.
+
+Use this only for trusted data or data that has already been
+carefully filtered for HTML or other malicious constructs. 
+
 =item C<a coderef>
 
 If VALUE is a coderef then it will be called to produce the
@@ -313,6 +324,12 @@ to produce the output:
   The foo is foo2, but the bar is bar4!
   The foo is foo3, but the bar is bar9!
 
+The values can be references to strings rather than strings, to
+prevent context dependent processing, as in install_directive()
+above.  Use this feature only with trusted or already filtered
+data, since it bypasses HTML metacharacter escaping and could
+lead to XSS vulnerabilities if misapplied.
+ 
 =cut
 
 sub install_foreach
@@ -522,11 +539,13 @@ directive other than a control structure.
 
 The referenced hash represents a control structure.  The
 C<ctl> value is a string that defines the type of control
-structure (at the moment only C<FOREACH> is defined).  The
+structure (C<FOREACH> and C<IF>/C<ELSE> are defined).  The
 C<sub> value is an array reference, holding the control
 structure body as a compiled template.  The C<arg> value
 is the argument string (if any) that appeared in the control
-directive.
+directive.  In the case of an C<IF> directive with an
+C<ELSE> block, the compiled template for the else block is
+stored as C<esub>.
 
 =back
 
@@ -538,6 +557,7 @@ For example, this template:
   {= FOREACH input_field =}
   {= name =}: {= value =}
   {= END =}
+  {= IF param.hello =}Hello!{= ELSE =}Goodbye!{= END =}
   ----
 
 Would compile to the array ref:
@@ -555,6 +575,12 @@ Would compile to the array ref:
       'sub' => [ \'name', ": ", \'value', "\n" ],
     },
     "----\n",
+    {
+      'ctl'  => 'IF',
+      'arg'  => 'param.hello',
+      'sub'  => [ 'Hello!' ],
+      'esub' => [ 'Goodbye!' ],
+    },
   ]
 
 Returns the compiled template as an array ref, or dies on
@@ -590,17 +616,17 @@ sub _compile_template
       # if the template had \r\n line termination.
       s#\s+$#\n#;
 
-      # Suppress newline on control directive alone on a line
-      s#^\s*(\{\= \s*[A-Z]+\s*[\s\w\-\.]+ \=\})\s*\n#$1#x;
+      # Produce no output for a control directive alone on a line
+      s#^ \s* (\{\= \s*[A-Z]+\s*[\s\w\-\.]+ \=\}) \n#$1#x;
 
       while ( s#(.*?) \{\= \s* (.*?) \s* \=\} ##x )
       {
          my ($pre, $directive) = ($1, $2);
          push @{ $stack[0] }, $pre if length $pre;
-         if ($directive =~ s/^FOREACH\s*//)
+         if ($directive =~ s/^(FOREACH|IF)\s*//)
          {
             my $sub = [];
-            push @{ $stack[0] }, { 'ctl' => 'FOREACH',
+            push @{ $stack[0] }, { 'ctl' => $1,
                                    'arg' => $directive,
                                    'sub' => $sub
                                  };
@@ -609,7 +635,20 @@ sub _compile_template
          elsif ($directive =~ /^END$/i)
          {
             shift @stack;
-            die "misplaced END directive" unless scalar @stack;
+            die 'misplaced END directive' unless scalar @stack;
+         }
+         elsif ($directive =~ /^ELSE$/i)
+         {
+            shift @stack;
+            die 'misplaced ELSE directive' unless scalar @stack;
+
+            my $if = ${ $stack[0] }[-1];
+            die 'ELSE outside IF' unless $if->{ctl} eq 'IF';
+            die 'only one ELSE per IF' if exists $if->{esub};
+
+            my $esub = [];
+            $if->{esub} = $esub;
+            unshift @stack, $esub;
          }
          else
          {
@@ -627,7 +666,7 @@ sub _compile_template
 
 Runs a pre-compiled template, and dies on error.
 
-The TEMPLATE parameter must be a a compiled template, as
+The TEMPLATE parameter must be a compiled template, as
 returned by the _compile_template() method.  CONTEXT is
 the context string and CODEREF is the output destination
 coderef.
@@ -642,21 +681,41 @@ sub _run_template
    {
       if (ref $part eq 'HASH')
       {
-         die "[$part->{ctl}] unsupported" unless $part->{ctl} eq 'FOREACH';
-         my $vals = $self->{'foreach'}{$part->{arg}};
-         defined $vals or die "[$part->{arg}] cannot be used in a FOREACH directive";
-
-         foreach my $val (@$vals)
+         if ($part->{ctl} eq 'FOREACH')
          {
-            foreach my $k (keys %$val)
+            my $vals = $self->{'foreach'}{$part->{arg}};
+            defined $vals or die "[$part->{arg}] cannot be used in a FOREACH directive";
+   
+            foreach my $val (@$vals)
             {
-               $self->install_directive($k, $val->{$k});
+               foreach my $k (keys %$val)
+               {
+                  $self->install_directive($k, $val->{$k});
+               }
+               $self->_run_template($part->{'sub'}, $context, $coderef);
+               foreach my $k (keys %$val)
+               {
+                  $self->uninstall_directive($k);
+               }
             }
-            $self->_run_template($part->{'sub'}, $context, $coderef);
-            foreach my $k (keys %$val)
+         }
+         elsif ($part->{ctl} eq 'IF')
+         {
+            my $val = '';
+            my $callback = sub { $val .= $_[0] };
+            $self->_interpolate($part->{arg}, $context, $callback);
+            if ($val)
             {
-               $self->uninstall_directive($k);
+               $self->_run_template($part->{'sub'}, $context, $coderef);
             }
+            elsif (exists $part->{'esub'})
+            {
+               $self->_run_template($part->{'esub'}, $context, $coderef);
+            }
+         }
+         else
+         {
+            die "[$part->{ctl}] unsupported";
          }
       }
       elsif (ref $part eq 'SCALAR')
@@ -698,30 +757,35 @@ sub _interpolate
    {
       $value = &{ $value }($self, $context, $coderef);
    }
-   elsif (ref $value)
-   {
-      return;
-   }
 
-   if ($context eq 'html')
+   if (ref $value)
    {
-      $value = $self->escape_html($value);
-   }
-   elsif ($context eq 'email')
-   {
-      # Disable HTML tags with minimum impact
-      $value =~ s#<([a-z])#< $1#gi;
-
-      # Don't allow multiline inputs to control the first
-      # character of the line.
-      $value =~ s#(\r|\n)(\S)#$1 $2#g;
-
-      # Could be trying to fake a MIME boundary.
-      $value =~ s/------/ ------/g;
+      return unless ref $value eq 'SCALAR';
+      # reference to value means don't munge value, see install_directive()
+      $value = $$value;
    }
    else
    {
-      $self->error("unknown template context [$context]");
+      if ($context eq 'html')
+      {
+         $value = $self->escape_html($value);
+      }
+      elsif ($context eq 'email')
+      {
+         # Disable HTML tags with minimum impact
+         $value =~ s#<([a-z])#< $1#gi;
+   
+         # Don't allow multiline inputs to control the first
+         # character of the line.
+         $value =~ s#(\r|\n)(\S)#$1 $2#g;
+   
+         # Could be trying to fake a MIME boundary.
+         $value =~ s/------/ ------/g;
+      }
+      else
+      {
+         $self->error("unknown template context [$context]");
+      }
    }
 
    &{ $coderef }($value) if length $value;

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.14 2002-07-17 20:08:21 nickjc Exp $
+# $Id: TFmail.pl,v 1.15 2002-07-18 22:17:17 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -82,7 +82,7 @@ BEGIN
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.14 $, 10, -1;
+  $VERSION = substr q$Revision: 1.15 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -542,11 +542,16 @@ Rewrites the HTML file FILENAME, inserting the result of running
 the template TEMPLATE either above or below the HTML comment
 that marks the correct location.
 
+If the HTML comment isn't found, then we default to appending the
+template output to the file.
+
 =cut
 
 sub rewrite_html_file
 {
    my ($treq, $filename, $template) = @_;
+
+   my $done = 0;
 
    my $lock = IO::File->new(">>$filename.lck") or die
       "open $filename.lck: $!";
@@ -572,6 +577,7 @@ sub rewrite_html_file
             $temp->print($line);
             $treq->process_template($template, 'html', $temp);
          }
+         $done = 1;
       }
       else
       {
@@ -579,6 +585,11 @@ sub rewrite_html_file
       }
    }
  
+   unless ($done)
+   {
+      $treq->process_template($template, 'html', $temp);
+   }
+
    unless ($temp->close)
    {
       my $close_err = $!;
