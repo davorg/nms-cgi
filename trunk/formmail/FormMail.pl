@@ -1,8 +1,14 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.31 2002-01-30 19:04:45 proub Exp $
+# $Id: FormMail.pl,v 1.32 2002-01-31 17:26:43 proub Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.31  2002/01/30 19:04:45  proub
+# now properly handling referer URLs involving authentication info (e.g.
+#   http://www.dave.org.uk@actual.referer.com, or
+#   http://someuser@dave.org.uk)
+# cleared up warnings when no referer is present
+#
 # Revision 1.30  2002/01/29 00:05:01  nickjc
 # * typo
 # * added X-HTTP-Client header to the confirmation email.
@@ -293,7 +299,7 @@ my %valid_ENV;
 #  Uncomment the following line (and the Unit Tests section)
 #  to unit test URL checking functions
 #
-# unitTest();
+#  unitTest();
 
 check_url();
 
@@ -424,11 +430,9 @@ sub check_required {
 
     foreach (split /,/, $Config{recipient}) {
       next unless check_email($_);
-      foreach my $r (@recipients) {
-	if ( /(?:$r)$/ or $emulate_matts_code and /$r/ ) {
-	  push @valid, $_;
-	  last;
-	}
+
+      if (check_recipient($_)) {
+        push @valid, $_;
       }
     }
 
@@ -458,6 +462,18 @@ sub check_required {
   }
 
   error('missing_fields', @error) if @error;
+}
+
+sub check_recipient {
+  my ($recip) = @_;
+
+  foreach my $r (@recipients) {
+    if ( ($recip =~ /(?:$r)$/) or $emulate_matts_code and ($recip =~ /$r/i) ) {
+      return(1);
+    }
+  }
+
+  return(0);
 }
 
 sub return_html {
@@ -633,7 +649,9 @@ sub check_email {
       # syntax does not match the following regular expression pattern
       # it fails basic syntax verification.
 
-      $email !~ /^(.+)\@(?:[a-zA-Z0-9\-\.]+|\[[0-9\.]+\])$/) {
+      $email !~ /^(.+)\@(?:[a-zA-Z0-9\-\.]+|\[[0-9\.]+\])$/ || 
+      ($secure and ($1 =~ /\%/)))
+      {
 
     # Basic syntax requires:  one or more characters before the @ sign,
     # followed by an optional '[', then any number of letters, numbers,
@@ -644,6 +662,7 @@ sub check_email {
 
     # Return a false value, since the e-mail address did not pass valid
     # syntax.
+
     return 0;
   } else {
     if ($secure) {
@@ -880,8 +899,75 @@ sub escape_html {
 
 
 # begin Unit Tests
-# sub unitTest
-# {
+#  sub unitTest
+#  {
+#      recipientTests();
+#      refererTests();
+#      exit(0);
+#  }
+#
+#  sub recipientTests()
+#  {
+#      recipCheck('you@your.domain', 1, 1);
+#      recipCheck('you@your.domain', 1, 0);
+#      recipCheck('some.one.else@your.domain', 1, 1);
+#      recipCheck('some.one.else@your.domain', 1, 0);
+#      recipCheck('anyone@localhost', 1, 1);
+#      recipCheck('anyone@localhost', 1, 0);
+#      recipCheck('localhost', 0, 1);
+#      recipCheck('localhost', 0, 0);
+#      recipCheck('user%elsewhere.com@localhost', 1, 1);
+#      recipCheck('user%elsewhere.com@localhost', 0, 0);
+#
+#      recipCheck('YOU@your.domain', 1, 1);
+#      recipCheck('YOU@your.domain', 0, 0);
+#      recipCheck('some.one.else@YOUR.domain', 1, 1);
+#      recipCheck('some.one.else@YOUR.domain', 0, 0);
+#      recipCheck('anyone@Localhost', 1, 1);
+#      recipCheck('anyone@Localhost', 0, 0);
+#
+#      recipCheck('<user@elsewhere.com>your.domain', 0, 0);
+#      recipCheck('user@elsewhere.com(your.domain', 0, 0);
+#  }
+#
+#  sub recipCheck
+#  {
+#      my ($recip, $shouldBeGood, $emulate) = @_;
+#     my $secureMsg;
+#
+#     $emulate = 0 if ! defined( $emulate );
+#
+#     if ($emulate) 
+#     {
+#  	$secure = 0;
+#  	$emulate_matts_code = 1;
+#  	$secureMsg = 'insecure';
+#     }
+#     else
+#     {
+#  	$secure = 1;
+#  	$emulate_matts_code = 0;
+#  	$secureMsg = 'secure';
+#     }
+#
+#     if ($shouldBeGood)
+#     {
+#         if ((! check_email($recip)) or (! check_recipient($recip)))
+#         {
+#  	 warn "$recip should be good ($secureMsg)";
+#         }
+#     }
+#     else
+#     {
+#         if (check_email($recip) and check_recipient($recip))
+#         {
+#  	   warn "$recip should be bad ($secureMsg)";
+#         }
+#     }
+#  }
+#
+#  sub refererTests
+#  {
 #     refCheck('xxx.xxx.xxx', 0);
 #     refCheck('http://dave.org.uk', 1);
 #     refCheck('http://dave.org.uk/', 1);
@@ -896,12 +982,10 @@ sub escape_html {
 #     refCheck('https://someguy@dave.org.uk/more', 1, 0);
 #     refCheck('http://209.207.222.64', 1);
 #     refCheck('http://localhost/', 1);
+#  }
 #
-#     exit(0);
-# }
-#
-# sub refCheck
-# {
+#  sub refCheck
+#  {
 #     my ($referer, $shouldBeGood, $emulate) = @_;
 #     my $secureMsg;
 #
@@ -909,21 +993,21 @@ sub escape_html {
 #
 #     if ($emulate) 
 #     {
-# 	$secure = 0;
-# 	$secureMsg = 'insecure';
+#  	$secure = 0;
+#  	$secureMsg = 'insecure';
 #     }
 #     else
 #     {
-# 	$secure = 1;
-# 	$secureMsg = 'secure';
+#  	$secure = 1;
+#  	$secureMsg = 'secure';
 #     }
 #	
 #     if ($shouldBeGood)
 #     {
-# 	warn "$referer should be good ($secureMsg)" if ! check_referer($referer);
+#  	warn "$referer should be good ($secureMsg)" if ! check_referer($referer);
 #     }
 #     else
 #     {
-# 	warn "$referer should be bad ($secureMsg)" if check_referer($referer);
+#  	warn "$referer should be bad ($secureMsg)" if check_referer($referer);
 #     }
-# }
+#  }
