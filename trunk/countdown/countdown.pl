@@ -1,8 +1,11 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.10 2002-01-25 16:37:09 gellyfish Exp $
+# $Id: countdown.pl,v 1.11 2002-01-27 13:06:15 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.10  2002/01/25 16:37:09  gellyfish
+# Put the missing log messages back
+#
 # Revision 1.9  2002/01/25 15:55:13  davorg
 # Made it compile :(
 # 
@@ -128,7 +131,7 @@ my @diffs = ('X', 12, 'X', 24, 60, 60);
 
 # This will still get an uninitialized warning won't it ?
 
-my @query_string = split(/,/, length param("date") > 0 ? 
+my @query_string = grep /\d{1,2}/, split(/,/, length param("date") > 0 ? 
                                    param("date") : param("keywords"));
 
 my @now = reverse((localtime)[0 .. 5]);
@@ -140,11 +143,11 @@ my @days = (31, (is_leap($now[0]+1900) ? 29 : 28), 31, 30, 31, 30, 31,
 
 if ( @query_string == 6 ) {
 
-  if ( ($from_date[1] < 13 and $from_date[0] > 0) and
-       ($from_date[2] <= $days[$from_date[1] - 1 ]) and
-       ($from_date[3] >= 0 and $from_date[3] < 24 ) and
-       ($from_date[4] >= 0 and $from_date[4] < 60 ) and
-       ($from_date[5] >= 0 and $from_date[5] < 60 )) {
+  if ( ($query_string[1] < 13 and $query_string[0] > 0) and
+       ($from_date[2] <= $days[$query_string[1] - 1 ]) and
+       ($query_string[3] >= 0 and $query_string[3] < 24 ) and
+       ($query_string[4] >= 0 and $query_string[4] < 60 ) and
+       ($query_string[5] >= 0 and $query_string[5] < 60 )) {
     @from_date = @query_string;
   }
 }
