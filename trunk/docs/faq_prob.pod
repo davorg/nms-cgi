@@ -3,7 +3,7 @@
 Frequently Asked Questions about running the I<nms> CGI programs.
 If a question is not specific to 
 
-E<lt>-- $Date: 2002-09-14 16:06:29 $ --E<gt>
+E<lt>-- $Date: 2004-05-31 15:45:10 $ --E<gt>
 
 =head1 DESCRIPTION
 
@@ -74,7 +74,7 @@ deal with data created with Matt's scripts.
 
 
 
-=head2 I'm getting a "Badness" error. What does this mean?
+=head2 I'm getting a 'Badness' error. What does this mean?
 
 It means that you should check for a newer version of the
 relevant program. This error was significantly more common
@@ -183,7 +183,7 @@ You could also mail your ISP and point them to the NMS project -- for
 the benefit of both you and their other customers.
 
 
-=head2 I am getting the Error ' Too late for "-T" option', what can I do ?
+=head2 I am getting the Error ' Too late for -T option', what can I do ?
 
 The '-T' turns on Perl's taint checking, this basically means that data
 coming from outside the program is marked as 'tainted' (untrustworthy) and
@@ -278,7 +278,7 @@ and change it to something like:
 This will stop the error message.
 
 
-=head2 When I try to run your program, I get an "Internal Server Error". What does that mean?
+=head2 When I try to run your program, I get an 'Internal Server Error'. What does that mean?
 
 This (rather useless) error message generally means that your webserver
 tried to execute the program, but execution failed. This is most
@@ -294,7 +294,7 @@ get more information as to precisely what caused the problem. If not,
 try the next question.
 
 
-=head2 How do I fix this "Internal Server Error" ?
+=head2 How do I fix this 'Internal Server Error' ?
 
 Firstly, if the program, as you downloaded it from our website, does
 not work
@@ -323,7 +323,7 @@ If it still doesn't work, then contact our support list, and
 include all the information you possibly can.
 
 
-=head2 I call the FormMail program and get "close mailprog: $?=256,$!= at ..."?
+=head2 I call the FormMail program and get 'close mailprog: $?=256,$!= at ...'?
 
 See the next question -- it is the same problem and solution.
 
