@@ -1,8 +1,12 @@
-#!/usr/bin/perl -Tw
+#!/usr/local/perl-5.00404/bin/perl -Tw
 #
-# $Id: guestbook.pl,v 1.14 2001-12-01 17:53:11 gellyfish Exp $
+# $Id: guestbook.pl,v 1.15 2001-12-09 23:33:53 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.14  2001/12/01 17:53:11  gellyfish
+# * Fixed up some 5.004.04 compatibility issues
+# * Started rationalization of HTML handling
+#
 # Revision 1.13  2001/12/01 11:44:43  gellyfish
 # SSI exploit fix as suggested by Pete Sargent
 #
@@ -226,15 +230,6 @@ $comments = unescape_html($comments) if $encoded_comments;
 
 $comments = strip_html($comments, $allow_html);
 
-# remove any HTML from the rest of the fields - HTML should not be allowed
-# anywhere but the comment 
-
-$username = strip_html($username);
-$realname = strip_html($realname);
-$city     = strip_html($city);
-$state    = strip_html($state);
-$country  = strip_html($country);
-
 form_error('no_name')     unless $realname;
 
 # substitute newlines in the comments for html line breaks if required.
@@ -244,6 +239,17 @@ $comments =~ s%\cM\n%<br />\n%g if $line_breaks;
 # Get rid of the $username unless it is a valid e-mail address
 
 $username = '' unless check_email($username);
+
+# Escape any HTML in the rest of the fields - HTML should not
+# be allowed anywhere but the comment.
+
+my %escaped = (
+ username => escape_html($username),
+ realname => escape_html($realname),
+ city     => escape_html($city),
+ state    => escape_html($state),
+ country  => escape_html($country),
+);
 
 open (GUEST, "+<$guestbookreal")
   || die "Can't Open $guestbookreal: $!\n";
@@ -266,32 +272,32 @@ foreach (@lines) {
      print GUEST "<b>$comments</b><br />\n";
 
      if ($url) {
-       print GUEST qq(<a href="$url">$realname</a>);
+       print GUEST qq(<a href="$url">$escaped{realname}</a>);
       } else {
-         print GUEST $realname;
+         print GUEST $escaped{realname};
       }
 
      if ($username){
        if ($linkmail) {
-	 print GUEST qq( &lt;<a href="mailto:$username">);
-	 print GUEST "$username</a>&gt;";
+	 print GUEST qq( &lt;<a href="mailto:$escaped{username}">);
+	 print GUEST "$escaped{username}</a>&gt;";
        } else {
-	 print GUEST " &lt;$username&gt;";
+	 print GUEST " &lt;$escaped{username}&gt;";
        }
      }
 
      print GUEST "<br />\n";
 
      if ($city){
-       print GUEST "$city, ";
+       print GUEST "$escaped{city}, ";
      }
 
      if ($state){
-       print GUEST $state;
+       print GUEST $escaped{state};
      }
 
      if ($country){
-       print GUEST " $country";
+       print GUEST " $escaped{country}";
      }
 
      if ($separator) {
@@ -491,27 +497,27 @@ sub no_redirection {
 END_HTML
 
   if ($url) {
-    print qq(<a href="$url">$realname</a>);
+    print qq(<a href="$url">$escaped{realname}</a>);
    } else {
-     print $realname;
+     print $escaped{realname};
    }
 
   if ($username){
     if ($linkmail) {
-      print qq( &lt;<a href="mailto:$username">);
-      print "$username</a>&gt;";
+      print qq( &lt;<a href="mailto:$escaped{username}">);
+      print "$escaped{username}</a>&gt;";
     } else {
-      print " &lt;$username&gt;";
+      print " &lt;$escaped{username}&gt;";
     }
   }
 
   print "<br />\n";
 
-  print "$city," if $city;
+  print "$escaped{city}," if $city;
 
-  print " $state" if $state;
+  print " $escaped{state}" if $state;
 
-  print " $country" if $country;
+  print " $escaped{country}" if $country;
 
   print " - $date<p>\n";
 
