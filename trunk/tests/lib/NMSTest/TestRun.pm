@@ -81,6 +81,14 @@ correctness checks to be applied to the results of
 the test run.  See L<NMSTest::OutputChecker> for
 details of what can be set here.
 
+=item CHECKER
+
+The package name of the output ckecker class to be used
+to apply the checks listed in CHECKS to the script
+output.  Defaults to C<NMSTest::OutputChecker>, and should
+only be changed to the name of a class that inherits
+from C<NMSTest::OutputChecker>.
+
 =item RESULTS_DIR
 
 The directory into which a file describing the behavior
@@ -106,6 +114,7 @@ sub new
      REMOTE_ADDR     => '3.254.17.8',
      PERL            => '[[BINDIR]]/perl',
      CHECKS          => '',
+     CHECKER         => 'NMSTest::OutputChecker',
      RESULTS_DIR     => '[[DIR]]/results',
    });
 
@@ -197,7 +206,7 @@ sub run
 
    {
       local $SIG{__DIE__};
-      eval { NMSTest::OutputChecker->new(\@results)->checks($self->{CHECKS}) };
+      eval { $self->{CHECKER}->new(\@results)->checks($self->{CHECKS}) };
    }
    my $results = $self->{TEST_ID} .
                  ('.' x (40 - length $self->{TEST_ID})) . 

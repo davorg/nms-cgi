@@ -109,6 +109,7 @@ sub rmdir_r
 {
    my ($dir) = @_;
 
+   return unless -e $dir;
    opendir D, $dir or die "opendir $dir: $!";
    foreach my $f (readdir D)
    {
