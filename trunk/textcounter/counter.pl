@@ -1,8 +1,13 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: counter.pl,v 1.11 2002-02-26 20:57:01 gellyfish Exp $
+# $Id: counter.pl,v 1.12 2002-03-09 10:41:16 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.11  2002/02/26 20:57:01  gellyfish
+# * Added DOCUMENT_URI to NMSTest::TestRun
+# * Added a default test for textcounter.pl
+# * Made it easier to test textcounter
+#
 # Revision 1.10  2002/02/26 08:59:28  gellyfish
 # * Fixed imagecounter to something
 # * fixed typo in textcounter/README
@@ -89,6 +94,12 @@ my $ssi_emit_cgi_headers = 1;
 
 my @no_header_servers = qw(Xitami);
 
+my $allow_virtual_hosts = 0;
+
+my $use_single_file     = 0;
+
+my $single_data_file    = 'counter.txt';
+
 # End configuration
 
 # We need finer control over what gets to the browser and the CGI::Carp
@@ -164,8 +175,24 @@ if ( $data_dir !~ m%/$% ) {
   $data_dir .= '/';
 }
 
-if (-e "$data_dir$count_page") {
-   sysopen(COUNT, "$data_dir$count_page", O_RDWR)
+my $counter_file = $data_dir;
+
+if ( $allow_virtual_hosts )
+{
+    $counter_file .= virtual_host() . '_';
+}
+
+if ( $use_single_file )
+{
+   $counter_file .= $single_data_file;
+}
+else
+{
+   $counter_file .= $count_page;
+}
+
+if (-e $counter_file) {
+   sysopen(COUNT, $counter_file, O_RDWR)
      or die "Can't open count file: $!\n";
    flock(COUNT, LOCK_EX)
      or die "Can't lock count file: $!\n";
@@ -174,7 +201,7 @@ if (-e "$data_dir$count_page") {
 
    ($date, $count) = split(/\|\|/,$line);
 } elsif ($auto_create) {
-   $date = create();
+   $date = create($counter_file);
 } else {
    die "Count file not found\n";
 }
@@ -230,9 +257,12 @@ sub check_uri {
 }
 
 sub create {
+
+  my ( $counter_file ) = @_;
+
   my $date = strftime('%B %d %Y', localtime);
 
-  sysopen(COUNT, "$data_dir$count_page", O_CREAT|O_RDWR) 
+  sysopen(COUNT, $counter_file, O_CREAT|O_RDWR) 
     or die "Can't create count file: $!\n";
   flock(COUNT, LOCK_EX)
     or die "Can't lock count file: $!\n";
