@@ -1,8 +1,12 @@
 #!/usr/bin/perl -wT
 #
-# $Id: FormMail.pl,v 1.18 2001-12-09 22:31:22 nickjc Exp $
+# $Id: FormMail.pl,v 1.19 2001-12-15 22:42:00 nickjc Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.18  2001/12/09 22:31:22  nickjc
+# * anchor recipient checks at end (as per README) unless $emulate_matts_code
+# * move repeated check_email call out one loop level
+#
 # Revision 1.17  2001/12/05 14:28:24  nickjc
 # * Don't do things on GET if $secure
 # * Eliminate some warnings in send_email
@@ -284,15 +288,15 @@ sub parse_form {
 
   foreach (param()) {
     if (exists $Config{$_}) {
-      $Config{$_} = param($_);
-      $Config{$_} =~ tr#\011\012\040-\176\200-\377##dc;
+      my $val = strip_nonprintable(param($_));
+      next if /redirect$/ and not check_url_valid($val);
+      $Config{$_} = $val;
+warn "<<$_>> = <<$val>>\n";
     } else {
-      my @vals = param($_);
-      foreach my $v (@vals) {
-        $v =~ tr#\011\012\040-\176\200-\377##dc;
-      }
-      $Form{$_} = @vals == 1 ? $vals[0] : [@vals];
-      push @field_order, $_;
+      my @vals = map {strip_nonprintable($_)} param($_);
+      my $key = strip_nonprintable($_);
+      $Form{$key} = @vals == 1 ? $vals[0] : [@vals];
+      push @field_order, $key;
     }
   }
 
@@ -548,6 +552,23 @@ sub check_email {
     # Return a true value, e-mail verification passed.
     return 1;
   }
+}
+
+# check the validity of a URL.
+
+sub check_url_valid {
+  my $url = shift;
+
+  $url =~ m< ^ (?:ftp|http|https):// [\w\-\.]+
+               [\w\-.!~*'(|);/?\@&=+\$,%#]*
+             $
+           >x ? 1 : 0;
+}
+
+sub strip_nonprintable {
+  my $text = shift;
+  $text=~ tr#\011\012\040-\176\200-\377##dc;
+  return $text;
 }
 
 sub body_attributes {
