@@ -30,7 +30,6 @@ foreach $secure (0, 1)
 
 sub rw_setup
 {
-   s|^# use lib .*|use lib '$ENV{NMS_WORKING_COPY}/v2/lib';|m or die;
    s|\s+\@referers\s*=\s*qw\(.*?\)| \@referers = ()|;
    s|\s+\@allow_mail_to\s*=.*?;| \@allow_mail_to = qw(test\@test.domain);|;
    s|\s+\$secure\s*=.*?;| \$secure = $secure;|;

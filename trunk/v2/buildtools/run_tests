@@ -55,7 +55,7 @@ foreach my $testset (@testsets)
    $ENV{PERL5LIB} = ($ENV{PERL5LIB} ? "$ENV{PERL5LIB}:$lib" : $lib); 
    
    $ENV{NMSTEST_BINDIR}      = "$working_copy/tests/bin";
-   $ENV{NMSTEST_SRCDIR}      = "$working_copy/v2/src";
+   $ENV{NMSTEST_SRCDIR}    ||= "$working_copy/v2/src";
    $ENV{NMSTEST_CGIBIN}      = $cgibindir;
    $ENV{NMSTEST_OUTDIR}      = $outdir;
    $ENV{NMSTEST_DATDIR}      = $datdir;

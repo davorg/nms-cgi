@@ -13,6 +13,7 @@ MODULES = \
 	CGI/NMS/Script.pm          \
 	CGI/NMS/Script/FormMail.pm \
 	CGI/NMS/Mailer.pm          \
+	CGI/NMS/Mailer/ByScheme.pm \
 	CGI/NMS/Mailer/Sendmail.pm \
 	CGI/NMS/Mailer/SMTP.pm
 

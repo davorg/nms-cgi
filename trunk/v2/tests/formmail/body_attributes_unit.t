@@ -19,7 +19,6 @@ NMSTest::ScriptUnderTest->new(
 
 sub setup
 {
-   s|^# use lib.*|use lib '$ENV{NMS_WORKING_COPY}/v2/lib';|m or die;
 }
 
 sub install_tests

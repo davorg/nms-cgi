@@ -14,7 +14,6 @@ NMSTest::ScriptUnderTest->new(
 
 sub rw_setup
 {
-   s|^# use lib .*|use lib '$ENV{NMS_WORKING_COPY}/v2/lib';|m or die;
    s|\s+\@allow_mail_to\s*=.*?;| \@allow_mail_to = qw(foo\@foo.domain);| or die;
    s|\s+\@referers\s*=.*?;| \@referers = qw(foo.domain);| or die;
 }

@@ -47,7 +47,6 @@ sub LocalChecks::check_realname
 
 sub rw_setup
 {
-   s|^# use lib .*|use lib '$ENV{NMS_WORKING_COPY}/v2/lib';|m or die;
    s|\s+\$secure\s*=.*?;| \$secure = $secure;|;
    s|\s+\$send_confirmation_mail\s*=.*?;| \$send_confirmation_mail = 1;|;
    s|\s+\@referers\s*=\s*qw\(.*?\)| \@referers = qw(foo.domain)|;

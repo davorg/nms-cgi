@@ -19,7 +19,6 @@ NMSTest::ScriptUnderTest->new(
 
 sub install_tests
 {
-   s|^# use lib .*|use lib '$ENV{NMS_WORKING_COPY}/v2/lib';|m or die;
    s#(\s\$allow_empty_ref).*?;#$1 = 0;#;
    s#(\s\@referers).*?;#$1 = qw(dave.org.uk localhost 209.207.222.64);#;
    s#(\s\@allow_mail_to).*?;#$1 = qw(you\@your.domain some.one.else\@your.domain localhost);#;

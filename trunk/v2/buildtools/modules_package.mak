@@ -45,6 +45,10 @@ include ../../buildtools/package.mak
 	mkdir -p .pkg
 	(cd ../.. && tar cf - lib/CGI/NMS/Mailer.pm) | (cd .pkg && tar xf -)
 
+.pkg/lib/CGI/NMS/Mailer/ByScheme.pm: ../../lib/CGI/NMS/Mailer/ByScheme.pm
+	mkdir -p .pkg
+	(cd ../.. && tar cf - lib/CGI/NMS/Mailer/ByScheme.pm) | (cd .pkg && tar xf -)
+
 .pkg/lib/CGI/NMS/Mailer/Sendmail.pm: ../../lib/CGI/NMS/Mailer/Sendmail.pm
 	mkdir -p .pkg
 	(cd ../.. && tar cf - lib/CGI/NMS/Mailer/Sendmail.pm) | (cd .pkg && tar xf -)

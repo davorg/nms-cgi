@@ -63,7 +63,6 @@ three: three
 
 sub rw_setup
 {
-   s|^# use lib .*|use lib '$ENV{NMS_WORKING_COPY}/v2/lib';|m or die;
    s| +\@referers\s*=\s*qw\(.*?\)| \@referers = qw(foo.domain)| or die;
    s| +\@allow_mail_to\s*=.*?;| \@allow_mail_to = qw(foo\@foo.domain);| or die;
    s| +\$double_spacing\s*=.*?;| \$double_spacing = $double_spacing;| or die;

@@ -25,7 +25,6 @@ sub install_tests
 
 sub rw_setup
 {
-   s|^# use lib .*|use lib '$ENV{NMS_WORKING_COPY}/v2/lib';|m or die;
    s|\s+\@allow_mail_to\s*=.*?;| \@allow_mail_to = ();|;
    s|\s+\@referers\s*=.*?;| \@referers = qw(foo.domain bar\@foo.domain);|;
    s|\s+\@recipients\s*=.*?;| \@recipients = ();|;
