@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.29 2002-08-18 20:10:20 nickjc Exp $
+# $Id: wwwboard.pl,v 1.30 2002-08-21 21:20:23 nickjc Exp $
 #
 
 use strict;
@@ -8,7 +8,7 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_headers);
-my $VERSION = '1.0';
+my $VERSION = substr q$Revision: 1.30 $, 10, -1;
 
 BEGIN
 { 
@@ -25,7 +25,7 @@ $CGI::POST_MAX = $CGI::POST_MAX = 1024 * 20;
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl v1.0
+# wwwboard.pl
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
