@@ -1,8 +1,17 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.9 2002-01-30 09:21:04 lertl Exp $
+#  $Id: ffa.pl,v 1.10 2002-01-31 23:50:04 nickjc Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.9  2002/01/30 09:21:04  lertl
+#  *) redone error checking for no_url() and no_title()
+#  *) added escape_html function from FormMail.pl
+#  *) added strip_nonprintable function from FormMail.pl
+#  *) added $CGI::DISABLE_UPLOADS and $CGI::POST_MAX
+#  *) added lock file checking (I guess this needs some more work)
+#  *) allow https:// URLs
+#  *) fixed various typos
+#
 #  Revision 1.8  2001/12/01 19:45:21  gellyfish
 #  * Tested everything with 5.004.04
 #  * Replaced the CGI::Carp with local variant
@@ -43,8 +52,11 @@ use Fcntl qw(:flock);
 
 use vars qw($DEBUGGING);
 
-# We don't need file uploads or very large POST requests.
+# We don't need file uploads or very large POST requests.  Double
+# each line to prevent a 'variable used only once' warning.
 $CGI::DISABLE_UPLOADS = 1;
+$CGI::DISABLE_UPLOADS = 1;
+$CGI::POST_MAX = 1000000;
 $CGI::POST_MAX = 1000000;
 
 # sanitize the environment.
@@ -205,10 +217,20 @@ EOERR
 }   
 
 my $linkscgi   = url();
-my $url        = param('url')     || undef;
-my $title      = param('title')   || undef;
+my $url        = param('url')     || '';
+my $title      = param('title')   || '';
 my $section    = param('section') || $default_section;
 my $host_added = remote_host();
+
+# Remove non-printable characters
+$url     = strip_nonprintable($url);
+$title   = strip_nonprintable($title);
+$section = strip_nonprintable($section);
+
+# Escape HTML
+$url     = escape_html($url);
+$title   = escape_html($title);
+$section = escape_html($section);
 
 # Don't waste time with jokers who just hit the submit button.
 unless ($url or $title) {
@@ -221,27 +243,14 @@ no_title() unless $title;
 
 no_url() if ($url eq 'http://' || $url !~ m#^(f|ht)tps?://[-\w.]+?/?# );
 
-# Remove non-printable characters
-$url     = strip_nonprintable($url);
-$title   = strip_nonprintable($title);
-$section = strip_nonprintable($section);
-
-# Escape HTML
-$url     = escape_html($url);
-$title   = escape_html($title);
-$section = escape_html($section);
-
 open(LOCK, ">$filename.lck") || die "Can't open $filename.lck (write) - $!\n";
 flock(LOCK, LOCK_EX)         || die "Can't lock $filename.lck (excl) - $!\n";
 
-open(FILE,$filename) || die "Can't open $filename (read) - $!\n";
-flock(FILE,LOCK_SH)  || die "Couldn't lock $filename (shared) - $!\n";
-my @lines = <FILE>;
-close(FILE);
+open(FILE,"<$filename") || die "Can't open $filename (read) - $!\n";
 
 my $i = 1;
 
-foreach my $line (@lines) 
+while ( defined(my $line = <FILE>) )
 {    
     if ($line =~ m#<li><a href="?([^"]+)"?>([^<]+)</a>#) 
     {
@@ -250,25 +259,28 @@ foreach my $line (@lines)
     }
 }
 
-my $tmpnam = "$directory/@{[rand(time)]}${$}.tmp";
+seek FILE, 0, 0 or die "seek to start of $filename: $!";
 
-open (FILE,">$tmpnam") || die "Can't open $tmpnam (write) - $!\n";
-flock(FILE,LOCK_EX)    || die "Can't lock $tmpnam (excl) - $!\n";
+my $tmpnam = "$filename.tmp";
 
-foreach my $line (@lines) 
+open (NEWFILE,">$tmpnam") || die "Can't open $tmpnam (write) - $!\n";
+
+while ( defined(my $line = <FILE>) )
 { 
    if ($line =~ /<!--time-->/) 
    {
-      print FILE "<!--time--><b>Last link was added ",datestamp(),"</b><hr />\n";
+      print NEWFILE "<!--time--><b>Last link was added ",datestamp(),"</b><hr />\n"
+         or ( unlink($tmpnam), die "write to $tmpnam: $!" );
    }
    elsif ($line =~ /<!--number-->/) 
    {
-      print FILE "<!--number--><b>There are <i>",$i,
-                 "</i> links on this page.</b><br />\n";
+      print NEWFILE "<!--number--><b>There are <i>",$i,
+                    "</i> links on this page.</b><br />\n"
+                    or ( unlink($tmpnam), die "write to $tmpnam: $!" );
    }
    else 
    {
-       print FILE $line;
+       print NEWFILE $line or ( unlink($tmpnam), die "write to $tmpnam: $!" );
    }
 
    SECTION:
@@ -276,13 +288,14 @@ foreach my $line (@lines)
    { 
       if (($section eq $sections{$tag}) && ($line =~ /<!--\Q$tag\E-->/)) 
       {
-         print FILE qq%<li><a href="$url">$title</a></li>\n%; 
+         print NEWFILE qq%<li><a href="$url">$title</a></li>\n%
+             or ( unlink($tmpnam), die "write to $tmpnam: $!" );
          last SECTION;
       }
    }
 }
 
-close (FILE);
+close NEWFILE or ( unlink($tmpnam), die "write to $tmpnam: $!" );
 
 rename( $tmpnam, $filename) || die "Can't rename $tmpnam - $!\n";
 
@@ -352,22 +365,22 @@ sub datestamp
 sub no_url 
 {
    print header, 
-         start_html('title'   => 'ERROR: No URL',
-                    'BGCOLOR' => '#FFFFFF',
-                    'style' => { src  => $style } );
+         start_html('-title'   => 'ERROR: No URL',
+                    '-BGCOLOR' => '#FFFFFF',
+                    '-style' => { src  => $style } );
    print <<EIEIO;
 <h1>No URL</h1>
 <p>
 You either forgot to enter the url you wanted added to the Free for 
 all link page or you entered one which was invalid.</p>
 <p>
-   <form method=POST action="$linkscgi">
-      <input type=hidden name="title" value="$title" />
-      <input type=hidden name="section" value="$section" />
-      URL: <input type=text name="url" size=50 />
+   <form method="POST" action="$linkscgi">
+      <input type="hidden" name="title" value="$title" />
+      <input type="hidden" name="section" value="$section" />
+      URL: <input type="text" name="url" size="50" />
       <br />
-      <input name="submit" value="OK" type=submit /> * 
-      <input name="reset" value="Clear" type=reset />
+      <input name="submit" value="OK" type="submit" /> * 
+      <input name="reset" value="Clear" type="reset" />
 <hr />
 <a href="$linksurl">$linkstitle</a>
 </form></p></body></html>
@@ -379,9 +392,9 @@ EIEIO
 sub no_title 
 {
    print header, 
-         start_html('title'   => 'ERROR: No Title',
-                    'BGCOLOR' => '#FFFFFF',
-                    'style' => { src  => $style } );
+         start_html('-title'   => 'ERROR: No Title',
+                    '-BGCOLOR' => '#FFFFFF',
+                    '-style' => { src  => $style } );
    print <<EIEIO;
 <h1>No Title</h1>
 <p>
@@ -389,13 +402,13 @@ You either forgot to enter the title you wanted for your link or the title
 you did enter contained characters that can't be displayed.
 </p>
 <p>
-<form method=POST action="$linkscgi">
-   <input type=hidden name="url" value="$url" /> 
-   <input type=hidden name="section" value="$section" />
-   TITLE: <input type=text name="title" size=50 />
+<form method="POST" action="$linkscgi">
+   <input type="hidden" name="url" value="$url" /> 
+   <input type="hidden" name="section" value="$section" />
+   TITLE: <input type="text" name="title" size="50" />
    <br />
-   <input name="submit" value="OK" type=submit /> * 
-   <input type=reset name="reset" value="clear">
+   <input name="submit" value="OK" type="submit" /> * 
+   <input type="reset" name="reset" value="clear" />
    <hr />
    <a href="$linksurl">$linkstitle</a>
 </form></p></body></html>
@@ -407,9 +420,9 @@ EIEIO
 sub repeat_url 
 {
    print header, 
-         start_html('title'   => 'ERROR: Repeat URL',
-                    'BGCOLOR' => '#FFFFFF',
-                    'style'   => { src  => $style } );
+         start_html('-title'   => 'ERROR: Repeat URL',
+                    '-BGCOLOR' => '#FFFFFF',
+                    '-style'   => { src  => $style } );
    print <<EIEIO;
 <h1>Repeat URL</h1>
 <p>
