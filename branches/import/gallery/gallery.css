@@ -1,0 +1,19 @@
+BODY {
+       background: white;
+       font-family: helvetica,arial,sans-serif;
+     }
+H2   {
+       text-align: center;
+     }
+IMG  {
+       text-align: center;
+     }
+P.image
+     {
+       text-align: center;
+     }
+P.backfor {
+            font-family: helvetica,arial,sans-serif;
+            text-align : center;
+            font-size: 14px;
+           }
