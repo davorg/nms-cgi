@@ -1,0 +1,102 @@
+
+SSI Random Images Version 1.00
+Copyright 2001 London Perl Mongers, All rights reserved
+
+This script is free software; you are free to redistibute it
+and/or modify it under the same terms as Perl itself.
+
+Scripts Archive at  <http://www.dave.org.uk/scripts/nms/>
+
+
+This script is provided to allow you to have a random image appear on your 
+page every time it is reloaded.  The server side includes version offers you 
+link flexibility as well as coinciding random alt text and other variables 
+which make it slightly more advanced than the Basic Random Image Displayer.
+
+There are two files included with this script.
+        1) README - This file, which explains installation
+        2) ssi_rand_image.pl - The perl script which chooses the random image.
+
+Below is a list of the changes that must be made to the ssi_rand_image.pl file 
+in order for it to choose your random images correctly:
+
+Inside the script you will see a list of variables, which must be defined in 
+order for your script to work.  Below is a description of how to define each 
+one:
+
+$basedir = "http://your.host.xxx/path/to/images/";
+
+    The standard portion of my url for each image.  This is the base 
+    location of each image that is referenced in the next array @images. 
+    The random image name chosen out of @images will be appended later on 
+    in the script to form a complete url.
+
+@images = ({ file => 'first_image.gif',
+             url => 'http://url_linked/to/first_image',
+             alt => 'First WWW Page' },
+          { file => 'second_image.jpg',
+            url => 'http://url_linked/to/second_image',
+            alt => 'Second WWW Page' },
+          { file => 'third_image.gif',
+            url => 'http://url_linked/to/third_image',
+            alt => 'Third WWW Page' });
+
+    This is the description of each image. Each description has three
+    parts, the name of the image file, the url that the image should
+    link to and the alt text for the image. If you don't want you image
+    to be a link then just set the url to an empty string.
+
+---
+
+There are also a number of options that you will need to define and decide 
+whether to use.  They are located directly below the variables in the 
+ssi_rand_image.pl script.
+
+$uselog = "1";            # 1 = YES; 0 = NO
+
+    At this point you must decide whether or not you want to use the 
+logging feature.  for most practical purposes this will not be used, but some 
+people may find it helpful either for keeping stats or seeing which images get 
+picked the most.  All the logging feature will record is the image, date, and 
+remote host that saw the image.  Should you choose to turn this option on, you 
+will need to define two more variables:
+
+$logfile = "/home/mattw/public_html/links/ssi_image";
+
+    The location of the log file.  This must be in a 
+readable/writable directory and given read/write permissions for all 
+users so that the server's uid may edit the log file.
+
+$link_image = "1";        # 1 = YES; 0 = NO
+
+    If you turn this variable off you do not need to worry about what is 
+in the @urls variable.  It simply won't link any of your images.
+
+$align = "left";
+
+    This is the way in which you want your image aligned.  Valid choices 
+for Netscape include: left, right, middle, absmiddle, bottom, and absbottom.
+
+$border = "2";
+
+    This is the size you want your border to be.  Mainly occurs when you 
+have images linked the border turns blue, and in Netscape you can control the 
+size.  Setting this to zero causes there to be no border.
+
+_____________________________________________________________________________
+
+Server Side Includes
+
+I hope that you already know how to accomplish a Server Side Includes, and 
+therefore I am not going to go into detail about how.  Two things you can 
+check for are:
+
+1) Ask your sysadmin if you have access to server side includes and what you 
+need to change about your file to make them work.  This often involves 
+changing your .html files to .shtml.
+
+2) If you really don't know anything about Server Side Includes, you can 
+check out a great tutorial that NCSA has developed;  located at:
+
+    http://hoohoo.ncsa.uiuc.edu/docs/tutorials/includes.html
+
