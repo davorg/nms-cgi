@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.40 2002-08-31 22:50:52 nickjc Exp $
+# $Id: wwwboard.pl,v 1.41 2002-09-01 07:16:58 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.40 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.41 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.40 $
+# wwwboard.pl $Revision: 1.41 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -54,7 +54,7 @@ BEGIN
   $title               = "NMS WWWBoard Version $VERSION";
   $style               = '/css/nms.css';
   $show_faq            = 1;
-  $allow_html          = 1;
+  $allow_html          = 0;
   $quote_text          = 1;
   $quote_char          = ':';
   $quote_html          = 1; 
@@ -559,10 +559,10 @@ sub main_page {
       if (/<!--begin-->/) {
         print MAIN_OUT <<END_HTML;
 <!--begin-->
-<!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i></li>
+<!--top: $E{$id}--><li><a href="$E{"$mesgdir/$id.$ext"}">$E{$subject}</a> - <b>$E{$name}</b> <i>$E{$date}</i>
 (<!--responses: $E{$id}-->0)
 <ul><!--insert: $E{$id}-->
-</ul><!--end: $E{$id}-->
+</ul><!--end: $E{$id}--></li>
 END_HTML
       } else {
         print MAIN_OUT $_;
