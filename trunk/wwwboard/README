@@ -22,15 +22,15 @@ posts.
 FILES
 
 In this distribution, you will find these files
-  README        - Configuration and installation instructions. This file
   wwwboard.pl   - Script containing the config and making everything work
-  wwwboard.html - The HTML web board file that users will see
-  faq.html      - A FAQ file for users of wwwboard
-  data.txt      - Where the file number is stored
-  messages/     - Where the discussion messages will be created and stored
-  wwwadmin.pl   - An administration tool to delete messages
-  passwd.txt    - The encoded password and username for wwwadmin
   ADMIN_README  - wwwadmin config and install instruction.
+  faq.html      - A FAQ file for users of wwwboard
+  MANIFEST      - A list of the files in this distribution
+  passwd.txt    - The encoded password and username for wwwadmin
+  README        - Configuration and installation instructions. This file
+  wwwadmin.pl   - An administration tool to delete messages
+  wwwboard.html - The HTML web board file that users will see
+  ChangeLog     - The change history of these files
 
 CONFIGURATION and INSTALLATION
 
@@ -244,25 +244,6 @@ During the following you will be guided through the configuration and installati
       This is fairly simple. Just put it in your $basedir so that people
       visiting $baseurl/wwwboard.html will see it. Normally, you should not need
       to chmod it. However, it should be chmoded to 644.
-
-* messages/
-   Settings
-      None.
-
-   Installation
-      This is fairly simple. Just put it in your $basedir. You also have to
-      chmod the directory to 777 using the following command
-         chmod 777 messages/
-
-* data.txt
-   Settings
-      None.
-
-   Installation
-      Simply upload this file to $basedir, as mentioned in wwwboard.pl. You
-      also have to chmod the file to 666 (no, we are not the devil) using the
-      following command
-         chmod 666 data.txt
 
 * Administration files (wwwadmin.pl, passwd.txt, ADMIN_README)
    The administrative files are not necessary to run the boards. That is, if you

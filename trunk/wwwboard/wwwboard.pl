@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.44 2002-09-04 21:41:28 nickjc Exp $
+# $Id: wwwboard.pl,v 1.45 2002-09-09 20:29:59 uid68644 Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.44 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.45 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.44 $
+# wwwboard.pl $Revision: 1.45 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -384,9 +384,11 @@ sub new_file {
 
   my ($variables) = @_;
 
-  my $file = "$basedir/$mesgdir/$variables->{id}.$ext";
+  my $md = "$basedir/$mesgdir";
+  my $file = "$md/$variables->{id}.$ext";
   -r $file and die "refusing to overwrite [$file]";
 
+  -d $md or mkdir $md, 0755 or die "mkdir $md: $!";
   open(NEWFILE,">$file") || die "Open [$file]: $!";
 
   my $html_faq = $show_faq ? qq( [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]) : '';
