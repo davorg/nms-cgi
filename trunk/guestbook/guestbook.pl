@@ -1,6 +1,6 @@
-#!/usr/local/perl-5.00404/bin/perl -Tw
+#!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.33 2002-04-05 22:30:53 nickjc Exp $
+# $Id: guestbook.pl,v 1.34 2002-04-09 19:56:25 nickjc Exp $
 #
 
 use strict;
