@@ -1,0 +1,82 @@
+#!/usr/bin/perl -w
+
+use Gtk;
+use strict;
+    
+Gtk->init;
+
+my $self = {};
+
+    my $window = new Gtk::Window 'toplevel';
+    $window->set_policy (0, 0, 0);
+    $window->realize;
+
+    my $vbox = new Gtk::VBox 0, 0;
+    $window->add ($vbox);
+    $vbox->show;
+
+    # Hack, create_from_xpm is broken and doesn't currently
+    # allow undef here.
+    my $trans = $window->style->white;
+
+	Gtk::Gdk::Pixmap->create_from_xpm ($window->window, 
+					   $trans, "empty.xpm");
+	Gtk::Gdk::Pixmap->create_from_xpm ($window->window, 
+					   $trans, "self.xpm");
+	Gtk::Gdk::Pixmap->create_from_xpm ($window->window, 
+					   $trans, "opponent.xpm");
+
+    my $bbox = new Gtk::HButtonBox;
+    $vbox->add ($bbox);
+    $bbox->show;
+
+    my $button = new Gtk::Button "Start Over";
+    $bbox->add ($button);
+    
+    $button->show;
+
+    $button = new Gtk::Button "Quit";
+    $bbox->add ($button);
+    $button->show;
+
+
+    my $separator = new Gtk::HSeparator;
+    $vbox->add ($separator);
+    $separator->show;
+    
+    my $table = new Gtk::Table (5, 5, 1);
+    $vbox->add ($table);
+    $table->show;
+
+    for my $i (0..2) {
+	for my $j (0..2) {
+	    my $eventbox = new Gtk::EventBox;
+	    $eventbox->set_events ('button_press_mask');
+	    $table->attach ($eventbox, $i+1, $i+2, $j+1, $j+2,
+			    [], [], 0, 0);
+
+	    $eventbox->signal_connect ("button_press_event", 
+	      sub {
+		  if ($self->{turn} && !$self->{win} &&
+		      ($self->{board}->[$i][$j] == 0)) {
+		      $self->update ($i, $j, 1);
+		      $self->{opponent}->put ($self->{tag}, $i, $j);
+		      $self->{turn} = 0;
+		      $self->set_status;
+		  }
+	      });
+	    
+	    $eventbox->show;
+	    
+#  	    $self->{squares}->[$i][$j] = new Gtk::Pixmap ($self->{pixmaps}->[0], undef);
+#  	    $eventbox->add ($self->{squares}->[$i][$j]);
+#  	    $self->{squares}->[$i][$j]->show;
+	}
+    }
+    
+      $self->{statusbar} = new Gtk::Statusbar;
+      $self->{context} = $self->{statusbar}->get_context_id("game");
+      $vbox->add ($self->{statusbar});
+
+      $window->show;
+Gtk->main;
