@@ -93,7 +93,7 @@ During the following you will be guided through the configuration and installati
       $cgi_url            - This is the full website address (URL) to the
                             wwwboard.pl file which will run the wwwboard.
 
-      $mesdir             - This is the directory, in $basedir, where the
+      $mesgdir            - This is the directory, in $basedir, where the
                             wwwboard messages will be stored.
 
       $datafile           - This is the name of the file, in $basedir, where
