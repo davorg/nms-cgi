@@ -389,9 +389,9 @@ sub _substitute_generated_header
 
    foreach my $r (@$results)
    {
-      $r =~ s[^(MAIL\d *X-Generated-By: NMS \w+\.pl) v\d+\.\d+]
+      $r =~ s[^(MAIL\d *X-(?:Generated-By|Mailer): NMS \w+\.pl (?:\([\w\-\.]+\))?) v\d+\.\d+]
              [$1 v1.01]g;
-      $r =~ s[^(MAIL\d *X-Generated-By: NMS \w+) v\d+\.\d+ \(NMStreq \d+\.\d+\)]
+      $r =~ s[^(MAIL\d *X-(?:Generated-By|Mailer): NMS \w+) v\d+\.\d+ \(NMStreq \d+\.\d+\)]
              [$1 v1.01 (NMStreq 1.01)]g;
    }
 }
