@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.43 2002-09-03 21:00:21 nickjc Exp $
+# $Id: wwwboard.pl,v 1.44 2002-09-04 21:41:28 nickjc Exp $
 #
 
 use strict;
@@ -15,11 +15,11 @@ use vars qw(
   $date_fmt $time_fmt $show_poster_ip $enable_preview $enforce_max_len
   %max_len $strict_image @image_suffixes $locale $charset
 );
-BEGIN { $VERSION = substr q$Revision: 1.43 $, 10, -1; }
+BEGIN { $VERSION = substr q$Revision: 1.44 $, 10, -1; }
 
 # PROGRAM INFORMATION
 # -------------------
-# wwwboard.pl $Revision: 1.43 $
+# wwwboard.pl $Revision: 1.44 $
 #
 # This program is licensed in the same way as Perl
 # itself. You are free to choose between the GNU Public
@@ -736,7 +736,7 @@ sub preview_post {
     <title>Preview</title>
     $html_style
   </head>
-  <body><h1 align="right">Preview</h1>
+  <body><h1 align="center">$E{$variables->{subject}}</h1>
   <hr />
     $variables->{'body'}
   <hr />
