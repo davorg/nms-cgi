@@ -2,7 +2,7 @@
 
 Frequently Asked Questions about the I<nms> CGI programs 
 
-E<lt>-- $Date: 2002-09-14 16:06:29 $ --E<gt>
+E<lt>-- $Date: 2004-08-15 14:12:55 $ --E<gt>
 
 =head1 DESCRIPTION
 
@@ -141,7 +141,7 @@ E<lt>http://www.perl.com/pub/a/language/misc/Artistic.htmlE<gt>.
 =head2 But I have programs that do the same thing already, why change them?
 
 Because the programs you may already use aren't as good as these. See
-"L<But there are perfectly good programs already out there, why bother?">
+"L</But there are perfectly good programs already out there, why bother?>"
 above for more details.
 
 =head2 Why do you keep calling them programs and not scripts?

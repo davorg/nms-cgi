@@ -3,7 +3,7 @@
 Frequently Asked Questions about running the I<nms> CGI programs.
 If a question is not specific to 
 
-E<lt>-- $Date: 2004-05-31 15:45:10 $ --E<gt>
+E<lt>-- $Date: 2004-08-15 14:12:55 $ --E<gt>
 
 =head1 DESCRIPTION
 
@@ -21,7 +21,7 @@ needed for generic cases, but there's a nice big text box for the
 stuff specific to you, but we don't know what that is. Here's how to
 figure it out and tell us.
 
-Make sure you've read the entirity of this FAQ page.  We cover a lot
+Make sure you've read the entirety of this FAQ page.  We cover a lot
 of common problems here, and you'll get a solution faster by reading
 this.  Please also check that you are using the latest release of the
 program.
@@ -40,7 +40,7 @@ of these lines. It doesn't matter.
 
 If you think that there might be a problem with one of your changes,
 and you think you know which one it is, but don't know how to correct
-it, include E<strong>allE<strong> the information anyway. It's easier
+it, include I<all> the information anyway. It's easier
 to ignore what we know we don't need, than to ask for information we
 might.
 
@@ -115,12 +115,22 @@ administrator or web hosting provider for more information on this.
 
 If you are on a Windows web-server then you probably don't have a local MTA
 at all, although this is not to say that you will not be able to use 
-C<FormMail>.
+C<FormMail>. There will almost certainly be some kind of mail server
+(an I<SMTP server>) on your network. You can configure C<FormMail> to
+use that instead. For example, you can use
 
-As part of the I<nms> project a program called C<nms_sendmail> has been
-released that provides the same function as sendmail.  This can be
-downloaded from the same place that you downloaded FormMail and its
-installation is described in the associated README file.
+  $mailprog = 'SMTP:mail.example.com';
+
+to use the SMTP server at mail.example.com. Your system administrator
+will be able to tell you the address of your local SMTP server. See the
+definition of the C<$mailprog> variable in the C<README> file that comes
+with C<FormMail> for more details.
+
+Notice that the C<SMTP:mail.example.com> syntax means that our old
+C<nms_sendmail> program is no longer needed and therefore it is no
+Notice that the C<SMTP:mail.example.com> syntax means that our old
+C<nms_sendmail> program is no longer needed and therefore it is no
+longer available.
 
 =head2 Is Simple Search broken - it can't find text in my PDF files?
 
