@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: icounter.pl,v 1.14 2002-07-23 21:00:16 nickjc Exp $
+# $Id: icounter.pl,v 1.15 2002-07-31 08:11:49 nickjc Exp $
 #
 
 use strict;
@@ -114,6 +114,8 @@ check_uri($count_page);
 
 $count_page =~ s|/$||;
 $count_page =~ s/[^\w]/_/g;
+$count_page =~ /^(\w*)$/ or die 'count_page cleanup failed';
+$count_page = $1;
 
 if ( $data_dir !~ m%/$% ) {
   $data_dir .= '/';
