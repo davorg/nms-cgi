@@ -3,8 +3,8 @@ use strict;
 
 require 5.00404;
 
-use vars qw($VERSION):
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.1 $ =~ /(\d+)\.(\d+)/);
+use vars qw($VERSION);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.2 $ =~ /(\d+)\.(\d+)/);
 
 =head1 NAME
 
