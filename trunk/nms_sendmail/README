@@ -91,21 +91,24 @@ use nms_sendmail, but the other NMS scripts that send
 email are configured in a similar way.
 
 On a UNIX-like system with nms_sendmail installed as
-/usr/local/bin/nms_sendmail, configure the $mailprog
-setting in FormMail.pl as:
+/usr/local/bin/nms_sendmail, replace the $mailprog configuration
+line in FormMail.pl with the two lines:
 
-  $mailprog = "$^X -wT /usr/local/bin/nms_sendmail -io -t";
+  $^X =~ /(.+)/ or die;
+  $mailprog = "$1 -wT /usr/local/bin/nms_sendmail -io -t";
 
 On a Windows system with nms_sendmail installed as
 c:\nms_utils\nms_sendmail, configure the $mailprog
-setting in FormMail.pl as:
+setting in FormMail.pl with:
 
-  $mailprog = "$^X -wT c:/nms_utils/nms_sendmail -oi -t";
+  $^X =~ /(.+)/ or die;
+  $mailprog = "$1 -wT c:/nms_utils/nms_sendmail -oi -t";
 
 On a Windows system with nms_sendmail installed in a
 directory with spaces or punctuation in its name:
 
-  $mailprog = qq|$^X -wT "c:/program files/nms/nms_sendmail" -oi -t|;
+  $^X =~ /(.+)/ or die;
+  $mailprog = qq|$1 -wT "c:/program files/nms/nms_sendmail" -oi -t|;
 
 SUPPORT
 

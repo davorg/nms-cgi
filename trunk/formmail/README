@@ -174,7 +174,7 @@ $locale             - This determines the language that is used in the date - by
                       english. The following a list of some possible values,
                       however it should be stressed that not all of these will
                       be supported on all systems and also this is not a complete
-                      list: 
+                      list:
 
                             Catalan           ca_ES
                             Croatian          hr_HR
@@ -231,17 +231,17 @@ $date_fmt           - The format that the date will be displayed in. This
 
 $style              - This is the URL of a CSS stylesheet which will be
                       used for script generated messages.  This should
-		      probably be the same as the one that you use for all
+                      probably be the same as the one that you use for all
                       the other pages.  This should be a local absolute URI
                       fragment.  Set $style to '0' or the emtpy string if
                       you don't want to use style sheets.
 
-$no_content         - If this is set to 1 then rather than returning the 
-                      HTML confirmation page or doing a redirect the script 
-                      will output a header that indicates that no content 
-                      will be returned and that the submitted form should 
+$no_content         - If this is set to 1 then rather than returning the
+                      HTML confirmation page or doing a redirect the script
+                      will output a header that indicates that no content
+                      will be returned and that the submitted form should
                       not be replaced.  This should be used carefully as an
-                      unwitting visitor may click the submit button several 
+                      unwitting visitor may click the submit button several
                       times thinking that nothing has happened.
 
 $double_spacing     - If this is set to 1 (as it is by default) then a blank
@@ -249,23 +249,23 @@ $double_spacing     - If this is set to 1 (as it is by default) then a blank
                       Change this value to 0 if you want the e-mail to be
                       more compact.
 
-$wrap_text          - If this is set to 1 then the content of any long text 
-                      fields will be wrapped at around 72 columns in the 
-                      e-mail which is sent.  The way that this is done is 
+$wrap_text          - If this is set to 1 then the content of any long text
+                      fields will be wrapped at around 72 columns in the
+                      e-mail which is sent.  The way that this is done is
                       controlled by the variable $wrap_style
 
-$wrap_style         - If $wrap_text is set to 1 then if this is set to 1 then 
-                      the text will be wrapped in such a way that the left 
-                      margin of the text is lined up with the beginning of the 
-                      text after the description of the field - that is to 
-                      say it is indented by the length of the field name 
+$wrap_style         - If $wrap_text is set to 1 then if this is set to 1 then
+                      the text will be wrapped in such a way that the left
+                      margin of the text is lined up with the beginning of the
+                      text after the description of the field - that is to
+                      say it is indented by the length of the field name
                       plus 2.  If it is set to 2 then the subsequent lines
-                      of the text will not be indented at all and will be 
-                      flush with the start of the lines.  The choice of style 
-                      is really a matter of taste although you might find 
-                      that style 1 does not work particularly well if your 
-                      e-mail client uses a proportional font where the spaces 
-                      of the indent might be smaller than the characters in 
+                      of the text will not be indented at all and will be
+                      flush with the start of the lines.  The choice of style
+                      is really a matter of taste although you might find
+                      that style 1 does not work particularly well if your
+                      e-mail client uses a proportional font where the spaces
+                      of the indent might be smaller than the characters in
                       the field name.
 
 $send_confirmation_mail - If this flag is set to 1 then an additional email

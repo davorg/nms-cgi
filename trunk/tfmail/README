@@ -91,6 +91,14 @@ MAILPROG            - The command line that the script should use to fire
                       ... you will need to replace "d:/inetpub/web31337/" with
                       the filesystem location of the nms_sendmail script.
 
+                      If you find that the above fails with an error message
+                      like "Insecure dependency in piped open", then you
+                      should replace the single MAILPROG line with the two
+                      lines:
+
+                        BEGIN { use vars qw($X); $^X =~ /(.+)/; $X = $1; }
+                        use constant MAILPROG => "$X -wT d:/inetpub/web31337/nms_sendmail -oi -t";
+
 POSTMASTER          - The email address to use as the 'envelope sender' of
                       outgoing e-mails.  This address will receive the bounce
                       messages if there is trouble delivering an e-mail, so
@@ -493,10 +501,10 @@ redirect                    - If this configuration value is set, then it
                               redirect to that URL on success, instead of
                               using the success page template.
 
-required                    - A list of the names of inputs that the
-                              user cannot leave blank.  If any of these
-                              are blank, then the submission will not be
-                              accepted.  Default: no fields are required.
+required                    - A comma separated list of the names of inputs
+                              that the user cannot leave blank.  If any of
+                              these are blank, then the submission will not
+                              be accepted.  Default: no fields are required.
 
 missing_template            - The HTML template file used to generate the
                               page that the user sees if they leave a
@@ -537,7 +545,7 @@ log_template                - The template file used to construct the text
                               that gets appended to the log file if the
                               logfile setting above is set.  Default: log
 
-			      See WRITING TO A LOG FILE below.
+                              See WRITING TO A LOG FILE below.
 
 modify_html_files           - A list of the names of one or more HTML files
                               into which TFmail should insert text, relative
@@ -728,7 +736,7 @@ redirect: http://www.your.domain/thankyou.html
  </head>
  <body>
   <h1>Guestbook</h1>
-  <p>Thank you for visiting our pages.  We would love it if you would 
+  <p>Thank you for visiting our pages.  We would love it if you would
    <a href="addguest.html">Add</a> to this guestbook we are keeping!</p>
   <hr />
 <!-- NMS insert below -->
