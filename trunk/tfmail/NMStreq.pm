@@ -8,7 +8,7 @@ use POSIX qw(strftime);
 use NMSCharset;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.9 $, 10, -1;
+$VERSION = substr q$Revision: 1.10 $, 10, -1;
 
 =head1 NAME
 
@@ -893,7 +893,7 @@ sub _open_file
             $filename =~ m#[a-zA-Z0-9]$# and
             $filename =~ m#^([/a-zA-Z0-9_]{1,100})$# )
    {
-      $self->error("Invalid $filetype filename: [$filename]");
+      $self->error("Invalid character in filename [$filename]");
    }
    $filename = $1;
 

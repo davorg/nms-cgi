@@ -263,7 +263,7 @@ The first line just tells TFmail that this is indeed a template
 file for an email body - it won't be included in the output.
 
 The {= by_submitter =} directive generates the user's email address
-and real name followed the the string "by ", if there are email
+and real name followed by the string "by ", if there are email
 address and realname inputs in the form.  If TFmail can't work out
 the user's email address then the {= by_submitter =} directive
 produces nothing.  The "by " string was made part of the directive
@@ -364,7 +364,7 @@ via "env" template directives.  For example:
       Note: we have logged your IP address as {= env.REMOTE_ADDR =},
       and we will be reporting you to the FBI if you lied about
       your age.  Have a nice day.
-    </p.
+    </p>
   </body>
 </html>
 
@@ -522,6 +522,8 @@ log_template                - The template file used to construct the text
                               that gets appended to the log file if the
                               logfile setting above is set.  Default: log
 
+			      See WRITING TO A LOG FILE below.
+
 modify_html_files           - A list of the names of one or more HTML files
                               into which TFmail should insert text, relative
                               to the HTMLFILE_ROOT directory and without the
@@ -579,6 +581,32 @@ as a value.
 
 Note that you must leave out the %% NMS ???? template file %%
 line when using an inline template like this.
+
+
+WRITING TO A LOG FILE
+
+If you want to keep your log files in /usr/local/tfmail/logs, then
+you would set LOGFILE_ROOT to '/usr/local/tfmail/logs', and you
+might add the following lines to your .trc file:
+
+
+logfile: foo
+logfile_template:
+%{= date =}|{= env.REMOTE_ADDR =}|{= param.email =}
+
+
+One problem with log files done this way is that the values input
+by the user can contain '|' and newline characters, so it's possible
+for a malicious user to mess up your log files.
+
+However, TFmail will change tag-like constructs such as "<foo>" found
+in the user input into "< foo>" when it writes the log file, so using
+an HTML-like format for log files makes them more resilient:
+
+
+logfile: foo
+logfile_template:
+%{= date =}<x>{= env.REMOTE_ADDR =}<x>{= param.email =}<eol>
 
 
 FILE UPLOADS
