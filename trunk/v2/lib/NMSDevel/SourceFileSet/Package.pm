@@ -197,6 +197,21 @@ sub generate_tarballs {
 
    system('rm', '-rf', $arc_path) and die "rm failed";
 
+   my $cl = IO::File->new("<$src_path/ChangeLog");
+   if ($cl) {
+       my $lastmod = <$cl>;
+       $cl->close;
+       $lastmod =~ /^(\d{4}-\d\d-\d\d \d\d:\d\d)\s/ or die "bad ChangeLog";
+       $lastmod = $1;
+       
+       my $lm = IO::File->new(">$src_path/".$self->name.".LASTMOD") or die "open: $!";
+       $lm->print("$lastmod\n");
+       $lm->close or die "close: $!";
+   }
+
+   my $ver = IO::File->new(">$src_path/".$self->name.".VERSION") or die "open: $!";
+   $ver->print( $self->version_string, "\n" );
+   $ver->close or die "close: $!";
 }
 
 =item run_tests_against_package ()
