@@ -1,8 +1,16 @@
 #!/usr/bin/perl -wT
 #
-#  $Id: ffa.pl,v 1.12 2002-02-27 09:04:28 gellyfish Exp $
+#  $Id: ffa.pl,v 1.13 2002-03-20 09:04:13 gellyfish Exp $
 #
 #  $Log: not supported by cvs2svn $
+#  Revision 1.12  2002/02/27 09:04:28  gellyfish
+#  * Added question about simple search and PDF to FAQ
+#  * Suppressed output of headers in fatalsToBrowser if $done_headers
+#  * Suppressed output of '<link rel...' if not $style
+#  * DOCTYPE in fatalsToBrowser
+#  * moved redirects until after possible cause of failure
+#  * some small XHTML fixes
+#
 #  Revision 1.11  2002/02/01 09:18:48  gellyfish
 #  * Possibly less confusing way of stoppoing used once warning
 #
@@ -60,7 +68,7 @@
 use strict;
 use CGI qw(:standard);
 use Fcntl qw(:flock);
-use POSIX qw(strftime);
+use POSIX qw(locale_h strftime);
 
 use vars qw($DEBUGGING $done_headers);
 
@@ -122,6 +130,11 @@ my $usedatabase = 1;
 # This is the location of the database file in which the links can be kept.
 
 my $database    = "$directory/database.txt";
+
+# The 'locale' determines the language that dates and times are printed in
+# If you are not concerned about this then leave this blank.
+
+my $locale      = '';
 
 # if matts ffa is not being emulated then we must use the database.
 
@@ -347,7 +360,7 @@ sub datestamp
 
    $time ||= time();
 
-   # use strftime because we get locales.
+   setlocale(LC_TIME,$locale) if $locale;
 
    return strftime("on %A, %B %d, %Y at %T",localtime($time));
 }
