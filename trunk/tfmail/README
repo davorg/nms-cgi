@@ -59,7 +59,8 @@ DEBUGGING           - This should be set to 1 whilst you are installing
                       should not be used when the script is live.
 
 LIBDIR              - The filesystem path to the location of the .pm files
-                      that come with TFmail.pl.
+                      that come with TFmail.pl.  See the section below on
+                      choosing secure locations for files.
 
 MAILPROG            - The command line that the script should use to fire
                       up a program that will read an email message from its
@@ -96,6 +97,9 @@ CONFIG_ROOT         - The filesystem path to the directory that holds all of
                       This must be set to the path to the directory on the
                       server to which you uploaded the .trc and .trt files.
 
+                      See the section below on choosing secure locations for
+                      files.
+
 MAX_DEPTH           - The depth of subdirectories under CONFIG_ROOT that
                       configuration files and templates may be placed.  The
                       default of 0 is fine for most people.
@@ -121,7 +125,10 @@ USE_MIME_LITE       - If you're not using file uploads then you can set this to
 
 LOGFILE_ROOT        - The filesystem path to the directory under which log
                       files can be written.  Leave this set to the empty
-                      string to disable writting to log files.
+                      string to disable writing to log files.
+
+                      See the section below on choosing secure locations for
+                      files.
 
 LOGFILE_EXT         - The file extension that log files must have.  Default:
                       .log
@@ -135,7 +142,8 @@ please ask your system administrator.
 You must also copy NMStreq.pm and MIME_Lite.pm to the server.  You
 should put them in the location that you configured for LIBDIR above.
 Leaving LIBDIR set to '.' and uploading the .pm files into your
-cgi-bin directory will work on most UNIX systems.
+cgi-bin directory will work on most UNIX systems.  See the section
+below on choosing secure locations for files.
 
 You may need to rename TFmail.pl to TFmail.cgi. Again, your system
 administrator will know if this is the case.
@@ -144,6 +152,60 @@ You will probably need to turn on execute permissions to the file. You can
 do this by running the command "chmod +x TFmail.pl" from your command
 line. If you don't have command line access to your web server then there
 will probably be an equivalent function in your file transfer program.
+
+
+CHOOSING SECURE LOCATIONS FOR FILES
+
+The TFmail.pl CGI requires many support files, such as the two .pm
+files, the .trc configuration files, the .trt output template files
+and possibly some log files and/or the nms_sendmail script.  It's
+important to consider security when choosing locations for these
+files on the web server.
+
+The most important consideration is to prevent an attacker from
+accessing any of these files directly via the web server, and
+hence gaining information about your setup or access to your log
+files.  Since your e-mail address appears in the configuration
+file(s), it's important to protect them.  The log files may 
+contain even more sensitive information.
+
+For example, if you were to put your configuration files in a
+'tfmail' subdirectory of your web site, then an attacker would
+be able to read them by typing a URL like
+
+  http://www.your.domain/tfmail/default.trc
+
+into his or her web browser.  That's bad security.
+
+The best place to put all these files is somewhere outside the
+web server's document root.  That eliminates the whole problem
+at a single stroke.
+
+However, if you are using an account on a shared web server then
+you may not have access to any location outside the web server's
+document root.  In that case, you should put all these support
+files into a subdirectory of your site to which the web server
+is configured to deny all access.  Your hosting provider should
+be able to tell you how to block HTTP access to a subdirectory
+of your site.
+
+If you can't configure the web server to deny access to a
+subdirectory of your site, then maybe you can set up a password
+protected subdirectory.  That's almost as good, so long as you
+choose a password that nobody will be able to guess.
+
+Finally, if all else fails, a small amount of security can be
+gained by making the URL to the configuration and other
+support files hard to guess.  For example, if you were to put
+all the configuration files in a subdirectory of your site but
+pick the name 'p5xltfe' instead of 'tfmail', then the attacker
+would need to guess the URL:
+
+  http://www.your.domain/p5xltfe/default.trc
+
+which is harder.  Be aware however that this is a weak form of
+security.  Web server bugs and configuration errors that allow this
+type of precaution to be bypassed are relatively common.
 
 
 OUTPUT CUSTOMIZATION
@@ -383,7 +445,7 @@ realname_input              - The name of the CGI parameter that will
                               address.
 
 by_submitter_by             - The phrase added by the {= by_submitter =}
-                              template directive when outputing the user's
+                              template directive when outputting the user's
                               email address.  Default: 'by'.
 
 redirect                    - If this configuration value is set, then it
