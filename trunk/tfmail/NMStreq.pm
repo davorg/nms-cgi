@@ -7,7 +7,7 @@ use IO::File;
 use POSIX qw(strftime);
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.2 $, 10, -1;
+$VERSION = substr q$Revision: 1.3 $, 10, -1;
 
 =head1 NAME
 
@@ -50,7 +50,7 @@ An object of the C<NMStreq> class encapsulates a CGI
 request who's handing depends on a configuration file
 identified by the C<_config> CGI parameter.  A
 simplistic templating mechanism is provided, to ease
-end user customisation of the output HTML and the
+end user customization of the output HTML and the
 bodies of any emails sent.
 
 =head1 CONSTRUCTORS
@@ -64,7 +64,7 @@ data pertinent to the current CGI request.  The CGI
 parameter C<_config> will be used to identify the
 correct configuration file for this request.  The
 OPTIONS must consist of matching name/value pairs,
-and the following options are recognised:
+and the following options are recognized:
 
 =over
 
@@ -146,17 +146,18 @@ sub new
    $self->{r}{config} = $self->_read_config_file($cfg_name);
 
    $self->{r}{param} = {};
-   my @field_order = ();
+   my @param_list = ();
    foreach my $param ($cgi->param)
    {
       my $key = $self->strip_nonprintable($param);
+      push @param_list, $key unless exists $self->{r}{param}{$key};
+
       my $val = join ' ',
                 map {$self->strip_nonprintable($_)}
                 $cgi->param($param);
       $self->{r}{param}{$key} = $val;
-      push @field_order, $key if $key =~ /^[a-zA-Z0-9]/;
    }
-   $self->{field_order} = \@field_order;
+   $self->{param_list} = \@param_list;
 
    foreach my $envval (keys %ENV)
    {
@@ -166,7 +167,6 @@ sub new
    }
 
    $self->{r}{date}         = \&_interpolate_date;
-   $self->{r}{param_values} = \&_interpolate_param_values;
 
    return $self;
 }
@@ -175,9 +175,9 @@ sub new
 
 =over
 
-=item process_template ( TEMPLATE, CONTEXT, DEST )
+=item process_template ( FILENAME, CONTEXT, DEST )
 
-Reads in the template TEMPLATE, which must be the path to a
+Reads in the template FILENAME, which must be the path to a
 template file, relative to the configuration root and without
 the file extension.  Data is substituted for any template
 directives in the template file, and the resulting document
@@ -187,7 +187,7 @@ CONTEXT is a string describing the context of the output
 document, and must be either C<html> or C<email>.  If CONTEXT
 is C<html> then all HTML metacharacters in interpolated
 values will be escaped.  If CONTEXT is C<email> then space
-characters will be inserted at a couple of points to, reduce
+characters will be inserted at a couple of points, to reduce
 the scope for malicious input values to make mail software do
 bad things.
 
@@ -203,7 +203,7 @@ into a string, which becomes the return value.
 
 sub process_template
 {
-   my ($self, $template, $context, $dest) = @_;
+   my ($self, $filename, $context, $dest) = @_;
 
    my ($ret, $coderef);
    if (defined $dest)
@@ -217,21 +217,9 @@ sub process_template
       $coderef = sub { $ret .= $_[0] };
    }
 
-   my $fh = $self->_open_file($template, "$context template");
+   my $template = $self->_compile_template($filename, $context);
+   $self->_run_template($template, $context, $coderef);
 
-   local $_;
-   while(<$fh>)
-   {
-      while( s|^(.*?) \{\= \s* (\w+(?:\.\w+)?) \s* \=\} ||x )
-      {
-         my ($pre, $subst) = ($1, $2);
-         &{ $coderef }($pre) if length $pre;
-         $self->_interpolate($context, $subst, $coderef);
-      }
-      &{ $coderef }($_) if length;
-   }
-
-   $fh->close;
    return $ret;
 }
 
@@ -298,6 +286,60 @@ sub uninstall_directive
    return $save;
 }
 
+=item install_foreach ( NAME, VALUES )
+
+Installs data to support a FOREACH directive in templates.
+NAME should be the name to appear in the FOREACH directive,
+and VALUES must be a ref to an array of hashes, with each
+hash defining values for local variables for one iteration
+of the FOREACH loop.  For example, this code:
+
+  $treq->install_foreach( 'foobar', [
+    { foo => 'foo1', bar => 'bar7' },
+    { foo => 'foo2', bar => 'bar4' },
+    { foo => 'foo3', bar => 'bar9' },
+  ]);
+
+would cause this template segment:
+
+  {= FOREACH foobar =}
+  The foo is {= foo =}, but the bar is {= bar =}!
+  {= END =}
+
+to produce the output:
+
+  The foo is foo1, but the bar is bar7!
+  The foo is foo2, but the bar is bar4!
+  The foo is foo3, but the bar is bar9!
+
+=cut
+
+sub install_foreach
+{
+   my ($self, $name, $values) = @_;
+
+   $self->{'foreach'}{$name} = $values;
+}
+
+=item uninstall_foreach ( NAME )
+
+Removes a foreach data set previously installed with
+the install_foreach() method.
+
+Returns a value which will reinstall the foreach data
+if passed to the install_foreach() method.
+
+=cut
+
+sub uninstall_foreach
+{
+   my ($self, $name) = @_;
+
+   my $save = $self->{'foreach'}{$name};
+   delete $self->{'foreach'}{$name};
+   return $save;
+}
+
 =item config ( SETTING_NAME, DEFAULT )
 
 Returns the value of the configuration setting SETTING_NAME
@@ -336,15 +378,14 @@ sub param
 
 =item param_list ()
 
-Returns a list of the names of all CGI parameters who's
-names start with a number or a letter.  The parameter
-names are returned in the order in which each parameter
-first occurs in the request.  There will be no
+Returns a list of the names of all CGI parameters.  The
+parameter names are returned in the order in which each
+parameter first occurs in the request.  There will be no
 duplicates in the list returned.
 
 Runs of nonprintable characters in parameter names are
 replaced with spaces, both in the list returned by this
-method and in the parameter names recognised by the
+method and in the parameter names recognized by the
 param() method.
 
 =cut
@@ -353,7 +394,7 @@ sub param_list
 {
    my ($self) = @_;
 
-   return @{ $self->{field_order} };
+   return @{ $self->{param_list} };
 }
 
 =item cgi ()
@@ -454,7 +495,164 @@ module.
 
 =over
 
-=item _interpolate ( CONTEXT, DIRECTIVE, CODEREF )
+=item _compile_template ( FILENAME, CONTEXT )
+
+Reads a template file for context CONTEXT from file
+FILENAME, and compiles it to the following internal
+representation:
+
+The compiled template is an array ref, each element of
+which is one of:
+
+=over
+
+=item C<a scalar>
+
+Some literal text from the template
+
+=item C<a scalar reference>
+
+The referenced string is the contents of a template
+directive other than a control structure.
+
+=item C<a hash reference>
+
+The referenced hash represents a control structure.  The
+C<ctl> value is a string that defines the type of control
+structure (at the moment only C<FOREACH> is defined).  The
+C<sub> value is an array reference, holding the control
+structure body as a compiled template.  The C<arg> value
+is the argument string (if any) that appeared in the control
+directive.
+
+=back
+
+For example, this template:
+
+  %% NMS email template file %%
+  Today is {= date =}, you are {= env.REMOTE_USER =} and
+  your inputs were:
+  {= FOREACH input_field =}
+  {= name =}: {= value =}
+  {= END =}
+  ----
+
+Would compile to the array ref:
+
+  [
+    "Today is ",
+    \'date',
+    ", you are ",
+    \'env.REMOTE_USER',
+    " and\n",
+    "your inputs were:\n",
+    {
+      'ctl' => 'FOREACH'
+      'arg' => 'input_field',
+      'sub' => [ \'name', ": ", \'value', "\n" ],
+    }
+    "----\n",
+  ]
+
+Returns the compiled template as an array ref, or dies on
+error.
+
+=cut
+
+sub _compile_template
+{
+   my ($self, $filename, $context) = @_;
+
+   my $fh = $self->_open_file($filename, "$context template");
+
+   my $compiled = [];
+   my @stack = ($compiled);
+
+   local $_;
+   while(<$fh>)
+   {
+      # Suppress newline on control directive alone on a line
+      s#^\s*(\{\= \s*[A-Z]+\s*[\s\w\-\.]+ \=\})\s*\n#$1#x;
+
+      while ( s#(.*?) \{\= \s* (.*?) \s* \=\} ##x )
+      {
+         my ($pre, $directive) = ($1, $2);
+         push @{ $stack[0] }, $pre if length $pre;
+         if ($directive =~ s/^FOREACH\s*//)
+         {
+            my $sub = [];
+            push @{ $stack[0] }, { 'ctl' => 'FOREACH',
+                                   'arg' => $directive,
+                                   'sub' => $sub
+                                 };
+            unshift @stack, $sub;
+         }
+         elsif ($directive =~ /^END$/i)
+         {
+            shift @stack;
+            die "misplaced END directive" unless scalar @stack;
+         }
+         else
+         {
+            push @{ $stack[0] }, \$directive;
+         }
+      }
+
+      push @{ $stack[0] }, $_ if length;
+   }
+   $fh->close;
+
+   return $compiled;
+}
+
+=item _run_template ( TEMPLATE, CONTEXT, CODEREF )
+
+Runs a pre-compiled template, and dies on error.
+
+The TEMPLATE parameter must be a a compiled template, as
+returned by the _compile_template() method.  CONTEXT is
+the context string and CODEREF is the output destination
+coderef.
+
+=cut
+
+sub _run_template
+{
+   my ($self, $template, $context, $coderef) = @_;
+
+   foreach my $part (@$template)
+   {
+      if (ref $part eq 'HASH')
+      {
+         die "[$part->{ctl}] unsupported" unless $part->{ctl} eq 'FOREACH';
+         my $vals = $self->{'foreach'}{$part->{arg}};
+         defined $vals or die "[$part->{arg}] cannot be used in a FOREACH directive";
+
+         foreach my $val (@$vals)
+         {
+            foreach my $k (keys %$val)
+            {
+               $self->install_directive($k, $val->{$k});
+            }
+            $self->_run_template($part->{'sub'}, $context, $coderef);
+            foreach my $k (keys %$val)
+            {
+               $self->uninstall_directive($k);
+            }
+         }
+      }
+      elsif (ref $part eq 'SCALAR')
+      {
+         $self->_interpolate($$part, $context, $coderef);
+      }
+      elsif (length $part)
+      {
+         &{ $coderef }($part);
+      }
+   }
+}
+
+=item _interpolate ( DIRECTIVE, CONTEXT, CODEREF )
 
 Resolves a single template directive in context CONTEXT
 and outputs the result via the coderef CODEREF.  DIRECTIVE
@@ -465,7 +663,7 @@ delimiters, with leading and trailing whitespace removed.
 
 sub _interpolate
 {
-   my ($self, $context, $directive, $coderef) = @_;
+   my ($self, $directive, $context, $coderef) = @_;
 
    my $data_src = $self->{r};
    while ($directive =~ s#^(\w+)\.##)
@@ -500,7 +698,7 @@ sub _interpolate
       # character of the line.
       $value =~ s#(\r|\n)(\S)#$1 $2#g;
 
-      # Could be trying to fake a MIME boundry.
+      # Could be trying to fake a MIME boundary.
       $value =~ s/------/ ------/g;
    }
    else
@@ -509,6 +707,7 @@ sub _interpolate
    }
 
    &{ $coderef }($value) if length $value;
+   return;
 }
 
 =item _interpolate_date ( CONTEXT, CODEREF )
@@ -525,44 +724,6 @@ sub _interpolate_date
    defined $date_fmt or $date_fmt = $self->{opt}{DateFormat};
 
    return strftime $date_fmt, localtime;
-}
-
-=item _interpolate_param_values ( CONTEXT, CODEREF )
-
-Resolves a C<param_values> template directive.
-
-=cut
-
-sub _interpolate_param_values
-{
-   my ($self, $context, $coderef) = @_;
-
-   my $template = $self->{r}{'config'}{"param_values_${context}_template"};
-   defined $template or $template = "pv_$context";
-
-   my $field_order = $self->{field_order};
-   my $sort = $self->{r}{'config'}{'sort'} || '';
-   if ($sort =~ /^alpha/i)
-   {
-      $field_order = [ sort @$field_order ];
-   }
-   elsif ($sort =~ s#^\s*order\s*:\s*##i)
-   {
-      $field_order = [ split /\s*,\s*/, $sort ];
-   }
-
-   foreach my $input (@$field_order)
-   {
-      my $value = $self->param($input);
-      next unless $self->config('print_blank_fields', '') or $value !~ /^\s*$/;
-      $self->{r}{name}  = $input;
-      $self->{r}{value} = $value;
-      $self->process_template($template, $context, $coderef);
-   }
-   delete $self->{r}{name};
-   delete $self->{r}{value};
-
-   return ''; # We've already done our output direct to $coderef
 }
 
 =item _dest_to_coderef ( DEST )
@@ -794,7 +955,6 @@ Here is an example of an HTML template:
     <p>
      You put <b>{= param.foo =}</b> in the <b>foo</b> input.
     </p>
-  {= param_values =}
    </body>
   </html>
 
@@ -818,13 +978,13 @@ the output document.
 
 =item C<env.*>
 
-The C<env.*> direcitve substitutes the values of environment
+The C<env.*> directive substitutes the values of environment
 variables.  Any non-printable characters will be removed
 from the values using the strip_nonprintable() method.
 
 =item C<param.*>
 
-The C<param.*> direcitve substitutes the values of CGI
+The C<param.*> directive substitutes the values of CGI
 parameters.  Any non-printable characters will be removed
 from the values using the strip_nonprintable() method.
 
@@ -832,43 +992,6 @@ from the values using the strip_nonprintable() method.
 
 The C<date> directive outputs the current date, formatted
 according to the C<date_fmt> configuration setting.
-
-=item C<param_values>
-
-The C<param_values> directive iterates over the CGI
-parameters and produces some output for each.
-
-By default, the list of parameters to visit is that
-returned by the param_list() method.  To have the list
-sorted alphabetically, set the C<sort> configuration
-value to "alpha".
-
-For finer control of the list of parameters that produce
-output, the C<sort> configuration value can be set to the
-string "order:" followed by a comma-separated list of
-parameter names.  That fixes both the set of parameters
-that produce output and the order in which they produce
-their output.
-
-To produce the output for each parameter, the
-C<param_values> directive uses another template.  The
-sub-template C<pv_html> will be used if the
-C<param_values> directive is encountered in an html
-template, and the C<pv_email> template will be used in
-an email template.  These sub-template names can be
-overridden with the C<param_values_html_template> and
-C<param_values_email_template> configuration values
-respectively.
-
-Within the sub-template, two extra directives are
-available: C<name> for the parameter name and C<value>
-for the parameter value.  Here is an example of how the
-C<pv_html> sub-template might look:
-
-  %% NMS html template file %%
-    <p>
-     <b>{= name =}</b>: {= value =}
-    </p>
 
 =back
 

@@ -35,12 +35,11 @@ MIME_Lite.pm   - A Perl module that TFmail.pl needs if you want to use
 default.trc    - The main configuration file
 spage.trt      - The template file that controls the layout of the success
                  page
-pv_html.trt    - The template file that controls the look of the inputs on
-                 the success page
+missing.trt    - The template file that controls the layout of the page
+                 presented to the user if some required fields have been
+                 left blank.
 email.trt      - The template file that controls the layout of the email
                  body
-pv_email.trt   - The template file that controls the look of the inputs in
-                 the email body
 README         - This file. Instructions on how to install and use TFmail
 ChangeLog      - The change history of these files
 MANIFEST       - List of files
@@ -117,6 +116,12 @@ USE_MIME_LITE       - If you're not using file uploads then you can set this to
                       is more likely to be mangled in some way by mail transport
                       agents if you don't use MIME::Lite.
 
+LOGFILE_ROOT        - The filesystem path to the directory under which log
+                      files can be written.  Leave this set to the empty
+		      string to disable writting to log files.
+
+LOGFILE_EXT         - The file extension that log files must have.  Default:
+                      .log
 
 SCRIPT INSTALLATION
 
@@ -138,7 +143,7 @@ line. If you don't have command line access to your web server then there
 will probably be an equivalent function in your file transfer program.
 
 
-OUTPUT CUSTOMISATION
+OUTPUT CUSTOMIZATION
 
 The .trt files are templates used by TFmail to generate the output
 HTML and the body of the email.  You can edit them to change the
@@ -151,17 +156,21 @@ replaces it with a value.  For example, the template directive
 directives for introducing environment variables and CGI form input
 values, and a few others.
 
-For example, be default TFmail will use the template email.tft to
+For example, by default TFmail will use the template email.tft to
 generate the body of the email.  By default that template looks
-like this.
+like this:
+
 
 %% NMS email template file %%
 Below is the result of your feedback form.  It was submitted
 {= by_submitter =}on {= date =}.
----------------------------------------------------------------------------
+----------------------------------------------------------------------
 
-{= param_values =}
----------------------------------------------------------------------------
+{= FOREACH input_field =}
+{= name =}: {= value =}
+
+{= END =}
+----------------------------------------------------------------------
 
 
 The first line just tells TFmail that this is indeed a template
@@ -174,19 +183,14 @@ the user's email address then the {= by_submitter =} directive
 produces nothing.  The "by " string was made part of the directive
 output so that the sentence would make sense in either case.
 
-The {= param_values =} directive is special; it produces some output
-for every input whose name starts with a number or a letter.  The
-actual output is produced by running another template for each CGI
-input.  By default, pv_email.trt is used, and the default
-pv_email.trt contents are:
-
-%% NMS email template file %%
-{= name =}: {= value =}
-
+The {= FOREACH input_field =} directive repeats the lines between
+the FOREACH line and the END line for each field in the form who's
+name starts with a letter or a number.
 
 If everything goes OK and the email is sent, TFmail presents a
 success page to the user.  By default, that success page comes
 from the spage.trt template file, which defaults to this:
+
 
 %% NMS html template file %%
 <?xml version="1.0" encoding="iso-8859-1"?>
@@ -206,27 +210,23 @@ from the spage.trt template file, which defaults to this:
     <h1 class="title">Thank You</h1>
     <p>Below is what you submitted on {= date =}</p>
     <hr size="1" width="75%" />
-{= param_values =}
+{= FOREACH input_field =}
+    <p><b>{= name =}:</b> {= value =}</p>
+{= END =}
     <hr size="1" width="75%" />
     <p align="center">
       <font size="-1">
         <a href="http://nms-cgi.sourceforge.net/">TFmail</a>
-        &copy; 2001  London Perl Mongers
+        &copy; 2002 London Perl Mongers
       </font>
     </p>
   </body>
 </html>
 
-The {= param_values =} directive uses a different sub-template
-for the inputs when it appears in an html template: pv_html.trt,
-which looks like this:
-
-%% NMS html template file %%
-<p><b>{= name =}:</b> {= value =}</p>
 
 You can change these templates to anything you like, giving you
 full control over the look of the output.  You don't have to
-include the {= param_values =} directive or the {= date =}
+include the {= FOREACH input_field =} directive or the {= date =}
 directive unless you want to.
 
 You can use "param" directives to get at the values of individual
@@ -344,29 +344,20 @@ success_page_template       - The template file to use for the main
                               HTML success page, displayed when the
                               email has been sent.  Default: spage
 
-param_values_html_template  - The template file to use for each
-                              CGI input when a {= param_values =}
-                              directive is encountered in an HTML
-                              page template.  Default: pv_html
-
-param_values_email_template - The template file to use for each
-                              CGI input when a {= param_values =}
-                              directive is encountered in an email
-                              body template.  Default: pv_email
-
 sort                        - This sets the order in which the
-                              {= param_values =} directive processes the CGI
-                              parameters.  It can be the string 'alphabetic'
-                              for alphabetic order, or the string "order:"
-                              followed by a comma separated list of the
-                              parameter names.  Default: the parameters are
-                              output in the order in which they occur in the
-                              HTTP request.
+                              {= FOREACH input_field =} directive processes
+                              the CGI parameters.  It can be the string
+                              'alphabetic' for alphabetic order, or the
+                              string "order:" followed by a comma separated
+                              list of the parameter names.  Default: the
+                              parameters are output in the order in which
+                              they occur in the HTTP request.
 
 print_blank_fields          - If this is set to a true value then fields that
                               the user left blank will be visited by the
-                              {= param_values =} directive.  Normally, blank
-                              fields are suppressed to save space.  Default: 0
+                              {= FOREACH input_field =} directive.  Normally,
+                              blank fields are suppressed to save space.
+                              Default: 0
 
 subject                     - The subject for the email.  Default:
                               "WWW Form Submission".
@@ -387,9 +378,9 @@ realname_input              - The name of the CGI parameter that will
                               address.
 
 redirect                    - If this configuration value is set, then it
-                              must be a URL, TFmail will generate a redirect
-                              to that URL on success, instead of using the
-                              success page template.
+                              must be a URL and TFmail will generate a
+                              redirect to that URL on success, instead of
+                              using the success page template.
 
 required                    - A list of the names of inputs that the
                               user cannot leave blank.  If any of these
@@ -398,7 +389,7 @@ required                    - A list of the names of inputs that the
 
 missing_template            - The HTML template file used to generate the
                               page that the user sees if they leave a
-                              required field blank.  Default: missing
+                              required field blank.
 
 missing_fields_redirect     - If this configuration value is set then
                               it must be a URL and TFmail will generate
@@ -411,7 +402,7 @@ confirmation_template       - If this field is set then it must be the
                               to send a mail back to the user confirming
                               their submission.  CAUTION: since the user
                               could give any email address (not just their
-                              own) and submit repeatedly, there is risk that
+                              own) and submit repeatedly, there is a risk that
                               some nasty person will use this to mailbomb
                               a third party.  Only switch this on if you
                               really need it.  Template directives that
@@ -423,6 +414,17 @@ confirmation_subject        - The subject for the confirmation email, if it
                               is activated by the confirmation_template
                               directive above.
 
+logfile                     - The name of a file to which data will be
+                              appended for each successful run of the
+                              script.  The name is relative to the
+			      LOGFILE_ROOT directory and does not include
+			      the LOGFILE_EXT file extension.  Default: no
+			      logging.  Note that logging is disabled unless
+			      the LOGFILE_ROOT constant in the script is set.
+
+log_template                - The template file used to construct the text
+                              that gets appended to the log file if the
+                              logfile setting above is set.  Default: log
 
 FILE UPLOADS
 
@@ -436,14 +438,14 @@ your HTML form:
 ...and you will need to configure one or more inputs to be file uploads
 in your configuration file.  The configuration directive to make an
 input act as a file upload is upload_*, with the * replaced by the name
-of the inputs.  The value is a list of acceptable file extensions for
+of the input.  The value is a list of acceptable file extensions for
 the uploaded file, with the last one being the default that gets used
 if the uploaded file has another extension.
 
 For example, suppose you want the user to be able to upload a picture.
 You might put in the configuration file:
 
-upload_picture: gif gpj gpeg png xxx
+upload_picture: gif jpg jpeg png xxx
 
 and you might put in the HTML form:
 

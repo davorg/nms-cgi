@@ -3,6 +3,9 @@ Below is the result of your feedback form.  It was submitted
 {= by_submitter =}on {= date =}.
 ----------------------------------------------------------------------
 
-{= param_values =}
+{= FOREACH input_field =}
+{= name =}: {= value =}
+
+{= END =}
 ----------------------------------------------------------------------
 

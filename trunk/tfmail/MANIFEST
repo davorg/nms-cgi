@@ -3,9 +3,8 @@ tfmail/NMStreq.pm
 tfmail/MIME_Lite.pm
 tfmail/default.trc
 tfmail/email.trt
-tfmail/pv_email.trt
-tfmail/pv_html.trt
 tfmail/spage.trt
+tfmail/missing.trt
 tfmail/MANIFEST
 tfmail/README
 tfmail/ChangeLog

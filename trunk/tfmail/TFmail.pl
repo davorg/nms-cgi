@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.5 2002-05-04 06:59:59 nickjc Exp $
+# $Id: TFmail.pl,v 1.6 2002-05-07 21:38:07 nickjc Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -18,6 +18,8 @@ use constant CONFIG_EXT     => '.trc';
 use constant TEMPLATE_EXT   => '.trt';
 use constant ENABLE_UPLOADS => 0;
 use constant USE_MIME_LITE  => 1;
+use constant LOGFILE_ROOT   => '';
+use constant LOGFILE_EXT    => '.log';
 
 # USER CONFIGURATION << END >>
 # ----------------------------
@@ -40,6 +42,7 @@ See the F<README> file for instructions.
 
 use constant MIME_LITE => USE_MIME_LITE || ENABLE_UPLOADS;
 
+use Fcntl ':flock';
 use lib LIBDIR;
 BEGIN
 {
@@ -57,7 +60,7 @@ use NMStreq;
 BEGIN
 {
   use vars qw($VERSION);
-  $VERSION = substr q$Revision: 1.5 $, 10, -1;
+  $VERSION = substr q$Revision: 1.6 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -107,7 +110,9 @@ sub main
 
    if ( check_required_fields($treq) )
    {
+       setup_input_fields($treq);
        send_emails($treq, $recipients);
+       log_to_file($treq);
        return_html($treq);
    }
    else
@@ -168,11 +173,68 @@ sub check_required_fields
    my ($treq) = @_;
 
    my @require = split /\s*,\s*/, $treq->config('required', '');
+
+   my @missing = ();
    foreach my $r (@require)
    {
-      return 0 if $treq->param($r) =~ /^\s*$/;
+      if ($r =~ /^_?email$/)
+      {
+         push @missing, $r unless address_ok($treq->param($r));
+      }
+      else
+      {
+         push @missing, $r if $treq->param($r) =~ /^\s*$/;
+      }
    }
-   return 1;
+
+   if (scalar @missing)
+   {
+      $treq->install_foreach('missing_field', [map {{name=>$_}} @missing]);
+      return 0;
+   }
+   else
+   {
+      return 1;
+   }
+}
+
+=item setup_input_fields ( TREQ )
+
+Installs a FOREACH directive in the TREQ object to
+iterate over the names and values of input fields.
+
+Honors the 'sort' and 'print_blank_fields' configuration
+settings.
+
+=cut
+
+sub setup_input_fields
+{
+   my ($treq) = @_;
+
+   my @fields;
+   my $sort = $treq->config('sort', '');
+   if ($sort =~ s/^\s*order\s*:\s*//i)
+   {
+      @fields = split /\s*,\s*/, $sort;
+   }
+   else
+   {
+      @fields = grep {/^[a-zA-Z0-9]/} $treq->param_list;
+      if ($sort =~ /^alpha/i)
+      {
+         @fields = sort @fields;
+      }
+   }
+
+   unless ( $treq->config('print_blank_fields', '') )
+   {
+      @fields = grep {$treq->param($_) !~ /^\s*$/} @fields;
+   }
+
+   $treq->install_foreach('input_field',
+     [map { {name => $_, value => $treq->param($_)} } @fields]
+   );
 }
 
 =item send_emails ( TREQ, RECIPIENTS )
@@ -268,16 +330,20 @@ sub send_emails
    if ($conftemp and $confto)
    {
       my %save = (
-        'param'        => $treq->uninstall_direcitve('param'),
-        'param_values' => $treq->uninstall_direcitve('param_values'),
-        'env'          => $treq->uninstall_direcitve('env'),
-        'by_submitter' => $treq->uninstall_direcitve('by_submitter'),
+        'param'        => $treq->uninstall_directive('param'),
+        'param_values' => $treq->uninstall_directive('param_values'),
+        'env'          => $treq->uninstall_directive('env'),
+        'by_submitter' => $treq->uninstall_directive('by_submitter'),
       );
+      my $save_foreach => $treq->uninstall_foreach('input_field');
+
       my $body = $treq->process_template($conftemp, 'email', undef);
+
       foreach my $k (keys %save)
       {
         $treq->install_directive($k, $save{$k});
       }
+      $treq->install_foreach('input_field', $save_foreach);
 
       send_email({
          To      => $confto,
@@ -346,6 +412,39 @@ END
      "SENDMAIL command failed, MAILPROG constant may be set wrong\n";
 }
 
+=item log_to_file ( TREQ )
+
+Appends to a log file, if configured to do so
+
+=cut
+
+sub log_to_file
+{
+   my ($treq) = @_;
+
+   unless( LOGFILE_ROOT )
+   {
+      return;
+   }
+
+   my $file = $treq->config('logfile', '');
+   return unless $file;
+   $file =~ m#^([\/\-\w]{1,100})$# or die "bad logfile name [$file]";
+   $file = $1;
+
+   open LOG, ">>@{[ LOGFILE_ROOT ]}/$file@{[ LOGFILE_EXT ]}" or die "open [$file]: $!";
+   flock LOG, LOCK_EX or die "flock [$file]: $!";
+   seek LOG, 0, 2;
+
+   $treq->process_template(
+      $treq->config('log_template', 'log'),
+      'email',
+      \*LOG
+   );
+
+   close LOG or die "close [$file] after append: $!";
+}
+
 =item missing_html ( TREQ )
 
 Generates the output page in the case where some inputs that
@@ -358,7 +457,7 @@ sub missing_html
    my ($treq) = @_;
 
    my $redirect = $treq->config('missing_fields_redirect');
-   if ( defined $redirect )
+   if ( $redirect )
    {
       print "Location: $redirect\n\n";
    }
