@@ -31,7 +31,7 @@ my %files = (
 );
 
 $block = 0;
-@yes=qw(two bar four five);
+@yes=qw(two bar.html four five);
 @no=qw(one);
 NMSTest::ScriptUnderTest->new(
   SCRIPT       => 'search/search.pl',
@@ -55,8 +55,7 @@ my $t = NMSTest::ScriptUnderTest->new(
 );
 
 @yes=qw(two five);
-# @no=qw(one bar four);
-@no=qw(one four);
+@no=qw(one bar.html four);
 $t->run_test(
   TEST_ID      => "some blocked",
 );

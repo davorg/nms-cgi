@@ -194,9 +194,9 @@ sub run
    close CGI;
    my $exit = $?;
 
-   if ($exit)
+   if ($exit & 255)
    {
-      die "script terminated with non-zero status, test set aborted\n";
+      die "script died from a signal, test set aborted\n";
    }
 
    my @results = ( "Test ID: $self->{TEST_ID}\n",
