@@ -236,10 +236,7 @@ sub request {
 </html>
 END
 
-    if ($ENV{SCRIPT_NAME} =~ m#^([\w\-\/\.\:]{1,100})$#) {
-      $err = "$1: $err";
-    }
-    warn $err;
+    $self->warn($err);
   }
 }
 
@@ -328,6 +325,18 @@ sub cgi_object {
    return $self->{CGI};
 }
 
+=item param ( ARGS )
+
+Invokes the param() method of the C<CGI.pm> object for this request.
+
+=cut
+
+sub param {
+    my $self = shift;
+
+    $self->cgi_object->param(@_);
+}
+
 =item escape_html ( INPUT )
 
 Returns a copy of the string INPUT with all HTML metacharacters escaped.
@@ -384,6 +393,26 @@ sub name_and_version {
     my ($self) = @_;
 
     return $self->{CFG}{name_and_version};
+}
+
+=item warn ( MESSAGE )
+
+Appends a message to the web server's error log.
+
+=cut
+
+sub warn {
+    my ($self, $msg) = @_;
+
+    if ($ENV{SCRIPT_NAME} =~ m#^([\w\-\/\.\:]{1,100})$#) {
+        $msg = "$1: $msg";
+    }
+
+    if ($ENV{REMOTE_ADDR} =~ /^\[?([\d\.\:a-f]{7,100})\]?$/i) {
+        $msg = "[$1] $msg";
+    }
+
+    warn "$msg\n";
 }
 
 =back

@@ -2,7 +2,7 @@ package CGI::NMS::Script::FormMail;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.9 $, 10, -1;
+$VERSION = substr q$Revision: 1.10 $, 10, -1;
 
 use Socket;  # for the inet_aton()
 
@@ -1431,7 +1431,6 @@ sub error_page {
     <title>$etitle</title>
 END
 
-  $self->output_style_element;
 
   print <<END;
     <style type="text/css">
@@ -1440,10 +1439,20 @@ END
               background-color: #FFFFFF;
               color: #000000;
              }
+       table {
+               background-color: #9C9C9C;
+             }
        p.c2 {
               font-size: 80%;
               text-align: center;
             }
+       tr.title_row  {
+                        background-color: #9C9C9C;
+                      }
+       tr.body_row   {
+                         background-color: #CFCFCF;
+                      }
+
        th.c1 {
                text-align: center;
                font-size: 143%;
@@ -1452,13 +1461,18 @@ END
        div.c2 {margin-left: 2em}
      -->
     </style>
+END
+
+  $self->output_style_element;
+
+print <<END;
   </head>
   <body>
-    <table border="0" width="600" bgcolor="#9C9C9C" summary="">
-      <tr bgcolor="#9C9C9C">
+    <table border="0" width="600" summary="">
+      <tr class="title_row">
         <th class="c1">$etitle</th>
       </tr>
-      <tr bgcolor="#CFCFCF">
+      <tr class="body_row">
         <td>
           $error_body
           <hr size="1" />

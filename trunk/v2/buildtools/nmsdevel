@@ -30,6 +30,9 @@ elsif ($action eq 'release') {
     test();
     upload();
 }    
+elsif ($action eq 'upload') {
+    upload();
+}
 else {
     die "usage: nmsdevel <test|release>\n";
 }
