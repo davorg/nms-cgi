@@ -11,7 +11,7 @@ my @tests = (
   [ 'invalid',     'foo://bar',                   1,    0 ],
   [ 'wrong',       'http://x/x.htm',              0,    0 ],
   [ 'wrong',       'http://x/x.htm',              1,    0 ],
-  [ 'username',    'http://foo.domain@x.x/x.htm', 0,    1 ],
+  [ 'username',    'http://foo.domain@x.x/x.htm', 0,    0 ],
   [ 'username',    'http://foo.domain@x.x/x.htm', 1,    0 ],
   [ 'query',       'http://x/x.htm?foo.domain',   0,    0 ],
   [ 'query',       'http://x/x.htm?foo.domain',   1,    0 ],

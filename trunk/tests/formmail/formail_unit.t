@@ -103,8 +103,8 @@ sub refererTests
    refCheck(undef, 0, 0);
    refCheck(undef, 1, 1);
    refCheck('https://dave.org.uk@someplace.else.domain', 0);
-   refCheck('https://dave.org.uk@someplace.else.domain', 1, 1);
-   refCheck('https://someguy@dave.org.uk', 0, 1);
+   refCheck('https://dave.org.uk@someplace.else.domain', 0, 1);
+   refCheck('https://someguy@dave.org.uk', 1, 1);
    refCheck('https://someguy@dave.org.uk', 1, 0);
    refCheck('https://someguy@dave.org.uk/more', 1, 0);
    refCheck('http://209.207.222.64', 1);
