@@ -1,8 +1,13 @@
-#!perl -Tw
+#!/usr/bin/perl -Tw
 #
-# $Id: search.pl,v 1.24 2002-03-04 09:09:39 gellyfish Exp $
+# $Id: search.pl,v 1.25 2002-03-04 10:27:39 gellyfish Exp $
 #
 # $Log: not supported by cvs2svn $
+# Revision 1.24  2002/03/04 09:09:39  gellyfish
+# * No point in lying about the encoding of our output
+# * Made the use of the directory parameter safer in search.pl
+# * Added example of use of directory parameter to search.pl
+#
 # Revision 1.23  2002/03/03 21:52:45  gellyfish
 # * Folded in the intent of the patches from  Gianluca Sforna
 #
@@ -119,8 +124,8 @@ $CGI::POST_MAX = $CGI::POST_MAX = 4096;
 # parameters seems unclear, please see the README file.
 #
 BEGIN { $DEBUGGING      = 1; }
-my $basedir             = '/indigo/html';
-my $baseurl             = '/html';
+my $basedir             = '/usr/local/apache/htdocs';
+my $baseurl             = 'http://localhost/';
 my @files               = ('*.html','*/*.html');
 my $title               = "NMS Search Program";
 my $title_url           = 'http://cgi-nms.sourceforge.net';
@@ -135,6 +140,7 @@ my $style               = '';
 
 my $hit_threshhold      = 1;
 my @subdirs             = ('','/manual','/vmanual');
+my $no_prune            = 1;
 
 #
 # USER CONFIGURATION << END >>
@@ -270,11 +276,14 @@ sub do_search
     my @stats = stat $File::Find::name;
     if (-d _) {
         if ("$dirname$basename" !~ /$dirlist/o) {
-            $File::Find::prune = 1;
+            $File::Find::prune = 1 unless (!$emulate_matts_code and $no_prune);
         }
         return;
     }
-    return unless ("$dirname$basename" =~ m/$wclist/io);
+    unless (!$emulate_matts_code and $no_prune )
+    {
+      return unless ("$dirname$basename" =~ m/$wclist/io);
+    }
     return unless -r _;
     foreach my $blocked (@blocked) {
         if ($emulate_matts_code ) {
@@ -324,7 +333,6 @@ sub do_search
     else {
         my @m = split(/$termlist/i, $string);
         my $matches = scalar(@m);
-        print $matches;
         push (@hits, $matches);
         push (@paths, "$dirname$basename");
         push (@titles, $page_title);

@@ -127,8 +127,17 @@ most important variables, and must be altered to refer to your website.
         might want to restrict your search to - see the description of
         the 'directory' CGI form parameter below for more information.
         This variable is only used if $emulate_matts_code is set to 0.
-        
 
+    $no_prune
+
+        If $emulate_matts_code is set to 0 and and this is set to 1 then,
+        rather than having to specify each level of sub-directory you want
+        to search in @files, the search will go down into the sub-directories.
+        If you do set this you probably want to be more careful of what you
+        put in @blocked so that you are only searching in the things that
+        you want.
+       
+        
 INSTALLATION
 ------------
 
