@@ -7,7 +7,7 @@ use IO::File;
 use POSIX qw(strftime);
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.5 $, 10, -1;
+$VERSION = substr q$Revision: 1.6 $, 10, -1;
 
 =head1 NAME
 
@@ -870,9 +870,9 @@ sub _open_file
 
    my $header = <$fh>;
    unless (defined $header and
-           $header =~ m#^\%\% NMS \Q$filetype\E file \%\%$#)
+           $header =~ m#^\%\% NMS \Q$filetype\E file \%\%\s*$#)
    {
-      $self->error("$filetype file [$filename] lacks a valid header line");
+      $self->error("$filetype file [$filename]: invalid header line [$header]");
    }
 
    return $fh;
