@@ -43,7 +43,7 @@ The configuration of wwwadmin.pl is very similar to wwwboard.pl. In fact, for al
 
       $passwd_file - This is the name of the file, in $basedir, where the
                      username and password for the board administrator will be
-		     stored.
+                     stored.
 
    Installation:
       You must upload this file to your server's cgi-bin or in a directory where
@@ -67,15 +67,15 @@ USAGE:
 ------
 
 RUNNING WWWADMIN.
-	WWWAdmin is a self-contained script, in that all you have to do is 
+        WWWAdmin is a self-contained script, in that all you have to do is 
    call the script with a plain url (The url you used in $cgi_url) and it 
    will give you a form which displays all of your options.  The options 
    that are currently available in this release are:
-	Remove Messages
-	Remove Messages by Date
-	Remove Messages by Author
-	Remove Messages by Sorted Number
-	Change WWWAdmin Password
+        Remove Messages
+        Remove Messages by Date
+        Remove Messages by Author
+        Remove Messages by Sorted Number
+        Change WWWAdmin Password
 
 All of these options require you to use a password and username once you 
 take the link.  The default username and password for WWWAdmin are:
@@ -90,7 +90,7 @@ how each WWWAdmin function works is below:
 
 REMOVE MESSAGES
 ===============
-	When selecting this link, you will be taken to a form which gives you 
+        When selecting this link, you will be taken to a form which gives you 
 the article number, two radio boxes, the subject, author and date that 
 the article was posted, for all articles.  The form is put inside of a 
 Netscape table, but I have tested it and it also works with lynx (a text 
@@ -105,7 +105,7 @@ out of your messages/ directory.
 
 REMOVE MESSAGES BY DATE
 =======================
-	This link will pop up a form that looks something like this:
+        This link will pop up a form that looks something like this:
 
   Checkbox   Date1   # of Messages  Message Numbers
 
@@ -119,7 +119,7 @@ will only remove messages with that date.
 
 REMOVE MESSAGES BY AUTHOR
 =========================
-	This link will pop up a form very similar to that which the Remove 
+        This link will pop up a form very similar to that which the Remove 
 Message by Date link brought up.  Except instead of different dates, you 
 will see the names of authors of messages.  You can check the checkbox 
 next to an authors name to remove all postings that he or she posted to 
@@ -127,14 +127,14 @@ your message board.
 
 REMOVE MESSAGES BY SORTED NUMBER
 ================================
-	This link brings up a form identical to the plain Remove Messages form, 
+        This link brings up a form identical to the plain Remove Messages form, 
 except that the postings are sorted from lowest number to highest 
 number.  This can be useful if you want to delete postings in the order 
 they were posted, but this is probably the l east useful remove function.
 
 CHANGE PASSWORD
 ===============
-	This form will ask you to fill in your current username and password 
+        This form will ask you to fill in your current username and password 
 and allow you to change your username and password to whatever you 
 like.  If you want to keep the username the same, you can simply not 
 fill in the 'New Username' part of the script.  When changing your 
