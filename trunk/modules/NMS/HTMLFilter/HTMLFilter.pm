@@ -4,7 +4,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.3 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.4 $ =~ /(\d+)\.(\d+)/);
 
 use CGI::NMS::Charset;
 
@@ -558,7 +558,7 @@ my %table = (
 %_Context = (
   'Inline'      => \%inline,
   'Flow'        => \%flow,
-  'Notags'      => {},
+  'Notags'      => { 'CDATA' => 'CDATA' },
   'pre.content' => \%pre_content,
   'table'       => \%table,
   'list'        => { 'li' => 'Flow' },
