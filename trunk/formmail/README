@@ -31,7 +31,7 @@ CONFIGURATION
 There are a number of variables that you can change in formmail.pl which
 alter the way that the program works.
 
-$DEBUGGING          - This should be set to 1 whilst you are installing 
+$DEBUGGING          - This should be set to 1 whilst you are installing
                       and testing the script. Once the script is live you
                       should change it to 0. When set to 1, errors will
                       be output to the browser. This is a security risk and
@@ -42,66 +42,66 @@ $emulate_matts_code - When this variable is set to a true value (e.g. 1)
                       counterpart at Matt's Script Archive. If it is set
                       to a false value (e.g. 0) then more advanced features
                       are switched on. We do not recommend changing this
-		      variable to 1, as the resulting drop in security
-		      may leave your formmail open to use as a SPAM relay.
+                      variable to 1, as the resulting drop in security
+                      may leave your formmail open to use as a SPAM relay.
 
 $secure             - When this variable is set to a true value (e.g. 1)
                       many additional security features are turned on.  We
                       do not recommend changing this variable to 0, as the
-		      resulting drop in security may leave your formmail
-		      open to use as a SPAM relay.
+                      resulting drop in security may leave your formmail
+                      open to use as a SPAM relay.
 
 $mailprog           - The system command that the script should invoke to
                       send an outgoing email. This should be the full path
-		      to a program that will read a message from STDIN and
-		      determine the list of message recipients from the
-		      message headers. Any switches that the program
-		      requires should be provided here. Your hosting
-		      provider or system administrator should be able to
-		      tell you what to set this variable to.
+                      to a program that will read a message from STDIN and
+                      determine the list of message recipients from the
+                      message headers. Any switches that the program
+                      requires should be provided here. Your hosting
+                      provider or system administrator should be able to
+                      tell you what to set this variable to.
 
 @referers           - A list of referring hosts. This should be a list of
                       the names or IP addresses of all the systems that
-		      will host HTML forms that refer to this formmail
-		      script. Only these hosts will be allowed to use the
-		      formmail script. This is needed to prevent others
-		      from hijacking your formmail script for their own use
-		      by linking to it from their own HTML forms.
+                      will host HTML forms that refer to this formmail
+                      script. Only these hosts will be allowed to use the
+                      formmail script. This is needed to prevent others
+                      from hijacking your formmail script for their own use
+                      by linking to it from their own HTML forms.
 
 @allow_mail_to      - A list of the email addresses that formmail can send
                       email to. The elements of this list can be either
-		      simple email addresses (like 'you@your.domain') or
-		      domain names (like 'your.domain'). If it's a domain
-		      name then *any* address at the domain will be allowed.
+                      simple email addresses (like 'you@your.domain') or
+                      domain names (like 'your.domain'). If it's a domain
+                      name then *any* address at the domain will be allowed.
 
-		      Example: to allow mail to be sent to 'you@your.domain'
-		      or any address at the host 'mail.your.domain', you
-		      would set:
-		      
-		      @allow_mail_to = qw(you@your.domain mail.your.domain);
+                      Example: to allow mail to be sent to 'you@your.domain'
+                      or any address at the host 'mail.your.domain', you
+                      would set:
+
+                      @allow_mail_to = qw(you@your.domain mail.your.domain);
 
 @recipients         - A list of Perl regular expression patterns that
                       determine who the script will allow mail to be sent
-		      to in addition to those set in @allow_mail_to. This is
-		      present only for compatibility with the original
-		      formmail script.  We strongly advise against having
-		      anything in @recipients as it's easy to make a mistake
-		      with the regular expression syntax and turn your
-		      formmail into an open SPAM relay.
-		      
-		      There is an implicit $ at the end of the regular
-		      expression, but you need to include the ^ if you want
-		      it anchored at the start.  Note also that since '.' is
-		      a regular expression metacharacter, you'll need to
-		      escape it before using it in domain names.
-		      
-		      If that last paragraph makes no sense to you then
-		      please don't put anything in @recipients, stick to
-		      using the less error prone @allow_mail_to.  
+                      to in addition to those set in @allow_mail_to. This is
+                      present only for compatibility with the original
+                      formmail script.  We strongly advise against having
+                      anything in @recipients as it's easy to make a mistake
+                      with the regular expression syntax and turn your
+                      formmail into an open SPAM relay.
+
+                      There is an implicit $ at the end of the regular
+                      expression, but you need to include the ^ if you want
+                      it anchored at the start.  Note also that since '.' is
+                      a regular expression metacharacter, you'll need to
+                      escape it before using it in domain names.
+
+                      If that last paragraph makes no sense to you then
+                      please don't put anything in @recipients, stick to
+                      using the less error prone @allow_mail_to.
 
 @valid_ENV          - A list of all the environment variables that you want
                       to be able to include in the email. See 'env_report'
-		      below.
+                      below.
 
 $date_fmt           - The format that the date will be displayed in. This
                       is a string that contains a number of different 'tags'.
@@ -131,7 +131,7 @@ $style              - This is the URL of a CSS stylesheet which will be
 
 $send_confirmation_mail - If this flag is set to 1 then an additional email
                           will be sent to the person who submitted the
-                          form.  
+                          form.
 
                           CAUTION: with this feature turned on it's
                           possible for someone to put someone else's email
@@ -140,7 +140,7 @@ $send_confirmation_mail - If this flag is set to 1 then an additional email
                           third party.  This third party is likely to blame
                           you for the email flood attack.
 
-$confirmation_text      - The header and body of the confirmation email 
+$confirmation_text      - The header and body of the confirmation email
                           sent to the person who submits the form, if the
                           $send_confirmation_mail flag is set. We use a
                           Perl 'here document' to allow us to configure it
@@ -157,7 +157,7 @@ $confirmation_text      - The header and body of the confirmation email
                           before the first blank line is taken as part of
                           the email header, and everything after the first
                           blank line is the body of the email.
-                         
+
   my $confirmation_text = <<'END_OF_CONFIRMATION';
   From: you@your.com
   Subject: form submission
@@ -199,9 +199,9 @@ works. Here's the full list of things you can set with hidden form inputs:
 
 recipient               - The email address to which the form submission
                           should be sent. If you would like it copied to
-			  more than one recipient then you can separate
-			  multiple email addresses with commas, for
-			  example:
+                          more than one recipient then you can separate
+                          multiple email addresses with commas, for
+                          example:
 
                           <input type="hidden" name="recipient"
                                 value="you@your.domain,me@your.domain" />
@@ -213,15 +213,15 @@ subject                 - The subject line for the email. For example:
 
 redirect                - If this value is present it should be a URL, and
                           the user will be redirected there after a
-			  successful form submission.  For example:
+                          successful form submission.  For example:
 
                           <input type="hidden" name="redirect"
                            value="http://www.your.domain/foo.html" />
 
                           If you don't specify a redirect URL then instead
-			  of redirecting formmail will generate a success
-			  page telling the user that their submission was
-			  successful.
+                          of redirecting formmail will generate a success
+                          page telling the user that their submission was
+                          successful.
 
 bgcolor                 - The background color for the success page.
 
@@ -240,75 +240,75 @@ title                   - The title for the success page.
 
 return_link_url         - The target URL for a link the end of the success
                           page. This is normally used to provide a link
-			  from the success page back to your main page or
-			  back to the page with the form on. For example:
+                          from the success page back to your main page or
+                          back to the page with the form on. For example:
 
                           <input type="hidden" name="return_link_url"
-			   value="/home.html" />
+                           value="/home.html" />
 
 return_link_title       - The label for the return link.  For example:
 
                           <input type="hidden" name="return_link_title"
-			   value="Back to my home page" />
+                           value="Back to my home page" />
 
 sort                    - This sets the order in which the submitted form
                           inputs will appear in the email and on the
-			  success page.  It can be the string 'alphabetic'
-			  for alphabetic order, or a comma separated list
-			  of the input names, for example:
+                          success page.  It can be the string 'alphabetic'
+                          for alphabetic order, or a comma separated list
+                          of the input names, for example:
 
-			  <input type="hidden" name="sort"
-			   value="name,email,age,comments">
-			  
+                          <input type="hidden" name="sort"
+                           value="name,email,age,comments">
+
 print_config            - This is mainly used for debugging, and if set it
                           causes formmail to include a dump of the
-			  specified configuration settings in the email.
-			  For example:
+                          specified configuration settings in the email.
+                          For example:
 
-			  <input type="hidden" name="print_config"
-			   value="title,sort">
+                          <input type="hidden" name="print_config"
+                           value="title,sort">
 
                           ... will include whatever values you set for
-			  'title' and 'sort' (if any) in the email.
+                          'title' and 'sort' (if any) in the email.
 
 required                - This is a list of fields that the user must fill
-                          in before they submit the form. If they leave 
-			  any of these fields blank then they will be sent
-			  back to the form to try again.  For example:
+                          in before they submit the form. If they leave
+                          any of these fields blank then they will be sent
+                          back to the form to try again.  For example:
 
-			  <input type="hidden" name="required"
-			   value="name,comments">
+                          <input type="hidden" name="required"
+                           value="name,comments">
 
 missing_fields_redirect - If this is set, it must be a URL, and the user
                           will be redirected there if any of the fields
-			  listed in 'required' are left blank. Use this if
-			  you want finer control over the the error that
-			  the user see's if they miss out a field.
+                          listed in 'required' are left blank. Use this if
+                          you want finer control over the the error that
+                          the user see's if they miss out a field.
 
 env_report              - This is a list of the CGI environment variables
                           that should be included in the email.  This is
-			  useful for recording things like the IP address
-			  of the user in the email. Any environment 
-			  variables that you want to use in 'env_report' in
-			  any of your forms will need to be in the
-			  @valid_ENV configuration variable described
-			  above.
+                          useful for recording things like the IP address
+                          of the user in the email. Any environment
+                          variables that you want to use in 'env_report' in
+                          any of your forms will need to be in the
+                          @valid_ENV configuration variable described
+                          above.
 
 print_blank_fields      - If this is set then fields that the user left
                           blank will be included in the email.  Normally,
-			  blank fields are suppressed to save space.
+                          blank fields are suppressed to save space.
 
 As well as all these hidden inputs, there are a couple of non-hidden
 inputs which get special treatment:
 
 email    - If one of the things you're asking the user to fill in is their
            email address and you call that input 'email', formmail will use
-	   it as the address part of the sender's email address in the
-	   email.
+           it as the address part of the sender's email address in the
+           email.
 
 realname - If one of the things you're asking the user to fill in is their
            full name and you call that input 'realname', formmail will use
-	   it as the name part of the sender's email address in the email.
+           it as the name part of the sender's email address in the email.
 
 SUPPORT
 
