@@ -1,6 +1,6 @@
 #!/usr/bin/perl -Tw
 #
-# $Id: wwwboard.pl,v 1.32 2002-08-25 07:39:23 nickjc Exp $
+# $Id: wwwboard.pl,v 1.33 2002-08-25 08:36:01 nickjc Exp $
 #
 
 use strict;
@@ -8,7 +8,7 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use POSIX qw(locale_h strftime);
 use vars qw($DEBUGGING $done_headers);
-my $VERSION = substr q$Revision: 1.32 $, 10, -1;
+my $VERSION = substr q$Revision: 1.33 $, 10, -1;
 
 BEGIN
 { 
@@ -309,7 +309,7 @@ sub get_variables {
 
      $image_suffixes = "($image_suffixes)";
   }
-  if ($Form->{'img'} =~ m%^(.+tp://.*\.$image_suffixes)$%) {
+  if ($Form->{'img'} =~ m%^(https?://.*\.$image_suffixes)$%) {
     $variables->{message_img} = $1;
   }
 
@@ -571,7 +571,7 @@ END_HTML
         $num_responses++;
         foreach my $followup_num (@{$variables->{followups}}) {
           if ($followup_num == $response_num) {
-            print MAIN "(<!--responses: $E{$followup_num}-->$E{$num_responses})\n";
+            print MAIN_OUT "(<!--responses: $E{$followup_num}-->$E{$num_responses})\n";
             $work = 1;
           }
         }
@@ -814,7 +814,7 @@ sub rest_of_form {
   if ($show_faq) {
     print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ] [ <a href="$E{"$baseurl/$faqfile"}">FAQ</a> ]</center>\n);
   } else {
-    print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$title</a> ]</center>\n);
+    print qq(<center>[ <a href="#followups">Follow Ups</a> ] [ <a href="#postfp">Post Followup</a> ] [ <a href="$E{"$baseurl/$mesgfile"}">$E{$title}</a> ]</center>\n);
   }
   print "</body></html>\n";
 }
@@ -833,8 +833,15 @@ sub strip_html
 
    # $allow_html not yet implemented, always strip.
 
-   $comments =~ s/<\w+[^>]*>/ /g;
-   return $E{$comments};
+   $comments =~ s#</?\w+[^>]*># #g;
+   $comments =~ s#<#&lt;#g;
+   $comments =~ s#>#&gt;#g;
+   $comments =~ s#"#&quot;#g;
+
+   # escape & unless part of a valid looking entity.
+   $comments =~ s/(&#?\w{1,20};)|&/ defined $1 ? $1 : '&amp;' /ge;
+
+   return $comments;
 }
 
 ###################################################################
@@ -846,7 +853,7 @@ use strict;
 require 5.00404;
 
 use vars qw($VERSION);
-$VERSION = sprintf '%d.%.2d', (q$Revision: 1.32 $ =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf '%d.%.2d', (q$Revision: 1.33 $ =~ /(\d+)\.(\d+)/);
 
 =head1 NAME
 
