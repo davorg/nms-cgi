@@ -5,29 +5,31 @@ use NMSTest::ScriptUnderTest;
 
 @LocalChecks::ISA = qw(NMSTest::OutputChecker);
 
+my $subject = 'Ahhhh ' . 'gwan,'x20;
+
 NMSTest::ScriptUnderTest->new(
   SCRIPT       => 'formmail/FormMail.pl',
   REWRITERS    => [ \&rw_setup ],
-  TEST_ID      => 'secret email address hidden',
-  CGI_ARGS     => [qw(foo=foo)],
+  TEST_ID      => 'long subject',
+  CGI_ARGS      => ['foo=foo', "subject=$subject"],
   HTTP_REFERER => 'http://foo.domain/',
   CHECKER      => 'LocalChecks',
-  CHECKS       => 'xhtml nodie somemail hide_secret_email',
+  CHECKS       => 'xhtml nodie somemail subject',
 )->run_test;
 
-sub LocalChecks::check_hide_secret_email
+sub LocalChecks::check_subject
 {
    my ($self) = @_;
 
-   if ( $self->{PAGES}{OUT} =~ /secret/i )
+   unless ( $self->{PAGES}{MAIL1} =~ /^Subject: \Q$subject\E\n/m )
    {
-      die "secret email address leaked to output HTML\n";
+      die "expected subject not found in email header\n";
    }
 } 
 
 sub rw_setup
 {
    s|my\s+\@referers\s*=\s*qw\(.*?\)|my \@referers = qw(foo.domain)|;
-   s|my\s+\@allow_mail_to\s*=.*?;|my \@allow_mail_to = qw(secret\@secret.domain);|;
+   s|my\s+\@allow_mail_to\s*=.*?;|my \@allow_mail_to = qw(foo\@foo.domain);|;
 }
 

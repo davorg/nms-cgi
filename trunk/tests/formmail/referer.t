@@ -41,14 +41,14 @@ my $t;
 $t = NMSTest::ScriptUnderTest->new(
   SCRIPT    => 'formmail/FormMail.pl',
   REWRITERS => [ \&rw_setup, \&rw_secure1 ],
-  CGIARGS   => [qw(foo=foo)],
+  CGI_ARGS  => [qw(foo=foo)],
 );
 run_tests($t, 1);
 
 $t = NMSTest::ScriptUnderTest->new(
   SCRIPT    => 'formmail/FormMail.pl',
   REWRITERS => [ \&rw_setup, \&rw_secure0 ],
-  CGIARGS   => [qw(foo=foo)],
+  CGI_ARGS  => [qw(foo=foo)],
 );
 run_tests($t, 0);
 
