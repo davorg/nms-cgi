@@ -756,6 +756,10 @@ blocked_template           - If this is set to a valid template file (as
                              described above) and block_lists is set then
                              this will be displayed when the client is blocked.
 
+counter_file               - If this is set to the name of a writable file
+                             then the {= counter =} directive is enabled.
+                             every time it is referenced it will be incremented
+                             
                              
 INLINE TEMPLATES
 

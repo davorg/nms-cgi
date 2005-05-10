@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.32 2004-10-12 08:37:21 gellyfish Exp $
+# $Id: TFmail.pl,v 1.33 2005-05-10 14:26:25 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -70,7 +70,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.32 $, 10, -1;
+   $VERSION = substr q$Revision: 1.33 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -140,6 +140,32 @@ sub main
 
       my $recipients = check_recipients($treq);
    
+      if ($treq->config('counter_file',''))
+      {
+         $treq->install_directive('counter',
+            sub {
+               my ( $tr, $context, $outcode ) = @_;
+
+               if ( not exists $tr->{r}{counter_data})
+               {
+                  my $file = $treq->config('counter_file','');
+                  $file =~ /(.*)/ and $file = $1;
+                  open COUNT,"+>>@{[ LOGFILE_ROOT or '.']}/$file" 
+                     or die "$file = $!\n";
+                  flock COUNT, LOCK_EX or die "flock: $file - $!\n";
+                  chomp( $tr->{r}{counter_data} = <COUNT>);
+                  truncate COUNT, 0 or die "truncate: $file - $!\n";
+                  seek COUNT,0,0 or die "seek: $file - $!\n";
+                  print COUNT  $tr->{r}{counter_data} + 1, "\n";
+                  close COUNT;
+
+               }
+               
+               return $tr->{r}{counter_data} + 0;
+            }
+         );
+      }
+
       if ( check_required_fields($treq) )
       {
          setup_input_fields($treq);
@@ -1009,6 +1035,7 @@ sub log_to_file
    my ($treq) = @_;
 
    my $file = $treq->config('logfile', '');
+   $file = $treq->process_template("\%$file",'email', undef);
    return unless $file;
    $file =~ m#^([\/\-\w]{1,100})$# or die "bad logfile name [$file]";
    $file = $1;
