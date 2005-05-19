@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.33 2005-05-10 14:26:25 gellyfish Exp $
+# $Id: TFmail.pl,v 1.34 2005-05-19 11:07:57 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -70,7 +70,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.33 $, 10, -1;
+   $VERSION = substr q$Revision: 1.34 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -418,7 +418,7 @@ sub bad_method
       my @extra = (-status => "405 Request method not allowed");
       if ( $treq->config('bad_method_template',''))
       {
-         html_page($treq, $$treq->config('bad_method_template',''),@extra);
+         html_page($treq, $treq->config('bad_method_template',''),@extra);
       }
       else
       {
