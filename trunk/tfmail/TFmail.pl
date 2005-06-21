@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.35 2005-06-20 20:59:19 gellyfish Exp $
+# $Id: TFmail.pl,v 1.36 2005-06-21 20:53:46 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -70,7 +70,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.35 $, 10, -1;
+   $VERSION = substr q$Revision: 1.36 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -417,7 +417,7 @@ sub bad_method
    {
       my $method = 'POST';
       
-      if (can_handle_get() )
+      if (can_handle_get($treq) )
       {
          $method = 'POST, GET';
       }
