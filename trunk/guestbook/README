@@ -276,6 +276,53 @@ $hide_new_entries - If this is set to 1 then any new entries on the guestbook
                     their submission hasn't worked). 
 
 
+$bannednets      - This can be the full path to a text file containing
+                   either single IP addresses or network
+                   specifications in CIDR notation, one per line,
+                   against which the client's address is checked.
+                   If a match is found an error message will
+                   displayed and the post will not be allowed.
+                   CIDR notation is a way of specifying a whole
+                   network by giving the network (start) address
+                   followed by a slash and then the number of
+                   bits in the sub-net mask which indicates
+                   how many IPs are in the network.  For example:
+                                                                                
+                     192.168.1.0/24 is 192.168.1.0 - 192.168.1.255
+                     10.0.0.0/8     is 10.0.0.0 -   10.255.255.255
+                                                                                
+                  (These examples are not really useable as the
+                  first refers to a private network you will not
+                  see on the public internet and the second would
+                  block about a quarter of the internet :)
+                  (For the curious the number of IPs is derived from
+                  the CIDR number by the formula:
+                                                                                
+                     2^(32 -$cidr)
+                                                                                
+                  where $cidr is the number after the slash.)
+                  You probably will have determined the IPs or
+                  networks to block from IPs of abusive posters.
+                  This should be used carefully as it is possible
+                  that you may block innocent posters where a
+                  large number of internet users use a single
+                  IP address (like AOL users) or where an addresses
+                  may get used by different people (as with dialup
+                  accounts for instance.)
+                                                                                
+@use_rbls     -   This is a list of DNSBL zones that list open
+                  proxies or exploited computers that can be
+                  used by spammers or crackers to attempt to
+                  anonymously access guesbook, if this is
+                  set and the requesting client appears in
+                  one of the lists then the request will be
+                  refused before any further action is taken
+                  Care should be taken in using this item as
+                  a lookup on a nonexistent or overloaded zone
+                  could block for some time.  More information
+                  on DNSBL and useful zones can be found in
+                  README.dnsbl you got with guestbook.
+
 You will need also to edit the addguest.html file so that the line :
 
    <form method="post" action="http://your.host.com/cgi-bin/guestbook.pl">

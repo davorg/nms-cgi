@@ -1,8 +1,9 @@
-guestbook/guestbook-admin.pl
 guestbook/guestbook.pl
+guestbook/guestbook-admin.pl
 guestbook/addguest.html
 guestbook/guestbook.html
 guestbook/guestlog.html
 guestbook/MANIFEST
 guestbook/README
+guestbook/README.dnsbl
 guestbook/ChangeLog

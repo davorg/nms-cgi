@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.49 2004-10-29 08:11:57 gellyfish Exp $
+# $Id: guestbook.pl,v 1.50 2005-07-13 08:23:08 gellyfish Exp $
 #
 
 use strict;
@@ -9,13 +9,14 @@ use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use IO::File;
 
+
 use vars qw(
   $DEBUGGING $done_headers @debug_msg $guestbookurl
   $guestbookreal $guestlog $cgiurl
   $style $mail $uselog $linkmail $linkname $separator $redirection
   $entry_order $remote_mail $allow_html $line_breaks $postmaster
   $mailprog $recipient $short_date_fmt $long_date_fmt $locale $timezone
-  $hide_new_comments
+  $hide_new_comments $bannednets @use_rbls
 );
 
 # sanitize the environment
@@ -92,6 +93,15 @@ BEGIN
 
     $hide_new_comments = 1;
 
+    # $bannednets should be the full path to a file containing
+    # banned IP addresses or networks
+    # 
+    $bannednets        = '';
+
+    # @use_rbls is a list of DNSBLs to use to block access
+    
+    @use_rbls          = qw();
+    
     # End configuration
 
     if ( $mailprog =~ /^SMTP:/i )
@@ -102,7 +112,7 @@ BEGIN
 }
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.49 $, 10, -1;
+$VERSION = substr q$Revision: 1.50 $, 10, -1;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -177,6 +187,8 @@ eval { setlocale( LC_TIME, $locale ) if $locale; };
 
 $date      = strftime( $long_date_fmt,  @now );
 $shortdate = strftime( $short_date_fmt, @now );
+
+die "Address [$ENV{REMOTE_ADDR}] blocked\n" if ( check_ip($ENV{REMOTE_ADDR}) );
 
 my @input_names = qw(username realname comments city state country url);
 use vars qw(%inputs);
@@ -278,6 +290,8 @@ rewrite_file(
         }
     }
 );
+
+chmod 0755, $guestbookreal;
 
 write_log('entry') if $uselog;
 
@@ -690,10 +704,51 @@ sub strip_nonprintable
     return $text;
 }
 
+
 ##############################################################
 #
 # Validity checks for various contexts.
 #
+
+=item check_ip IPNUMBER
+                                                                                
+If the $bannednets configuration is defined and contains network
+specifications then check IPNUMBER against it, also if @use_rbls is
+defined will perform a check against these if it is not found in the
+local list. Returns a true value if the IP is found in either source.
+                                                                                
+=cut
+                                                                                
+sub check_ip
+{
+   my ( $ip ) = @_;
+                                                                                
+   if ( $bannednets and -s $bannednets )
+   {
+      open BANNED, "<$bannednets" or die "Can't open $bannednets - $!";
+      while (<BANNED>)
+      {
+         chomp;
+         next unless $_;
+         if (ip_in_network($ip, $_))
+         {
+            return 1;
+         }
+                                                                                
+      }
+   }
+                                                                                
+   foreach my $rbl (@use_rbls)
+   {
+      if ( !rbl_check($ip, $rbl ))
+      {
+         return 1;
+      }
+                                                                                
+   }
+                                                                                
+   return 0;
+}
 
 sub cleanup_realname
 {
@@ -1442,3 +1497,166 @@ sub unescape_html
 #
 ##################################################################
 
+BEGIN
+{
+   eval 'local $SIG{__DIE__} ; require CGI::NMS::IPFilter';
+   $@ and $INC{'CGI/NMS/IPFilter.pm'} = 1;
+   $@ and eval <<'END_CGI_NMS_IPFILTER' || die $@;
+                                                                                               
+
+## BEGIN INLINED CGI::NMS::IPFilter
+package CGI::NMS::IPFilter;
+use strict;
+                                                                               
+require 5.00404;
+                                                                               
+use Socket;
+require Exporter;
+use vars qw($VERSION @ISA @EXPORT);
+
+@ISA = qw(Exporter);
+
+$VERSION = sprintf '%d.%.2d', (q$revision: 1.6 $ =~ /(\d+)\.(\d+)/);
+                                                                               
+
+@EXPORT = qw(ip_in_network rbl_check);
+
+=item cidr_calc
+
+Given an integer between 1 and 32 (which is assumed to have been extracted
+from a CIDR network description) will return the number of IP addresses in
+the block.
+
+=cut 
+
+sub cidr_calc
+{
+   my ( $block) = @_;
+
+   my $ips_in_block = (2 ** (32 - $block)  ) ;
+   return $ips_in_block;
+}
+
+=item add_number_to_ip
+
+Given an IP in dotted decimal notation and a number (assumed to be a block
+size derived from a CIDR) will return the IP address at the top of the
+notional block of IP addresses.
+
+=cut
+
+sub add_number_to_ip
+{
+   my ($ip,$number ) = @_;
+   my $ip_i = ip_to_int($ip);
+   $ip_i += $number;
+   return inet_ntoa(pack('N', $ip_i));
+}
+
+=item ip_to_int
+
+When passed an IP in dotted decimal notation will return an integer that
+this address represents.
+
+=cut
+
+sub ip_to_int
+{
+   my ( $ip ) = @_;
+   my $ip_n = inet_aton($ip);
+   my $ip_i = unpack('N', $ip_n);
+   return $ip_i
+}
+
+=item ip_in_network ( IP, NETWORK )
+
+Will determine whether IP is in the CIDR network NETWORK. A NETWORK without
+a /n suffix is assumed to be a /32 and the IP is compared directly. Returns
+a true value if IP is within NETWORK.
+
+=cut
+
+sub ip_in_network
+{
+   my ( $ip, $network ) = @_;
+   my $rc = 0;
+
+   my $ip_n = ip_to_int($ip);
+
+   my ($lower, $upper ) = network_bounds_int($network);
+
+   if ( $lower <= $ip_n and $ip_n <= $upper )
+   {
+      $rc = 1;
+   }
+
+   return $rc;
+}
+
+=item network_bounds_int(NETWORK)
+
+NETWORK is an IP network description in CIDR format ( nnn.nnn.nnn.nnn/n ).
+The return values are the lower and upper bounds of the network represented
+as integers for easy comparision.  A single IP without a /n is special cased
+and will return the integer value of that IP as both upper and lower values.
+
+=cut
+
+sub network_bounds_int
+{
+   my ( $network ) = @_;
+
+   my ( $lower, $upper );
+
+   if ( $network =~ m%^([^/]+)/(\d+)% )
+   {
+      $lower = ip_to_int($1);
+      $upper = ip_to_int($1) + cidr_calc($2);
+   }
+   else
+   {
+      $lower = $upper = ip_to_int($network);
+   }
+
+   return ($lower, $upper );
+}
+
+=item rbl_check (IP, ZONE )
+
+This performs a dns block list lookup of the supplied IP in the specified
+zone, returning false if there is an entry listed and true otherwise.
+It can block for a long time if the SOA for the supplied zone is busy or
+unavailable.  It is only really useful if the DNSBL zone provided is one
+that lists open HTTP proxies and know exploited machines that may be used
+by spammers or crackers.  
+
+=cut
+
+=for developers
+
+This has only been tested against a local DNSBL which I can put my own
+IP in, so it could probably be tested more thoroughly against a real
+DNSBL using some known proxies.
+
+=cut
+
+sub rbl_check 
+{
+    my ( $ip, $zone ) = @_;
+
+    my $rc = 1;
+    if ( $ip =~ /(\d+)\.(\d+).(\d+)\.(\d+)/ ) {
+        my $query = "$4.$3.$2.$1.$zone.";
+        my $res   = gethostbyname($query);
+        if ( defined $res ) {
+            $rc = 0;
+        }
+    }
+
+    return $rc;
+}
+
+1;
+## END INLINED CGI::NMS::IPFilter
+END_CGI_NMS_IPFILTER
+}
