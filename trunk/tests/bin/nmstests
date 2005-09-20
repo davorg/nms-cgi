@@ -7,16 +7,16 @@
 # The path to a working copy of the nms-cgi CVS tree, used
 # by the test scripts to grab a copy of the script to be
 # tested and to find the rest of the test suite.
-NMS_WORKING_COPY='/home/nick/nms/w';
+NMS_WORKING_COPY='/home/jonathan/devel/NMS';
 export NMS_WORKING_COPY
 
 # The directory under which the test results will be saved.
-NMS_PUT_RESULTS='/home/nick/nms/test-results'
+NMS_PUT_RESULTS='/home/jonathan/devel/NMS/test-results'
 export NMS_PUT_RESULTS
 
 # The Perl interpreter under which to run the CGI scripts
 # when testing.
-NMS_TEST_PERL='/usr/local/perl-5.00404/bin/perl'
+NMS_TEST_PERL='/usr/bin/perl'
 export NMS_TEST_PERL
 
 exec "$NMS_WORKING_COPY/tests/bin/run_tests" "$@"

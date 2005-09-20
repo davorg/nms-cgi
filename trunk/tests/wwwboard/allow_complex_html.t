@@ -33,6 +33,7 @@ $html = $in;
 # wwwboard puts <p> </p> around the message, and the filter will close
 # the p early when it hits the table.
 $html =~ s#^foo#<p>foo</p>#;
+#$html =~ s#^foo#<p>foo#;
 
 # The filter will escape some of these characters
 $html =~ s/\%/&#37;/g;
