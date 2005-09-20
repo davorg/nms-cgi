@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: countdown.pl,v 1.17 2002-07-23 21:00:15 nickjc Exp $
+# $Id: countdown.pl,v 1.18 2005-09-20 18:50:55 gellyfish Exp $
 #
 
 use strict;
@@ -24,14 +24,14 @@ BEGIN
 
 # @from_date = (yyyy,mm,dd,hh,mm,ss);
 # Which means: (year,month,day,hour,minute,second)
-my @from_date = (2002,9,7,0,0,0);
+my @from_date = (2005,12,16,'XX','XX','XX');
 my $delimiter = "<br />";
 my $date_fmt = '%H:%M:%S %d/%b/%Y';
 
 # If $emulate_matts_code is set to 1 then this will behave exactly as the
 # original countdown.pl did.
 
-my $emulate_matts_code = 1;
+my $emulate_matts_code = 0;
 
 # $locale will determine what language dates and times are output as.  If you
 # you are not concerned about this then leave this blank
@@ -95,10 +95,12 @@ my @diffs = ('X', 12, 'X', 24, 60, 60);
 # on a comma.  If there is a valid date in the query string, it
 # replaces the default one.
 
-# This will still get an uninitialized warning won't it ?
 
-my @query_string = grep /\d{1,2}/, split(/,/, length param("date") > 0 ? 
-                                   param("date") : param("keywords"));
+my @query_string = grep /\d{1,2}/, split(/,/, defined param('date') && 
+                                              length param("date") > 0 ? 
+                                              param("date") : 
+                                              defined param("keywords") ?
+                                              param('keywords') : '');
 
 my @now = reverse((localtime)[0 .. 5]);
 
@@ -130,7 +132,10 @@ eval
    setlocale(LC_TIME, $locale) if $locale;
 };
 
-my $from_date = strftime($date_fmt, reverse @from_date);
+
+my @rev_date = map {my $t = $_; $t =~ s/XX/0/; $t } reverse @from_date;
+
+my $from_date = strftime($date_fmt, @rev_date);
 my $now = strftime($date_fmt, reverse @now);
 
 # Output formatting
@@ -140,7 +145,7 @@ $done_headers++;
 
 # Check to see whether the date has already passed.
 
-if (timelocal(reverse @now) > timelocal(reverse @from_date)) {
+if (timelocal(reverse @now) > timelocal( @rev_date)) {
   print p('Date has passed');
   exit;
 }
@@ -180,7 +185,8 @@ my @units = qw(Year Month Day Hour Minute Second);
 my $diff;
 
 for my $diff_index (0 .. $#diff) {
-  if ($diff[$diff_index] == 0 and !$emulate_matts_code) {
+  if (!$skip[$diff_index] and $diff[$diff_index] == 0 and !$emulate_matts_code)
+  {
     $skip[$diff_index] = 1;
   }
   next if $skip[$diff_index];
