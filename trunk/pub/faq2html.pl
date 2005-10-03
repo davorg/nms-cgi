@@ -24,8 +24,8 @@ sub view_head1 {
 sub view_head2 {
   my ($self, $head) = @_;
   my $title = $head->title->present($self);
-  push @toc, $title;
-  return qq(<h3><a name="$title">$title</a></h3>\n\n)
+  push @toc, { title => $title, url => _clean($title) };
+  return qq(<h3><a name="$toc[-1]->{url}">$title</a></h3>\n\n)
 	. $head->content->present($self);
 }
 
@@ -36,6 +36,17 @@ sub view_head3 {
 	. $head->content->present($self);
 }
 
+# remove invalid characters from a string that will be used in a URL
+sub _clean {
+  my $string = shift;
+
+  $string =~ s/\W+/_/g;
+  $string =~ s/^_+//;
+  $string =~ s/_+$//;
+
+  return $string;
+}
+
 # Also need to override the view_pod method to produce template stuff
 # instead of HTML stuff
 sub view_pod {
@@ -43,7 +54,7 @@ sub view_pod {
   @toc = ();
   my $content = $pod->content->present($self);
   my $toc = join "\n",
-            map { qq(<li><a href="#$_">$_</a></li>) } @toc;
+            map { qq(<li><a href="#$_->{url}">$_->{title}</a></li>) } @toc;
   return qq([% META page="faqs" %]\n[% WRAPPER page.tt %]\n)
     . qq(<p class="bread">[<a href="faq_nms.html">General <span class="nms">nms</span> Questions</a>])
     . qq( [<a href="faq_perl.html">Perl Questions</a>])
