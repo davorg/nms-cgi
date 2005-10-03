@@ -48,6 +48,7 @@ sub view_pod {
     . qq(<p class="bread">[<a href="faq_nms.html">General <span class="nms">nms</span> Questions</a>])
     . qq( [<a href="faq_perl.html">Perl Questions</a>])
     . qq( [<a href="faq_prob.html">Common Problems</a>])
+    . "</p>\n"
     . "<ul>$toc</ul>"
     . $content
     . "\n[% END %]\n";
