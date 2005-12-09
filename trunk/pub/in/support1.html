@@ -146,6 +146,18 @@
       <li>We only provide support by email. We will not telephone you.</li>
     </ol>
 
+    <script type="text/javascript">
+function switchButton (checkBox) {
+  var button = document.getElementById('theButton');
+
+  if (checkBox.checked) {
+    button.disabled = false;
+  } else {
+    button.disabled = true;
+  }
+}
+    </script>
+
     <form method="post" action="http://cleaton.net/perl/FormMail.pl">
     <!-- local copy commented out temporarily -->
     <!-- <form method="post" action="/cgi-bin/FormMail.pl"> -->
@@ -185,8 +197,17 @@
         </tr>
 
         <tr>
+          <td colspan="2"><input type="checkbox" name="enable"
+              onClick="switchButton(this)" /> I confirm
+            that I am reporting a problem which I am having installing or
+            configuring an <span class="nms">nms</span> program<br />
+            (if this is not the case, then don't use this form and
+            <a href="support2.html">go here instead</a>)</td>
+        </tr>
+
+        <tr>
           <td colspan="2" align="center"><input type="submit"
-          value="Send Mail" /></td>
+          value="Send Mail" disabled="true" id="theButton" /></td>
         </tr>
       </table>
 [% END %]
