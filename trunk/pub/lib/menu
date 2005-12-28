@@ -14,3 +14,4 @@
 [% link('news', 'news.html', 'News') %]
 [% link('usage', 'usage.html', 'Usage') %]
 [% link('dev', 'devel.html', 'Get Involved') %]
+[% link('contact', 'contact.html', 'Contact') %]
