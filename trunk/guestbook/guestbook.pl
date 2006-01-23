@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.50 2005-07-13 08:23:08 gellyfish Exp $
+# $Id: guestbook.pl,v 1.51 2006-01-23 16:18:12 gellyfish Exp $
 #
 
 use strict;
@@ -88,7 +88,7 @@ BEGIN
 
     $locale = '';
 
-    # If set to 1 then new comments will not be commented out and
+    # If set to 1 then new comments will be commented out and
     # should be uncommented with the guestbook-admin.pl tool
 
     $hide_new_comments = 1;
@@ -112,7 +112,7 @@ BEGIN
 }
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.50 $, 10, -1;
+$VERSION = substr q$Revision: 1.51 $, 10, -1;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
@@ -1659,4 +1659,5 @@ sub rbl_check
 1;
 ## END INLINED CGI::NMS::IPFilter
 END_CGI_NMS_IPFILTER
+CGI::NMS::IPFilter->import();
 }

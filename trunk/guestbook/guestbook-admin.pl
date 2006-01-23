@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-#   $Id: guestbook-admin.pl,v 1.3 2004-10-29 08:11:57 gellyfish Exp $
+#   $Id: guestbook-admin.pl,v 1.4 2006-01-23 16:18:12 gellyfish Exp $
 #
 # guestbooksadmin.pl - admin script for guestbook.pl, allows for deletion and
 # hiding of comments.
@@ -11,12 +11,11 @@
 #
 
 use strict;
-use POSIX qw(locale_h strftime);
 use CGI qw(:standard);
 use Fcntl qw(:DEFAULT :flock);
 use IO::File;
 
-use vars qw($DEBUGGING %inputs $shortdate
+use vars qw($DEBUGGING %inputs 
   $comment_is_hidden $done_headers %actions $password $session_dir
   $guestlog $guestbookreal $myURL $short_date_fmt);
 
@@ -29,7 +28,6 @@ BEGIN
     $guestlog       = '/var/www/nms-test/guestbook/guestlog.html';
     $guestbookreal  = '/var/www/nms-test/guestbook/guestbook.html';
     $myURL          = 'http://nms-test/cgi-bin/guestbook-admin.pl';
-    $short_date_fmt = '%d/%m/%y %T %Z';
 }
 
 # Routines that need to be defined before we use them
@@ -93,8 +91,6 @@ EOERR
         return $text;
     }
 
-    # Log the Entry or Error
-    # from guestbook.pl
 
     $SIG{__DIE__} = \&fatalsToBrowser;
 }
@@ -104,7 +100,7 @@ sub has_login_cookie
 {
 
     # check for existing login cookie
-    return -f $session_dir . $inputs{cookie};
+    return -f $session_dir . $inputs{'cookie'};
 }
 
 # check whether a given cookie is a valid cookie and > 6 hours old. this is
@@ -128,11 +124,11 @@ sub add_admin_html
     my ($comment_num) = @_;
 
     print <<EODELETE;
-<a href="$myURL?action=delete&entry=$comment_num&cookie=$inputs{cookie}">
+<a href="$myURL?action=delete&entry=$comment_num&cookie=$inputs{'cookie'}">
 delete comment</a>
 EODELETE
     print <<EOHIDE;
-<a href="$myURL?action=hide&entry=$comment_num&cookie=$inputs{cookie}">hide/unhide comment (currently 
+<a href="$myURL?action=hide&entry=$comment_num&cookie=$inputs{'cookie'}">hide/unhide comment (currently 
 EOHIDE
     print 'not ' unless $comment_is_hidden;
     print qq%hidden)</a><br /><br />\n%;
@@ -164,7 +160,7 @@ sub view_guestbook_as_admin
         if (/<\/body>/i)
         {
             print <<EOBOD;
-<a href="$myURL?action=logout&cookie=$inputs{cookie}">Logout</a>\n
+<a href="$myURL?action=logout&cookie=$inputs{'cookie'}">Logout</a>\n
 </body>
 EOBOD
         }
@@ -479,7 +475,7 @@ sub do_delete_entry
 # invalidate the current session
 sub do_logout
 {
-    if ( $inputs{cookie} =~ /(\w{40})/ )
+    if ( $inputs{'cookie'} =~ /(\w{40})/ )
     {
         unlink( $session_dir . $1 );
     }
@@ -496,12 +492,10 @@ delete @ENV{qw(ENV BASH_ENV IFS PATH)};
 foreach my $input (qw(password action entry cookie))
 {
     my $t = param($input);
-    $t = url_param($input) unless defined $t;
     $inputs{$input} = strip_nonprintable($t);
 }
 
 # setup environment for rest of script.
-$shortdate = strftime( $short_date_fmt, localtime );
 
 # allowed set of actions, called by references straight from the action input
 %actions = (
