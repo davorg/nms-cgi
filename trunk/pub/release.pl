@@ -4,15 +4,15 @@ use Net::FTP;
 
 # The username on shell.sourceforge.net under which to upload
 # the stuff.
-use constant USERNAME => 'nickjc';
+use constant USERNAME => 'username';
 
 # The path the to root directory of your read/write working
 # copy of the NMS CVS tree.
-use constant CVSBASE  => '/home/nick/nms/w';
+use constant CVSBASE  => '/home/username/nms/working';
 
 # The path to a location to put temporary files when building
 # a release.
-use constant RELDIR   => '/home/nick/nms/release';
+use constant RELDIR   => '/home/username/nms/release';
 
 ################################################################
 
@@ -91,8 +91,8 @@ my $ftp = Net::FTP->new('upload.sourceforge.net', Passive => 1) or die;
 $ftp->login('anonymous',USERNAME.'@users.sourceforge.net') or die;
 $ftp->cwd("/incoming") or die;
 $ftp->binary or die;
-$ftp->put("$package.tar.gz") or die;
-$ftp->put("$package.zip") or die;
+$ftp->put("$package.tar.gz","$package.$version.tar.gz") or die;
+$ftp->put("$package.zip","$package.$version.zip") or die;
 $ftp->quit or die;
 print "ftp done\n";
 
