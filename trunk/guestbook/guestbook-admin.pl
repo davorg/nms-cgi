@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-#   $Id: guestbook-admin.pl,v 1.4 2006-01-23 16:18:12 gellyfish Exp $
+#   $Id: guestbook-admin.pl,v 1.5 2006-02-09 22:16:57 gellyfish Exp $
 #
 # guestbooksadmin.pl - admin script for guestbook.pl, allows for deletion and
 # hiding of comments.
@@ -196,7 +196,8 @@ Content-type: text/html
     <body>
       <h1>Login</h1>
       <p>You must login before you may administer the guestbook</p>
-      <form method="post" action="$myURL?action=login">
+      <form method="post" action="$myURL">
+        <input type="hidden" name="action" value="login" />
         <p>Password: <input type="password" size="30" name="password"/></p>
         <button name="submit" value="submit" type="submit">Login</button>
       </form>

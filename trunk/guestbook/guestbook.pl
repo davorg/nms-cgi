@@ -1,6 +1,6 @@
 #!/usr/bin/perl -wT
 #
-# $Id: guestbook.pl,v 1.51 2006-01-23 16:18:12 gellyfish Exp $
+# $Id: guestbook.pl,v 1.52 2006-02-09 22:16:58 gellyfish Exp $
 #
 
 use strict;
@@ -91,7 +91,7 @@ BEGIN
     # If set to 1 then new comments will be commented out and
     # should be uncommented with the guestbook-admin.pl tool
 
-    $hide_new_comments = 1;
+    $hide_new_comments = 0;
 
     # $bannednets should be the full path to a file containing
     # banned IP addresses or networks
@@ -112,7 +112,7 @@ BEGIN
 }
 
 use vars qw($VERSION);
-$VERSION = substr q$Revision: 1.51 $, 10, -1;
+$VERSION = substr q$Revision: 1.52 $, 10, -1;
 
 # We need finer control over what gets to the browser and the CGI::Carp
 # set_message() is not available everywhere :(
