@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 #
-# $Id: TFmail.pl,v 1.37 2006-01-31 09:14:59 gellyfish Exp $
+# $Id: TFmail.pl,v 1.38 2006-02-09 21:40:27 gellyfish Exp $
 #
 # USER CONFIGURATION SECTION
 # --------------------------
@@ -70,7 +70,7 @@ BEGIN
    }
 
    use vars qw($VERSION);
-   $VERSION = substr q$Revision: 1.37 $, 10, -1;
+   $VERSION = substr q$Revision: 1.38 $, 10, -1;
 }
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
@@ -1189,9 +1189,9 @@ sub return_html
    my ($treq) = @_;
 
    my $redirect = $treq->config('redirect');
-   $redirect = $treq->process_template("\%$redirect",'email',undef);
    if ( defined $redirect and $redirect)
    {
+      $redirect = $treq->process_template("\%$redirect",'email',undef);
       print "Location: $redirect\n\n";
    }
    else
