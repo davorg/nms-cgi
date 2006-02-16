@@ -182,11 +182,6 @@ During the following you will be guided through the configuration and installati
       $show_poster_ip     - Set to 1, the client IP address of the poster is
                             displayed in the message. Otherwise it won't.
 
-      $extra_strict       - Set to 1 to strip suspicious content that may be
-                            used to spike the forum with unwanted messages.
-                            CAUTION: This may be over-zealous and remove content
-                            that you may consider useful. Test before using.
-
       $enable_preview     - Set this to 1 to add a preview button to all script
                             generated forms, to allow users to preview their
                             messages before posting.
