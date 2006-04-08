@@ -43,6 +43,11 @@ USAGE
             not filled in, the browser will delete the cookie when the
             session ends.
 
+            Alternatively you can also specify an offset from the
+            current time such as '+1d' for one day in advance or
+            '+1h' for one hour in advance.  This differs from the
+            behaviour of Matts original cookielib.
+
       SetCookiePath ('path');
             This path defines where under your domain the cookies
             should be sent.  For instance, if your URL is:

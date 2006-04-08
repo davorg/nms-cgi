@@ -1,7 +1,10 @@
 #
-# $Id: cookielib,v 1.5 2002-07-08 09:56:12 missbarbell Exp $
+# $Id: cookielib,v 1.6 2006-04-08 08:34:31 gellyfish Exp $
 # 
 # $Log: not supported by cvs2svn $
+# Revision 1.5  2002/07/08 09:56:12  missbarbell
+# fixed GetCompressedCookies so it correctly extracts compressed cookies as per Matt's original script.
+#
 # Revision 1.4  2002/01/29 18:01:19  jfryan
 # fixed GetCompressedCookies() function to properly call GetCookies
 #
@@ -77,10 +80,10 @@ sub SetCookies {
         my $c = CGI->cookie (
                              -name    => $name,
                              -value   => $value,
-                             -expires => ((exists($cookie_config{expires}) && $cookie_config{expires} ==1) ? $cookie_config{expires} : undef),
-                             -domain  => ((exists($cookie_config{domain})  && $cookie_config{domain}  ==1) ? $cookie_config{domain}  : undef),
+                             -expires => ((exists($cookie_config{expires}) && $cookie_config{expires} ) ? $cookie_config{expires} : undef),
+                             -domain  => ((exists($cookie_config{domain})  && $cookie_config{domain}  ) ? $cookie_config{domain}  : undef),
                              -secure  => ((exists($cookie_config{secure})  && $cookie_config{secure}  ==1) ? $cookie_config{secure}  : undef),
-                             -path    => ((exists($cookie_config{path})    && $cookie_config{path}    ==1) ? $cookie_config{path}    : undef),
+                             -path    => ((exists($cookie_config{path})    && $cookie_config{path}    ) ? $cookie_config{path}    : undef),
                             );
         print "Set-Cookie: ", $c, "\n";
     }
