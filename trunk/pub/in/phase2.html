@@ -1,0 +1,79 @@
+[% META page='phase2' %]
+[% WRAPPER page.tt %]
+
+<h2>BACKGROUND </h2>
+
+<p>
+The NMS project was started in 2000 with the aim of providing high quality
+and secure replacements for popular Perl programs used on the web and
+to provide the best support possible for those replacement programs.
+</p>
+<p>
+The initial development work on the replacement programs is now largely
+completed and the programs are considered to be in 'maintenance mode'.
+</p>
+<h2>
+PHASE 2 OF THE PROJECT 
+</h2>
+<p>
+The programs released by the NMS project have been required to be largely
+compatible with the programs that they are replacing in the sense that
+for the most part they can be offered as drop in replacements and that the
+configuration should be familiar to someone who knows the older programs;
+however this imposes a limitation on the ability to provide for many
+feature requests or to implement more sophisticated security features.
+</p>
+<p>
+With this in mind the 'phase two' of the NMS project is to provide
+entirely new programs without any of the legacy constraints and which
+can provide a far greater degree of functionality simply through their
+configuration rather than by customization. To date the only output from
+this effort has been the program 'TFmail' which is the recommended 
+replacement for the 'FormMail' program (and to some extent also the
+guestbook program.) 
+</P>
+<p>
+Going forward the plan is to create a "Web Application Toolkit" that
+draws on the work already begun with TFmail. This should provide a
+wide variety of functionality without any programming knowledge on the
+part of the person configuring it, and it should be simply installed 
+on the majority of shared web hosting that supports Perl CGI programs
+(the current NMS constraints are discussed at
+<a href="http://nms-cgi.sourceforge.net/about.html">http://nms-cgi.sourceforge.net/about.html</a>)
+</p>
+<p>
+The functionality provided should incorporate everything already
+available in the TFmail program but will also have features to 
+support configuration (at minimum) as:
+<ul>
+   <li> Guestbook </li>
+   <li> Web Discussion Board</li>
+   <li> Content Search </li>
+   <li> Link Exchange </li>
+ </ul>
+or any combination of the features of those. Extended features that
+will be common to all of these that may be needed include:
+<ul>
+   <li> Authentication </li>
+<li> Rate limiting of requests </li>
+   <li> Session management </li>
+<li> Secure file handling </li>
+   <li> Generalized and flexible error reporting </li>
+<li> Message threading </li>
+   <li> Improved templating engine </li>
+          </ul>
+          </p>
+          <p>
+The intent being to support as wide as possible range of relatively
+simple web applications through a single set of program and library
+files simply through individual configuration and template files.
+</p>
+<p>
+The resulting package should have user level documentation that will
+enable someone with little more experience than creating HTML pages
+to be able to configure the applications as quickly as possible
+including examples of configuration for the most common uses.
+</p>
+[% END %]
+
+
