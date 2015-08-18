@@ -1,11 +1,24 @@
 [% MACRO link(page,link,text)
-                                                                                
+
    IF (template.page == page);
-     "<p>$text</p>";
+     "<li class=\"active\"><a href=\"#\">$text</a></li>";
    ELSE;
-     "<a href=\"$link\">$text</a>";
+     "<li><a href=\"$link\">$text</a></li>";
    END -%]
 
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">nms-cgi</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
 [% link('home', '/', 'Home') %]
 [% link('programs', 'scripts.shtml', 'Programs') %]
 [% link('support', 'support.html', 'Support') %]
@@ -15,3 +28,8 @@
 [% link('usage', 'usage.html', 'Usage') %]
 [% link('dev', 'devel.html', 'Get Involved') %]
 [% link('contact', 'contact.html', 'Contact') %]
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
