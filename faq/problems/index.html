@@ -90,7 +90,7 @@ If a question is not specific to </p>
 
 <p>These are hopefully answers to question you will have when installing
 or running our programs.</p>
-<h3><a name="How_do_I_report_a_problem">How do I report a problem?</a></h3>
+<h3><a id="How_do_I_report_a_problem">How do I report a problem?</a></h3>
 
 <p>It is very easy to report a problem badly. </p>
 <p>Saying "It doesn't work" is easy, and also pretty useless if you want
@@ -117,7 +117,7 @@ and you think you know which one it is, but don't know how to correct
 it, include <i>all</i> the information anyway. It's easier
 to ignore what we know we don't need, than to ask for information we
 might.</p>
-<h3><a name="There_is_a_conflict_between_NMS_documentation_and_Matt_s_Which_is_right">There is a conflict between NMS documentation and Matt's.  Which is right?</a></h3>
+<h3><a id="There_is_a_conflict_between_NMS_documentation_and_Matt_s_Which_is_right">There is a conflict between NMS documentation and Matt's.  Which is right?</a></h3>
 
 <p>For our programs, our documentation is definitive :-) .
 Where the program and the documentation do not match this is
@@ -128,7 +128,7 @@ can be improved.</p>
 <p>There are, occassionally, small changes between what Matt did, and
 what we do. These are all documented, including why.  Please see
 the next question for details.</p>
-<h3><a name="What_s_this_emulate_matts_code_thing_all_about">What's this $emulate_matts_code thing all about?</a></h3>
+<h3><a id="What_s_this_emulate_matts_code_thing_all_about">What's this $emulate_matts_code thing all about?</a></h3>
 
 <p>In some cases, Matt's way of doing things isn't the best. However we've
 set ourselves the target that all of our programs should be able to
@@ -137,14 +137,14 @@ work exactly the same way as Matt's originals. If you set
 the the same way. If you set it to , then our script will be free to
 do some things in a more sensible way, but it might not be able to
 deal with data created with Matt's scripts.</p>
-<h3><a name="I_m_getting_a_Badness_error_What_does_this_mean">I'm getting a 'Badness' error. What does this mean?</a></h3>
+<h3><a id="I_m_getting_a_Badness_error_What_does_this_mean">I'm getting a 'Badness' error. What does this mean?</a></h3>
 
 <p>It means that you should check for a newer version of the
 relevant program. This error was significantly more common
 in older versions of our programs. </p>
 <p>If you still get the error with the latest version, see above on
 submitting support requests.</p>
-<h3><a name="The_programs_keep_crashing_with_code_flock_unimplemented_code_why">The programs keep crashing with <code>flock unimplemented</code>, why?</a></h3>
+<h3><a id="The_programs_keep_crashing_with_code_flock_unimplemented_code_why">The programs keep crashing with <code>flock unimplemented</code>, why?</a></h3>
 
 <p>Hasn't anyone told you that Windows 98 is not a server operating system?</p>
 <p>Unfortunately on Windows 95 and 98 there is no support whatsoever for
@@ -159,7 +159,7 @@ only) then the second attempt will simply fail and there will be an error
 message.  This is alright for testing or development purposes where you are
 unlikely to have more than one person using the program at the same time, but
 would be far from ideal for a public website.</p>
-<h3><a name="But_I_don_t_have_code_sendmail_code_on_my_web_server_what_can_I_do">But I don't have <code>sendmail</code> on my web-server, what can I do?</a></h3>
+<h3><a id="But_I_don_t_have_code_sendmail_code_on_my_web_server_what_can_I_do">But I don't have <code>sendmail</code> on my web-server, what can I do?</a></h3>
 
 <p>Well, if your web-server has a Unix-like operating system it is likely that
 it has a program that performs a similar function for the preferred MTA
@@ -184,7 +184,7 @@ with <code>FormMail</code> for more details.</p>
 Notice that the <code>SMTP:mail.example.com</code> syntax means that our old
 <code>nms_sendmail</code> program is no longer needed and therefore it is no
 longer available.</p>
-<h3><a name="Is_Simple_Search_broken_it_can_t_find_text_in_my_PDF_files">Is Simple Search broken - it can't find text in my PDF files?</a></h3>
+<h3><a id="Is_Simple_Search_broken_it_can_t_find_text_in_my_PDF_files">Is Simple Search broken - it can't find text in my PDF files?</a></h3>
 
 <p>The 'text' in a  PDF file is stored as a page description, a sort of image 
 file really, so the text that appears in the acrobat viewer doesn't 
@@ -211,7 +211,7 @@ change, in the file search.pl, the line:</p>
 and ps2ascii being located as above (it might of course be /usr/local/bin 
 or /opt/bin or wherever :).</p>
 <p>The above comes with no warranty whatsoever. </p>
-<h3><a name="My_ISP_won_t_let_me_use_formmail_because_they_say_it_is_insecure">My ISP won't let me use formmail because they say it is insecure.</a></h3>
+<h3><a id="My_ISP_won_t_let_me_use_formmail_because_they_say_it_is_insecure">My ISP won't let me use formmail because they say it is insecure.</a></h3>
 
 <p>Well for one thing you could tell them that you are using the NMS FormMail
 and that is secure from all of the known problems with earlier Form to Email
@@ -233,7 +233,7 @@ or anything at all and as long as you remember to change the form as
 well then it will work perfectly fine.</p>
 <p>You could also mail your ISP and point them to the NMS project -- for
 the benefit of both you and their other customers.</p>
-<h3><a name="I_am_getting_the_Error_Too_late_for_T_option_what_can_I_do">I am getting the Error ' Too late for -T option', what can I do ?</a></h3>
+<h3><a id="I_am_getting_the_Error_Too_late_for_T_option_what_can_I_do">I am getting the Error ' Too late for -T option', what can I do ?</a></h3>
 
 <p>The '-T' turns on Perl's taint checking, this basically means that data
 coming from outside the program is marked as 'tainted' (untrustworthy) and
@@ -282,7 +282,7 @@ you have to.  Of course if you remove tainting and then make alterations
 to the program such that new data is introduced or existing data is used
 in a different way then you may be unwittingly introducing a new
 vulnerability.</p>
-<h3><a name="I_m_getting_Missing_Referrer_Access_Denied_with_FormMail">I'm getting 'Missing Referrer - Access Denied' with FormMail</a></h3>
+<h3><a id="I_m_getting_Missing_Referrer_Access_Denied_with_FormMail">I'm getting 'Missing Referrer - Access Denied' with FormMail</a></h3>
 
 <p>This happens if your browser doesn't send the HTTP 'referer' header,
 preventing FormMail from checking that the referring page is on the
@@ -292,7 +292,7 @@ the referer header from all outgoing HTTP requests.</p>
 the FormMail script.  If the copy of FormMail.pl that you're using
 doesn't have $allow_empty_ref, then you need to grab a newer version 
 from &lt;<a href="/programs/">http://nms-cgi.perlhacks.com/programs</a>&gt;.</p>
-<h3><a name="I_would_like_to_use_windmail_instead_of_nms_sendmail_but_I_keep_getting_an_error">I would like to use 'windmail' instead of 'nms_sendmail' but I keep getting an error.</a></h3>
+<h3><a id="I_would_like_to_use_windmail_instead_of_nms_sendmail_but_I_keep_getting_an_error">I would like to use 'windmail' instead of 'nms_sendmail' but I keep getting an error.</a></h3>
 
 <p>Windmail is a commercial program for Windows that can be used as a 
 replacement for the 'sendmail' that is found on Unix systems.  It will work
@@ -314,7 +314,7 @@ program.  </p>
  }</pre>
 
 <p>This will stop the error message.</p>
-<h3><a name="When_I_try_to_run_your_program_I_get_an_Internal_Server_Error_What_does_that_mean">When I try to run your program, I get an 'Internal Server Error'. What does that mean?</a></h3>
+<h3><a id="When_I_try_to_run_your_program_I_get_an_Internal_Server_Error_What_does_that_mean">When I try to run your program, I get an 'Internal Server Error'. What does that mean?</a></h3>
 
 <p>This (rather useless) error message generally means that your webserver
 tried to execute the program, but execution failed. This is most
@@ -326,7 +326,7 @@ Error. </p>
 <p>If you have access to your web server's error logs, you can probably
 get more information as to precisely what caused the problem. If not, 
 try the next question.</p>
-<h3><a name="How_do_I_fix_this_Internal_Server_Error">How do I fix this 'Internal Server Error' ?</a></h3>
+<h3><a id="How_do_I_fix_this_Internal_Server_Error">How do I fix this 'Internal Server Error' ?</a></h3>
 
 <p>Firstly, if the program, as you downloaded it from our website, does
 not work</p>
@@ -348,24 +348,24 @@ This makes debugging much easier. </p>
 original that didn't, and see where the original was broken. </p>
 <p>If it still doesn't work, then contact our support list, and 
 include all the information you possibly can.</p>
-<h3><a name="I_call_the_FormMail_program_and_get_close_mailprog_256_at">I call the FormMail program and get 'close mailprog: $?=256,$!= at ...'?</a></h3>
+<h3><a id="I_call_the_FormMail_program_and_get_close_mailprog_256_at">I call the FormMail program and get 'close mailprog: $?=256,$!= at ...'?</a></h3>
 
 <p>See the next question -- it is the same problem and solution.</p>
-<h3><a name="I_call_the_FormMail_program_and_get_Broken_Pipe_errors">I call the FormMail program and get Broken Pipe errors?</a></h3>
+<h3><a id="I_call_the_FormMail_program_and_get_Broken_Pipe_errors">I call the FormMail program and get Broken Pipe errors?</a></h3>
 
 <p>That error often indicates that $mail_prog is not correctly set for
 your system. Correct it and try again.</p>
-<h3><a name="FormMail_allows_invalid_e_mail_addresses_to_be_entered_Why">FormMail allows invalid e-mail addresses to be entered. Why?</a></h3>
+<h3><a id="FormMail_allows_invalid_e_mail_addresses_to_be_entered_Why">FormMail allows invalid e-mail addresses to be entered. Why?</a></h3>
 
 <p>foo@example isn't a malformed e-mail address, it just happens              
 to be invalid on the internet.  Email addresses with no dots in                 
 are valid and may occur in intranets, so if we were to block them               
 then the scripts would break for some people.     </p>
-<h3><a name="I_try_to_open_guestbook_pl_on_my_Mac_and_the_document_is_too_large">I try to open guestbook.pl on my Mac, and the document is too large.</a></h3>
+<h3><a id="I_try_to_open_guestbook_pl_on_my_Mac_and_the_document_is_too_large">I try to open guestbook.pl on my Mac, and the document is too large.</a></h3>
 
 <p>Try a text editor which can cope with larger files.  BBedit has been 
 recommended by Mac users in the past.</p>
-<h3><a name="I_get_an_error_telling_me_to_use_POST_method_but_I_already_am">I get an error telling me to use POST method, but I already am.</a></h3>
+<h3><a id="I_get_an_error_telling_me_to_use_POST_method_but_I_already_am">I get an error telling me to use POST method, but I already am.</a></h3>
 
 <p>This can be caused by a webserver which is configured to redirect
 anything at 
@@ -377,14 +377,14 @@ and the form being configured to POST to
 <p>This will not work, and you should set the action address to the
 real name for your server. Ie - your action line should be 
   <a href="http://www.example.com/cgi-bin/thing.pl">http://www.example.com/cgi-bin/thing.pl</a></p>
-<h3><a name="I_use_one_of_your_programs_but_want_it_to_do_something_more_Will_you_do_it">I use one of your programs but want it to do something more.  Will you do it?</a></h3>
+<h3><a id="I_use_one_of_your_programs_but_want_it_to_do_something_more_Will_you_do_it">I use one of your programs but want it to do something more.  Will you do it?</a></h3>
 
 <p>If that program is FormMail, see the next question. But the
 answer depends on what it is you want it to do. The answer is
 generally maybe.</p>
 <p>Feature requests which include an offer to actually do the work
 are also appreciated.</p>
-<h3><a name="I_use_FormMail_but_want_it_to_do_something_more_Will_you_do_it">I use FormMail but want it to do something more. Will you do it?</a></h3>
+<h3><a id="I_use_FormMail_but_want_it_to_do_something_more_Will_you_do_it">I use FormMail but want it to do something more. Will you do it?</a></h3>
 
 <p>That depends.</p>
 <p>You probably first want to look at TFmail which is a more advanced
