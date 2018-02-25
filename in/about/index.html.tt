@@ -50,8 +50,8 @@
 	this is a bit contentious, but I really think that the target
 	audience will have problems installing modules from CPAN.</li>
 
-      <li>They must run with no errors or warnings under <tt>use strict</tt>
-	and <tt>-wT</tt>. One of the worst legacies of Matt's scripts is 
+      <li>They must run with no errors or warnings under <code>use strict</code>
+	and <code>-wT</code>. One of the worst legacies of Matt's scripts is 
 	that people use them to learn Perl. None of the MSA scripts
 	use these constraints and therefore people copying them will
         learn bad habits. If people learn 
