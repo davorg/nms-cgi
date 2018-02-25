@@ -207,7 +207,7 @@
       <li>We only provide support by email. We will not telephone you.</li>
     </ol>
 
-    <script type="text/javascript">
+    <script>
 function switchButton (checkBox) {
   var button = document.getElementById('theButton');
 
@@ -234,7 +234,7 @@ function switchButton (checkBox) {
              name="return_link_title"
              value="Return to home page" />
 
-      <table summary="support form">
+      <table class="table table-bordered">
         <tr>
           <th>Name:</th>
 
@@ -259,7 +259,7 @@ function switchButton (checkBox) {
 
         <tr>
           <td colspan="2"><textarea name="description"
-          wrap="physical" rows="10" cols="80"></textarea></td>
+          wrap="hard" rows="10" cols="80"></textarea></td>
         </tr>
 
         <tr>
@@ -272,10 +272,11 @@ function switchButton (checkBox) {
         </tr>
 
         <tr>
-          <td colspan="2" align="center"><input type="submit"
-          value="Send Mail" disabled="true" id="theButton" /></td>
+          <td colspan="2"><input type="submit"
+          value="Send Mail" disabled id="theButton" /></td>
         </tr>
       </table>
+    </form>
 
       </div>
 
