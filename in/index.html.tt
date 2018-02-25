@@ -7,36 +7,36 @@
       <ul class="map">
 	<li><b>Download</b><br />
           If you want to download and use our programs then please
-	  see the <a href="/programs">programs</a> page.</li>
+	  see the <a href="programs">programs</a> page.</li>
 
 	<li><b>Support</b><br />
           If you are having problems installing or using our
-	  programs then please see the <a href="support.html">support</a>
+	  programs then please see the <a href="support">support</a>
 	  page.</li>
 
 	<li><b>Frequently Asked Questions</b><br />
           If you have a question about our programs then please see the
-	  <a href="faq_nms.html">FAQ page</a>.</li>
+	  <a href="faq/nms">FAQ page</a>.</li>
 
 	<li><b>About the Project</b><br />
           If you want to read about why the <span class="nms">nms</span>
 	  project was set up then please see the
-	  <a href="about.html">about <span class="nms">nms</span></a>
+	  <a href="about>about <span class="nms">nms</span></a>
 	  page.</li>
 
 	<li><b>News</b><br />
           If you want to read the latest news about the project then
-	  please see the <a href="news.html">news</a> page.</li>
+	  please see the <a href="news">news</a> page.</li>
 
 	<li><b>Usage</b><br />
           If you want to read about other people who are using the
 	  <span class="nms">nms</span> programs or find ways to advertise
           the fact that you are using the programs then see the
-	  <a href="usage.html">usage</a> page.</li>
+	  <a href="usage">usage</a> page.</li>
 
         <li><b>Get Involved</b><br />
           If you would like to get involved in the project then please
-          see the <a href="devel.html">developers</a> page.</li>
+          see the <a href="devel">developers</a> page.</li>
 
       </ul></p>
         <!-- p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p -->
