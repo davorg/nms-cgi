@@ -1,4 +1,4 @@
-<p class="bread">[<a href="faq_nms.html">General <span class="nms">nms</span> Questions</a>] [<a href="faq_perl.html">Perl Questions</a>] [<a href="faq_prob.html">Common Problems</a>]</p>
+<p class="bread">[<a href="/faq/nms/">General <span class="nms">nms</span> Questions</a>] [<a href="/faq/perl/">Perl Questions</a>] [<a href="/faq/problems.">Common Problems</a>]</p>
 <ul><li><a href="#I_ve_heard_that_code_use_strict_code_is_gay">I've heard that <code>use strict;</code> is gay ..</a></li>
 <li><a href="#Why_don_t_the_programs_decode_the_parameters_like_other_PERL_programs">Why don't the programs decode the parameters like other PERL programs?</a></li>
 <li><a href="#Why_don_t_you_use_code_cgi_lib_pl_code_like_everyone_else_does">Why don't you use <code>cgi-lib.pl</code> like everyone else does?</a></li>

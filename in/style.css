@@ -1,4 +1,6 @@
 footer {
+  border-top: solid 1px #666;
+  background-color: white;
   position: fixed;
   bottom: 0;
   padding-top: 10px;

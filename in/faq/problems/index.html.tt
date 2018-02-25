@@ -1,4 +1,4 @@
-<p class="bread">[<a href="faq_nms.html">General <span class="nms">nms</span> Questions</a>] [<a href="faq_perl.html">Perl Questions</a>] [<a href="faq_prob.html">Common Problems</a>]</p>
+<p class="bread">[<a href="/faq/nms/">General <span class="nms">nms</span> Questions</a>] [<a href="/faq/perl/">Perl Questions</a>] [<a href="/faq/problems/">Common Problems</a>]</p>
 <ul><li><a href="#How_do_I_report_a_problem">How do I report a problem?</a></li>
 <li><a href="#There_is_a_conflict_between_NMS_documentation_and_Matt_s_Which_is_right">There is a conflict between NMS documentation and Matt's.  Which is right?</a></li>
 <li><a href="#What_s_this_emulate_matts_code_thing_all_about">What's this $emulate_matts_code thing all about?</a></li>
@@ -228,7 +228,7 @@ the referer header from all outgoing HTTP requests.</p>
 <p>The fix is to set the '$allow_empty_ref' configuration variable to 1 in
 the FormMail script.  If the copy of FormMail.pl that you're using
 doesn't have $allow_empty_ref, then you need to grab a newer version 
-from &lt;<a href="http://nms-cgi.sourceforge.net/scripts.shtml">http://nms-cgi.sourceforge.net/scripts.shtml</a>&gt;.</p>
+from &lt;<a href="/programs/">http://nms-cgi.perlhacks.com/programs</a>&gt;.</p>
 <h3><a name="I_would_like_to_use_windmail_instead_of_nms_sendmail_but_I_keep_getting_an_error">I would like to use 'windmail' instead of 'nms_sendmail' but I keep getting an error.</a></h3>
 
 <p>Windmail is a commercial program for Windows that can be used as a 
