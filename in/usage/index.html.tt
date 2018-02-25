@@ -48,14 +48,14 @@
                      alt="Rate this Script @ The CGI Resource Index!" /></td></tr>
 <tr>
 <td>&nbsp;</td>
-<td bgcolor="#FF3232" align="center"><input type="hidden" name="referer" value="https://nms-cgi.sourceforge.net/" />
+<td><input type="hidden" name="referer" value="https://nms-cgi.sourceforge.net/" />
 <input type="hidden" name="link_code" value="07420" />
 <input type="hidden" name="category_name" 
          value="Programs and Scripts/Perl/Collections/" />
 <input type="hidden" name="link_name" 
          value="NMS CGI Project" />
-<font face="Verdana,Arial,Helvetica" size="-1"><b>Script Rating: </b>
-</font> <select name="rating">
+<b>Script Rating: </b>
+<select name="rating">
           <option selected="selected">--</option>
           <option>10</option>
           <option>9</option>
