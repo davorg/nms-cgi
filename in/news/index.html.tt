@@ -1,0 +1,84 @@
+    <h2>Latest News</h2>
+
+    <p>This page will have all of the latest news about the
+      <span class="nms">nms</span> project.</p>
+
+    <h3><span class="nms">nms</span> in Debian Stable</h3>
+
+    <p>The "testing" release of the Debian Linux distribution which
+      includes <span class="nms">nms</span> packages has been promoted
+      to Debian stable.</p>
+
+    <p>Just as soon as the Debian web server wakes up a bit, I'll update
+      this item with a list of the package names.</p>
+
+    <h3><span class="nms">nms</span> goodies at Cafepress</h3>
+
+    <p>You can now buy a range of <span class="nms">nms</span> stuff
+      at <a href="http://www.cafepress.com/nms/">Cafepress</a>.
+      Any profits from this store will be donated to
+      <a href="http://www.perlfoundation.org/">The Perl Foundation</a>.</p>
+
+    <h3><span class="nms">nms</span> as recommended by Matt Wright</h3>
+
+    <p>Matt Wright has given the <a href="http://www.scriptarchive.com/">MSA 
+      web site</a> a major redesign. He's included a 
+      <a href="http://www.scriptarchive.com/nms.html">page</a> about 
+      <span class="nms">nms</span>. Here are a couple of 
+      extracts.</p>
+    <blockquote><i>While the free code found at my web site has not evolved 
+      much in recent years, the general programming practices and standards 
+      of CGI programs have. nms is an attempt by very active programmers in 
+      the Perl community to bring the quality of code for these types of 
+      programs up to date and eliminate some of the bad programming practices 
+      and bugs found in the existing Matt's Script Archive 
+      code.</i></blockquote>
+    <blockquote><i>I would highly recommend downloading the nms versions if 
+      you wish to learn CGI programming. The code you find at Matt's Script 
+      Archive is not representative of how even I would code these 
+      days.</i></blockquote>
+    <p>I call that a good result :)</p>
+
+    <h3>MSA FormMail Attacks</h3>
+
+    <p><a href="http://www.securityfocus.com/">Security Focus</a> put
+      MSA FormMail attacks third in their list of the
+      <a href="http://www.securityfocus.com/corporate/research/top10attacks_q1_2002.shtml"> Top Attacks for the 1st Quarter of 2002</a>.</p>
+
+    <h3><span class="nms">nms</span> included in Debian Linux</h3>
+
+    <p><a href="http://www.debian.org">Debian</a> is one of the best-known
+      and well-respected distributions of Linux. Thanks to the efforts of
+      Christoph Martin, prepacked versions of many 
+      <span class="nms">nms</span> programs are amongst the packages 
+      included in their current
+      <a href="http://packages.debian.org/testing/web/">testing</a>
+      release. This is the version that will be released as the next
+      stable release in due course.</p>
+
+    <p>Many thanks to Christoph for arranging this.</p>
+
+    <h3>ISPs Switch to <span class="nms">nms</span></h3>
+
+    <p>The list of ISPs using <span class="nms">nms</span> programs
+      was getting very long, so it's been moved to its
+      <a href="isp.html">own page</a>.</p>
+
+    <h3><span class="nms">nms</span> Articles</h3>
+
+    <p><span class="nms">nms</span> has been mentioned in a couple of 
+      articles. <a href="http://www.perl.com/">perl.com</a> ran an article
+      by Dave Cross called
+      <a href="http://www.perl.com/pub/a/2002/01/23/cgi.html">Finding CGI
+        Scripts</a> about the problems of finding good CGI programs on the
+      Internet. UK magazine 
+      <a href="http://www.linuxformat.co.uk/">Linux Format</a> mentioned
+      <span class="nms">nms</span> in its <a href="art.html">Help Wanted</a>
+      column.</p>
+
+    <p>If you know of any other articles mentioning 
+      <span class="nms">nms</span> or would be interested in an article for
+      your publication, please 
+      <a href="mailto:davorg@users.sourceforge.net">us</a> know.</p>
+
+

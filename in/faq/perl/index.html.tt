@@ -1,0 +1,94 @@
+<p class="bread">[<a href="faq_nms.html">General <span class="nms">nms</span> Questions</a>] [<a href="faq_perl.html">Perl Questions</a>] [<a href="faq_prob.html">Common Problems</a>]</p>
+<ul><li><a href="#I_ve_heard_that_code_use_strict_code_is_gay">I've heard that <code>use strict;</code> is gay ..</a></li>
+<li><a href="#Why_don_t_the_programs_decode_the_parameters_like_other_PERL_programs">Why don't the programs decode the parameters like other PERL programs?</a></li>
+<li><a href="#Why_don_t_you_use_code_cgi_lib_pl_code_like_everyone_else_does">Why don't you use <code>cgi-lib.pl</code> like everyone else does?</a></li>
+<li><a href="#But_isn_t_the_CGI_module_terribly_big_and_slow">But isn't the CGI module terribly big and slow?</a></li>
+<li><a href="#What_s_with_all_this_code_die_code_stuff_all_over_the_programs">What's with all this <code>die</code> stuff all over the programs?</a></li>
+<li><a href="#Isn_t_code_flock_code_something_that_sheep_do">Isn't <code>flock</code> something that sheep do?</a></li>
+<li><a href="#Why_don_t_the_programs_use_code_Net_SMTP_code_to_send_mail">Why don't the programs use <code>Net::SMTP</code> to send mail?</a></li>
+<li><a href="#Where_can_I_learn_more_Perl">Where can I learn more Perl?</a></li>
+<li><a href="#The_programs_keep_crashing_with_code_flock_unimplemented_code_why">The programs keep crashing with <code>flock unimplemented</code>, why?</a></li></ul><h2>NAME</h2>
+
+<p>Frequently Asked Questions about the Perl used in the <i>nms</i> CGI programs.</p>
+<p>&lt;-- $Date: 2004/05/31 12:11:50 $ --&gt;</p>
+<h2>DESCRIPTION</h2>
+
+<p>These are answers to some common questions about our Perl style
+and project usage of Perl.</p>
+<h3><a name="I_ve_heard_that_code_use_strict_code_is_gay">I've heard that <code>use strict;</code> is gay ..</a></h3>
+
+<p>You shouldn't believe everything that bk tells you :)</p>
+<p><code>use strict</code> (together with <code>-w</code>) is a great way to keep a huge range
+of bugs out of your scripts. Even though the <i>nms</i> project team are all
+very experienced Perl programmers, we all insist on using them in all of
+our scripts. You should too.</p>
+<h3><a name="Why_don_t_the_programs_decode_the_parameters_like_other_PERL_programs">Why don't the programs decode the parameters like other PERL programs?</a></h3>
+
+<p>Actually it's "Perl", not "PERL" :-)</p>
+<p>The vast majority of Perl CGI programs seem to decode the CGI parameters
+using a buggy piece of code that probably originated in Matt's scripts.
+This code has a number of problems so we don't use it.</p>
+<p>Fortunately, since Perl 5.004_04, the Perl distribution has included a
+library called CGI.pm which will do all your CGI parameter decoding for you.
+Why bother writing your own (potentially buggy) code when there's code right
+there that will do it for you?</p>
+<h3><a name="Why_don_t_you_use_code_cgi_lib_pl_code_like_everyone_else_does">Why don't you use <code>cgi-lib.pl</code> like everyone else does?</a></h3>
+
+<p><code>cgi-lib.pl</code> was created for writing CGI programs back in the days of Perl 4,
+but we've come a long way since then. CGI.pm does all that <code>cgi-lib.pl</code>
+did... and much, much more.</p>
+<h3><a name="But_isn_t_the_CGI_module_terribly_big_and_slow">But isn't the CGI module terribly big and slow?</a></h3>
+
+<p>It's certainly big! But because of the way it's written, only functions that
+you actually use will be loaded into memory. This means that it will have 
+very little effect on the size or speed of your program.</p>
+<h3><a name="What_s_with_all_this_code_die_code_stuff_all_over_the_programs">What's with all this <code>die</code> stuff all over the programs?</a></h3>
+
+<p>This is another major problem with many other CGI programs. They always 
+assume that everything they try to do will work. For example, if they 
+open a file to read some data from it, they don't check that the file was
+opened successfully. We believe that it's vitally important to check for 
+these things and in many cases the only appropriate action when things go
+wrong is to kill the program.</p>
+<h3><a name="Isn_t_code_flock_code_something_that_sheep_do">Isn't <code>flock</code> something that sheep do?</a></h3>
+
+<p>Yes, but it's also something that you should do every time that you access
+a file that can be accessed by other processes. If you're storing data from
+a web page in a file and your web page becomes popular, it is likely that
+two visitors can be saving data at the same time. If they both try to write
+to the file simultaneously, then the file can become corrupted. If they
+both try to flock (for "file lock") first, then only the first one will
+be successful. The second will be forced to wait until the first unlocks the
+file. This leads to far fewer corrupt files and is therefore a good idea.</p>
+<h3><a name="Why_don_t_the_programs_use_code_Net_SMTP_code_to_send_mail">Why don't the programs use <code>Net::SMTP</code> to send mail?</a></h3>
+
+<p>Firstly, because Net::SMTP is not available as part of the core Perl 
+distribution except for in the development version leading to Perl 5.8.</p>
+<p>Secondly, because the <i>nms</i> developers feel that it is better to use
+the queuing, MX lookup and retry capabilities of the local message transfer
+agent (MTA) to deliver mail messages - the Net::SMTP module does not do
+any of these things and the code to support them is likely to run into
+hundreds of lines and require several other modules.  Also Net::SMTP requires
+an SMTP relay to be available on the local network.</p>
+<h3><a name="Where_can_I_learn_more_Perl">Where can I learn more Perl?</a></h3>
+
+<p>If you wish to learn more Perl, you should look at Randal Schwartz's
+book Learning Perl, published by O'Reilly and Associates
+&lt;<a href="http://www.oreilly.com/catalog/lperl3/">http://www.oreilly.com/catalog/lperl3/</a>&gt;.</p>
+<p>&lt;<a href="http://www.perl.com/">http://www.perl.com/</a>&gt; is also a good starting point.</p>
+<h3><a name="The_programs_keep_crashing_with_code_flock_unimplemented_code_why">The programs keep crashing with <code>flock unimplemented</code>, why?</a></h3>
+
+<p>Hasn't anyone told you that Windows 98 is not a server operating system?</p>
+<p>Unfortunately on Windows 95 and 98 there is no support whatsoever for
+advisory locking like <code>flock</code>, Perl does not try to emulate it because it
+would have to behave completely differently.  You could try commenting out
+the lines in the affected programs with a '#', but you should be warned
+that this will lead to other side effects as these operating systems
+implement a 'mandatory non-blocking lock' on files open for writing: that is
+to say that if one process has a file open so it can write to it and a
+second process attempts to open the same file (whether for writing or reading
+only) then the second attempt will simply fail and there will be an error
+message.  This is alright for testing or development purposes where you are
+unlikely to have more than one person using the program at the same time, but
+would be far from ideal for a public website.</p>
+

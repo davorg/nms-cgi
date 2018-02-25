@@ -1,0 +1,215 @@
+    <h2><span class="nms">nms</span> support</h2>
+
+    <p>This page gives you access to various resources that will help
+      you to fix problems that you are having with our programs. Please
+      work through these suggestions in the order that they are given
+      here.</p>
+
+    <p><b>Note:</b> The resources on this page are aimed at people who
+      are installing and configuring one of our programs on their own
+      web site. If you are not doing this, then this page will not be
+      useful for you and you should <a href="support2.html">go here</a>
+      instead.</p>
+
+    <h3>Frequently Asked Questions</h3>
+
+    <p>You probably are not the first person to have the problem that
+      you're having. Solutions to the most common problems are in our
+      <a href="faq_prob.html">FAQs</a> (Frequently Asked Questions).
+      Please read that before asking any questions on the support list.</p>
+
+    <p>Note that the <i>most</i> common question we are asked is the one
+      about getting an error that says "too late for -T option" when 
+      running our programs on a Windows web server. That question is
+      discussed in great detail <a href="http://nms-cgi.sourceforge.net/faq_prob.html#I%20am%20getting%20the%20Error%20%27%20Too%20late%20for%20%22%2DT%22%20option%27%2C%20what%20can%20I%20do%20%3F">
+      in the FAQ</a> and questions on this will be referred back there
+      unless you demonstrate that you have read that section.</p>
+
+    <h3>Mailing List Archives</h3>
+
+    <p>Even if your question isn't asked frequently, it's still very
+      likely that it has been asked before. All of the posts to our 
+      support mailing list are archived, so it's well worth checking
+      through <a href="http://sourceforge.net/mailarchive/forum.php?forum=nms-cgi-support">
+      the archives</a> to see if it has been discussed before.</p>
+
+    <p>Yes, our archives contain a lot of spam. Unfortunately we need to
+      make our email address as accessible as possible and that means that
+      we end up on a lot of spammer lists. We are working on ways to cut
+      down on the amount of spam that we recieve.</p>
+
+    <h3>Basic Web Program Debugging</h3>
+
+    <p>We're aware that many of the people who use our programs are not
+      programmers, so we don't expect you to be experts in debugging web
+      programs. However, there are a number of simple things that you can
+      check. It's surprising what a large percentage of problems are
+      caused by one of these errors.</p>
+
+    <ul>
+      <li>If you transfered the program to your web server, did you
+        make the transfer in "text" mode?</li>
+
+      <li>Is the path to "perl" in the first line of the program correct?
+        We have configured it to be the most common value, but your web
+        server may have the Perl compiler in a slightly unusual place.
+        You'll need to check this with your system adminstrators.</li>
+
+      <li>Are the permissions correct? The program will need to be 
+        executable by the web server user on your system. It's hard to
+        give any more specific advice, as the specifics can vary from 
+        system to system. Your system adminstrators will know what is 
+        required on your system.</li>
+
+      <li>Is the path to "sendmail" correct? Our formmail program uses
+        another program called "sendmail" to actually send the email.
+        It's possible to tell formmail where to find this program by
+        setting the $mailprog variable. Once again, your system
+        adminstrators can tell you exactly what this should be set to.</li>
+    </ul>
+
+    <h3>Latest Version</h3>
+
+    <p>Most of our programs are constantly being improved. If you're not
+      using the most recent version of our program then one of our first
+      suggestions will probably be that you upgrade. So it's probably a
+      good idea to try that anyway. You can always get the latest versions
+      of all of our programs from <a href="scripts.shtml">this site</a>.</p>
+
+    <p>It's particularly worth noting that the versions of our programs
+      that are distributed by other sites are not guaranteed to be up to
+      date.</p>
+
+    <h3>Reporting Problems</h3>
+
+    <p>If your problem isn't discussed in the FAQ or the mailing list 
+      archives then please use the form below to send an email to our
+      support mailing list. We only ask that you are follow a few simple
+      suggestions when posting to the list.</p>
+
+    <ul>
+      <li>As discussed above, mails to the list are publically archived
+        so that other people can read them. This means that you shouldn't
+        include in your email any thing that you wouldn't want to be
+        public knowledge. This particularly applies to usernames and
+        passwords.</li>
+
+      <li>Please don't attach the whole of our program to the email. Many
+        off our programs are pretty large and we already know what they
+        look like. We only need to see the bits that you have edited. In
+        most cases, that will just be the "user configuration" section.
+        It's also a good idea to include the version number of the program
+        that you are using. That's found at the top of all of our
+        programs.</li>
+
+      <li>Similarly, it's generally a bad idea to send us the whole of a
+        complex HTML page. It's a much better idea to just send us a link
+        to the page.</li>
+
+      <li>Try to include as much useful information as possible in your
+        email. Just saying "it doesn't work" isn't much help to us. Please
+        tell us exactly what unexpected behaviour you are seeing. Send us
+        the exact text of the error message that you are seeing. If you're
+        getting a generic "500 error" or "internal error" page then there
+        will usually be more useful information in the web server error
+        log, please send us that too (note that we can't tell you where
+        your web server error log is, as that's down to the configuration
+        of your web server).</li>
+
+      <li>All of the error messages that you will see are plain text.
+        This means that you should be able to paste the text of the 
+        message into the your email message. There's never any need to 
+        send us an image file. So please don't do that.</li>
+    </ul>
+
+    <p>If you follow all of these suggestions then we'll be happy to help
+      you in any way that we can. However, you should realise that the
+      <span class="nms">nms</span> project is run by volunteers. We all
+      have day-jobs too so we can't guarantee any particular level of
+      support.</p>
+
+    <p>You can send an email to the support team by filling in the form
+      below.</p>
+
+    <p><b>Important Notes:</b></p>
+
+    <ol>
+      <li>Please do not use this form to report a problem with a site
+        that you do not own. <a href="support2.html">Go here instead</a>.</li>
+      <li>Please read all of this page and follow its advice before 
+        filling in  the form.</li>
+      <li>Please note that all messages sent with this form are publically
+        archived. Therefore you shouldn't include any sensitive information
+        like usernames or passwords.</li>
+      <li>We only provide support by email. We will not telephone you.</li>
+    </ol>
+
+    <script type="text/javascript">
+function switchButton (checkBox) {
+  var button = document.getElementById('theButton');
+
+  if (checkBox.checked) {
+    button.disabled = false;
+  } else {
+    button.disabled = true;
+  }
+}
+    </script>
+
+    <!-- local copy commented out temporarily -->
+    <form method="post" action="http://mag-sol.com/cgi-bin/FormMail.pl">
+      <input type="hidden" 
+             name="recipient"
+             value="nms-cgi-support@lists.sourceforge.net" /> 
+      <input type="hidden" 
+             name="required"
+             value="realname,email,subject,description" /> 
+      <input type="hidden"
+             name="return_link_url"
+             value="http://nms-cgi.sourceforge.net/" />
+      <input type="hidden"
+             name="return_link_title"
+             value="Return to home page" />
+
+      <table summary="support form">
+        <tr>
+          <th>Name:</th>
+
+          <td><input type="text" name="realname" /></td>
+        </tr>
+
+        <tr>
+          <th>Email:</th>
+
+          <td><input type="text" name="email" /></td>
+        </tr>
+
+        <tr>
+          <th>Subject:</th>
+
+          <td><input type="text" name="subject" /></td>
+        </tr>
+
+        <tr>
+          <th colspan="2">Description of problem:</th>
+        </tr>
+
+        <tr>
+          <td colspan="2"><textarea name="description"
+          wrap="physical" rows="10" cols="80"></textarea></td>
+        </tr>
+
+        <tr>
+          <td colspan="2"><input type="checkbox" name="enable"
+              onClick="switchButton(this)" /> I confirm
+            that I am reporting a problem which I am having installing or
+            configuring an <span class="nms">nms</span> program<br />
+            (if this is not the case, then don't use this form and
+            <a href="/support/visitor/">go here instead</a>)</td>
+        </tr>
+
+        <tr>
+          <td colspan="2" align="center"><input type="submit"
+          value="Send Mail" disabled="true" id="theButton" /></td>
+        </tr>
+      </table>

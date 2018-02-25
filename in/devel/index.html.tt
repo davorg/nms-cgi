@@ -1,0 +1,43 @@
+    <h3>Getting involved</h3>
+
+    <p>We always need developers, tech writers and testers to work on making
+      <span class="nms">nms</span> better. Please visit the 
+      <a href="http://sourceforge.net/projects/nms-cgi/"><span class="nms">nms</span>
+        project page</a> on Sourceforge for more details on getting involved.</p>
+
+    <p>Currently our biggest requirement is for people to get involved with
+      the support mailing list. If you'd like to help out answering people's
+      questions about our programs then please
+      <a href="mailto:davorg@users.sourceforge.net">let us know</a>.</p>
+
+    <p>There are currently two mailing lists set up for the discussion of
+      <span class="nms">nms</span>.</p>
+
+    <ul>
+      <li>The <span class="nms">nms</span>
+        <a href="http://lists.sourceforge.net/mailman/listinfo/nms-cgi-support">end-user support</a> list</li>
+      <li>The <span class="nms">nms</span>
+        <a href="http://lists.sourceforge.net/mailman/listinfo/nms-cgi-devel">developers discussion</a> list</li>
+    </ul>
+
+    <h3>Future Plans</h3>
+
+    <p>The initial plan is to create a set of scripts that mirror exactly
+      the functionality of Matt's scripts (minus the insecurities and 
+      bugs). This is now complete. Now I'd like to look at extending the
+      archive in four directions:</p>
+
+    <ul>
+      <li>Simplifying and improving the installation process.</li>
+
+      <li>Adding new functionality to the existing scripts.</li>
+
+      <li>Adding new scripts that are not in the original list.</li>
+
+      <li>Adding enhanced versions of the scripts which require slightly
+        more knowledge from the person installing them - perhaps needing
+        modules from CPAN.</li>
+    </ul>
+
+    <p>Any suggestions in any of these areas will be appreciated.</p>
+
